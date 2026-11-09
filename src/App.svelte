@@ -11,6 +11,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		draggableRun,
 		foundationSchedule,
 		ghostClick,
+		homeAll,
 		moveRun,
 		rewindTo,
 		tapCell,
@@ -639,10 +640,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			Glow: {glow ? 'on' : 'off'}
 		</button>
 		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
-		<button
-			class="btn"
-			onclick={() => (flushPending(), apply(game.autoFoundationAll({ anytime: true })))}
-		>
+		<button class="btn" onclick={() => (flushPending(), apply(homeAll(game)))}>
 			Auto to home
 		</button>
 		<button class="btn" onclick={replay}>Restart deal</button>

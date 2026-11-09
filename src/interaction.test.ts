@@ -9,6 +9,7 @@ import {
 	draggableRun,
 	dragMoves,
 	foundationSchedule,
+	homeAll,
 	moveRun,
 	rewindTo,
 	tapCell,
@@ -16,7 +17,7 @@ import {
 } from './interaction';
 
 /** Build a board from shorthand, e.g. [['8S','7H','6C'], ['9D']]; unplaced cards stay in the deck. */
-function makeGame(setup: string[][], cells: string[] = []) {
+function makeGame(setup: string[][], cells: string[] = [], foundations: string[] = []) {
 	const cards = initializeDeckOfCards();
 	const byId = new Map<string, (typeof cards)[number]>();
 	cards.forEach((card) => byId.set(shorthandCard(card), card));
@@ -28,6 +29,9 @@ function makeGame(setup: string[][], cells: string[] = []) {
 	);
 	cells.forEach((rs, i) => {
 		byId.get(rs)!.location = { fixture: 'cell', data: [i] };
+	});
+	foundations.forEach((rs, i) => {
+		byId.get(rs)!.location = { fixture: 'foundation', data: [i] };
 	});
 	return new FreeCell({ cellCount: 4, cascadeCount: 8, cards });
 }
@@ -338,5 +342,37 @@ describe('double click when a single click has nothing to do', () => {
 		const result = doubleTapTableau(game, { fixture: 'cascade', data: [0, 0] });
 		expect(result.outcome).toBe('moved');
 		expect(shorthandCard(result.game.cells[0])).toBe('TC');
+	});
+});
+
+describe('auto to home', () => {
+	test('sends a playable cell card home even when the passive limit holds it', () => {
+		const game = makeGame([['KS'], ['KH'], ['KC'], ['KD'], [], [], [], []], ['9S'], ['8S']);
+		// the passive chain keeps the opp+1 safety limit and leaves the nine sitting in the cell
+		expect(game.autoFoundationAll({ anytime: true })).toBe(game);
+
+		const next = homeAll(game);
+		expect(shorthandCard(next.foundations[0]!)).toBe('9S');
+		expect(next.cells[0]).toBe(null);
+	});
+
+	test('a selected cell card is still sent home', () => {
+		const game = makeGame([['KS'], ['KH'], ['KC'], ['KD'], [], [], [], []], ['9S'], ['8S']);
+		const selected = game.setCursor({ fixture: 'cell', data: [0] }).touch();
+		expect(selected.selection).toBeTruthy();
+
+		const next = homeAll(selected);
+		expect(shorthandCard(next.foundations[0]!)).toBe('9S');
+	});
+});
+
+describe('parking in a free cell', () => {
+	test('a stale selection does not hijack the park', () => {
+		const game = makeGame([['8S', '7H', '6C'], ['9D'], ['KD'], ['KH'], ['KC'], ['QS'], ['QD'], ['QH']]);
+		const selected = game.setCursor({ fixture: 'cascade', data: [1, 0] }).touch();
+
+		const result = doubleTapTableau(selected, { fixture: 'cascade', data: [0, 2] });
+		expect(result.outcome).toBe('moved');
+		expect(shorthandCard(result.game.cells[0]!)).toBe('6C');
 	});
 });

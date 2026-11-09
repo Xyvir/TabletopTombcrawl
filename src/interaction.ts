@@ -102,6 +102,16 @@ export function foundationSchedule(
 	return schedule;
 }
 
+/**
+ * Explicit "send everything home" action (the Auto to home button). Passive auto-foundation keeps
+ * the `opp+1` safety limit and skips the card that is currently selected, so an explicit request
+ * clears the selection and takes every legal foundation move.
+ */
+export function homeAll(game: FreeCell): FreeCell {
+	const base = game.selection ? game.clearSelection() : game;
+	return base.autoFoundationAll({ anytime: true, limit: 'none' });
+}
+
 export interface GhostHit {
 	rect: { left: number; top: number; right: number; bottom: number };
 	time: number;
@@ -198,10 +208,12 @@ export function doubleTapTableau(game: FreeCell, location: CardLocation): TapRes
 		return { game: next, outcome: 'moved' };
 	}
 
-	const cellIndex = game.cells.findIndex((card) => !card);
+	// a stale selection would hijack the engine's touch-based move, so park on a clean state
+	const base = game.selection ? game.clearSelection() : game;
+	const cellIndex = base.cells.findIndex((card) => !card);
 	if (cellIndex === -1) return shook(game);
 	const id = shorthandCard(run[0]);
-	const next = game.$moveCardToPile(id, CELL_PILES[cellIndex]);
+	const next = base.$moveCardToPile(id, CELL_PILES[cellIndex]);
 	// the move can chain an auto-foundation (which relabels the action as move-foundation), so
 	// check that the card actually landed in a cell instead of trusting the action type
 	const landed = next !== game && next.cells.some((card) => card && shorthandCard(card) === id);

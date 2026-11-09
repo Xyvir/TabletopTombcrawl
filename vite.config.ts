@@ -6,6 +6,8 @@ export default defineConfig({
 	plugins: [svelte()],
 	// relative base so the build can be served from any subpath (GitHub Pages)
 	base: './',
+	// GitHub Pages serves this repository from master /docs
+	build: { outDir: 'docs', emptyOutDir: true },
 	resolve: {
 		alias: { '@': path.resolve(import.meta.dirname, './src') },
 	},
