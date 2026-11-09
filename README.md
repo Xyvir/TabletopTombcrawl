@@ -2,10 +2,10 @@
 
 Freecell implemented in javascript using Svelte and interact.js. Works on ipad, browser and iphone (although cards are a little small)
 
-<img src="/public/images/freecell_screenshot.png" width="300"/>
+<img src="images/freecell_screenshot.png" width="300"/>
 
 
-### Try it here: https://redronin.github.io/freecell-svelte/
+### Try it here: https://xyvir.github.io/freecell-svelte/
 
 *(First page load is slow as it loads images of playing cards)*
 

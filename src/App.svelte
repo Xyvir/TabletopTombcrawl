@@ -451,7 +451,7 @@
 
 <nav class="navbar navbar-dark bg-dark m-0 p-1 header">
   <div class='navsection text-left'>
-    <a href='/' class='text-danger'><i class='fas fa-diamond'></i></a>&nbsp;
+    <a href='./' class='text-danger'><i class='fas fa-diamond'></i></a>&nbsp;
   Game: {gameId || ' '}
     <!-- <a on:click={testWin}>Test</a> -->
   </div>
