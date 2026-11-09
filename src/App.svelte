@@ -2,7 +2,13 @@
 	import { tick } from 'svelte';
 	import { FreeCell } from './game/game';
 import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
-	import { getRankForCompare, shorthandCard, type Card, type CardLocation } from './game/card/card';
+	import {
+		getRankForCompare,
+		shorthandCard,
+		type Card,
+		type CardLocation,
+		type CardSequence,
+	} from './game/card/card';
 	import {
 		canDoubleTap,
 		doubleTapCell,
@@ -18,6 +24,38 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tapTableau,
 		type TapResult,
 	} from './interaction';
+	import {
+		MONSTERS,
+		ROLE_LABEL,
+		TOMB_CELL_COUNT,
+		abilityUsable,
+		armedClick,
+		armedDrop,
+		attackPreview,
+		attackWith,
+		canBuildOn,
+		cellCardMovable,
+		createTombState,
+		currentLevel,
+		disarm,
+		hp,
+		draftAt,
+		emptyCells,
+		isBoss,
+		isBossMinion,
+		isFaceDown,
+		bossSlain,
+		bossProtected,
+		revealFaceDown,
+		tombExit,
+		tombFirstCell,
+		tombHomeAll,
+		tombMove,
+		tombRun,
+		tombTapTargets,
+		useAbility,
+		type TombState,
+	} from './tombcrawl';
 
 	const CELL_COUNT = 4;
 	const CASCADE_COUNT = 8;
@@ -36,8 +74,23 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const FOUNDATION_WARMUP_MS = 240;
 	const FOUNDATION_GAP_MS = 40;
 	const FOUNDATION_FLIGHT_MS = 250;
+	/** A card coming out of the fog squashes, shows its face, then opens back out. */
+	const FLIP_MS = 210;
 
-	let game = $state<FreeCell>(deal());
+	/** Tabletop Tombcrawl is the table the app opens on; the toggle falls back to plain FreeCell. */
+	const opening = createTombState();
+	let variant = $state<'tomb' | 'vanilla'>('tomb');
+	let tomb = $state<TombState | null>(opening);
+	let tombHistory = $state<TombState[]>([]);
+	/** Cards that just came out of the fog, drawn flipping face-up for one animation. */
+	let flippingIds = $state<string[]>([]);
+	let tombSelected = $state<CardLocation | null>(null);
+	let tombLast: { id: string; time: number } | null = null;
+	/** The last card a tomb tap moved, so a second click at the same spot can rewind it. */
+	let tombMoved: { id: string; from: CardLocation; before: TombState; rect: DOMRect; time: number } | null = null;
+	/** A whole-screen flash: gold for a level up, red for damage taken. */
+	let flash = $state<{ kind: 'level' | 'damage'; id: number } | null>(null);
+	let game = $state<FreeCell>(opening.game);
 	let seedInput = $state('');
 	let mode = $state<'auto' | 'pick'>('auto');
 	/** Legal-pile glow while dragging. Off by default: sharp lines, no chatter. */
@@ -80,8 +133,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		targets: string[];
 	} | null>(null);
 
-	const seed = $derived(dealSeed(game));
-	const atStart = $derived(PREVIOUS_ACTION_TYPE_IS_START_OF_GAME.has(game.previousAction.type));
+	const seed = $derived(tomb ? tomb.seed : dealSeed(game));
+	const atStart = $derived(
+		tomb ? tombHistory.length === 0 : PREVIOUS_ACTION_TYPE_IS_START_OF_GAME.has(game.previousAction.type)
+	);
+	const preview = $derived(tomb && tombSelected ? attackPreview(tomb, tombSelected) : null);
+	const tombHp = $derived(tomb ? hp(tomb) : 0);
+	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	const dragIds = $derived(new Set(drag?.cards ?? []));
 
 	function deal(requested?: number): FreeCell {
@@ -190,6 +248,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		});
 	}
 
+	function startFlash(kind: 'level' | 'damage') {
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+		flash = { kind, id: (flash?.id ?? 0) + 1 };
+		setTimeout(
+			() => {
+				if (flash?.kind === kind) flash = null;
+			},
+			kind === 'level' ? 700 : 500
+		);
+	}
+
 	function shake(el?: HTMLElement | null) {
 		if (!el || typeof el.animate !== 'function') return;
 		el.getAnimations().forEach((animation) => animation.cancel());
@@ -248,6 +317,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		pending = null;
 		lastTap = null;
 		lastMove = null;
+		tombMoved = null;
 	}
 
 	function flushPending() {
@@ -268,7 +338,37 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * The card has left the click point, so a second click can land on empty felt. Credit it to the
 	 * card that just flew (ghost clickbox) and route it to the free cell / double-click action.
 	 */
+	/** A click on the felt where a card used to sit still belongs to that card (ghost clickbox). */
+	function tombGhostHit(event: PointerEvent) {
+		const moved = tombMoved;
+		if (!moved || Date.now() - moved.time > GHOST_MS) return null;
+		const r = moved.rect;
+		const inX = event.clientX >= r.left - 6 && event.clientX <= r.right + 6;
+		const inY = event.clientY >= r.top - 6 && event.clientY <= r.bottom + 6;
+		return inX && inY ? moved : null;
+	}
+
 	function onBoardPointerDown(event: PointerEvent) {
+		if (tomb) {
+			const moved = tombGhostHit(event);
+			if (!moved) return;
+			if ((event.target as HTMLElement | null)?.closest('[data-card]')) return;
+			event.preventDefault();
+			event.stopPropagation();
+			tombMoved = null;
+			tombLast = null;
+			tombSelected = null;
+			suppressClickUntil = Date.now() + 120;
+			// the hop the first click made was a guess: send the card home instead
+			const home = attackWith(moved.before, moved.from);
+			if (home) {
+				commit(home);
+				// and take the hop out of history, so undo goes back before it
+				tombHistory = tombHistory.slice(0, -1);
+			}
+			return;
+		}
+
 		if (pending) return;
 		const move = lastMove;
 		if (!move || !ghostClick(move, event.clientX, event.clientY, Date.now(), GHOST_MS)) return;
@@ -287,6 +387,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (Date.now() < suppressClickUntil) return;
 
 		const el = event.currentTarget as HTMLElement;
+
+		if (tomb) {
+			tombClick(event, card);
+			return;
+		}
 
 		if (mode === 'pick') {
 			apply(game.setCursor(card.location).touch());
@@ -351,7 +456,184 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function tap(location: CardLocation) {
 		if (Date.now() < suppressClickUntil) return;
 		flushPending();
+		if (tomb) {
+			tombSelected = null;
+			if (tomb.armed) commit(disarm(tomb));
+			return;
+		}
 		apply(game.setCursor(location).touch());
+	}
+
+	/* ---------- tabletop tombcrawl ---------- */
+
+	const monsterName = (state: TombState) => (state.bossSuit ? MONSTERS[state.bossSuit].name : '');
+
+	/** The suit's monster and its power, e.g. "Gorgon — Burden: killing this exhausts your Consumable." */
+	function auraTitle(state: TombState, withName = true) {
+		if (!state.bossSuit) return '';
+		const monster = MONSTERS[state.bossSuit];
+		return `${withName ? `${monster.name} — ` : ''}${monster.power}: ${monster.text}`;
+	}
+
+	function commit(next: TombState, before?: Map<string, DOMRect>) {
+		if (!tomb) return;
+		const revealed = tomb.hidden.filter((id) => !next.hidden.includes(id));
+		const rects = before ?? cardRects();
+		if (currentLevel(next) > currentLevel(tomb)) startFlash('level');
+		else if (hp(next) < hp(tomb)) startFlash('damage');
+		tombHistory = [...tombHistory, tomb];
+		tomb = next;
+		game = next.game;
+		tombSelected = null;
+		primaryId = null;
+		lastMove = null;
+		if (revealed.length) {
+			flippingIds = [...new Set([...flippingIds, ...revealed])];
+			setTimeout(() => {
+				flippingIds = flippingIds.filter((id) => !revealed.includes(id));
+			}, FLIP_MS);
+		}
+		void tick().then(() => animateFrom(rects, next.game, null));
+	}
+
+	function tombDragRun(state: TombState, location: CardLocation): CardSequence | null {
+		if (location.fixture === 'foundation') return null;
+		if (location.fixture === 'cell') {
+			if (!cellCardMovable(state, location.data[0])) return null;
+			const card = state.game.cells[location.data[0]];
+			return card ? { location, cards: [card], peekOnly: false } : null;
+		}
+		const run = tombRun(state, location);
+		const column = state.game.tableau[location.data[0]] ?? [];
+		if (!run.length || run[run.length - 1] !== column[column.length - 1]) return null;
+		return { location, cards: run, peekOnly: false };
+	}
+
+	function tombDragTargets(state: TombState, location: CardLocation): string[] {
+		const run = tombDragRun(state, location);
+		if (!run) return [];
+		const arm = state.armed;
+		if (arm && (arm.kind === 'pisorf' || arm.kind === 'weytwut')) {
+			// a swap can take a card from any other column
+			const fromColumn = location.fixture === 'cascade' ? location.data[0] : -1;
+			return state.game.tableau
+				.map((_, index) => index)
+				.filter((index) => index !== fromColumn && (state.game.tableau[index]?.length ?? 0) > 0)
+				.map((index) => `cascade:${index}`);
+		}
+		const keys: string[] = [];
+		state.game.tableau.forEach((column, index) => {
+			const target = { fixture: 'cascade' as const, data: [index, Math.max(0, column.length - 1)] };
+			if (canBuildOn(state, run.cards, target)) keys.push(`cascade:${index}`);
+		});
+		if (run.cards.length === 1) emptyCells(state).forEach((index) => keys.push(`cell:${index}`));
+		if (attackPreview(state, location).legal) {
+			state.game.foundations.forEach((_, index) => keys.push(`foundation:${index}`));
+		}
+		return keys;
+	}
+
+	function tombClick(event: MouseEvent, card: Card) {
+		const state = tomb;
+		if (!state || state.won) return;
+		const el = event.currentTarget as HTMLElement;
+		const id = shorthandCard(card);
+
+		if (state.armed) {
+			const armed = armedClick(state, card.location);
+			if (armed) commit(armed);
+			else shake(el);
+			return;
+		}
+
+		const now = Date.now();
+		const double = tombLast?.id === id && now - tombLast.time < DOUBLE_CLICK_MS;
+		tombLast = double ? null : { id, time: now };
+
+		if (card.location.fixture === 'cell') {
+			const index = card.location.data[0];
+			if (double) {
+				const home = attackWith(state, card.location);
+				if (home) return void commit(home);
+			} else if (abilityUsable(state, index)) {
+				const used = useAbility(state, index);
+				if (used) return void commit(used);
+			}
+			if (!cellCardMovable(state, index)) {
+				shake(el);
+				return;
+			}
+			tombSelected = card.location;
+			return;
+		}
+
+		if (isFaceDown(state, card)) {
+			// Digging is a click and nothing else: exposed cards for anyone, buried ones for an Elf.
+			const revealed = revealFaceDown(state, card.location);
+			if (revealed) return void commit(revealed);
+			shake(el);
+			return;
+		}
+
+		if (double) {
+			const home = attackWith(state, card.location);
+			if (home) return void commit(home);
+			const target = tombFirstCell(state);
+			if (target) {
+				const parked = tombMove(state, card.location, target);
+				if (parked) return void commit(parked);
+			}
+			shake(el);
+			return;
+		}
+
+		const targets = tombTapTargets(state, card.location);
+		if (targets.length) {
+			const moved = tombMove(state, card.location, targets[0]);
+			if (moved) {
+				tombMoved = {
+					id,
+					from: card.location,
+					before: state,
+					rect: el.getBoundingClientRect(),
+					time: Date.now(),
+				};
+				return void commit(moved);
+			}
+		}
+		tombSelected = card.location;
+	}
+
+	function exitTomb() {
+		if (!tomb) return;
+		const exited = tombExit(tomb);
+		if (exited) commit(exited);
+	}
+
+	function sendHome() {
+		flushPending();
+		if (tomb) {
+			const next = tombHomeAll(tomb);
+			if (next !== tomb) commit(next);
+			return;
+		}
+		apply(homeAll(game));
+	}
+
+	function setVariant(next: 'tomb' | 'vanilla') {
+		if (variant === next) return;
+		clearClickMemory();
+		tombHistory = [];
+		tombSelected = null;
+		tombLast = null;
+		variant = next;
+		if (next === 'tomb') {
+			tomb = createTombState();
+			game = tomb.game;
+		} else {
+			tomb = null;
+			game = deal();
+		}
 	}
 
 	/* ---------- drag ---------- */
@@ -403,7 +685,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 		if (!press.dragged) {
 			if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-			const run = draggableRun(game, press.card.location);
+			const run = tomb ? tombDragRun(tomb, press.card.location) : draggableRun(game, press.card.location);
 			if (!run) return;
 			clearClickMemory();
 			press.dragged = true;
@@ -414,7 +696,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				dy,
 				angle: 0,
 				lastX: event.clientX,
-				targets: dragMoves(game, run.location).map((move) => pileKey(move.location)),
+				targets: tomb
+					? tombDragTargets(tomb, run.location)
+					: dragMoves(game, run.location).map((move) => pileKey(move.location)),
 			};
 			startAngleLoop();
 			return;
@@ -462,11 +746,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		drag = null;
 
 		if (from && to) {
-			const next = moveRun(game, from, to);
-			if (next) {
-				primaryId = shorthandCard(finished.card);
-				applyFromDrag(next, before);
-				return;
+			if (tomb) {
+				// An armed ability answers the drop instead of moving the cards.
+				const next = tomb.armed ? armedDrop(tomb, from, to) : tombMove(tomb, from, to);
+				if (next) {
+					commit(next, before);
+					return;
+				}
+			} else {
+				const next = moveRun(game, from, to);
+				if (next) {
+					primaryId = shorthandCard(finished.card);
+					applyFromDrag(next, before);
+					return;
+				}
 			}
 			// illegal drop: put it back and shake, so the gesture always answers
 			const id = shorthandCard(finished.card);
@@ -477,6 +770,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		// dropped on empty felt: snap back silently
 		const id = shorthandCard(finished.card);
 		void tick().then(() => shake(board?.querySelector<HTMLElement>(`[data-card="${id}"]`)));
+	}
+
+	/** The column holding the locked boss: its stacking context keeps the lean inside the column. */
+	function bossColumn(cards: Card[]): boolean {
+		const state = tomb;
+		if (!state || drag || !bossProtected(state)) return false;
+		return cards.some((card) => isBoss(state, card));
 	}
 
 	function cardStyle(card: Card, i: number) {
@@ -494,6 +794,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	function undoMove() {
 		flushPending();
+		if (tomb) {
+			const previous = tombHistory.at(-1);
+			if (!previous) return;
+			const before = cardRects();
+			tombHistory = tombHistory.slice(0, -1);
+			tomb = previous;
+			game = previous.game;
+			tombSelected = null;
+			void tick().then(() => animateFrom(before, previous.game, null));
+			return;
+		}
 		// the deal itself is a history entry; undoing it would empty the board
 		if (PREVIOUS_ACTION_TYPE_IS_START_OF_GAME.has(game.previousAction.type)) return;
 		apply(game.undo({ toggleCursor: true }));
@@ -503,12 +814,27 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		clearClickMemory();
 		const requested = Number.parseInt(seedInput, 10);
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
-		apply(deal(valid ? requested : undefined));
 		seedInput = '';
+		if (variant === 'tomb') {
+			tombHistory = [];
+			tombSelected = null;
+			tombLast = null;
+			tomb = createTombState(valid ? requested : undefined);
+			game = tomb.game;
+			return;
+		}
+		apply(deal(valid ? requested : undefined));
 	}
 
 	function replay() {
 		flushPending();
+		if (tomb) {
+			tombHistory = [];
+			tombSelected = null;
+			tomb = createTombState(tomb.seed);
+			game = tomb.game;
+			return;
+		}
 		apply(deal(seed));
 	}
 
@@ -537,7 +863,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			.sort((a, b) => getRankForCompare(a.rank) - getRankForCompare(b.rank));
 	}
 
-	const selected = $derived(new Set(game.selection?.cards.map((card) => key(card.location)) ?? []));
+	const selected = $derived(
+		tomb
+			? new Set(tombSelected ? [key(tombSelected)] : [])
+			: new Set(game.selection?.cards.map((card) => key(card.location)) ?? [])
+	);
 	const targets = $derived(
 		glow
 			? new Set([
@@ -556,16 +886,33 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	onpointerdown={onBoardPointerDown}
 >
 	<header class="top">
-		<div class="cells">
+		<div class="cells" class:tomb={!!tomb}>
 			{#each game.cells as card, i}
 				{@const location = { fixture: 'cell' as const, data: [i] }}
+				{@const entry = tomb ? draftAt(tomb, i) : undefined}
+				{@const pending = tomb?.itemWindow && tomb.itemWindow.cell === i ? tomb.itemWindow : undefined}
 				<button
 					class="slot"
 					class:selected={!!card && selected.has(key(location))}
 					class:target={targets.has(pileKey(location))}
+					class:draft={!!entry}
+					class:pending={!!pending}
+					class:exhausted={!!tomb && tomb.exhausted[i]}
+					class:armed={!!tomb?.armed && tomb.armed.cell === i}
+					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
+					class:locking={!!preview?.locks.includes(i)}
+					class:need={!!preview?.need.includes(i)}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
-					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
+					data-role={entry ? entry.role : undefined}
+					title={entry
+						? `${entry.name} — ${ROLE_LABEL[entry.role]}.\n${entry.text}${
+								tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''
+							}`
+						: pending
+							? `Spent item slot — play a ${pending.suit} card here on your next action to remake the item. Miss it and this is an ordinary free cell.`
+							: undefined}
+					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${entry.role}: ${entry.name}` : ''}`}
 					onclick={(event) => (card ? tapCard(event, card) : tap(location))}
 					onpointerdown={(event) => card && onCardPointerDown(event, card)}
 				>
@@ -574,11 +921,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 					{/if}
+					{#if entry}
+						<span class="role">{entry.name}</span>
+					{/if}
 				</button>
 			{/each}
 		</div>
 
-		<div class="foundations">
+		<div class="foundations" class:tomb={!!tomb}>
 			{#each game.foundations as card, i}
 				{@const location = { fixture: 'foundation' as const, data: [i] }}
 				{@const stack = foundationStack(i)}
@@ -601,12 +951,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		</div>
 	</header>
 
+	{#if tomb}
+		<div class="tombhud">
+			<span class="hearts">HP {tombHp}/{TOMB_CELL_COUNT}</span>
+			<span>Level {tombLevel}</span>
+			<span class="bosstag">Boss {tomb.bossSuit ? MONSTERS[tomb.bossSuit].name : 'not revealed'}</span>
+		</div>
+	{/if}
+
 	<div class="tableau">
 		{#each game.tableau as cascade, col}
 			<div
 				class="cascade"
 				class:empty={cascade.length === 0}
 				class:target={targets.has(`cascade:${col}`)}
+				class:bossColumn={bossColumn(cascade)}
 				data-drop={`cascade:${col}`}
 			>
 				<button
@@ -615,17 +974,38 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					onclick={() => tap({ fixture: 'cascade', data: [col, Math.max(0, cascade.length - 1)] })}
 				></button>
 				{#each cascade as card, i}
+					{@const down = !!tomb && isFaceDown(tomb, card)}
+					{@const boss = !!tomb && isBoss(tomb, card)}
+					{@const minion = !!tomb && isBossMinion(tomb, card)}
+					{@const flipping = flippingIds.includes(shorthandCard(card))}
 					<button
 						class="card"
 						class:selected={selected.has(key(card.location))}
 						class:dragging={dragIds.has(shorthandCard(card))}
+						class:boss
+						class:aura={minion && !down}
+						class:locked={!!tomb && isBoss(tomb, card) && bossProtected(tomb)}
+						class:down
+						class:flipping
 						style={cardStyle(card, i)}
 						data-card={shorthandCard(card)}
-						aria-label={`${card.rank} of ${card.suit}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
-						onpointerdown={(event) => onCardPointerDown(event, card)}
+						title={tomb && boss
+							? `${monsterName(tomb)} King${bossProtected(tomb) ? ' — protected until one other king is slain' : ''}\n${auraTitle(tomb, false)}`
+							: minion && !down && tomb
+								? auraTitle(tomb)
+								: undefined}
+						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
+						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
 						onclick={(event) => tapCard(event, card)}
 					>
-						<img src={img(card)} alt="" draggable="false" />
+						{#if flipping}
+							<span class="flip">
+								<img class="flip-front" src={img(card)} alt="" draggable="false" />
+								<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+							</span>
+						{:else}
+							<img src={down ? `${BASE}images/back.png` : img(card)} alt="" draggable="false" />
+						{/if}
 					</button>
 				{/each}
 			</div>
@@ -633,6 +1013,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	</div>
 
 	<footer class="controls">
+		<button
+			class="btn"
+			aria-pressed={variant === 'tomb'}
+			onclick={() => setVariant(variant === 'tomb' ? 'vanilla' : 'tomb')}
+		>
+			TT Variant: {variant === 'tomb' ? 'on' : 'off'}
+		</button>
 		<button class="btn" onclick={toggleMode}>
 			Tap: {mode === 'auto' ? 'auto-move' : 'pick target'}
 		</button>
@@ -640,9 +1027,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			Glow: {glow ? 'on' : 'off'}
 		</button>
 		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
-		<button class="btn" onclick={() => (flushPending(), apply(homeAll(game)))}>
+		<button class="btn" onclick={sendHome}>
 			Auto to home
 		</button>
+		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 		<button class="btn" onclick={replay}>Restart deal</button>
 
 		<label class="seed">
@@ -658,9 +1046,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<span class="meta">{seed ? `deal ${seed}` : ''}</span>
 	</footer>
 
-	{#if game.win}
+	{#if flash}
+		{#key flash.id}
+			<div class="flash {flash.kind}" aria-hidden="true"></div>
+		{/key}
+	{/if}
+
+	{#if (tomb && tomb.won) || (!tomb && game.win)}
 		<div class="win">
-			<p>You won!</p>
+			{#if tomb}
+				<p>You escape the tomb — score {tomb.score}</p>
+				<p class="win-note">
+					Every card left off the foundation counts against you; court cards count as ten.
+				</p>
+			{:else}
+				<p>You won!</p>
+			{/if}
 			<button class="btn primary" onclick={newDeal}>New game</button>
 		</div>
 	{/if}
