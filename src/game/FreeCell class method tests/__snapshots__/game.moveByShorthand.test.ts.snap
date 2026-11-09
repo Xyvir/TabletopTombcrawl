@@ -1,0 +1,186 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`game.moveByShorthand > from each pile > deck 1`] = `
+[
+  {
+    "location": {
+      "data": [
+        0,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "10",
+    "suit": "spades",
+  },
+  {
+    "location": {
+      "data": [
+        1,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "7",
+    "suit": "clubs",
+  },
+  {
+    "location": {
+      "data": [
+        2,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "ace",
+    "suit": "diamonds",
+  },
+  {
+    "location": {
+      "data": [
+        3,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "9",
+    "suit": "spades",
+  },
+  {
+    "location": {
+      "data": [
+        4,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "jack",
+    "suit": "spades",
+  },
+  {
+    "location": {
+      "data": [
+        5,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "queen",
+    "suit": "clubs",
+  },
+  {
+    "location": {
+      "data": [
+        6,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "6",
+    "suit": "clubs",
+  },
+]
+`;
+
+exports[`game.moveByShorthand > to each pile > deck > empty 1`] = `
+[
+  {
+    "location": {
+      "data": [
+        0,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "6",
+    "suit": "diamonds",
+  },
+]
+`;
+
+exports[`game.moveByShorthand > to each pile > deck > not empty 1`] = `
+[
+  {
+    "location": {
+      "data": [
+        0,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "10",
+    "suit": "spades",
+  },
+  {
+    "location": {
+      "data": [
+        1,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "7",
+    "suit": "clubs",
+  },
+  {
+    "location": {
+      "data": [
+        2,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "ace",
+    "suit": "diamonds",
+  },
+  {
+    "location": {
+      "data": [
+        3,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "9",
+    "suit": "spades",
+  },
+  {
+    "location": {
+      "data": [
+        4,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "jack",
+    "suit": "spades",
+  },
+  {
+    "location": {
+      "data": [
+        5,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "queen",
+    "suit": "clubs",
+  },
+  {
+    "location": {
+      "data": [
+        6,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "6",
+    "suit": "clubs",
+  },
+  {
+    "location": {
+      "data": [
+        7,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "6",
+    "suit": "hearts",
+  },
+  {
+    "location": {
+      "data": [
+        8,
+      ],
+      "fixture": "deck",
+    },
+    "rank": "6",
+    "suit": "diamonds",
+  },
+]
+`;

@@ -1,0 +1,245 @@
+:root {
+	--felt: #0b6b2b;
+	--col-w: min(11.2vw, 104px);
+	--gap: min(0.9vw, 10px);
+	--card-h: calc(var(--col-w) * 1.4);
+	--radius: min(1.1vw, 8px);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	color: #eaf6ec;
+	background: radial-gradient(ellipse at 50% -10%, #0f8a37 0%, #0a6227 45%, #043814 100%) fixed;
+	/* stop the browser turning a drag into a text/image selection */
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	overscroll-behavior: none;
+}
+
+#app {
+	height: 100%;
+}
+
+img {
+	-webkit-user-drag: none;
+	user-select: none;
+}
+
+.board {
+	height: 100dvh;
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: calc(var(--gap) * 1.2) var(--gap) calc(var(--gap) * 1.6);
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap);
+}
+
+/* free cells + foundations */
+.top {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--gap);
+}
+
+.cells,
+.foundations {
+	display: flex;
+	gap: var(--gap);
+}
+
+.slot {
+	position: relative;
+	width: var(--col-w);
+	aspect-ratio: 5 / 7;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	border-radius: var(--radius);
+	background: rgba(0, 0, 0, 0.22);
+	cursor: pointer;
+	appearance: none;
+	/* no 300ms double-tap zoom delay, no panning hijack inside the board */
+	touch-action: manipulation;
+}
+
+.slot img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border-radius: var(--radius);
+}
+
+.slot img.blank {
+	opacity: 0.35;
+}
+
+/* tableau */
+.tableau {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	justify-content: center;
+	align-items: stretch;
+	gap: var(--gap);
+}
+
+.cascade {
+	position: relative;
+	width: var(--col-w);
+	flex: 0 0 var(--col-w);
+	border-radius: var(--radius);
+	background: rgba(0, 0, 0, 0.14);
+}
+
+.cascade.empty {
+	border: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+/* full-height tap target behind the cards, so "drop here" also works below a stack */
+.cascade-hit {
+	position: absolute;
+	inset: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	appearance: none;
+	touch-action: manipulation;
+}
+
+.card {
+	position: absolute;
+	left: 0;
+	z-index: 1;
+	width: 100%;
+	/* one source of truth for the stack offset, so long columns stay on screen */
+	top: calc(var(--i) * var(--card-h) * 0.26);
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	appearance: none;
+	/* cards own the pointer so a press can become a drag on touch too */
+	touch-action: none;
+	transition: transform 90ms ease;
+}
+
+.card.dragging {
+	z-index: 40;
+	transition: none;
+	cursor: grabbing;
+	pointer-events: none;
+}
+
+.card img {
+	display: block;
+	width: 100%;
+	border-radius: var(--radius);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.card:active {
+	transform: translateY(1px);
+}
+
+.card.selected img,
+.slot.selected img {
+	outline: 3px solid #ffd95e;
+	outline-offset: -3px;
+}
+
+.slot.target {
+	box-shadow:
+		0 0 0 3px #7bffb0 inset,
+		0 0 10px rgba(123, 255, 176, 0.55);
+}
+
+.cascade.target {
+	box-shadow: 0 0 0 3px #7bffb0 inset;
+}
+
+/* controls */
+.controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: calc(var(--gap) * 0.8);
+	font-size: 14px;
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+.btn {
+	appearance: none;
+	border: 1px solid rgba(255, 255, 255, 0.28);
+	background: rgba(255, 255, 255, 0.12);
+	color: inherit;
+	font: inherit;
+	padding: 0.5em 0.9em;
+	border-radius: 999px;
+	cursor: pointer;
+}
+
+.btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.btn.primary {
+	background: #1a8f45;
+	border-color: #2bb35c;
+}
+
+.seed {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.seed input {
+	width: 6.5em;
+	font: inherit;
+	color: inherit;
+	background: rgba(0, 0, 0, 0.25);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 8px;
+	padding: 0.35em 0.5em;
+}
+
+.seed input::placeholder {
+	color: rgba(255, 255, 255, 0.45);
+}
+
+.meta {
+	opacity: 0.7;
+}
+
+.win {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-content: center;
+	justify-items: center;
+	gap: 12px;
+	text-align: center;
+	background: rgba(2, 20, 8, 0.72);
+	backdrop-filter: blur(3px);
+}
+
+.win p {
+	margin: 0;
+	font-size: 2rem;
+	font-weight: 600;
+}

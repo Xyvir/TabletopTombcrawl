@@ -1,0 +1,84 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`game.$checkCanFlourish > check-can-flourish > deep check 1`] = `
+{
+  "availableMoves": null,
+  "cursor": {
+    "data": [
+      0,
+    ],
+    "fixture": "cell",
+  },
+  "flashCards": [
+    {
+      "location": {
+        "data": [
+          0,
+          0,
+        ],
+        "fixture": "cascade",
+      },
+      "rank": "ace",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+          1,
+        ],
+        "fixture": "cascade",
+      },
+      "rank": "ace",
+      "suit": "spades",
+    },
+  ],
+  "history": [
+    "shuffle deck (5)",
+    "deal all cards",
+  ],
+  "previousAction": {
+    "gameFunction": "check-can-flourish",
+    "text": "juice flash AH,AS",
+    "type": "juice",
+  },
+  "selection": null,
+  "win": false,
+}
+`;
+
+exports[`game.$checkCanFlourish > check-can-flourish52 > deep check 1`] = `
+{
+  "availableMoves": null,
+  "cursor": {
+    "data": [
+      0,
+    ],
+    "fixture": "cell",
+  },
+  "flashCards": [
+    {
+      "location": {
+        "data": [
+          2,
+          2,
+        ],
+        "fixture": "cascade",
+      },
+      "rank": "ace",
+      "suit": "spades",
+    },
+  ],
+  "history": [
+    "shuffle deck (23190)",
+    "deal all cards",
+  ],
+  "previousAction": {
+    "gameFunction": "check-can-flourish52",
+    "text": "juice flash *AS*",
+    "type": "juice",
+  },
+  "selection": null,
+  "win": false,
+}
+`;

@@ -1,0 +1,2529 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`game > complete games > Game #5 (tutorial) 1`] = `
+FreeCell {
+  "availableMoves": null,
+  "cards": [
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "spades",
+    },
+  ],
+  "cells": [
+    null,
+    null,
+    null,
+    null,
+  ],
+  "cursor": {
+    "data": [
+      0,
+    ],
+    "fixture": "foundation",
+  },
+  "deck": [],
+  "flashCards": null,
+  "foundations": [
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "spades",
+    },
+  ],
+  "history": [
+    "shuffle deck (5)",
+    "deal all cards",
+    "move 5⡅3⡆ 6H→7C (auto-foundation 2 AD)",
+    "move 6⡅a 6C→cell",
+    "move 6⡄5⡄ QD→KS",
+    "move 6⡃7⡅ JH→QC",
+    "move 8⡅5⡅ JS→QD (auto-foundation 8 AC)",
+    "move a8⡃ 6C→7D",
+    "move 6⡂8⡄ 5H→6C (auto-foundation 6 2C)",
+    "move 2⡅7⡆ TC→JH",
+    "move 6⡀7⡇ 9H→TC",
+    "move 1⡆a 9S→cell",
+    "move 1⡅b 2H→cell",
+    "move 1⡄3⡇ 5S→6H",
+    "move 1⡃5⡆ TD→JS",
+    "move a5⡇ 9S→TD",
+    "move 1⡂a 3S→cell",
+    "move 1⡁c 5C→cell (auto-foundation 1b AH,2H)",
+    "move 8⡃6 7D-6C-5H→cascade",
+    "move 8⡂5⡈ 8D→9S",
+    "move 8⡁6⡂ 4S→5H",
+    "move 8⡀6⡃ 3D→4S",
+    "move 2⡄1 QH→cascade",
+    "move 2⡃5⡉ 7S→8D",
+    "move 2⡂b 5D→cell (auto-foundation 2 AS)",
+    "move 2⡀7⡈ 8S→9H",
+    "move 4⡆2 TS→cascade",
+    "move 4⡅5⡊ 6D→7S",
+    "move c5⡋ 5C→6D",
+    "move 4⡄2⡀ 9D→TS",
+    "move 4⡃7⡉ 7H→8S",
+    "move 4⡂h⡂ 3H→2H",
+    "move 4⡁8 KH→cascade",
+    "move 4⡀8⡀ QS→KH",
+    "move 7⡆8⡁ JH-TC-9H-8S-7H→QS",
+    "move 7⡅c QC→cell",
+    "move 7⡄h⡂ 4H→3H",
+    "move 7⡃1⡀ JC→QH",
+    "move 7⡂8⡆ 6S→7H",
+    "move 7⡁h⡁ 3C→2C (auto-foundation 7 2S)",
+    "move ah⡃ 3S→2S",
+    "move b8⡇ 5D→6S",
+    "move 3⡆4 7C-6H-5S→cascade",
+    "move 3⡅1⡁ TH→JC",
+    "move 3⡄2⡁ 8C→9D",
+    "move c7 QC→cascade",
+    "move 3⡃7⡀ JD→QC",
+    "move 3⡂a KC→cell",
+    "move 3⡁1⡂ 9C→TH (auto-foundation 366 2D,3D,4S)",
+    "move a3 KC→cascade",
+    "move 1⡀3⡀ QH-JC-TH-9C→KC",
+    "move 2⡀7⡁ TS-9D-8C→JD",
+    "move 6⡀7⡄ 7D-6C-5H→8C",
+    "move 5⡄2 KS-QD-JS-TD-9S-8D-7S-6D-5C→cascade",
+    "move 5⡃3⡄ 8H→9C",
+    "move 5⡂6 KD→cascade (auto-foundation 55748248278274382782733728827338278263 4D,4C,5H,5S,5D,5C,6H,6S,6D,6C,7H,7S,7D,7C,8H,8S,8D,8C,9H,9S,9D,9C,TH,TS,TD,TC,JH,JS,JD,JC,QH,QS,QD,QC,KH,KS,KD,KC)",
+  ],
+  "previousAction": {
+    "text": "move 5⡂6 KD→cascade (auto-foundation 55748248278274382782733728827338278263 4D,4C,5H,5S,5D,5C,6H,6S,6D,6C,7H,7S,7D,7C,8H,8S,8D,8C,9H,9S,9D,9C,TH,TS,TD,TC,JH,JS,JD,JC,QH,QS,QD,QC,KH,KS,KD,KC)",
+    "tweenCards": [
+      {
+        "location": {
+          "data": [
+            5,
+            0,
+          ],
+          "fixture": "cascade",
+        },
+        "rank": "king",
+        "suit": "diamonds",
+      },
+    ],
+    "type": "move-foundation",
+  },
+  "selection": null,
+  "tableau": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ],
+  "win": true,
+}
+`;
+
+exports[`game > init 1`] = `
+FreeCell {
+  "availableMoves": null,
+  "cards": [
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          4,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          5,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          6,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          7,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          8,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          9,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          10,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          11,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          12,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          13,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          14,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          15,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          16,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          17,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          18,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          19,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          20,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          21,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          22,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          23,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          24,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          25,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          26,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          27,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          28,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          29,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          30,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          31,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          32,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          33,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          34,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          35,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          36,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          37,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          38,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          39,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          40,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          41,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          42,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          43,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          44,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          45,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          46,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          47,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          48,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          49,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          50,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          51,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "spades",
+    },
+  ],
+  "cells": [
+    null,
+    null,
+    null,
+    null,
+  ],
+  "cursor": {
+    "data": [
+      51,
+    ],
+    "fixture": "deck",
+  },
+  "deck": [
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "ace",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          4,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          5,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          6,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          7,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "2",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          8,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          9,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          10,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          11,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "3",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          12,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          13,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          14,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          15,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "4",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          16,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          17,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          18,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          19,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "5",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          20,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          21,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          22,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          23,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "6",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          24,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          25,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          26,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          27,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "7",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          28,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          29,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          30,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          31,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "8",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          32,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          33,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          34,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          35,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "9",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          36,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          37,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          38,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          39,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "10",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          40,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          41,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          42,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          43,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "jack",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          44,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          45,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          46,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          47,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "queen",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          48,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          49,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          50,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          51,
+        ],
+        "fixture": "deck",
+      },
+      "rank": "king",
+      "suit": "spades",
+    },
+  ],
+  "flashCards": null,
+  "foundations": [
+    null,
+    null,
+    null,
+    null,
+  ],
+  "history": [],
+  "previousAction": {
+    "text": "init",
+    "type": "init",
+  },
+  "selection": null,
+  "tableau": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ],
+  "win": false,
+}
+`;
+
+exports[`game > parse > win state > first 1`] = `
+FreeCell {
+  "availableMoves": null,
+  "cards": [
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "ace",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "2",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "3",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "4",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "5",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "6",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "7",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "8",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "9",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "10",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "jack",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "queen",
+      "suit": "spades",
+    },
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "spades",
+    },
+  ],
+  "cells": [
+    null,
+    null,
+    null,
+    null,
+  ],
+  "cursor": {
+    "data": [
+      0,
+    ],
+    "fixture": "cell",
+  },
+  "deck": [],
+  "flashCards": null,
+  "foundations": [
+    {
+      "location": {
+        "data": [
+          0,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "clubs",
+    },
+    {
+      "location": {
+        "data": [
+          1,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "diamonds",
+    },
+    {
+      "location": {
+        "data": [
+          2,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "hearts",
+    },
+    {
+      "location": {
+        "data": [
+          3,
+        ],
+        "fixture": "foundation",
+      },
+      "rank": "king",
+      "suit": "spades",
+    },
+  ],
+  "history": [
+    "hand-jammed",
+  ],
+  "previousAction": {
+    "text": "hand-jammed",
+    "type": "init",
+  },
+  "selection": null,
+  "tableau": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ],
+  "win": true,
+}
+`;
+
+exports[`game > parse > win state > flourish > 4 cascades 1`] = `
+">············KC·KD·KH·KS·
+·············
+:·YOU·WIN·!·:
+·············
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish > 5 cascades 1`] = `
+">············KC·KD·KH·KS·
+················
+:··YOU·WIN·!···:
+················
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish > 6 cascades 1`] = `
+">············KC·KD·KH·KS·
+···················
+:····YOU·WIN·!····:
+···················
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish > 7 cascades 1`] = `
+">············KC·KD·KH·KS·
+······················
+:··Y·O·U···W·I·N·!···:
+······················
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish > 8 cascades 1`] = `
+">············KC·KD·KH·KS·
+·························
+:····Y·O·U···W·I·N·!····:
+·························
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish > 9 cascades 1`] = `
+">············KC·KD·KH·KS·
+····························
+:·····Y·O·U···W·I·N·!······:
+····························
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish > 10 cascades 1`] = `
+">············KC·KD·KH·KS·
+·······························
+:·······Y·O·U···W·I·N·!·······:
+·······························
+·hand-jammed·flourish"
+`;
+
+exports[`game > parse > win state > flourish52 > 4 cascades 1`] = `
+">············KC·KD·KH·KS·
+·············
+:·AMAZING·!·:
+·············
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > flourish52 > 5 cascades 1`] = `
+">············KC·KD·KH·KS·
+················
+:··AMAZING·!···:
+················
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > flourish52 > 6 cascades 1`] = `
+">············KC·KD·KH·KS·
+···················
+:····AMAZING·!····:
+···················
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > flourish52 > 7 cascades 1`] = `
+">············KC·KD·KH·KS·
+······················
+:··A·M·A·Z·I·N·G·!···:
+······················
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > flourish52 > 8 cascades 1`] = `
+">············KC·KD·KH·KS·
+·························
+:····A·M·A·Z·I·N·G·!····:
+·························
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > flourish52 > 9 cascades 1`] = `
+">············KC·KD·KH·KS·
+····························
+:·····A·M·A·Z·I·N·G·!······:
+····························
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > flourish52 > 10 cascades 1`] = `
+">············KC·KD·KH·KS·
+·······························
+:·······A·M·A·Z·I·N·G·!·······:
+·······························
+·hand-jammed·flourish52"
+`;
+
+exports[`game > parse > win state > standard > 4 cascades 1`] = `
+">············KC·KD·KH·KS·
+·············
+:·YOU·WIN·!·:
+·············
+·hand-jammed"
+`;
+
+exports[`game > parse > win state > standard > 5 cascades 1`] = `
+">············KC·KD·KH·KS·
+················
+:··YOU·WIN·!···:
+················
+·hand-jammed"
+`;
+
+exports[`game > parse > win state > standard > 6 cascades 1`] = `
+">············KC·KD·KH·KS·
+···················
+:····YOU·WIN·!····:
+···················
+·hand-jammed"
+`;
+
+exports[`game > parse > win state > standard > 7 cascades 1`] = `
+">············KC·KD·KH·KS·
+······················
+:··Y·O·U···W·I·N·!···:
+······················
+·hand-jammed"
+`;
+
+exports[`game > parse > win state > standard > 8 cascades 1`] = `
+">············KC·KD·KH·KS·
+·························
+:····Y·O·U···W·I·N·!····:
+·························
+·hand-jammed"
+`;
+
+exports[`game > parse > win state > standard > 9 cascades 1`] = `
+">············KC·KD·KH·KS·
+····························
+:·····Y·O·U···W·I·N·!······:
+····························
+·hand-jammed"
+`;
+
+exports[`game > parse > win state > standard > 10 cascades 1`] = `
+">············KC·KD·KH·KS·
+·······························
+:·······Y·O·U···W·I·N·!·······:
+·······························
+·hand-jammed"
+`;

@@ -1,544 +1,669 @@
-<script>	
-  import interact from 'interactjs';
-  import { onMount } from 'svelte';
-  /* partials */
-  import GameCell from './gamecell.svelte';
-  import Tableau from './tableau.svelte';
-  import Footer from './footer.svelte';
-  import NewGameModal from './NewGameModal.svelte';
-  import {timeToString} from './time_to_string.js';
-  import {columns, history, moves, settings, timeElapsed, started} from './stores.js'; /* data store */
-  
-  const Game = {
-    HOMECELL_OFFSET: 8,
-    FREECELL_OFFSET: 12,
-    PLAYING_CARDS: [
-    "Ac", "Ad", "Ah", "As", 
-    "2c", "2d", "2h", "2s", 
-    "3c", "3d", "3h", "3s", 
-    "4c", "4d", "4h", "4s", 
-    "5c", "5d", "5h", "5s", 
-    "6c", "6d", "6h", "6s", 
-    "7c", "7d", "7h", "7s", 
-    "8c", "8d", "8h", "8s", 
-    "9c", "9d", "9h", "9s", 
-    "Tc", "Td", "Th", "Ts", 
-    "Jc", "Jd", "Jh", "Js", 
-    "Qc", "Qd", "Qh", "Qs", 
-    "Kc", "Kd", "Kh", "Ks" 
-    ],
-    RANKS: ['A','2','3','4','5','6','7','8','9','T','J','Q','K'],
-    cardRank(card) { return card[0] },
-    cardSuit(card) { return card[1] },
-    cardColor(card) { 
-      return (card[1] == 'c' || card[1] == 's') ? 'black' : 'red'; 
-    },
-    cardVal(card) { 
-      return this.RANKS.indexOf(card[0]);
-    },
-    removeCard(list, card) { 
-      return list.filter(item => item !== card);
-    },
-    addCard(list, card) { 
-      return list.concat(card); 
-    },
-    moveCard(fromIndex, toIndex, card, record = true) {
-      $columns[fromIndex] = this.removeCard($columns[fromIndex], card);
-      $columns[toIndex]   = this.addCard($columns[toIndex], card);
-      if (record) {
-        this.recordMove(fromIndex, toIndex, card);
-      }
-      $moves = $moves + 1;
-    },
+<script lang="ts">
+	import { tick } from 'svelte';
+	import { FreeCell } from './game/game';
+import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
+	import { getRankForCompare, shorthandCard, type Card, type CardLocation } from './game/card/card';
+	import {
+		canDoubleTap,
+		doubleTapCell,
+		doubleTapTableau,
+		dragMoves,
+		draggableRun,
+		foundationSchedule,
+		ghostClick,
+		moveRun,
+		rewindTo,
+		tapCell,
+		tapTableau,
+		type TapResult,
+	} from './interaction';
 
-    // returns true if move from one column to other is valid.
-    // if toIndex is homecell -> homecell logic
-    // if toIndex is freecell -> only if free and single card
-    // if toIndex is tableaux -> only if first card of cards is alternate and last card is 1+ than card
-    validTableauMove(fromIndex, toIndex, cards) {
-      console.log("tableau logic");      
-      if (fromIndex === toIndex) { 
-        console.log("Can't move to same column."); 
-        return; 
-      }
+	const CELL_COUNT = 4;
+	const CASCADE_COUNT = 8;
+	const BASE = import.meta.env.BASE_URL;
+	/** How long a move is held so a double click can still be recognised. */
+	const DOUBLE_TAP_MS = 150;
+	/** How long after that a second click can still rewind an applied move into a double click. */
+	const DOUBLE_CLICK_MS = 450;
+	/** After the card flies, its old box still answers clicks for this long (the ghost clickbox). */
+	const GHOST_MS = 250;
+	/** Pixels a pointer must travel before a press becomes a drag. */
+	const DRAG_THRESHOLD = 6;
+	/** Normal card flight. */
+	const FLIGHT_MS = 190;
+	/** The automatic home chain gets a beat before it starts, then takes turns card by card. */
+	const FOUNDATION_WARMUP_MS = 240;
+	const FOUNDATION_GAP_MS = 40;
+	const FOUNDATION_FLIGHT_MS = 250;
 
-      // only allow if # of empty freecells >= selected count
-      let free_moves = Game.numEmptyFreeCells();
-      if (cards.length - 1 > free_moves) {
-        console.log(`Not enough empty freecells: Need ${cards.length-1} spaces, only have ${free_moves}`);
-        return;
-      }
+	let game = $state<FreeCell>(deal());
+	let seedInput = $state('');
+	let mode = $state<'auto' | 'pick'>('auto');
+	/** Legal-pile glow while dragging. Off by default: sharp lines, no chatter. */
+	let glow = $state(false);
+	let board = $state<HTMLElement>();
 
-      // ok if parent is blank
-      if ($columns[toIndex].length === 0) {
-        return true;
-      }
+	type PendingTap = {
+		id: string;
+		el: HTMLElement;
+		location: CardLocation;
+		rect: DOMRect;
+		result: TapResult;
+		timer: ReturnType<typeof setTimeout>;
+	};
+	type Press = { card: Card; x: number; y: number; dragged: boolean };
 
-      // check parent vs first card in cards
-      let card = cards[0];
-      let parent = $columns[toIndex].slice(-1).pop();
-      if (Game.alternateColors(parent, card) && Game.descendingRank(parent, card)) {
-        return true;
-      }
-    },
+	let pending: PendingTap | null = null;
+	/** Last click that shook or selected, so a quick second click can still act as a double. */
+	let lastTap: { id: string; time: number } | null = null;
+	/** A single click that already moved a card; a second click rewinds it into a double click. */
+	let lastMove: {
+		id: string;
+		time: number;
+		location: CardLocation;
+		rect: DOMRect;	} | null = null;
+	/** The card the user actually moved, so it flies before the automatic chain. */
+	let primaryId: string | null = null;
 
-    validCellMove(fromIndex, toIndex, cards) {
-      if (cards.length > 1) { return; }
+	let press: Press | null = null;
+	let suppressClickUntil = 0;
 
-      if (toIndex < Game.FREECELL_OFFSET) {
-        // HomeCell        
-        let card = cards[0];
-        // if empty, only an A
-        if ($columns[toIndex].length === 0) {
-          return Game.cardRank(card) === 'A';
-        }
+	/** Live drag: which cards are under the pointer, where they came from, and legal piles. */
+	let drag = $state<{
+		cards: string[];
+		from: CardLocation;
+		dx: number;
+		dy: number;
+		angle: number;
+		lastX: number;
+		targets: string[];
+	} | null>(null);
 
-        // if not empty, only if card is same suit and +1 to last card in stack
-        let parent = $columns[toIndex].slice(-1).pop();
-        if ((Game.cardSuit(parent) === Game.cardSuit(card)) && 
-            (Game.ascendingRank(parent, card))) {
-          return true;
-        }
-      } else {
-        // FreeCell
-        return ($columns[toIndex].length === 0); 
-      }
-    },
+	const seed = $derived(dealSeed(game));
+	const atStart = $derived(PREVIOUS_ACTION_TYPE_IS_START_OF_GAME.has(game.previousAction.type));
+	const dragIds = $derived(new Set(drag?.cards ?? []));
 
-    // move cards if last card in toIndex is alternate color, +1 to first card in cards
-    moveCards(fromIndex, toIndex, cards, record = true) {
-      cards.forEach(card => {
-        $columns[fromIndex] = this.removeCard($columns[fromIndex], card);
-        $columns[toIndex]   = this.addCard($columns[toIndex], card);
-      });
-      if (record) { this.recordMove(fromIndex, toIndex, cards); }
-      // check if move caused game to end (win)
-      if (Game.won()) {
-        setTimeout(() => {
-          alert(`You won!`);
-        }, 1000);
-      }
-    },
+	function deal(requested?: number): FreeCell {
+		return new FreeCell({ cellCount: CELL_COUNT, cascadeCount: CASCADE_COUNT })
+			.shuffle32(requested)
+			.dealAll();
+	}
 
-    alternateColors(c1, c2) { 
-      return (this.cardColor(c1) !== this.cardColor(c2));
-    },
-    descendingRank(c1, c2) { 
-      return (this.cardVal(c1) === this.cardVal(c2) + 1);
-    },
-    ascendingRank(c1, c2) { 
-      return this.descendingRank(c2, c1); 
-    },
-    validParent(parent, child) {
-      return (this.descendingRank(parent, child)) && 
-             (this.alternateColors(parent, child));
-    },
-    findEmptyHomeCell() {
-      return this.findEmptyCell(this.HOMECELL_OFFSET);
-    },
-    findEmptyFreeCell() {
-      return this.findEmptyCell(this.FREECELL_OFFSET);
-    },
-    findEmptyCell(offset) {
-      for (let i=offset; i < (4+offset); i++) {
-        if ($columns[i].length == 0) return i;
-      }
-    },
-    numEmptyFreeCells() {
-      let freecells = $columns.slice(this.FREECELL_OFFSET);
-      return freecells.filter(c => { return (c.length === 0); }).length;
-    },
-    findValidHomeCell(card) {
-      for (let i=this.HOMECELL_OFFSET; i < (this.HOMECELL_OFFSET + 4); i++) {
-        let last_card = $columns[i].slice(-1).pop();
-        if (last_card) {
-          if ((Game.cardSuit(card) === Game.cardSuit(last_card)) && 
-              (Game.ascendingRank(last_card, card))) {
-            return i;
-          }
-        }
-      }
-    },
-    findValidParent(card, index) {
-      for (let i=0; i < 8; i++) {
-        if (i === index) continue;
-        let parent = [...$columns[i]].slice(-1).pop();
-        console.log(`findValidParent in column ${i} for ${card}[${index}] parent:`, parent);
-        if (parent !== undefined) {
-          if (Game.validParent(parent, card)) return i;
-        }
-      }
-    },
+	function dealSeed(g: FreeCell): number | undefined {
+		const line = g.history.find((h) => h.startsWith('shuffle deck'));
+		const match = line?.match(/\((\d+)\)/);
+		return match ? Number(match[1]) : undefined;
+	}
 
-    // record moves made to be undone
-    // { from: 0..15, to: 0..15, cards: ['Ac', '6c' ]}
-    recordMove(fromIndex, toIndex, cards) {
-      let record = { from: fromIndex, to: toIndex, cards: cards }
-      $history = [...$history, record];
-      $moves = $moves + 1;
-      console.log(`[move:${$history.length}]`,record);
-    },
+	/* ---------- animation: FLIP between game states ---------- */
 
-    undo() {
-      let record = $history.pop();
-      $history = $history;
-      if (!record) return;
-      console.log("Undo last move", record);
-      Game.moveCards(record.to, record.from, record.cards, false);
-    },
+	function visualRect(el: HTMLElement) {
+		return (el.querySelector('img') ?? el).getBoundingClientRect();
+	}
 
-    won() {
-      for (let i=this.HOMECELL_OFFSET; i < (this.HOMECELL_OFFSET + 4); i++) {
-        if ($columns[i].length !== 13) { return false; }        
-      }
-      return true;
-    },
+	function cardRects() {
+		const rects = new Map<string, DOMRect>();
+		board?.querySelectorAll<HTMLElement>('[data-card]').forEach((el) => {
+			const id = el.dataset.card;
+			// measure the picture, not the slot: a dragged cell card is translated inside its slot
+			if (id) rects.set(id, visualRect(el));
+		});
+		return rects;
+	}
 
-    Deck: class {
-      // generates a new random deck based on unique game_id
-      constructor(seed) {
-        this.cards = [];
-        this.seed = parseInt(seed,10) || parseInt((Math.random() * 1000000), 10);
-        this.shuffle();
-      }
+	function animateFrom(before: Map<string, DOMRect>, next?: FreeCell, primary?: string | null) {
+		if (!board) return;
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 
-      // MS random shuffle for FreeCell https://rosettacode.org/wiki/Deal_cards_for_FreeCell
-      shuffle() {
-        if (!this.empty) { return; }
-        let deck = Array.from(Game.PLAYING_CARDS, function(id) { return id });
-        let state = this.seed;
-        for (let len = 52; len >= 2; len--) {
-          state = ((214013 * state) + 2531011) & 0x7FFFFFFF;
-          let index = (state >> 16) % len;
-          let last = len - 1;
-          [deck[index], deck[last]] = [deck[last], deck[index]];
-        }
-        this.cards = deck.reverse();
-      }
+		// Only chained auto-foundation waits; a deliberate move to a foundation stays snappy.
+		const autoHome =
+			next?.previousAction.type === 'move-foundation' ||
+			next?.previousAction.type === 'auto-foundation';
+		const home = autoHome
+			? foundationSchedule(
+					next!.cards
+						.filter((card) => card.location.fixture === 'foundation')
+						.map((card) => shorthandCard(card)),
+					primary,
+					{
+						warmup: FOUNDATION_WARMUP_MS,
+						gap: FOUNDATION_GAP_MS,
+						flight: FLIGHT_MS,
+						homeFlight: FOUNDATION_FLIGHT_MS,
+					}
+				)
+			: new Map<string, { delay: number; duration: number }>();
 
-      toTableau() {
-        let tableaus = [ [],[],[],[], [],[],[],[] ];
-        let i = 0;
-        while (!this.empty) {
-          tableaus[i++ % tableaus.length].unshift(this.cards.pop());
-        }
-        return tableaus;
-      }
+		board.querySelectorAll<HTMLElement>('[data-card]').forEach((el) => {
+			if (typeof el.animate !== 'function') return;
+			const now = visualRect(el);
+			const prev = el.dataset.card ? before.get(el.dataset.card) : undefined;
 
-      get empty() { return this.cards.length === 0; }
-    }
-  };
+			if (!prev) {
+				el.animate(
+					[
+						{ opacity: 0, transform: 'translateY(-10px)' },
+						{ opacity: 1, transform: 'none' },
+					],
+					{ duration: 160, easing: 'ease-out' }
+				);
+				return;
+			}
 
-  /* listeners for cards/cells */
-  onMount(() => {
+			const dx = prev.left - now.left;
+			const dy = prev.top - now.top;
+			if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
 
-    //
-    // drop on Cell
-    //
-    interact('.cell').dropzone({
-      accept: '.draggable',
-      ondragenter: function(e) {
-        e.target.classList.add('drop-active');  
-      },
-      ondragleave: function(e) {
-        e.target.classList.remove('drop-active');
-      },
-      ondrop: function(e){
-        e.target.classList.remove('drop-active');
-        let card      = e.relatedTarget.id;
-        let fromIndex = e.relatedTarget.parentNode.dataset.index;
-        let toIndex   = e.target.dataset.index;
-        let cards     = selectCards(card, fromIndex);
+			el.getAnimations().forEach((animation) => animation.cancel());
+			el.style.zIndex = '30';
 
-        if (Game.validCellMove(fromIndex, toIndex, cards)) {
-          Game.moveCards(fromIndex, toIndex, cards);
-        }
-      }
-    });
+			const schedule = el.dataset.card ? home.get(el.dataset.card) : undefined;
+			const delay = schedule?.delay ?? 0;
+			const duration = schedule?.duration ?? FLIGHT_MS;
+			// a bit of sideways tilt mid-flight, guaranteed to land perfectly vertical
+			const tilt = Math.max(-6, Math.min(6, dx * 0.07));
+			const flight = el.animate(
+				[
+					{ transform: `translate(${dx}px, ${dy}px) rotate(${tilt}deg)` },
+					{
+						transform: `translate(${dx * 0.3}px, ${dy * 0.3}px) rotate(${-tilt * 0.45}deg)`,
+						offset: 0.6,
+					},
+					{ transform: 'none' },
+				],
+				{
+					duration,
+					delay,
+					// hold the card at its old spot during the warmup instead of snapping home
+					fill: 'backwards',
+					easing: 'cubic-bezier(.2,.8,.2,1)',
+				}
+			);
+			flight.finished
+				.then(() => {
+					el.style.zIndex = '';
+				})
+				.catch(() => {
+					el.style.zIndex = '';
+				});
+		});
+	}
 
-    //
-    // drop on Tableau
-    //
-    interact('.tableau').dropzone({
-      accept: '.draggable',
-      listeners: {
-        drop (e) {
-          let card      = e.relatedTarget.id;
-          let fromIndex = e.relatedTarget.parentNode.dataset.index;
-          let toIndex   = e.target.dataset.index;
-          let cards     = selectCards(card, fromIndex);
-          console.log(`[Move] ${cards} from ${fromIndex} => ${toIndex}`);
+	function shake(el?: HTMLElement | null) {
+		if (!el || typeof el.animate !== 'function') return;
+		el.getAnimations().forEach((animation) => animation.cancel());
+		el.animate(
+			[
+				{ transform: 'translateX(0)' },
+				{ transform: 'translateX(-6px)' },
+				{ transform: 'translateX(6px)' },
+				{ transform: 'translateX(-4px)' },
+				{ transform: 'translateX(3px)' },
+				{ transform: 'translateX(-1px)' },
+				{ transform: 'translateX(0)' },
+			],
+			// ease-out so displacement is felt on the first frame, not eased into
+			{ duration: 150, easing: 'ease-out' }
+		);
+	}
 
-          if (Game.validTableauMove(fromIndex, toIndex, cards)) {
-            Game.moveCards(fromIndex, toIndex, cards);
-          }
-        } 
-      }
-    });
+	/** Every state change goes through here, so the old positions are captured first. */
+	function apply(next: FreeCell) {
+		const before = cardRects();
+		const primary = primaryId;
+		// any state change invalidates a rewindable click
+		primaryId = null;
+		lastMove = null;
+		game = next;
+		void tick().then(() => animateFrom(before, next, primary));
+	}
 
-    //
-    // action on draggable card
-    //
-    interact('.draggable').draggable({     
-      onstart: function(event) {
-        let card  = event.target.id;
-        let index = event.target.parentNode.dataset.index;
-        let cards = selectCards(card, index);
-        cards.forEach(card => {
-          let el = document.getElementById(card);
-          el.style.zIndex = 10000;
-        });
-      },
-      onmove: function(event) {
-        let card  = event.target.id;
-        let index = event.target.parentNode.dataset.index;
-        let cards = selectCards(card, index);
-        cards.forEach(card => {
-          let el = document.getElementById(card);
-          let x = (parseFloat(el.getAttribute('data-x')) || 0) + event.dx;
-          let y = (parseFloat(el.getAttribute('data-y')) || 0) + event.dy;
-          el.style.transform = `translate(${x}px, ${y}px)`;
-          el.setAttribute('data-x',x);
-          el.setAttribute('data-y',y);
-        });
-      },        
-      onend: function(event) {
-        let card  = event.target.id;
-        let index = event.target.parentNode.dataset.index;
-        let cards = selectCards(card, index);
-        cards.forEach(card => {
-          let el = document.getElementById(card);          
-          el.removeAttribute("data-y");
-          el.removeAttribute("data-x");
-          el.removeAttribute("style");
-          el.style.zIndex = undefined;
-        });
-      }      
-    });
+	/** After a drop, animate from where the cards were released, not from their old pile. */
+	function applyFromDrag(next: FreeCell, before: Map<string, DOMRect>) {
+		const primary = primaryId;
+		primaryId = null;
+		lastMove = null;
+		game = next;
+		void tick().then(() => animateFrom(before, next, primary));
+	}
 
+	/* ---------- click / double click ---------- */
 
-    // 
-    // tap action on last card
-    //
-    interact('.draggable').on('tap', function(event){
-      let card  = event.target.id;
-      let index = event.target.parentNode.dataset.index;
-      let cards = selectCards(card, index);
-      if (cards.length > 1) return;
+	function applyResult(result: TapResult, el?: HTMLElement | null, primary?: string | null) {
+		primaryId = primary ?? null;
+		if (result.outcome === 'moved' || result.outcome === 'selected') apply(result.game);
+		else {
+			primaryId = null;
+			if (result.outcome === 'shook') shake(el);
+		}
+	}
 
-      console.log(`Autocomplete action for ${card}`);
+	function computeSingle(card: Card): TapResult {
+		return card.location.fixture === 'cell' ? tapCell(game, card.location) : tapTableau(game, card.location);
+	}
 
-      // move A to home
-      if (Game.cardRank(card) === 'A') {
-        let toIndex = Game.findEmptyHomeCell();
-        if (toIndex >= 0) {
-          console.log("moving card to empty homecell")
-          Game.moveCards(index, toIndex, [card]);
-          return;
-        }
-      }
+	function clearClickMemory() {
+		if (pending) clearTimeout(pending.timer);
+		pending = null;
+		lastTap = null;
+		lastMove = null;
+	}
 
-      // find next viable spot - js is messed up 0 || undefined does not
-      // return what you expect.
-      let toIndex = Game.findValidHomeCell(card);
-      if (toIndex === undefined) {
-        toIndex = Game.findValidParent(card, index);
-      }
-      if (toIndex === undefined) {
-        toIndex = Game.findEmptyFreeCell();
-      }
-      if (toIndex >= 0) {
-        Game.moveCards(index, toIndex, [card]);
-      } else {
-        console.log("No valid move found");
-      }  
-    });
-  });
+	function flushPending() {
+		if (!pending) return;
+		clearTimeout(pending.timer);
+		const click = pending;
+		pending = null;
+		applyResult(click.result, click.el);
+	}
 
-	// app deals with handling game options, starting new game, etc.
-	// Gameboard handles running the actual game
+	function doubleFrom(location: CardLocation, before: FreeCell): TapResult {
+		return location.fixture === 'cell'
+			? doubleTapCell(before, location)
+			: doubleTapTableau(before, location);
+	}
 
-  /* returns array of selected cards for dragging */
-  function selectCards(card, index) {
-    let cards = $columns[index];
-    let cardIndex = cards.indexOf(card);
-    if (cardIndex + 1 === cards.length) {
-      return [card];
-    } else {
-      return cards.slice(cardIndex);
-    }
-  };
+	/**
+	 * The card has left the click point, so a second click can land on empty felt. Credit it to the
+	 * card that just flew (ghost clickbox) and route it to the free cell / double-click action.
+	 */
+	function onBoardPointerDown(event: PointerEvent) {
+		if (pending) return;
+		const move = lastMove;
+		if (!move || !ghostClick(move, event.clientX, event.clientY, Date.now(), GHOST_MS)) return;
+		if ((event.target as HTMLElement | null)?.closest('[data-card]')) return;
 
-  function testWin() {
-    $columns = [
-      ['Ks'],[],[],[],[],[],[],[],
-      ['As','2s','3s','4s','5s','6s','7s','8s','9s','Ts','Js','Qs'],
-      ['Ad','2d','3d','4d','5d','6d','7d','8d','9d','Td','Jd','Qd','Kd'],
-      ['Ac','2c','3c','4c','5c','6c','7c','8c','9c','Tc','Jc','Qc','Kc'],
-      ['Ah','2h','3h','4h','5h','6h','7h','8h','9h','Th','Jh','Qh','Kh'],
-      [],[],[],[]
-    ];
+		event.preventDefault();
+		event.stopPropagation();
+		lastMove = null;
+		lastTap = null;
+		suppressClickUntil = Date.now() + 120;
+		applyResult(doubleFrom(move.location, rewindTo(game, move.id, move.location)), undefined, move.id);
+	}
 
-  };
+	function tapCard(event: MouseEvent, card: Card) {
+		event.stopPropagation();
+		if (Date.now() < suppressClickUntil) return;
 
-  function startGame(id) {
-    gameId = id || parseInt((Math.random() * 1000000), 10);
-    console.log("Start new game with id ", gameId);
-    let deck = new Game.Deck(gameId);
-    let cards = deck.toTableau();
-    $history = [];
-    $columns = cards.concat([[],[],[],[],[],[],[],[]]);
-    $moves = 0;
-    if (timer) { resetTimer(); } 
-    timer = startTimer();
-    $started = true;
-  };
+		const el = event.currentTarget as HTMLElement;
 
-  function startTimer() {
-    return setInterval(function() {
-      $timeElapsed += 1;
-    }, 1000);
-  };
+		if (mode === 'pick') {
+			apply(game.setCursor(card.location).touch());
+			return;
+		}
 
-  function resetTimer() {
-    clearInterval(timer);
-    $timeElapsed = 0;
-  };
+		const id = shorthandCard(card);
+		const location = { ...card.location };
+		const rect = el.getBoundingClientRect();
 
-  function getHint(){};
+		// second click while the single move is still held: cancel it and take the double action
+		if (pending?.id === id) {
+			clearTimeout(pending.timer);
+			const click = pending;
+			pending = null;
+			lastTap = null;
+			lastMove = null;
+			applyResult(doubleFrom(click.location, game), el, id);
+			return;
+		}
+		// second click after the single move landed: rewind it, then take the double action
+		if (lastMove?.id === id && Date.now() - lastMove.time < DOUBLE_CLICK_MS) {
+			const move = lastMove;
+			lastMove = null;
+			lastTap = null;
+			applyResult(doubleFrom(move.location, rewindTo(game, move.id, move.location)), el, id);
+			return;
+		}
+		if (lastTap?.id === id && Date.now() - lastTap.time < DOUBLE_CLICK_MS) {
+			lastTap = null;
+			applyResult(doubleFrom(location, game), el, id);
+			return;
+		}
+		if (pending) flushPending();
 
-  function setGameSettings() {};
+		const result = computeSingle(card);
 
-  let gameId;
-  $: showModal = true;
-  function handleAction(event) {
-    console.log("[action]", event.detail);
-    let command = event.detail.command;
-    switch(command) {
-      case 'undo':
-        Game.undo();
-        break;
-      case 'settings':
-        console.log("change settings");
-        break;
-      case 'newgame':
-        showModal = true;
-        break;
-      case 'startgame':
-        let id = event.detail.gameId;
-        startGame(id);          
-        showModal = false;
-        break;
-      case 'restart':
-        console.log("Restart same game");
-        if (confirm("Are you sure you wish to restart this game?")) {
-          startGame(gameId);
-          break;          
-        }
-      case 'hint':
-        console.log("Hint for next move");
-        break;
-      case 'cancelmodal':
-        showModal = false;
-        break;
-      default:
-    }
-  };
+		// A move that could still be a double click waits out the window, so the card stays under
+		// the cursor and the second click can reach it. Everything else answers immediately.
+		if (result.outcome === 'moved' && canDoubleTap(game, card)) {
+			lastTap = null;
+			pending = {
+				id,
+				el,
+				location,
+				rect,
+				result,
+				timer: setTimeout(() => {
+					pending = null;
+					applyResult(result, el, id);
+					lastMove = { id, time: Date.now(), location, rect };
+				}, DOUBLE_TAP_MS),
+			};
+			return;
+		}
 
-  /* init settings for new game */
-  let timer;
+		applyResult(result, el, result.outcome === 'moved' ? id : null);
+		lastMove = result.outcome === 'moved' ? { id, time: Date.now(), location, rect } : null;
+		lastTap = result.outcome === 'shook' || result.outcome === 'selected' ? { id, time: Date.now() } : null;
+	}
+
+	function tap(location: CardLocation) {
+		if (Date.now() < suppressClickUntil) return;
+		flushPending();
+		apply(game.setCursor(location).touch());
+	}
+
+	/* ---------- drag ---------- */
+
+	function pileKey(location: CardLocation) {
+		return `${location.fixture}:${location.data[0]}`;
+	}
+
+	let angleFrame = 0;
+
+	function reducedMotion() {
+		return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+	}
+
+	/**
+	 * Drag inertia: pointer movement pushes a tilt, and every frame pulls it back to zero.
+	 * Pointer stops, card settles dead vertical — no residual rotation at rest, ever.
+	 */
+	function startAngleLoop() {
+		cancelAnimationFrame(angleFrame);
+		const step = () => {
+			if (!drag) return;
+			drag.angle *= 0.9;
+			if (Math.abs(drag.angle) < 0.05) drag.angle = 0;
+			angleFrame = requestAnimationFrame(step);
+		};
+		angleFrame = requestAnimationFrame(step);
+	}
+
+	function stopAngleLoop() {
+		cancelAnimationFrame(angleFrame);
+		angleFrame = 0;
+	}
+
+	function onCardPointerDown(event: PointerEvent, card: Card) {
+		if (card.location.fixture === 'foundation') return;
+		if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+		press = { card, x: event.clientX, y: event.clientY, dragged: false };
+		window.addEventListener('pointermove', onPointerMove);
+		window.addEventListener('pointerup', onPointerUp);
+		window.addEventListener('pointercancel', onPointerUp);
+	}
+
+	function onPointerMove(event: PointerEvent) {
+		if (!press) return;
+		const dx = event.clientX - press.x;
+		const dy = event.clientY - press.y;
+
+		if (!press.dragged) {
+			if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+			const run = draggableRun(game, press.card.location);
+			if (!run) return;
+			clearClickMemory();
+			press.dragged = true;
+			drag = {
+				cards: run.cards.map((card) => shorthandCard(card)),
+				from: run.location,
+				dx,
+				dy,
+				angle: 0,
+				lastX: event.clientX,
+				targets: dragMoves(game, run.location).map((move) => pileKey(move.location)),
+			};
+			startAngleLoop();
+			return;
+		}
+
+		if (drag) {
+			drag.dx = dx;
+			drag.dy = dy;
+			if (!reducedMotion()) {
+				const swing = Math.max(-9, Math.min(9, (event.clientX - drag.lastX) * 0.9));
+				drag.lastX = event.clientX;
+				drag.angle += (swing - drag.angle) * 0.5;
+			}
+		}
+	}
+
+	function dropTargetAt(x: number, y: number): CardLocation | null {
+		const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop]');
+		const drop = el?.dataset.drop;
+		if (!drop) return null;
+		const [fixture, index] = drop.split(':');
+		if (fixture !== 'cell' && fixture !== 'foundation' && fixture !== 'cascade') return null;
+		const i = Number(index);
+		if (fixture === 'cascade') {
+			return { fixture, data: [i, Math.max(0, (game.tableau[i]?.length ?? 1) - 1)] };
+		}
+		return { fixture, data: [i] };
+	}
+
+	function onPointerUp(event: PointerEvent) {
+		window.removeEventListener('pointermove', onPointerMove);
+		window.removeEventListener('pointerup', onPointerUp);
+		window.removeEventListener('pointercancel', onPointerUp);
+
+		const finished = press;
+		press = null;
+		stopAngleLoop();
+		if (!finished?.dragged) return;
+
+		suppressClickUntil = Date.now() + 350;
+		const from = drag?.from;
+		const to = dropTargetAt(event.clientX, event.clientY);
+		// where the cards sit under the pointer, captured before the drag transform clears
+		const before = cardRects();
+		drag = null;
+
+		if (from && to) {
+			const next = moveRun(game, from, to);
+			if (next) {
+				primaryId = shorthandCard(finished.card);
+				applyFromDrag(next, before);
+				return;
+			}
+			// illegal drop: put it back and shake, so the gesture always answers
+			const id = shorthandCard(finished.card);
+			void tick().then(() => shake(board?.querySelector<HTMLElement>(`[data-card="${id}"]`)));
+			return;
+		}
+
+		// dropped on empty felt: snap back silently
+		const id = shorthandCard(finished.card);
+		void tick().then(() => shake(board?.querySelector<HTMLElement>(`[data-card="${id}"]`)));
+	}
+
+	function cardStyle(card: Card, i: number) {
+		const base = `--i:${i};`;
+		if (!drag || !dragIds.has(shorthandCard(card))) return base;
+		return `${base}transform:translate(${drag.dx}px,${drag.dy}px) rotate(${drag.angle}deg);z-index:40;`;
+	}
+
+	function cellImageStyle(card: Card) {
+		if (!drag || !dragIds.has(shorthandCard(card))) return '';
+		return `transform:translate(${drag.dx}px,${drag.dy}px) rotate(${drag.angle}deg);z-index:40;pointer-events:none;`;
+	}
+
+	/* ---------- controls ---------- */
+
+	function undoMove() {
+		flushPending();
+		// the deal itself is a history entry; undoing it would empty the board
+		if (PREVIOUS_ACTION_TYPE_IS_START_OF_GAME.has(game.previousAction.type)) return;
+		apply(game.undo({ toggleCursor: true }));
+	}
+
+	function newDeal() {
+		clearClickMemory();
+		const requested = Number.parseInt(seedInput, 10);
+		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
+		apply(deal(valid ? requested : undefined));
+		seedInput = '';
+	}
+
+	function replay() {
+		flushPending();
+		apply(deal(seed));
+	}
+
+	function toggleMode() {
+		clearClickMemory();
+		mode = mode === 'auto' ? 'pick' : 'auto';
+	}
+
+	function key(location: CardLocation) {
+		return `${location.fixture}:${location.data.join('-')}`;
+	}
+
+	function img(card: Card) {
+		const short = shorthandCard(card);
+		return `${BASE}images/${short[0]}${short[1].toLowerCase()}.png`;
+	}
+
+	/**
+	 * Every card on one foundation, bottom to top. Rendering only the top card meant the pile was
+	 * unmounted as soon as the next card left, so the foundation sat empty while that card flew
+	 * and the arriving card had no card to land on.
+	 */
+	function foundationStack(index: number): Card[] {
+		return game.cards
+			.filter((card) => card.location.fixture === 'foundation' && card.location.data[0] === index)
+			.sort((a, b) => getRankForCompare(a.rank) - getRankForCompare(b.rank));
+	}
+
+	const selected = $derived(new Set(game.selection?.cards.map((card) => key(card.location)) ?? []));
+	const targets = $derived(
+		glow
+			? new Set([
+					...(game.availableMoves ?? []).map((m) => pileKey(m.location)),
+					...(drag?.targets ?? []),
+				])
+			: new Set<string>()
+	);
 </script>
 
-<nav class="navbar navbar-dark bg-dark m-0 p-1 header">
-  <div class='navsection text-left'>
-    <a href='./' class='text-danger'><i class='fas fa-diamond'></i></a>&nbsp;
-  Game: {gameId || ' '}
-    <!-- <a on:click={testWin}>Test</a> -->
-  </div>
-  <div class='navsection text-center'>{timeToString($timeElapsed)}</div>
-  <div class='navsection text-right'>Moves: {$moves}</div>
-</nav>
+<div
+	class="board"
+	bind:this={board}
+	role="application"
+	aria-label="FreeCell board"
+	onpointerdown={onBoardPointerDown}
+>
+	<header class="top">
+		<div class="cells">
+			{#each game.cells as card, i}
+				{@const location = { fixture: 'cell' as const, data: [i] }}
+				<button
+					class="slot"
+					class:selected={!!card && selected.has(key(location))}
+					class:target={targets.has(pileKey(location))}
+					data-drop={`cell:${i}`}
+					data-card={card ? shorthandCard(card) : undefined}
+					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
+					onclick={(event) => (card ? tapCard(event, card) : tap(location))}
+					onpointerdown={(event) => card && onCardPointerDown(event, card)}
+				>
+					{#if card}
+						<img src={img(card)} alt="" draggable="false" style={cellImageStyle(card)} />
+					{:else}
+						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
+					{/if}
+				</button>
+			{/each}
+		</div>
 
-<div class='container board'>
-  <div class='row headboard'>    
-    <div class='cells-board homecells'>
-      {#each Array(4) as _, index}
-        <GameCell cards={$columns[index + Game.HOMECELL_OFFSET]} index={index + Game.HOMECELL_OFFSET}  type='homecell' draggable={false}/>
-      {/each}
-    </div>
-    <div class='cells-board freecells'>
-      {#each Array(4) as _, index}
-        <GameCell cards={$columns[index + Game.FREECELL_OFFSET]} index={index + Game.FREECELL_OFFSET}  type='freecell'/>
-      {/each}
-    </div>
-  </div>
-  <div class='row tableaus'>
-    {#each Array(8) as _, index}
-      <Tableau cards={$columns[index]} index={index} />
-    {/each}
-  </div>
+		<div class="foundations">
+			{#each game.foundations as card, i}
+				{@const location = { fixture: 'foundation' as const, data: [i] }}
+				{@const stack = foundationStack(i)}
+				<button
+					class="slot"
+					class:target={targets.has(pileKey(location))}
+					data-drop={`foundation:${i}`}
+					aria-label={`foundation ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
+					onclick={() => tap(location)}
+				>
+					{#if stack.length}
+						{#each stack as stacked (shorthandCard(stacked))}
+							<img src={img(stacked)} alt="" draggable="false" data-card={shorthandCard(stacked)} />
+						{/each}
+					{:else}
+						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
+					{/if}
+				</button>
+			{/each}
+		</div>
+	</header>
+
+	<div class="tableau">
+		{#each game.tableau as cascade, col}
+			<div
+				class="cascade"
+				class:empty={cascade.length === 0}
+				class:target={targets.has(`cascade:${col}`)}
+				data-drop={`cascade:${col}`}
+			>
+				<button
+					class="cascade-hit"
+					aria-label={`column ${col + 1}, ${cascade.length} cards`}
+					onclick={() => tap({ fixture: 'cascade', data: [col, Math.max(0, cascade.length - 1)] })}
+				></button>
+				{#each cascade as card, i}
+					<button
+						class="card"
+						class:selected={selected.has(key(card.location))}
+						class:dragging={dragIds.has(shorthandCard(card))}
+						style={cardStyle(card, i)}
+						data-card={shorthandCard(card)}
+						aria-label={`${card.rank} of ${card.suit}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
+						onpointerdown={(event) => onCardPointerDown(event, card)}
+						onclick={(event) => tapCard(event, card)}
+					>
+						<img src={img(card)} alt="" draggable="false" />
+					</button>
+				{/each}
+			</div>
+		{/each}
+	</div>
+
+	<footer class="controls">
+		<button class="btn" onclick={toggleMode}>
+			Tap: {mode === 'auto' ? 'auto-move' : 'pick target'}
+		</button>
+		<button class="btn" aria-pressed={glow} onclick={() => (glow = !glow)}>
+			Glow: {glow ? 'on' : 'off'}
+		</button>
+		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
+		<button
+			class="btn"
+			onclick={() => (flushPending(), apply(game.autoFoundationAll({ anytime: true })))}
+		>
+			Auto to home
+		</button>
+		<button class="btn" onclick={replay}>Restart deal</button>
+
+		<label class="seed">
+			<span>Deal #</span>
+			<input
+				type="text"
+				inputmode="numeric"
+				placeholder={seed ? String(seed) : 'random'}
+				bind:value={seedInput}
+			/>
+		</label>
+		<button class="btn primary" onclick={newDeal}>New game</button>
+		<span class="meta">{seed ? `deal ${seed}` : ''}</span>
+	</footer>
+
+	{#if game.win}
+		<div class="win">
+			<p>You won!</p>
+			<button class="btn primary" onclick={newDeal}>New game</button>
+		</div>
+	{/if}
 </div>
-
-<Footer disableUndo={($history.length === 0)} on:command={handleAction}/>
-
-<NewGameModal display={showModal} on:command={handleAction}/>
-
-<style type="text/scss">
-@media (max-width: 300px) { 
-  .board {width: 300px; }
-}
-@media (min-width: 992px) { 
-  .header { font-size: 1.5em; }
-
-
-}
-@media (min-width: 1200px) {  
-  .board { width: 70vh; height: 100vh;}
-  .header { font-size: 1.5em; }
-}
-
-.header {
-  width: 100%;
-  height: 40px;
-  justify-content: space-between;
-  .navsection {
-    padding: 0 5px;
-    width: 33%;
-    flex-grow: 1;
-  }
-}
-
-.board {
-  height: 90%;
-  overflow:hidden;
-}
-.headboard {
-  padding: 0.2vh 0;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;  
-  .cells-board {
-    display: flex;
-    flex-flow: row nowrap;
-    margin: .2vh 0;
-    padding:0;
-    height: 100%;
-    width: 50%;
-  }
-}
-
-.homecells {
-  justify-content: flex-start;
-}
-.freecells {
-  justify-content: flex-end;
-}
-.tableaus {
-  height: 100%;
-  padding: 0.5vh 0;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;  
-}
-
-</style>

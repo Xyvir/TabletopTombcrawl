@@ -1,0 +1,183 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`game.clampCursor > cascade > col too large 1`] = `
+" 2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D>8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ cursor set 8 8C"
+`;
+
+exports[`game.clampCursor > cascade > col too small 1`] = `
+" 2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+>9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ cursor set 1 9S"
+`;
+
+exports[`game.clampCursor > cascade > empty 1`] = `
+"                         
+      >                  
+:d KS KH KD KC QS QH QD QC JS JH JD JC TS TH TD TC 9S 9H 9D 9C 8S 8H 8D 8C 7S 7H 7D 7C 6S 6H 6D 6C 5S 5H 5D 5C 4S 4H 4D 4C 3S 3H 3D 3C 2S 2H 2D 2C AS AH AD AC 
+ init"
+`;
+
+exports[`game.clampCursor > cascade > invalid col and row 1`] = `
+" 2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D>4C 
+ 3S 3H 3D 3C             
+ cursor set 8 4C"
+`;
+
+exports[`game.clampCursor > cascade > okay 1`] = `
+" 2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H>9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ cursor set 3 9D"
+`;
+
+exports[`game.clampCursor > cascade > row too large 1`] = `
+" 2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H>3D 3C             
+ cursor set 3 3D"
+`;
+
+exports[`game.clampCursor > cascade > row too small 1`] = `
+" 2S 2H 2D 2C AS AH AD AC 
+ KS KH>KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ cursor set 3 KD"
+`;
+
+exports[`game.clampCursor > cell > okay 1`] = `
+" 2H>2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C 2S          
+ deal all cards"
+`;
+
+exports[`game.clampCursor > cell > too large 1`] = `
+" 2H 2D>2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C 2S          
+ deal all cards"
+`;
+
+exports[`game.clampCursor > cell > too small 1`] = `
+">2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C 2S          
+ deal all cards"
+`;
+
+exports[`game.clampCursor > deck > empty 1`] = `
+">2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ deal all cards"
+`;
+
+exports[`game.clampCursor > deck > okay 1`] = `
+"                         
+                         
+:d KS KH KD>KC QS QH QD QC JS JH JD JC TS TH TD TC 9S 9H 9D 9C 8S 8H 8D 8C 7S 7H 7D 7C 6S 6H 6D 6C 5S 5H 5D 5C 4S 4H 4D 4C 3S 3H 3D 3C 2S 2H 2D 2C AS AH AD AC 
+ init"
+`;
+
+exports[`game.clampCursor > deck > too large 1`] = `
+"                         
+                         
+:d>KS KH KD KC QS QH QD QC JS JH JD JC TS TH TD TC 9S 9H 9D 9C 8S 8H 8D 8C 7S 7H 7D 7C 6S 6H 6D 6C 5S 5H 5D 5C 4S 4H 4D 4C 3S 3H 3D 3C 2S 2H 2D 2C AS AH AD AC 
+ init"
+`;
+
+exports[`game.clampCursor > deck > too small 1`] = `
+"                         
+                         
+:d KS KH KD KC QS QH QD QC JS JH JD JC TS TH TD TC 9S 9H 9D 9C 8S 8H 8D 8C 7S 7H 7D 7C 6S 6H 6D 6C 5S 5H 5D 5C 4S 4H 4D 4C 3S 3H 3D 3C 2S 2H 2D 2C AS AH AD>AC 
+ init"
+`;
+
+exports[`game.clampCursor > default 1`] = `
+">2S 2H 2D 2C AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ deal all cards"
+`;
+
+exports[`game.clampCursor > foundation > okay 1`] = `
+" 2S 2H 2D 2C AS>AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ deal all cards"
+`;
+
+exports[`game.clampCursor > foundation > too large 1`] = `
+" 2S 2H 2D 2C AS AH AD>AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ deal all cards"
+`;
+
+exports[`game.clampCursor > foundation > too small 1`] = `
+" 2S 2H 2D 2C>AS AH AD AC 
+ KS KH KD KC QS QH QD QC 
+ JS JH JD JC TS TH TD TC 
+ 9S 9H 9D 9C 8S 8H 8D 8C 
+ 7S 7H 7D 7C 6S 6H 6D 6C 
+ 5S 5H 5D 5C 4S 4H 4D 4C 
+ 3S 3H 3D 3C             
+ deal all cards"
+`;
