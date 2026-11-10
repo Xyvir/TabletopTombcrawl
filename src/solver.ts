@@ -220,6 +220,10 @@ export interface SolveOptions {
 	goal?: Goal;
 	/** States to examine before giving up. */
 	nodes?: number;
+	/** Keep N states per ply instead of best-first order. Breadth forces progress; 0 disables. */
+	beamWidth?: number;
+	/** Search order: best-first (default), breadth by ply (beamWidth), or greedy depth-first. */
+	strategy?: 'best' | 'beam' | 'dfs';
 	/** Longest line the search will follow. */
 	depth?: number;
 	timeBudgetMs?: number;
@@ -363,6 +367,93 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 		elapsedMs: Date.now() - began,
 		timedOut,
 	});
+
+	// Depth-first with the best board on top of the stack: dives long lines instead of surveying the
+	// whole frontier, which is what this game needs — most of a solution is rearrangement that gains
+	// nothing until it exposes a card worth playing.
+	if (options.strategy === 'dfs') {
+		const stack: Node[] = [first];
+		const visited = new Set<string>([stateKey(start)]);
+		while (stack.length) {
+			if (nodes >= budget) break;
+			if (Date.now() - began > deadline) {
+				timedOut = true;
+				break;
+			}
+			const node = stack.pop()!;
+			deepest = Math.max(deepest, node.depth);
+			if (isGoal(node.state, goal)) return finish(true, node.path, node.state);
+			if (node.depth >= depth) continue;
+
+			const children: Node[] = [];
+			for (const move of generateMoves(node.state)) {
+				nodes++;
+				const path: PathLink = { action: move.action, label: move.label, prev: node.path };
+				if (isGoal(move.next, goal)) {
+					deepest = Math.max(deepest, node.depth + 1);
+					return finish(true, path, move.next);
+				}
+				const key = stateKey(move.next);
+				if (visited.has(key)) continue;
+				visited.add(key);
+				const value = scoreOf(move.next);
+				const child: Node = { state: move.next, path, value, score: value, depth: node.depth + 1 };
+				if (value > best.value) best = child;
+				children.push(child);
+			}
+			children.sort((a, b) => a.value - b.value);
+			for (const child of children) stack.push(child);
+			// A depth-first stack can hoard states; stop rather than eat the machine.
+			if (stack.length > 40_000) break;
+			options.onProgress?.({ nodes, open: stack.length, best: best.value, depth: deepest, elapsedMs: Date.now() - began });
+		}
+		return finish(isGoal(best.state, goal), best.path, best.state);
+	}
+
+	// Beam mode: every ply advances, and only the best boards of that ply survive. Best-first can
+	// stall in a plateau it can never climb out of; breadth at least keeps moving forward.
+	const width = options.beamWidth ?? 0;
+	if (width > 0) {
+		let frontier: Node[] = [first];
+		for (let ply = 0; ply < depth; ply++) {
+			if (nodes >= budget) break;
+			if (Date.now() - began > deadline) {
+				timedOut = true;
+				break;
+			}
+			const seen = new Set<string>();
+			const children: Node[] = [];
+			for (const node of frontier) {
+				for (const move of generateMoves(node.state)) {
+					nodes++;
+					const path: PathLink = { action: move.action, label: move.label, prev: node.path };
+					if (isGoal(move.next, goal)) {
+						deepest = Math.max(deepest, ply + 1);
+						return finish(true, path, move.next);
+					}
+					const key = stateKey(move.next);
+					if (seen.has(key)) continue;
+					seen.add(key);
+					const value = scoreOf(move.next);
+					const child: Node = { state: move.next, path, value, score: value, depth: ply + 1 };
+					children.push(child);
+					if (value > best.value) best = child;
+				}
+			}
+			deepest = Math.max(deepest, ply + 1);
+			if (!children.length) break;
+			children.sort((a, b) => b.value - a.value);
+			frontier = children.slice(0, width);
+			options.onProgress?.({
+				nodes,
+				open: frontier.length,
+				best: best.value,
+				depth: deepest,
+				elapsedMs: Date.now() - began,
+			});
+		}
+		return finish(isGoal(best.state, goal), best.path, best.state);
+	}
 
 	while (open.size) {
 		if (nodes >= budget) break;

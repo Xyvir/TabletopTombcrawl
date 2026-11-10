@@ -8,6 +8,8 @@ interface Options {
 	goal: Goal;
 	nodes: number;
 	depth: number;
+	beamWidth: number;
+	strategy: 'best' | 'beam' | 'dfs';
 	seconds: number;
 	limit: number | null;
 	quiet: boolean;
@@ -21,6 +23,8 @@ function parse(argv: string[]): Options {
 		goal: 'clear',
 		nodes: 400_000,
 		depth: 220,
+		beamWidth: 0,
+		strategy: 'best',
 		seconds: 120,
 		limit: null,
 		quiet: false,
@@ -49,6 +53,14 @@ function parse(argv: string[]): Options {
 				break;
 			case '--nodes':
 				options.nodes = Number(value);
+				i++;
+				break;
+			case '--beam':
+				options.beamWidth = Number(value);
+				i++;
+				break;
+			case '--strategy':
+				options.strategy = value === 'dfs' || value === 'beam' ? value : 'best';
 				i++;
 				break;
 			case '--depth':
@@ -118,6 +130,8 @@ function single(options: Options): void {
 		goal: options.goal,
 		nodes: options.nodes,
 		depth: options.depth,
+		beamWidth: options.beamWidth,
+		strategy: options.strategy,
 		timeBudgetMs: options.seconds * 1000,
 		onProgress: (info) => {
 			if (options.quiet) return;
@@ -156,7 +170,15 @@ function range(options: Options): void {
 	const rows: { seed: number; solved: boolean; length: number; summary: string; seconds: string }[] = [];
 	for (let seed = from; seed <= to; seed++) {
 		const state = createTombState(seed, FREE_CELL_COUNT[options.difficulty]);
-			const result = solveTomb({ state, goal: options.goal, nodes: options.nodes, depth: options.depth, timeBudgetMs: options.seconds * 1000 });
+			const result = solveTomb({
+			state,
+			goal: options.goal,
+			nodes: options.nodes,
+			depth: options.depth,
+			beamWidth: options.beamWidth,
+			strategy: options.strategy,
+			timeBudgetMs: options.seconds * 1000,
+		});
 		const solved = result.solved;
 		const last = result.steps.length ? result.steps[result.steps.length - 1].state : result.best;
 		rows.push({
@@ -191,6 +213,8 @@ function usage(): void {
 options
   --difficulty easy|med|hard   free cells to begin with (default med)
   --nodes N                    states to examine (default 400000)
+  --beam N                     keep N boards per ply instead of best-first order
+  --strategy best|beam|dfs     search order (default best)
   --depth N                    longest line to follow (default 220)
   --time S                     seconds before giving up (default 120)
   --steps N                    print only the first N moves of a line
