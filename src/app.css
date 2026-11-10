@@ -449,6 +449,11 @@ body:has(.card.dragging) .cells.tomb .chip {
 	/* eleven slots and the title share one row, so the board takes the width they need */
 	.board.tomb {
 		max-width: 1560px;
+		/*
+		 * The wordmark's width at its wide size: 2.04em tall at 26px, times the mark's own 76.555:31.417
+		 * aspect. Anything that wants to line up with the card the title sits ahead of steps past this.
+		 */
+		--title-w: calc(2.04 * 26px * 2.4366);
 	}
 
 	.board.tomb .titlecard {
@@ -467,7 +472,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 		 */
 		--col-w: min(104px, calc((100vw - 240px) / 12.6));
 		flex-wrap: nowrap;
-		justify-content: space-between;
+		/*
+		 * The track keeps a fixed offset from the title instead of landing wherever an even split of
+		 * the leftover air puts it, so the stat line below can share its left edge. The air itself is
+		 * still spent on the divider, which holds it in its own margins.
+		 */
+		justify-content: flex-start;
 	}
 
 	.top.tomb .cells.tomb {
@@ -491,10 +501,17 @@ body:has(.card.dragging) .cells.tomb .chip {
 		display: block;
 		order: -1;
 		flex: 0 0 2px;
+		/* the air on either side is shared evenly, which is what keeps the bar centred in the gap */
+		margin-inline: auto;
 		align-self: center;
 		height: var(--card-h);
 		border-radius: 2px;
 		background: rgba(241, 232, 212, 0.22);
+	}
+
+	/* the stat line starts level with the leftmost drafted card, not with the page's own edge */
+	.board.tomb .tombhud {
+		padding-left: calc(var(--title-w) + var(--gap));
 	}
 }
 
