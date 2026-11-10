@@ -728,20 +728,24 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const itemCell = auraItemWound(state, card, from);
 	const total = damage + (itemCell === null ? 0 : 1);
 	const free = hp(state);
-	const need = total > free ? emptyCells(state).slice(0, total - free) : [];
+	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
+	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
+	const short = Math.max(0, total - free + 1);
+	const legal = short === 0;
+	const need = short ? emptyCells(state).slice(0, short) : [];
 	const afterItem = itemCell === null ? state : woundCell(state, itemCell);
 	const afterWounds = wound(afterItem, damage);
 	const locks =
-		total <= free
+		legal
 			? Array.from(new Set([...(itemCell === null ? [] : [itemCell]), ...afterWounds.locks]))
 			: [];
 	return {
-		legal: total <= free,
-		reason: total > free ? `needs ${total} HP, you have ${free}` : '',
+		legal,
+		reason: legal ? '' : `needs ${total} HP and one to spare, you have ${free}`,
 		damage,
 		locks,
 		need,
-		wounds: total <= free ? woundCardIds(state, afterItem, itemCell, afterWounds.wounded) : [],
+		wounds: legal ? woundCardIds(state, afterItem, itemCell, afterWounds.wounded) : [],
 	};
 }
 

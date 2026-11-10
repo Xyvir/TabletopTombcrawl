@@ -438,21 +438,15 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * On a wide screen the title lies on its side in the left margin, one line, taking no room from the
- * board at all. With it out of the header the wound track and the graveyard share a single row, so
- * the header is one card tall and the tableau rises into the space the second row used to hold.
+ * On a wide screen the header stays one row: title, wound track, graveyard. The mark keeps the upper
+ * left corner it has on a narrow board rather than lying on its side in the margin, which read
+ * upside down, and it still costs the tableau no second header row.
  */
 @media (min-width: 1400px) {
 	.board.tomb .titlecard {
-		position: fixed;
-		left: max(6px, calc((100vw - 1180px) / 4));
-		top: 50%;
-		/* one line: the two words run on as a single spine, read bottom to top */
-		display: block;
+		/* first in the row, ahead of the track: the corner reads the same at every width */
+		order: -2;
 		font-size: 26px;
-		writing-mode: vertical-rl;
-		transform: translateY(-50%) rotate(180deg);
-		pointer-events: none;
 	}
 
 	/* one header row: the track takes the upper left corner, the graveyard keeps the right */
