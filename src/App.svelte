@@ -822,7 +822,23 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 	}
 
+	/**
+	 * The exact card under the pointer. A drop normally means "this column", but BURNDAYRAZ burns the
+	 * card it is pointed at however many cards are stacked on top of it, so a buried card's sliver is
+	 * a target in its own right rather than a stand-in for the top of its column.
+	 */
+	function cardUnderPointer(x: number, y: number): CardLocation | null {
+		const id = document.elementFromPoint(x, y)?.closest<HTMLElement>('.card')?.dataset.card;
+		if (!id) return null;
+		const card = game.cards.find((candidate) => shorthandCard(candidate) === id);
+		return card?.location ?? null;
+	}
+
 	function dropTargetAt(x: number, y: number): CardLocation | null {
+		if (tomb?.armed?.kind === 'burndayraz') {
+			const aimed = cardUnderPointer(x, y);
+			if (aimed) return aimed;
+		}
 		const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop]');
 		const drop = el?.dataset.drop;
 		if (!drop) return null;
