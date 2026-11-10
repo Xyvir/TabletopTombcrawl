@@ -92,9 +92,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** How long a move is held so a double click can still be recognised. */
 	const DOUBLE_TAP_MS = 150;
 	/** How long after that a second click can still rewind an applied move into a double click. */
-	const DOUBLE_CLICK_MS = 450;
-	/** After the card flies, its old box still answers clicks for this long (the ghost clickbox). */
-	const GHOST_MS = 250;
+	const DOUBLE_CLICK_MS = 500;
+	/**
+	 * After the card flies, its old box still answers clicks for this long (the ghost clickbox). It
+	 * has to last as long as the double-click window: a shorter box means the second click lands on
+	 * felt the game has already forgotten, and the double is simply missed.
+	 */
+	const GHOST_MS = DOUBLE_CLICK_MS;
+	/** The ghost box is padded, because a second click rarely lands on the same pixel. */
+	const GHOST_PAD = 14;
 	/** Pixels a pointer must travel before a press becomes a drag. */
 	const DRAG_THRESHOLD = 6;
 	/** Normal card flight. */
@@ -440,8 +446,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const moved = tombMoved;
 		if (!moved || Date.now() - moved.time > GHOST_MS) return null;
 		const r = moved.rect;
-		const inX = event.clientX >= r.left - 6 && event.clientX <= r.right + 6;
-		const inY = event.clientY >= r.top - 6 && event.clientY <= r.bottom + 6;
+		const inX = event.clientX >= r.left - GHOST_PAD && event.clientX <= r.right + GHOST_PAD;
+		const inY = event.clientY >= r.top - GHOST_PAD && event.clientY <= r.bottom + GHOST_PAD;
 		return inX && inY ? moved : null;
 	}
 
