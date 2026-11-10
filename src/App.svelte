@@ -24,6 +24,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tapTableau,
 		type TapResult,
 	} from './interaction';
+	import { describeStep, transcript } from './notation';
 	import titleMark from './assets/title.svg?raw';
 	import {
 		MONSTERS,
@@ -116,6 +117,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let variant = $state<'tomb' | 'vanilla'>('tomb');
 	let tomb = $state<TombState | null>(opening);
 	let tombHistory = $state<TombState[]>([]);
+	/**
+	 * The session so far, read back off the undo history: one printed line per move, in the solver's
+	 * vocabulary, so a playtest transcript can be set next to a simulated one. Undo rewinds both.
+	 */
+	const recordedSteps = $derived.by(() => {
+		if (!tomb) return [];
+		const states = [...tombHistory, tomb];
+		const steps: { label: string; state: TombState }[] = [];
+		for (let index = 1; index < states.length; index++) {
+			const label = describeStep(states[index - 1], states[index]);
+			if (label) steps.push({ label, state: states[index] });
+		}
+		return steps;
+	});
+	let showRecording = $state(false);
 	/** Cards that just came out of the fog, drawn flipping face-up for one animation. */
 	let flippingIds = $state<string[]>([]);
 	/** Cards that just took a wound, turning face-down for one animation. */
@@ -799,6 +815,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (exited) commit(exited);
 	}
 
+	/** Copy the session, so it can be pasted beside a solver run on the same seed. */
+	async function copyRecording() {
+		if (!tomb) return;
+		try {
+			await navigator.clipboard.writeText(transcript(tombHistory[0] ?? tomb, recordedSteps));
+		} catch {
+			// Clipboard needs a secure context: the panel text stays selectable by hand.
+		}
+	}
+
 	/**
 	 * Vanilla only: the tomb has no auto-to-home at all. A chain of foundation moves would spend the
 	 * item restock window, the free cast and the glyph refresh on cards the player never chose to
@@ -813,6 +839,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (variant === next) return;
 		clearClickMemory();
 		tombHistory = [];
+		showRecording = false;
 		tombSelected = null;
 		tombLast = null;
 		variant = next;
@@ -1022,6 +1049,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		seedInput = '';
 		if (variant === 'tomb') {
 			tombHistory = [];
+			showRecording = false;
 			tombSelected = null;
 			tombLast = null;
 			tomb = createTombState(valid ? requested : undefined, FREE_CELL_COUNT[difficulty]);
@@ -1035,6 +1063,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		flushPending();
 		if (tomb) {
 			tombHistory = [];
+			showRecording = false;
 			tombSelected = null;
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
 			game = tomb.game;
@@ -1058,6 +1087,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		clearClickMemory();
 		difficulty = next;
 		tombHistory = [];
+		showRecording = false;
 		tombSelected = null;
 		tombLast = null;
 		tombMoved = null;
@@ -1391,6 +1421,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<button class="btn" onclick={sendHome}>Auto to home</button>
 		{/if}
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
+		{#if tomb}
+			<button class="btn" aria-pressed={showRecording} onclick={() => (showRecording = !showRecording)}>
+				Moves ({recordedSteps.length})
+			</button>
+		{/if}
 		<button class="btn" onclick={replay}>Restart deal</button>
 
 		<label class="seed">
@@ -1405,6 +1440,19 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<button class="btn primary" onclick={newDeal}>New game</button>
 		<span class="meta">{seed ? `deal ${seed}` : ''}</span>
 	</footer>
+
+	{#if tomb && showRecording}
+		<section class="log" aria-label="Playtest recording">
+			<header class="log-head">
+				<span>seed {tomb.seed} · {recordedSteps.length} moves · paste this next to a solver run</span>
+				<span class="log-actions">
+					<button class="btn" onclick={copyRecording}>Copy</button>
+					<button class="btn" onclick={() => (showRecording = false)}>Close</button>
+				</span>
+			</header>
+			<pre>{transcript(tombHistory[0] ?? tomb, recordedSteps)}</pre>
+		</section>
+	{/if}
 
 	{#if flash}
 		{#key flash.id}

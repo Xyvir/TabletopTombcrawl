@@ -249,6 +249,40 @@ img {
 	border-color: #2bb35c;
 }
 
+/* playtest log: the session's moves, printed the way the solver prints them */
+.log {
+	margin: 0 auto;
+	max-width: 100%;
+	padding: calc(var(--gap) * 0.6) calc(var(--gap) * 0.8);
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	border-radius: 12px;
+	background: rgba(0, 0, 0, 0.3);
+	font-size: 12px;
+}
+
+.log-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: calc(var(--gap) * 0.6);
+	margin-bottom: 0.4em;
+}
+
+.log-actions {
+	display: inline-flex;
+	gap: 0.4em;
+}
+
+.log pre {
+	margin: 0;
+	max-height: 38vh;
+	overflow: auto;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	line-height: 1.5;
+	white-space: pre;
+	text-align: left;
+}
+
 /* difficulty: one segmented control, three states */
 .difficulty {
 	display: inline-flex;

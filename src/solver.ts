@@ -25,6 +25,7 @@ import {
 	type Difficulty,
 	type TombState,
 } from './tombcrawl';
+import { armLabel, cardName, digLabel, homeLabel, moveLabel, parkLabel, where } from './notation';
 
 export type Goal = 'clear' | 'boss';
 
@@ -64,24 +65,6 @@ export function applyAction(state: TombState, action: SolverAction): TombState |
 
 const column = (index: number, row = 0): CardLocation => ({ fixture: 'cascade', data: [index, row] });
 const cell = (index: number): CardLocation => ({ fixture: 'cell', data: [index] });
-const cardName = (card: Card) => shorthandCard(card);
-
-function where(location: CardLocation): string {
-	if (location.fixture === 'cascade') return `col ${location.data[0] + 1}`;
-	if (location.fixture === 'cell') return `cell ${location.data[0] + 1}`;
-	return location.fixture;
-}
-
-const digLabel = (card: Card, at: CardLocation) => `dig   ${cardName(card)} ${where(at)} row ${(at.data[1] ?? 0) + 1}`;
-const homeLabel = (card: Card) => `home  ${cardName(card)} -> ${card.suit} foundation`;
-const parkLabel = (card: Card, from: CardLocation, to: CardLocation) =>
-	`park  ${cardName(card)} ${where(from)} -> ${where(to)}`;
-const armLabel = (name: string, slot: number) => `arm   ${name} (cell ${slot + 1})`;
-
-function moveLabel(cards: Card[], from: CardLocation, to: CardLocation, buried: boolean): string {
-	const what = cards.map(cardName).join(' ');
-	return `move  ${what} ${where(from)} -> ${where(to)}${buried ? ' (onto fog)' : ''}`;
-}
 
 /* --------------------------------------------------------- move generation */
 
