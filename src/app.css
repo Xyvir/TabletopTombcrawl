@@ -855,6 +855,15 @@ body:has(.card.dragging) .cells.tomb .chip {
 	font-size: 0.75em;
 	margin-left: 0.06em;
 	letter-spacing: 0;
+	/*
+	 * Raised, not superscript: a real `vertical-align: super` grows the line box whenever it is
+	 * present, which made the status bar taller and shoved the whole board down. Relative offset
+	 * moves the glyph alone, so the bar measures the same with and without the open cells.
+	 */
+	vertical-align: baseline;
+	position: relative;
+	top: -0.45em;
+	line-height: 1;
 }
 
 .tombhud .bosstag {
