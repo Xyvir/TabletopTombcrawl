@@ -594,7 +594,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 @media (prefers-reduced-motion: reduce) {
 	.slot.pending,
-	.slot.affinity {
+	.slot.affinity,
+	.slot.need::after {
 		animation: none;
 	}
 }
@@ -720,13 +721,31 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 .slot.need {
-	box-shadow: 0 0 0 3px #ff4d4d inset;
+	border-color: rgba(255, 77, 77, 0.9);
+}
+
+/*
+ * The cards are positioned edge to edge inside their slot, so a ring drawn on the slot itself is
+ * hidden the moment a card is in it: the empty spaces lit up and the cards stayed dark, which read as
+ * the wrong cells being called out. The ring and the wash therefore sit on an overlay above the
+ * cards, so a fatal attack lights the whole track — faces, wounds and empty spaces alike.
+ */
+.slot.need::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	/* above the cards, and above the role labels, which sit at 4 */
+	z-index: 5;
+	background: rgba(255, 77, 77, 0.12);
+	box-shadow: 0 0 0 3px #ff4d4d inset, 0 0 12px rgba(255, 77, 77, 0.5) inset;
 	animation: tomb-need 1s ease-in-out infinite;
 }
 
 @keyframes tomb-need {
 	50% {
-		box-shadow: 0 0 0 4px rgba(255, 77, 77, 0.55) inset;
+		box-shadow: 0 0 0 4px #ff4d4d inset, 0 0 18px rgba(255, 77, 77, 0.6) inset;
 	}
 }
 
