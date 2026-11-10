@@ -1223,6 +1223,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	{#if tomb}
 		<div class="tombhud">
+			<span>Level {tombLevel}</span>
 			<span
 				class="hearts"
 				title={openSlots
@@ -1230,7 +1231,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					: `${tombHp} of ${maxHp(tomb)} held`}
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
-			<span>Level {tombLevel}</span>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
 		</div>
 	{/if}

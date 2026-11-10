@@ -683,7 +683,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	font-size: 0.46rem;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	text-align: center;
+	text-align: left;
 	color: rgba(255, 255, 255, 0.62);
 	pointer-events: none;
 }
