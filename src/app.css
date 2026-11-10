@@ -958,19 +958,3 @@ body:has(.card.dragging) .cells.tomb .chip {
 	opacity: 0.75;
 }
 
-/*
- * The title is Vinque, outlined once into a path-only SVG: the typeface is licensed for fixed
- * artwork but not for use as a web font, so the page ships shapes, never font software. The width
- * is the artwork's own ratio in em, so the mark scales with the card size the way the type did.
- */
-.titlecard .titlemark {
-	display: block;
-	width: 4.993em;
-	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
-}
-
-.titlecard .titlemark svg {
-	display: block;
-	width: 100%;
-	height: auto;
-}
