@@ -82,7 +82,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: cast your glyph once for free on the very next turn it is refreshed.',
+		text: 'Affinity: your first glyph cast is free, and so is any cast made on the very next turn after it is refreshed.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -179,6 +179,11 @@ export interface TombState {
 	 * other action closes the window: it never survives a second move.
 	 */
 	freeCast: boolean;
+	/**
+	 * The Wizard's first Glyph cast is free whenever it comes. This is that cast, still unspent: it
+	 * waits through any number of moves, and a cast paid for by the refresh window leaves it alone.
+	 */
+	freeCastBank: boolean;
 }
 
 const rankOf = (rank: Rank) => getRankForCompare(rank) + 1;
@@ -302,6 +307,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		armed: null,
 		itemWindow: null,
 		freeCast: false,
+		freeCastBank: true,
 	};
 }
 
@@ -1279,6 +1285,21 @@ export function tombFirstCell(state: TombState): CardLocation | null {
 
 /* -------------------------------------------------------------- abilities */
 
+/**
+ * Whether the next cast of this Glyph costs no exhaustion: the Wizard's window after a refresh, or
+ * the one cast he banks from the start of the run. The board lights the slot on this same answer,
+ * so what glows blue is exactly what will not exhaust.
+ */
+export function freeCastReady(state: TombState, cell: number): boolean {
+	const entry = draftAt(state, cell);
+	return (
+		!!entry &&
+		entry.role === 'glyph' &&
+		hasPassive(state, 'Wizard') &&
+		(state.freeCast || state.freeCastBank)
+	);
+}
+
 export function abilityUsable(state: TombState, cell: number): boolean {
 	const entry = draftAt(state, cell);
 	return (
@@ -1294,10 +1315,13 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
-	// A Wizard's Affinity: the Glyph cast made on the very move after a refresh costs no exhaustion.
-	// This cast spends the window with it, so the one after it pays as usual.
-	const free = hasPassive(state, 'Wizard') && state.freeCast && entry.role === 'glyph';
+	// A Wizard's Affinity: one cast banked from the start, plus any cast made on the move after a
+	// refresh. A cast spends the window if there is one and leaves the bank alone, so the banked cast
+	// is never swallowed by a refresh window; either way it can only ever pay for one cast.
+	const free = freeCastReady(state, cell);
+	const spendsWindow = free && state.freeCast;
 	state = closeFreeCast(state);
+	if (free && !spendsWindow) state = cloneWith(state, { freeCastBank: false });
 	const exhausted = [...state.exhausted];
 	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
 	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;

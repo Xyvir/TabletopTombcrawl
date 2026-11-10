@@ -51,6 +51,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		maxHp,
 		draftAt,
 		emptyCells,
+		freeCastReady,
 		isBoss,
 		isBossMinion,
 		isFaceDown,
@@ -1186,7 +1187,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:locking={!!preview?.locks.includes(i)}
 					class:need={!!preview?.need.includes(i) || !!preview?.fatal}
-					class:affinity={!!tomb && tomb.freeCast && entry?.role === 'glyph' && abilityUsable(tomb, i)}
+					class:affinity={!!tomb && freeCastReady(tomb, i) && abilityUsable(tomb, i)}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
 					data-role={entry ? entry.role : undefined}

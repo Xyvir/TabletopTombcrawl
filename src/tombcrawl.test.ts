@@ -47,6 +47,7 @@ interface Setup {
 	exhausted?: number[];
 	wounded?: number[];
 	boss?: string;
+	freeCastBank?: boolean;
 }
 
 function makeTomb({
@@ -58,6 +59,7 @@ function makeTomb({
 	exhausted = [],
 	wounded = [],
 	boss,
+	freeCastBank = false,
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
 	const byId = new Map<string, Card>();
@@ -94,6 +96,7 @@ function makeTomb({
 		armed: null,
 		itemWindow: null,
 		freeCast: false,
+		freeCastBank,
 	};
 }
 
@@ -110,6 +113,9 @@ describe("the wizard's affinity", () => {
 	const preparing = (extra: Partial<Setup> = {}) =>
 		makeTomb({ columns: [['5H'], ['9D']], cells: ['KC', '2S', '5C'], draft, exhausted: [1], hidden: ['5H'], ...extra });
 	const refreshed = (extra: Partial<Setup> = {}) => useAbility(preparing(extra), 2)!;
+	// the same board with the glyph fresh, so the banked cast is the only free cast on offer
+	const opening = (extra: Partial<Setup> = {}) =>
+		makeTomb({ columns: [['5H'], ['9D']], cells: ['KC', '2S', '5C'], draft, hidden: ['5H'], ...extra });
 
 	test('the glyph cast on the move after a refresh costs no exhaustion', () => {
 		expect(refreshed().freeCast).toBe(true);
@@ -128,9 +134,31 @@ describe("the wizard's affinity", () => {
 		expect(useAbility(dug, 1)!.exhausted[1]).toBe(true);
 	});
 
+	test('the first glyph cast of the run is free, whenever it comes', () => {
+		const cast = useAbility(opening({ freeCastBank: true }), 1)!;
+
+		expect(cast.armed).toMatchObject({ kind: 'sack' });
+		expect(cast.exhausted[1]).toBe(false);
+		// the one banked cast is spent by the cast it paid for
+		expect(cast.freeCastBank).toBe(false);
+		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
+	});
+
+	test('a refresh window spends itself and leaves the banked cast alone', () => {
+		const state = refreshed({ freeCastBank: true });
+		expect(state.freeCast).toBe(true);
+
+		const cast = useAbility(state, 1)!;
+		expect(cast.exhausted[1]).toBe(false);
+		expect(cast.freeCast).toBe(false);
+		// the window paid for that cast, so the banked one is still waiting
+		expect(cast.freeCastBank).toBe(true);
+		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(false);
+	});
+
 	test('a class that is not the wizard casts at full price', () => {
 		const fighter = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Fighter' } : entry));
-		const state = useAbility(preparing({ draft: fighter }), 2)!;
+		const state = useAbility(preparing({ draft: fighter, freeCastBank: true }), 2)!;
 
 		expect(state.freeCast).toBe(false);
 		expect(useAbility(state, 1)!.exhausted[1]).toBe(true);
