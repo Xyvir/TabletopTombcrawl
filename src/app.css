@@ -308,7 +308,7 @@ img {
 	display: grid;
 	color: #f1e8d4;
 	font-family: Georgia, 'Times New Roman', serif;
-	font-size: clamp(15px, calc(var(--card-h) * 0.38), 44px);
+	font-size: clamp(14px, calc(var(--card-h) * 0.28), 32px);
 	line-height: 1.02;
 	letter-spacing: 0.01em;
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -344,17 +344,19 @@ img {
  */
 .top.tomb {
 	flex-wrap: wrap;
+	/* the stacked header reads from the left edge: title, graveyard, then the track below them */
+	justify-content: flex-start;
 	row-gap: var(--gap);
 }
 
 .top.tomb .cells.tomb {
 	flex: 1 1 100%;
 	max-width: calc(var(--cell-count) * var(--col-w) + (var(--cell-count) - 1) * var(--gap));
-	margin-inline: auto;
 }
 
 .top.tomb .foundations {
-	margin-left: auto;
+	flex: 0 1 auto;
+	margin-left: 0;
 }
 
 /*
@@ -378,6 +380,7 @@ img {
 	/* one header row: the track takes the upper left corner, the graveyard keeps the right */
 	.top.tomb {
 		flex-wrap: nowrap;
+		justify-content: space-between;
 	}
 
 	.top.tomb .cells.tomb {
