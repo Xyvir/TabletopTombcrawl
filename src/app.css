@@ -208,6 +208,15 @@ img {
 	}
 }
 
+/*
+ * The boss king stands a head taller than the pile whether or not it is protected, so it reads as
+ * the monster at a glance. The scale sits on the picture, which leaves the card's drag transform
+ * and the stack offsets carrying it exactly as they were.
+ */
+.card.boss img {
+	transform: scale(1.1);
+}
+
 /* controls */
 .controls {
 	display: flex;
