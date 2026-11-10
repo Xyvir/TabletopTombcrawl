@@ -1209,7 +1209,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</button>
 			{/each}
 			{#if !!tomb && chipAt > 0}
-				<span class="chip" style={`--chip-index:${chipAt}`} aria-hidden="true"></span>
+				<span
+					class="chip"
+					style={`--chip-index:${chipAt}`}
+					title="Conversion tracker: the item slots to its left are your live abilities, and the free cells to its right are plain — they only hold a card. Each conversion walks the chip one slot left."
+				></span>
 			{/if}
 		</div>
 

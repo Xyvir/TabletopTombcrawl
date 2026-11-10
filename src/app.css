@@ -351,8 +351,15 @@ img {
 		radial-gradient(circle, #efe4cc 0 26%, transparent 27%),
 		repeating-conic-gradient(from 0deg, #a72c2c 0 22.5deg, #efe4cc 22.5deg 45deg);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
-	pointer-events: none;
+	/* it is the conversion tracker, so it has to be hoverable to carry its own tooltip */
+	pointer-events: auto;
+	cursor: help;
 	z-index: 2;
+}
+
+/* A held card finds its drop by hit-testing the point, so the chip steps out of the way mid-drag. */
+body:has(.card.dragging) .cells.tomb .chip {
+	pointer-events: none;
 }
 
 /* the table's name in bare type, sized to the corner it stands in */
