@@ -52,6 +52,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		draftAt,
 		emptyCells,
 		freeCastReady,
+		hasPassive,
 		isBoss,
 		isBossMinion,
 		isFaceDown,
@@ -187,6 +188,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	const dragIds = $derived(new Set(drag?.cards ?? []));
+
+	/**
+	 * The hint over a spent item slot names the one suit that will restock it — except for an Orc,
+	 * whose Scavenger takes any card at all.
+	 */
+	function itemSlotHint(state: TombState | null, suit: string): string {
+		const feed = state && hasPassive(state, 'Orc') ? 'any card' : `a ${suit} card`;
+		return `Exhausted item slot — play ${feed} here on your next action to remake the item. Miss it and this is an ordinary free cell.`;
+	}
 
 	function deal(requested?: number): FreeCell {
 		return new FreeCell({ cellCount: CELL_COUNT, cascadeCount: CASCADE_COUNT })
@@ -1199,7 +1209,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''
 								}`
 							: pending
-								? `Exhausted item slot — play a ${pending.suit} card here on your next action to remake the item. Miss it and this is an ordinary free cell.`
+								? itemSlotHint(tomb, pending.suit)
 								: undefined}
 					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${ROLE_WORD[entry.role]}: ${entry.name}` : ''}`}
 					onclick={(event) => (card ? tapCard(event, card) : emptyCellClick(event, location))}

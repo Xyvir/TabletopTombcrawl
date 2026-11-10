@@ -55,7 +55,7 @@ interface Ability {
 const KIN: Record<Suit, Ability> = {
 	spades: {
 		name: 'Orc',
-		text: 'Scavenger: when an item refills, any card of the same colour will do.',
+		text: 'Scavenger: any card can restock a spent item slot, becoming the item of its suit.',
 	},
 	hearts: {
 		name: 'Human',
@@ -1007,9 +1007,12 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 	return spendArmedItem(closeFreeCast(closeItemWindow(next)));
 }
 
-/** Same suit, or any card of the same colour for an Orc's Scavenger. */
-function matchesItemSuit(state: TombState, card: Card, suit: Suit): boolean {
-	return hasPassive(state, 'Orc') ? isRed(card.suit) === isRed(suit) : card.suit === suit;
+/**
+ * What a spent item slot will take: a card of the suit it just lost, or — for the Orc's Scavenger —
+ * any card at all, so he may restock a slot with an item the dungeon never gave him.
+ */
+function restockTakes(state: TombState, card: Card, suit: Suit): boolean {
+	return hasPassive(state, 'Orc') || card.suit === suit;
 }
 
 /** Any action other than the feed closes a spent item slot for good. */
@@ -1102,15 +1105,14 @@ function bossAura(state: TombState, card: Card): TombState {
 	}
 }
 
-/** Fill the cell a spent consumable's own card just vacated with a card of the same suit (or colour). */
+/** Fill the cell a spent consumable's own card just vacated with another card of the same suit. */
 function refillConsumable(state: TombState, cell: number, suit: Suit): TombState {
-	const orc = hasPassive(state, 'Orc');
 	const candidates = state.game.cards.filter((card) => {
 		if (card.location.fixture !== 'cascade') return false;
 		const column = state.game.tableau[card.location.data[0]] ?? [];
 		if (column[column.length - 1] !== card) return false; // only cards already exposed on the board
 		if (isFaceDown(state, card)) return false;
-		return orc ? isRed(card.suit) === isRed(suit) : card.suit === suit;
+		return card.suit === suit;
 	});
 	const pick = candidates[0];
 	if (!pick) {
@@ -1141,8 +1143,8 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// An item only leaves its slot when it is the one beside the chip: conversions run in order.
 	if (entry && source !== convertibleCell(state)) return null;
 
-	// A spent item slot claims exactly one card on the very next action, and that card becomes
-	// the new item. It is always the same ability: the suit has to match, or the colour for an Orc.
+	// A spent item slot claims exactly one card on the very next action, and that card becomes the
+	// new item. It need not be the suit that left: an Orc's Scavenger takes any card at all.
 	const window = state.itemWindow;
 	const feed =
 		window &&
@@ -1150,7 +1152,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		to.fixture === 'cell' &&
 		to.data[0] === window.cell &&
 		cards.length === 1 &&
-		matchesItemSuit(state, cards[0], window.suit)
+		restockTakes(state, cards[0], window.suit)
 			? window
 			: null;
 	// Only a run the free cells could not carry spends the sack; a normal stack move leaves it armed.
@@ -1270,9 +1272,9 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	}
 
 	const settled = spendArmedItem(settle(next, levelBefore));
-	// An item sent home leaves its slot waiting for one action: a card of its suit (any card of the
-	// colour, for an Orc) restocks the item and the chip stays put. Any other action drops the
-	// window, so the chip steps left and the cell is ordinary from then on.
+	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
+	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
+	// chip steps left and the cell is ordinary from then on.
 	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
 	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit } });
 }

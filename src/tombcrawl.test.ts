@@ -1490,21 +1490,73 @@ describe('tombcrawl item refresh', () => {
 		expect(spent.itemWindow).toBe(null);
 	});
 
-	test('an Orc can feed any card of the same colour, which makes the colour’s item', () => {
+	test('an Orc can feed a card of any suit, which makes that suit’s item', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
 			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
+		// the spades glyph is played out, then a heart — the other colour entirely — restocks it
 		const played = tombMove(base(draft, ['4C', '2S']), cell(1), cascade(2))!;
-		const refilled = tombMove(played, cascade(4), cell(1))!;
+		const refilled = tombMove(played, cascade(0), cell(1))!;
 
+		expect(refilled.itemWindow).toBe(null);
 		expect(refilled.draft).toHaveLength(2);
 		expect(refilled.draft.find((item) => item.cell === 1)).toMatchObject({
 			role: 'glyph',
-			suit: 'clubs',
-			name: 'PISORF',
-			id: '7C',
+			suit: 'hearts',
+			name: 'IMAWAL',
+			id: '5H',
 		});
+	});
+
+	test('the same colour is not the same suit: only an Orc takes any card', () => {
+		// a club is the colour of the spades slot, but a plain delver still has to find a spade
+		const played = tombMove(base(), cell(0), cascade(2))!;
+		const missed = tombMove(played, cascade(4), cell(0))!;
+
+		expect(missed.itemWindow).toBe(null);
+		expect(shorthandCard(missed.game.cells[0]!)).toBe('7C');
+		expect(missed.draft).toHaveLength(0);
+	});
+
+	test('a spent item sent home hands its slot to another card of its suit', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'consumable', id: '2D', suit: 'diamonds', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['6D']],
+			cells: ['2D', '5H', '9C'],
+			foundations: ['AH', 'AS', 'AC', 'AD'],
+			draft,
+			exhausted: [0],
+		});
+		const home = attackWith(state, cell(0))!;		expect(home.draft.find((entry) => entry.cell === 0)).toMatchObject({
+			role: 'consumable',
+			suit: 'diamonds',
+			id: '6D',
+		});
+		expect(home.itemWindow).toBe(null);
+	});
+
+	test('an Orc is not handed another suit when a spent item goes home', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '3C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'consumable', id: '2D', suit: 'diamonds', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5C']],
+			cells: ['3C', '2D', '9C'],
+			foundations: ['AH', 'AS', 'AC', 'AD'],
+			draft,
+			exhausted: [1],
+		});
+		const home = attackWith(state, cell(1))!;
+
+		// the club stays on the board: Scavenger is a feed he chooses, not an automatic grab
+		expect(home.game.cells[1]).toBe(null);
+		expect(home.draft).toHaveLength(1);
+		// and the slot is still waiting for whichever card he does feed it
+		expect(home.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'diamonds' });
 	});
 });
 

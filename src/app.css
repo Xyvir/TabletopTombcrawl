@@ -562,7 +562,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
-/* a spent item slot: one action to feed it a matching card and remake the item */
+/* a spent item slot: one action to feed it a card and remake the item */
 .slot.pending {
 	border-color: rgba(255, 214, 92, 0.9);
 	box-shadow: 0 0 0 2px rgba(255, 214, 92, 0.55), 0 0 16px rgba(255, 196, 32, 0.45);
