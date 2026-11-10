@@ -39,6 +39,11 @@ export const TOMB_RULES = {
 	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
 	 */
 	levelDamageCap: 0,
+	/**
+	 * Whether a movement glyph may carry the frozen boss king: no hand can shift it, but a spell can
+	 * lift it out of the way, which frees the column it was sitting on. Killing it stays gated.
+	 */
+	glyphMoveBoss: false,
 };
 
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
@@ -516,6 +521,19 @@ function frozenBoss(state: TombState, card: Card): boolean {
 	return isBoss(state, card) && bossProtected(state);
 }
 
+/** The four glyphs that move a card rather than wound, heal or arm something else. */
+const MOVING_GLYPHS = new Set(['sack', 'imawal', 'pisorf', 'weytwut']);
+
+/**
+ * A frozen boss cannot be moved by hand, and by default nothing moves it at all. When the rules let
+ * a movement glyph lift it, only the glyph does: the foundation stays shut until a king is home.
+ */
+function immobileBoss(state: TombState, card: Card): boolean {
+	if (!frozenBoss(state, card)) return false;
+	const kind: string | undefined = state.armed?.kind;
+	return !(TOMB_RULES.glyphMoveBoss && kind !== undefined && MOVING_GLYPHS.has(kind));
+}
+
 export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 	const occupied = game.foundations.findIndex((card) => card?.suit === suit);
 	if (occupied !== -1) return occupied;
@@ -646,7 +664,7 @@ export function pisorfPair(state: TombState, from: CardLocation): Card[] | null 
 	if (from.fixture !== 'cascade') return null;
 	const run = tombRun(state, from);
 	if (run.length !== 2 || !runReachesBottom(state, from, run)) return null;
-	if (run.some((card) => isFaceDown(state, card) || frozenBoss(state, card))) return null;
+	if (run.some((card) => isFaceDown(state, card) || immobileBoss(state, card))) return null;
 	return run;
 }
 
@@ -1176,8 +1194,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const cards = tombRun(state, from);
 	if (!cards.length) return null;
 	if (from.fixture === 'cascade' && !runReachesBottom(state, from, cards)) return null;
-	// "Frozen" means no method at all: not a build, not a cell, not the foundation.
-	if (cards.some((card) => frozenBoss(state, card))) return null;
+	// "Frozen" means no hand can shift it: not a build, not a cell, not the foundation. A movement
+	// glyph may still carry it when the rules allow that, which is the only way past a stuck column.
+	if (cards.some((card) => immobileBoss(state, card))) return null;
 
 	const source = from.fixture === 'cell' ? from.data[0] : -1;
 	const entry = source >= 0 ? draftAt(state, source) : undefined;
@@ -1524,7 +1543,7 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	if (armed.first === cardId(card)) return cloneWith(state, { armed: { ...armed, first: undefined } });
 	const first = state.game.cards.find((candidate) => cardId(candidate) === armed.first);
 	if (!first || isFaceDown(state, first) || isFaceDown(state, card)) return null;
-	if (frozenBoss(state, first) || frozenBoss(state, card)) return null;
+	if (immobileBoss(state, first) || immobileBoss(state, card)) return null;
 	const game = relocate(cloneWith(state, { armed: null }), [
 		{ id: armed.first, to: card.location },
 		{ id: cardId(card), to: first.location },

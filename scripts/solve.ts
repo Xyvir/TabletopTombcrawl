@@ -12,6 +12,7 @@ interface Options {
 	strategy: 'best' | 'beam' | 'dfs';
 	heal: number;
 	cap: number;
+	glyphBoss: boolean;
 	seconds: number;
 	limit: number | null;
 	quiet: boolean;
@@ -29,6 +30,7 @@ function parse(argv: string[]): Options {
 		strategy: 'best',
 		heal: 1,
 		cap: 0,
+		glyphBoss: false,
 		seconds: 120,
 		limit: null,
 		quiet: false,
@@ -71,6 +73,9 @@ function parse(argv: string[]): Options {
 				options.cap = Number(value);
 				i++;
 				break;
+			case '--glyphboss':
+				options.glyphBoss = true;
+				break;
 			case '--strategy':
 				options.strategy = value === 'dfs' || value === 'beam' ? value : 'best';
 				i++;
@@ -112,7 +117,7 @@ function heading(state: TombState, options: Options): string {
 	const free = FREE_CELL_COUNT[options.difficulty];
 	const goal = options.goal === 'boss' ? 'slay the boss' : '100% clear';
 	return [
-		`seed ${state.seed}  ·  ${options.difficulty} (${free} free cells)  ·  goal: ${goal}  ·  level up heals ${TOMB_RULES.levelUpHeal}${TOMB_RULES.levelDamageCap ? `  ·  no blow over ${TOMB_RULES.levelDamageCap}` : ''}`,
+		`seed ${state.seed}  ·  ${options.difficulty} (${free} free cells)  ·  goal: ${goal}  ·  level up heals ${TOMB_RULES.levelUpHeal}${TOMB_RULES.levelDamageCap ? `  ·  no blow over ${TOMB_RULES.levelDamageCap}` : ''}${TOMB_RULES.glyphMoveBoss ? '  ·  glyphs may shift the boss' : ''}`,
 		`boss  ${state.bossSuit ? `${state.bossSuit} king` : 'not yet revealed'}  ·  party  ${party(state) || '(none)'}`,
 	].join('\n');
 }
@@ -231,6 +236,7 @@ options
   --strategy best|beam|dfs     search order (default best)
   --heal N                     hearts a level up restores (default 1; tuning only)
   --cap N                      most hearts one kill may cost (default 0, no ceiling)
+  --glyphboss                  let a movement glyph carry the frozen boss king
   --depth N                    longest line to follow (default 220)
   --time S                     seconds before giving up (default 120)
   --steps N                    print only the first N moves of a line
@@ -251,6 +257,7 @@ function main(): void {
 	// A tuning knob for experiments only: the shipped game keeps the default of one heart.
 	TOMB_RULES.levelUpHeal = options.heal;
 	TOMB_RULES.levelDamageCap = options.cap;
+	TOMB_RULES.glyphMoveBoss = options.glyphBoss;
 	if (options.seeds) {
 		range(options);
 		return;

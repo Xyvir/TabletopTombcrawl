@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { initializeDeckOfCards, shorthandCard, type Card } from './game/card/card';
 import { FreeCell } from './game/game';
 import {	MONSTERS,
+	TOMB_RULES,
 	TOMB_CELL_COUNT,
 	FREE_CELL_COUNT,
 	abilityUsable,
@@ -863,6 +864,29 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(bossUnlocked(unlocked)).toBe(true);
 		expect(canSendHome(unlocked, cascade(0)).legal).toBe(true);
 		expect(tombMove(unlocked, { fixture: 'cascade', data: [0, 0] }, { fixture: 'cascade', data: [1, 0] })).not.toBe(null);
+	});
+});
+
+describe('tombcrawl a boss king behind a glyph', () => {
+	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' }];
+	const board = () => makeTomb({ columns: [['KH'], []], foundations: ['QH'], draft: glyph, boss: 'KH' });
+
+	test('no hand shifts it, a movement glyph can, and it stays unkillable', () => {
+		expect(tombMove(board(), cascade(0), cascade(1))).toBe(null);
+
+		TOMB_RULES.glyphMoveBoss = true;
+		try {
+			const primed = useAbility(board(), 0)!;
+			expect(primed.armed).toMatchObject({ kind: 'sack' });
+			const carried = tombMove(primed, cascade(0), cascade(1));
+			expect(carried).not.toBe(null);
+			expect(shorthandCard(carried!.game.tableau[1][0])).toBe('KH');
+			// The spell lifted it out of the way; the foundation stays shut until a king is home.
+			expect(canSendHome(primed, cascade(0)).legal).toBe(false);
+			expect(canSendHome(primed, cascade(0)).reason).toContain('frozen');
+		} finally {
+			TOMB_RULES.glyphMoveBoss = false;
+		}
 	});
 });
 
