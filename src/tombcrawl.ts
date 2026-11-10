@@ -657,10 +657,12 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 		return { legal: false, reason: 'foundation already past this rank' };
 	}
 
-	// A drafted card in a free cell opens the rank above it, but never withholds the ranks below:
-	// the suit can still be built up from its ace while that card sits out of the foundation.
+	// A drafted card counts as already home, but only once it is the card this pile is really waiting
+	// for: it opens the rank above it and never withholds the ranks below. A drafted three does not
+	// open the four while the two is still buried, so no kill (or wound preview) is offered for a
+	// card that is out of reach.
 	const drafted = phantomCard(state, card.suit, cardId(card));
-	const skip = !!drafted && rank === rankOf(drafted.rank) + 1;
+	const skip = !!drafted && rankOf(drafted.rank) === home + gap && rank === rankOf(drafted.rank) + 1;
 	if (rank > home + gap && !skip) {
 		return {
 			legal: false,

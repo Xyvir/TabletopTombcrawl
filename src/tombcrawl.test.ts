@@ -696,13 +696,33 @@ describe('tombcrawl progression rules', () => {
 		expect(ace.location.fixture).toBe('foundation');
 	});
 
-	test('a drafted card still opens the rank above it', () => {
+	test('a drafted card only opens the rank above it once the pile is waiting for it', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'PISORF', text: '' }];
-		const state = makeTomb({ columns: [['3S']], cells: ['2S', '7D', '8D', '9D'], draft });
-		expect(attackPreview(state, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
+		// no ace home yet, so the drafted two is not the card this pile waits for and nothing opens
+		const early = makeTomb({ columns: [['3S']], cells: ['2S', '7D', '8D'], draft });
+		expect(canSendHome(early, cascade(0, 0)).legal).toBe(false);
+		expect(attackPreview(early, cascade(0, 0)).wounds).toEqual([]);
+
+		// with the ace home the drafted two is next in line, so the three may go
+		const ready = makeTomb({ columns: [['3S']], cells: ['2S', '7D', '8D'], foundations: ['AS'], draft });
+		expect(attackPreview(ready, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
 
 		const home = makeTomb({ columns: [['3H']], foundations: ['5H'] });
 		expect(attackPreview(home, cascade(0, 0)).reason).toBe('foundation already past this rank');
+	});
+
+	test('a drafted card does not open a rank while the pile is still short of it', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '3S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+		const state = makeTomb({
+			columns: [['4S']],
+			cells: ['3S', 'KD', 'QD', '2C', '3C', '4C', '5C'],
+			foundations: ['AS'],
+			draft,
+		});
+		// the two of spades is still out there, so the drafted three opens nothing above it
+		const preview = attackPreview(state, cascade(0, 0));
+		expect(preview.legal).toBe(false);
+		expect(preview.wounds).toEqual([]);
 	});
 
 	test('a drafted card counts as home for the next rank', () => {
