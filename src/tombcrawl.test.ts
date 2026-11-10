@@ -1727,6 +1727,12 @@ describe('par', () => {
 		expect(parCleared(makeTomb({ columns: [['2H']], boss: 'KD' }))).toBe(0);
 	});
 
+	test('the percentage keeps one decimal, so early cards still show', () => {
+		// a lone king home is 4%, and a lone two is 0.4% rather than nothing
+		expect(parCleared(makeTomb({ columns: [['2H']], foundations: ['KS'] }))).toBe(4);
+		expect(parCleared(makeTomb({ columns: [['2H']], foundations: ['2S'] }))).toBe(0.4);
+	});
+
 	test('par divides into a clean percentage of the tomb cleared', () => {
 		// (500 - par) / 5 is the percentage clear, so the round total is what makes it readable
 		const fresh = tombPar(createTombState(1));

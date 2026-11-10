@@ -1288,7 +1288,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span
 				class="par"
 				title="Par: a full tomb is worth 500, and every card takes its own value off that as it goes home — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. Lower is better, and (500 - par) / 5 is the percentage cleared."
-			>Par {tombPar(tomb)} <span class="pct">({parCleared(tomb)}% cleared)</span></span
+			>Par {tombPar(tomb)} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
 			>
 		</div>
 	{/if}
