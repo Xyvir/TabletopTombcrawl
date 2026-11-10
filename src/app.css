@@ -458,6 +458,11 @@ body:has(.card.dragging) .cells.tomb .chip {
  * upside down, and it still costs the tableau no second header row.
  */
 @media (min-width: 1400px) {
+	/* eleven slots and the title share one row, so the board takes the width they need */
+	.board.tomb {
+		max-width: 1560px;
+	}
+
 	.board.tomb .titlecard {
 		/* first in the row, ahead of the track: the corner reads the same at every width */
 		order: -2;
@@ -466,6 +471,13 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 	/* one header row: the track takes the upper left corner, the graveyard keeps the right */
 	.top.tomb {
+		/*
+		 * Seven hearts and four graves plus the title share this row, and the slots are sized by the
+		 * same variable as the tableau. Left at tableau size the row overflows and the last hearts slide
+		 * under the graveyard, so the header's own cards shrink to whatever fits: a local override keeps
+		 * the tableau cards at full size.
+		 */
+		--col-w: min(104px, calc((100vw - 240px) / 12.6));
 		flex-wrap: nowrap;
 		justify-content: space-between;
 	}
