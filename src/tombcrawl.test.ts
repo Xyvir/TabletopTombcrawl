@@ -772,8 +772,23 @@ describe('tombcrawl progression rules', () => {
 
 		const dug = revealFaceDown(moved, cascade(0, 0))!;
 		expect(isFaceDown(dug, dug.game.cards.find((card) => shorthandCard(card) === '2C')!)).toBe(false);
-		expect(dug.wounded[6]).toBe(0);
-		expect(dug.wounded[5]).toBe(1);
+		// healing runs left to right, so the leftmost wound of the pair comes back first
+		expect(dug.wounded[5]).toBe(0);
+		expect(dug.wounded[6]).toBe(1);
+	});
+
+	test('exploration heals from the left edge of the track, so the wounds stay bunched right', () => {
+		const state = makeTomb({
+			columns: [['2C'], []],
+			cells: ['8H', '9H', 'TH', 'JH', 'QH', null, null],
+			hidden: ['2C'],
+			wounded: [2, 3, 4],
+		});
+		expect(hp(state)).toBe(2);
+
+		const dug = revealFaceDown(state, cascade(0, 0))!;
+		expect(dug.wounded).toEqual([0, 0, 0, 1, 1, 0, 0]);
+		expect(hp(dug)).toBe(3);
 	});
 
 	test('a face-down card can never be sent home, so an auto move cannot reveal it', () => {

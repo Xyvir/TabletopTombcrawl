@@ -397,7 +397,7 @@ export function newlyWounded(before: TombState, after: TombState): string[] {
 
 /**
  * The cards that just came back face-up, so the board can turn them over with the same animation a
- * wound uses, run the other way. Healing runs right edge inward, one card per point healed.
+ * wound uses, run the other way. Healing runs left to right, one card per point healed.
  */
 export function newlyHealed(before: TombState, after: TombState): string[] {
 	return before.wounded.flatMap((count, i) => {
@@ -780,11 +780,15 @@ function woundCardIds(state: TombState, afterItem: TombState, itemCell: number |
 	return [...drained, ...turned];
 }
 
-/** Healing flips wounds face-up again, right edge first; every wounded card needs its own heal. */
+/**
+ * Healing flips wounds face-up again from the left edge inward, the reverse of the way a blow pays
+ * them, so the wounded cards stay bunched against the right edge of the track. Every wounded card
+ * needs its own heal.
+ */
 function heal(state: TombState, count: number): { wounded: number[]; healed: number } {
 	const wounded = [...state.wounded];
 	let healed = 0;
-	for (let cell = wounded.length - 1; cell >= 0 && healed < count; cell--) {
+	for (let cell = 0; cell < wounded.length && healed < count; cell++) {
 		while (wounded[cell] > 0 && healed < count) {
 			wounded[cell] -= 1;
 			healed += 1;
@@ -876,7 +880,7 @@ export function canRevealFaceDown(state: TombState, location: CardLocation): boo
 	return column[column.length - 1] === card;
 }
 
-/** Reveal one face-down card as an exploration: it heals from the right edge. */
+/** Reveal one face-down card as an exploration: it heals from the left edge of the track. */
 export function revealFaceDown(state: TombState, location: CardLocation): TombState | null {
 	if (!canRevealFaceDown(state, location)) return null;
 	const card = cardAt(state.game, location)!;
