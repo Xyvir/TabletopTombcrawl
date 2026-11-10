@@ -415,6 +415,37 @@ img {
 	.foundations {
 		margin-left: auto;
 	}
+
+	/* the tomb columns read from the left edge, so any slack sits on the right rather than both ends */
+	.board.tomb .tableau {
+		justify-content: flex-start;
+	}
+}
+
+/*
+ * A narrow window still has ten controls to place: tighten the pills and their spacing so they wrap
+ * into fewer rows instead of crowding the bottom of the board.
+ */
+@media (max-width: 820px) {
+	.controls {
+		font-size: 12.5px;
+		gap: calc(var(--gap) * 0.7);
+	}
+
+	.btn {
+		padding: 0.42em 0.7em;
+	}
+}
+
+/* narrow enough that the controls wrap onto a third row: reserve that height for the columns */
+@media (max-width: 620px) {
+	:root {
+		--col-w: min(11.2vw, 104px, max(40px, calc((100dvh - 190px) / 6.9)));
+	}
+
+	.controls {
+		font-size: 11.5px;
+	}
 }
 
 /* a spent item slot: one action to feed it a matching card and remake the item */
