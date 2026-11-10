@@ -78,7 +78,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'Human',
-		text: 'Courageous: send a card home skipping one missing rank, and slide a lower card in under the pile.',
+		text: 'Courageous: send a card home skipping one missing rank — a gap anyone can fill afterwards.',
 	},
 	clubs: {
 		name: 'Elf',
@@ -354,7 +354,7 @@ export function hasGlyph(state: TombState, name: string): boolean {
 export function playerLevel(game: FreeCell): number {
 	// The delver starts at level 1: an empty foundation counts as its ace, so the first level up
 	// only arrives once every suit has reached its two. Each pile is read by its highest card, since
-	// a Human can slide a lower one underneath.
+	// any delver can slide a lower one underneath.
 	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) =>
 		game.cards
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
@@ -568,7 +568,7 @@ export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 	if (occupied !== -1) return occupied;
 	return game.foundations.findIndex((card) => !card);
 }	export function foundationTopRank(state: TombState, suit: Suit): number {
-		// A pile can hold more than one card (a Human slides low cards underneath): the top is the highest.
+		// A pile can hold more than one card (any delver slides low cards underneath): the top is the highest.
 		return state.game.cards
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
 			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0);
@@ -751,10 +751,12 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 
 	const rank = rankOf(card.rank);
 	const home = foundationTopRank(state, card.suit);
+	// Anyone may slide a lower card in under a pile: the pile keeps its higher card on top, so a rank
+	// that was skipped stays available for the rest of the run. Only a Human may open the rank above
+	// a gap in the first place.
 	const human = hasPassive(state, 'Human');
 	const gap = human ? 2 : 1;
-	// A Human may still slide a card under its pile: the pile keeps the higher card on top.
-	if (rank === home || (rank < home && !human)) {
+	if (rank === home) {
 		return { legal: false, reason: 'foundation already past this rank' };
 	}
 

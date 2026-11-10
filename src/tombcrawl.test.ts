@@ -950,8 +950,9 @@ describe('tombcrawl progression rules', () => {
 		const ready = makeTomb({ columns: [['3S']], cells: ['2S', '7D', '8D'], foundations: ['AS'], draft });
 		expect(attackPreview(ready, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
 
-		const home = makeTomb({ columns: [['3H']], foundations: ['5H'] });
-		expect(attackPreview(home, cascade(0, 0)).reason).toBe('foundation already past this rank');
+		// a card below the pile is no longer refused: it slides in underneath it, whatever it costs
+		const under = makeTomb({ columns: [['3H'], ['KS']], cells: ['QC', 'QD', '2C'], foundations: ['5H'] });
+		expect(attackPreview(under, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
 	});
 
 	test('a drafted card does not open a rank while the pile is still short of it', () => {
@@ -986,6 +987,10 @@ describe('tombcrawl progression rules', () => {
 
 			const reaching = makeTomb({ columns: [['3H']], cells: ['KS'], draft: human });
 			expect(canSendHome(reaching, cascade(0)).legal).toBe(false);
+
+			// the gap itself is the Human's alone to open
+			const plain = makeTomb({ columns: [['2H']], cells: ['KS'] });
+			expect(canSendHome(plain, cascade(0)).legal).toBe(false);
 		});
 
 		test('may slide a card under a pile that has already passed it', () => {
@@ -1001,9 +1006,17 @@ describe('tombcrawl progression rules', () => {
 			expect(canSendHome(home, cascade(1)).legal).toBe(true);
 		});
 
-		test('does not change the rule for anyone else', () => {
-			const state = makeTomb({ columns: [['3S']], foundations: ['5S'] });
-			expect(canSendHome(state, cascade(0)).legal).toBe(false);
+		test('is not the only delver who may slide a card under', () => {
+			const state = makeTomb({ columns: [['3S']], cells: ['KS', '2C', '2D'], foundations: ['5S'] });
+			expect(canSendHome(state, cascade(0)).legal).toBe(true);
+
+			const home = attackWith(state, cascade(0))!;
+			const spades = home.game.cards
+				.filter((card) => card.suit === 'spades' && card.location.fixture === 'foundation')
+				.map((card) => shorthandCard(card))
+				.sort();
+			// the pile still reads five, so a skipped rank is never lost to the rest of the run
+			expect(spades).toEqual(['3S', '5S']);
 		});
 	});
 
