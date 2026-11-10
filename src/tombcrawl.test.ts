@@ -1711,8 +1711,16 @@ describe('par', () => {
 		expect(tombPar(makeTomb({ columns: [['2H']], cells: ['KD'], wounded: [1] }))).toBe(plain);
 	});
 
-	test('a whole deal reads 460 with a boss on the board and 380 without', () => {
-		const fresh = createTombState(1);
-		expect(tombPar(fresh)).toBe(fresh.bossId ? 460 : 380);
+	test('a full tomb opens at 460, whether or not the boss has been uncovered', () => {
+		// the boss is in the deal from the start, so his hundred is already spoken for
+		expect(tombPar(makeTomb({ columns: [['2H']] }))).toBe(460);
+		expect(tombPar(makeTomb({ columns: [['2H']], boss: 'KD' }))).toBe(460);
+		expect(tombPar(createTombState(1))).toBe(460);
+	});
+
+	test('a card going home takes exactly its value off the whole', () => {
+		const onBoard = makeTomb({ columns: [['2H']], cells: ['TS'] });
+		const home = makeTomb({ columns: [['2H']], foundations: ['AH'] });
+		expect(tombPar(onBoard) - tombPar(home)).toBe(1);
 	});
 });

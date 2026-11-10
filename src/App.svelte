@@ -1286,7 +1286,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
 			<span
 				class="par"
-				title="Par: every card still in the dungeon, priced like blackjack — aces one, court cards ten, kings twenty and the boss king a hundred. Lower is better."
+				title="Par: a full tomb is worth 460, and every card takes its own value off that as it goes home — aces one, court cards ten, kings twenty, and the boss king a hundred whether or not he has been uncovered. Lower is better."
 			>Par {tombPar(tomb)}</span
 			>
 		</div>

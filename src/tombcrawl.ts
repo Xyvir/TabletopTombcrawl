@@ -907,18 +907,27 @@ function refreshGlyphs(state: TombState): TombState {
 }
 
 /**
- * Par: what the dungeon is still holding, read card by card like a blackjack hand. Every card off
- * the foundation counts — aces low at one, court cards at ten — except kings, which cost twenty, and
- * the boss king, which costs a hundred until it is sent home. Lower is better.
+ * What a full tomb is worth before a single card goes home: the whole deck at its values, with the
+ * boss king priced at a hundred. Every deal opens on this number, because the boss is in there
+ * whether or not the fog has lifted off him yet.
+ */
+const PAR_TOTAL = 460;
+
+/**
+ * Par: the score, counted down from a full tomb. A card going home takes its own value off the
+ * whole — aces one, court cards ten, kings twenty, the boss king a hundred — so par only ever
+ * falls, and a fresh deal always opens on 460 even while the boss still lies under the fog. Lower
+ * is better.
  */
 export function tombPar(state: TombState): number {
-	return state.game.cards
-		.filter((card) => card.location.fixture !== 'foundation')
-		.reduce((sum, card) => {
-			if (cardId(card) === state.bossId) return sum + 100;
-			if (card.rank === 'king') return sum + 20;
-			return sum + Math.min(rankOf(card.rank), 10);
-		}, 0);
+	const home = state.game.cards.filter((card) => card.location.fixture === 'foundation');
+	const taken = home.reduce(
+		(sum, card) => sum + (card.rank === 'king' ? 20 : Math.min(rankOf(card.rank), 10)),
+		0
+	);
+	// His extra eighty is only paid out for the card the dungeon actually made the boss.
+	const bossHome = !!state.bossId && home.some((card) => cardId(card) === state.bossId);
+	return PAR_TOTAL - taken - (bossHome ? 80 : 0);
 }
 
 /** Golf score: every card still off the foundation counts against you, court cards as ten. */
