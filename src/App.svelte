@@ -71,6 +71,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombRun,
 		tombTapTargets,
 		useAbility,
+		woundedCanGoHome,
 		type Difficulty,
 		type TombState,
 	} from './tombcrawl';
@@ -1239,7 +1240,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
 					data-role={entry ? entry.role : undefined}						title={wounded
-							? `Wounded ${wounded.rank} of ${wounded.suit} — face down. Heal it face up or slay this creature before you can use it.`
+							? `Wounded ${wounded.rank} of ${wounded.suit} — face down. ${
+									tomb && woundedCanGoHome(tomb)
+										? 'Heal it face up, or slay it straight to its foundation, before you can use it.'
+										: 'Heal it face up before you can use it.'
+								}`
 						: entry
 							? `${entry.name} — ${ROLE_LABEL[entry.role]}.\n${entry.text}${
 									tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''

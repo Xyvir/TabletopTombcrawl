@@ -53,6 +53,8 @@ interface Setup {
 	wounded?: number[];
 	boss?: string;
 	freeCastBank?: boolean;
+	/** Size of the track: 8 is easy, 7 med, 6 hard. Free cells are the whole difficulty difference. */
+	cellCount?: number;
 }
 
 function makeTomb({
@@ -65,6 +67,7 @@ function makeTomb({
 	wounded = [],
 	boss,
 	freeCastBank = false,
+	cellCount = TOMB_CELL_COUNT,
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
 	const byId = new Map<string, Card>();
@@ -86,7 +89,7 @@ function makeTomb({
 		if (!used.has(shorthandCard(card))) card.location = { fixture: 'deck', data: [deckIndex++] };
 	});
 
-	const game = new FreeCell({ cellCount: TOMB_CELL_COUNT, cascadeCount: 8, cards });
+	const game = new FreeCell({ cellCount, cascadeCount: 8, cards });
 	return {
 		game,
 		seed: 1,
@@ -94,8 +97,8 @@ function makeTomb({
 		draft,
 		bossId: boss ?? null,
 		bossSuit: boss ? byId.get(boss)!.suit : null,
-		exhausted: Array.from({ length: TOMB_CELL_COUNT }, (_, i) => exhausted.includes(i)),
-		wounded: Array.from({ length: TOMB_CELL_COUNT }, (_, i) => (wounded.includes(i) ? 1 : 0)),
+		exhausted: Array.from({ length: cellCount }, (_, i) => exhausted.includes(i)),
+		wounded: Array.from({ length: cellCount }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
 		score: null,
 		armed: null,
@@ -893,13 +896,18 @@ describe('tombcrawl a boss king behind a glyph', () => {
 });
 
 describe('tombcrawl a wounded card', () => {
-	test('the foundation is the one way out that needs no heal', () => {
-		const state = makeTomb({
+	// Easy keeps four free cells, so the track is eight slots; med and hard use seven and six.
+	const board = (cellCount: number) =>
+		makeTomb({
+			cellCount,
 			columns: [['KS'], []],
 			cells: ['3C', '9S', '9H', '9D', '8C', '8D'],
 			foundations: ['2C'],
 			wounded: [1, 0, 0, 0, 0, 0],
 		});
+
+	test('on easy the foundation is the one way out that needs no heal', () => {
+		const state = board(8);
 		expect(cellTopWounded(state, 0)).toBe(true);
 		// locked against the board, even to an empty column
 		expect(tombMove(state, { fixture: 'cell', data: [0] }, cascade(1))).toBe(null);
@@ -911,6 +919,12 @@ describe('tombcrawl a wounded card', () => {
 		expect(kill.game.cards.find((card) => shorthandCard(card) === '3C')!.location.fixture).toBe('foundation');
 		// the wound leaves with the card instead of haunting the empty slot
 		expect(kill.wounded[0]).toBe(0);
+	});
+
+	test('on med the same wound has to be healed face up first', () => {
+		const state = board(7);
+		expect(attackPreview(state, { fixture: 'cell', data: [0] })).toMatchObject({ legal: false, reason: 'wounded' });
+		expect(attackWith(state, { fixture: 'cell', data: [0] })).toBe(null);
 	});
 });
 
@@ -1825,5 +1839,25 @@ describe('tombcrawl an ascended delver', () => {
 	test('a boss still standing means no ascension', () => {
 		const state = makeTomb({ columns: [['QS'], []], foundations: ['JS'], boss: 'KC' });
 		expect(attackPreview(state, cascade(0)).legal).toBe(false);
+	});
+});
+
+describe('tombcrawl a kill that costs nothing', () => {
+	// The Thief's Bounty pays for the pile leading the board, so this kill is free and the track is bare.
+	const thief = (): DraftCard[] => [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
+
+	test('a free kill does not owe the spare heart', () => {
+		const state = makeTomb({ columns: [['5H'], []], foundations: ['4H'], draft: thief() });
+		expect(hp(state)).toBe(0);
+		const preview = attackPreview(state, cascade(0));
+		expect(preview.damage).toBe(0);
+		expect(preview.reason).toBe('');
+		expect(preview.legal).toBe(true);
+		expect(attackWith(state, cascade(0))).not.toBe(null);
+	});
+
+	test('a kill that costs anything at all still leaves a heart standing', () => {
+		const state = makeTomb({ columns: [['5H'], []], foundations: ['4H'] });
+		expect(attackPreview(state, cascade(0))).toMatchObject({ legal: false, fatal: true });
 	});
 });

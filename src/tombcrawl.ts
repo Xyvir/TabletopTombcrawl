@@ -521,6 +521,26 @@ export function ascended(state: TombState): boolean {
 	return bossSlain(state) && state.game.cells.every((card) => !card);
 }
 
+/**
+ * The difficulty a state was dealt at. The track is the whole difference between the three — four
+ * free cells, three or two — so its size is the rule, rather than something every state has to carry.
+ */
+export function difficultyOf(state: TombState): Difficulty {
+	const cells = state.game.cells.length;
+	return (
+		(Object.keys(FREE_CELL_COUNT) as Difficulty[]).find((key) => DRAFT_CELL_COUNT + FREE_CELL_COUNT[key] === cells) ??
+		'med'
+	);
+}
+
+/**
+ * Whether a wounded card may still be slain straight to its foundation. On easy the tomb is the
+ * lesson and a wound is no life sentence; med and hard make you heal it face up first.
+ */
+export function woundedCanGoHome(state: TombState): boolean {
+	return difficultyOf(state) === 'easy';
+}
+
 /** Dwarf roots: while that passive is drafted, the boss king carries no protection at all. */
 export function bossProtected(state: TombState): boolean {
 	return !hasPassive(state, 'Dwarf') && !bossUnlocked(state);
@@ -709,8 +729,11 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	if (card.location.fixture === 'foundation') return { legal: false, reason: 'already home' };
 
 	if (from.fixture === 'cell') {
-		// A wound locks a card against building, spells and passives, but the foundation is the one way
-		// out that does not need healing first: slaying the creature takes the wound with it.
+		// A wound locks a card against building, spells and passives. The foundation is the one way out
+		// that needs no heal first — but only on easy: med and hard turn you back to heal it.
+		if (cellTopWounded(state, from.data[0]) && !woundedCanGoHome(state)) {
+			return { legal: false, reason: 'wounded' };
+		}
 		// Conversion runs in order: only the drafted item beside the chip may leave its slot.
 		if (draftAt(state, from.data[0]) && from.data[0] !== convertibleCell(state)) {
 			return { legal: false, reason: 'convert the item beside the chip first' };
@@ -801,8 +824,10 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// A Revive buys the one wound the track cannot hold: that action may spend the last heart, and
 	// the item is spent with it, so the reserve only applies when the spell is not armed.
 	const revive = state.armed?.kind === 'revive';
-	// The reserve wants a heart held back; an ascended delver has none to hold and owes none, either.
-	const short = Math.max(0, total - free + (revive || ascendant ? 0 : 1));
+	// The reserve wants a heart held back, but only a bill can spend one: a kill that costs nothing
+	// spends nothing, so it never owes the spare heart. An ascended delver owes nothing at all.
+	const chargeable = total > 0 && !revive && !ascendant;
+	const short = Math.max(0, total - free + (chargeable ? 1 : 0));
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
 	const afterItem = itemCell === null ? state : woundCell(state, itemCell);
