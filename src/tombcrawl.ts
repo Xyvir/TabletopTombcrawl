@@ -33,7 +33,18 @@ export const ROLE_LABEL: Record<DraftRole, string> = {
 	kin: 'Kin · passive',
 	class: 'Class · passive',
 	glyph: 'Glyph · active, refreshes on level up',
-	consumable: 'Consumable · active, refilled by playing it home',
+	consumable: 'Item · active, refilled by playing it home',
+};
+
+/**
+ * The one-word reminder printed over each draft slot: four unfamiliar names tell a new player
+ * nothing, but "kin, class, glyph, item" says which slot is which at a glance.
+ */
+export const ROLE_WORD: Record<DraftRole, string> = {
+	kin: 'kin',
+	class: 'class',
+	glyph: 'glyph',
+	consumable: 'item',
 };
 
 interface Ability {
@@ -44,7 +55,7 @@ interface Ability {
 const KIN: Record<Suit, Ability> = {
 	spades: {
 		name: 'Orc',
-		text: 'Scavenger: when a Consumable refills, any card of the same colour will do.',
+		text: 'Scavenger: when an item refills, any card of the same colour will do.',
 	},
 	hearts: {
 		name: 'Human',
@@ -353,7 +364,7 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 		power: 'Poison',
 		text: 'killing this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
 	},
-	clubs: { name: 'Gorgon', power: 'Burden', text: 'killing this exhausts and wounds your Consumable.' },
+	clubs: { name: 'Gorgon', power: 'Burden', text: 'killing this exhausts and wounds your item.' },
 	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts and wounds your Glyph.' },
 };
 

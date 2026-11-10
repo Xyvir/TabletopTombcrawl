@@ -27,6 +27,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import {
 		MONSTERS,
 		ROLE_LABEL,
+		ROLE_WORD,
 		abilityUsable,
 		armedClick,
 		armedDrop,
@@ -1158,7 +1159,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							: pending
 								? `Exhausted item slot — play a ${pending.suit} card here on your next action to remake the item. Miss it and this is an ordinary free cell.`
 								: undefined}
-					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${entry.role}: ${entry.name}` : ''}`}
+					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${ROLE_WORD[entry.role]}: ${entry.name}` : ''}`}
 					onclick={(event) => (card ? tapCard(event, card) : emptyCellClick(event, location))}
 					onpointerdown={(event) => card && onCardPointerDown(event, card)}
 					onpointerenter={() => {
@@ -1204,6 +1205,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{/if}
 					<span class="slay" class:on={slaying} aria-hidden="true">{@render swords()}</span>
 					{#if entry}
+						<span class="kind">{ROLE_WORD[entry.role]}</span>
 						<span class="role">{entry.name}</span>
 					{/if}
 				</button>

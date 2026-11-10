@@ -669,6 +669,25 @@ body:has(.card.dragging) .cells.tomb .chip {
 	pointer-events: none;
 }
 
+/*
+ * The reminder over each drafted slot: four unfamiliar names say nothing to a new player, so the
+ * slot is labelled kin, class, glyph or item in a whisper of type. It rides just above the slot's
+ * top edge, in the gap the header row already leaves, so it never sits on the card.
+ */
+.slot .kind {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	transform: translateY(calc(-100% - 2px));
+	font-size: 0.46rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	text-align: center;
+	color: rgba(255, 255, 255, 0.62);
+	pointer-events: none;
+}
+
 .card.down img {
 	filter: brightness(0.8) saturate(0.85);
 }
