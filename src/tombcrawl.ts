@@ -1290,6 +1290,11 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 		const picked = armedClick(cleared, from);
 		return picked ? armedClick(picked, to) : null;
 	}
+	if (state.armed.kind === 'burndayraz') {
+		// A drop onto a foundation spends the spell on the card in hand, however deeply it lay.
+		if (to.fixture === 'foundation') return attackWith(cloneWith(state, { armed: null }), from, true);
+		return armedClick(state, to);
+	}
 	return armedClick(state, to);
 }
 

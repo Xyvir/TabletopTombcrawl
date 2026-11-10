@@ -814,6 +814,25 @@ describe('tombcrawl progression rules', () => {
 			expect(column.map((card) => card.location.data[1])).toEqual([0, 1, 2, 3]);
 		});
 
+		test('a drop onto a foundation spends the spell on the card in hand', () => {
+			const state = makeTomb({
+				columns: [['4H', '9C', '8D', 'JS', 'KC']],
+				cells: ['2S', '5D', '6C'],
+				draft: glyph,
+				foundations: ['3H'],
+			});
+			const primed = useAbility(state, 0)!;
+			// the grabbed card is the buried one, and the drop lands on a pile
+			const home = armedDrop(primed, cascade(0, 0), { fixture: 'foundation', data: [0] })!;
+
+			expect(home.armed).toBe(null);
+			const burned = home.game.cards.find((card) => shorthandCard(card) === '4H')!;
+			expect(burned.location).toEqual({ fixture: 'foundation', data: [0] });
+			// the column it came from closes up behind it
+			expect(home.game.tableau[0].every(Boolean)).toBe(true);
+			expect(home.game.tableau[0].length).toBe(4);
+		});
+
 		test('still has to see the card: fog is not a target', () => {
 			const state = makeTomb({
 				columns: [['4H', '9C']],

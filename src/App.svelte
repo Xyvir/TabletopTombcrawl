@@ -591,6 +591,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (parked && !attackPreview(state, location).legal) return null;
 			return { location, cards: [card], peekOnly: false };
 		}
+		// BURNDAYRAZ hands you a single card however deeply it lies: reaching under cover is the
+		// spell's whole point, and the spell only ever burns the one card it was given.
+		if (state.armed?.kind === 'burndayraz') {
+			const held = tombRun(state, location);
+			return held.length ? { location, cards: [held[0]], peekOnly: false } : null;
+		}
 		const run = tombRun(state, location);
 		const column = state.game.tableau[location.data[0]] ?? [];
 		if (!run.length || run[run.length - 1] !== column[column.length - 1]) return null;
