@@ -909,22 +909,27 @@ function refreshGlyphs(state: TombState): TombState {
 /**
  * What a full tomb is worth before a single card goes home: the whole deck at its values, with the
  * boss king priced at a hundred. Every deal opens on this number, because the boss is in there
- * whether or not the fog has lifted off him yet.
+ * whether or not the fog has lifted off him yet. It is a round five hundred so the run reads as a
+ * percentage: (500 - par) / 5 is how much of the tomb is clear.
  */
-const PAR_TOTAL = 460;
+const PAR_TOTAL = 500;
+
+/** What one card is worth in par: ace one, numbers at face, court fifteen, king twenty. */
+function parValue(card: Card): number {
+	if (card.rank === 'king') return 20;
+	if (card.rank === 'queen' || card.rank === 'jack') return 15;
+	return Math.min(rankOf(card.rank), 10);
+}
 
 /**
  * Par: the score, counted down from a full tomb. A card going home takes its own value off the
- * whole — aces one, court cards ten, kings twenty, the boss king a hundred — so par only ever
- * falls, and a fresh deal always opens on 460 even while the boss still lies under the fog. Lower
- * is better.
+ * whole — aces one, court fifteen, kings twenty, the boss king a hundred — so par only ever falls,
+ * and a fresh deal always opens on 500 even while the boss still lies under the fog. Lower is
+ * better, and zero is a tomb stripped bare.
  */
 export function tombPar(state: TombState): number {
 	const home = state.game.cards.filter((card) => card.location.fixture === 'foundation');
-	const taken = home.reduce(
-		(sum, card) => sum + (card.rank === 'king' ? 20 : Math.min(rankOf(card.rank), 10)),
-		0
-	);
+	const taken = home.reduce((sum, card) => sum + parValue(card), 0);
 	// His extra eighty is only paid out for the card the dungeon actually made the boss.
 	const bossHome = !!state.bossId && home.some((card) => cardId(card) === state.bossId);
 	return PAR_TOTAL - taken - (bossHome ? 80 : 0);

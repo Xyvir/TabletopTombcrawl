@@ -1698,9 +1698,9 @@ describe('par', () => {
 		expect(lifted('TS')).toBe(10);
 	});
 
-	test('court cards count ten, kings twenty and the boss king a hundred', () => {
-		expect(lifted('JC')).toBe(10);
-		expect(lifted('QH')).toBe(10);
+	test('court cards count fifteen, kings twenty and the boss king a hundred', () => {
+		expect(lifted('JC')).toBe(15);
+		expect(lifted('QH')).toBe(15);
 		expect(lifted('KD')).toBe(20);
 		expect(lifted('KD', 'KD')).toBe(100);
 	});
@@ -1711,11 +1711,18 @@ describe('par', () => {
 		expect(tombPar(makeTomb({ columns: [['2H']], cells: ['KD'], wounded: [1] }))).toBe(plain);
 	});
 
-	test('a full tomb opens at 460, whether or not the boss has been uncovered', () => {
+	test('a full tomb opens at 500, whether or not the boss has been uncovered', () => {
 		// the boss is in the deal from the start, so his hundred is already spoken for
-		expect(tombPar(makeTomb({ columns: [['2H']] }))).toBe(460);
-		expect(tombPar(makeTomb({ columns: [['2H']], boss: 'KD' }))).toBe(460);
-		expect(tombPar(createTombState(1))).toBe(460);
+		expect(tombPar(makeTomb({ columns: [['2H']] }))).toBe(500);
+		expect(tombPar(makeTomb({ columns: [['2H']], boss: 'KD' }))).toBe(500);
+		expect(tombPar(createTombState(1))).toBe(500);
+	});
+
+	test('par divides into a clean percentage of the tomb cleared', () => {
+		// (500 - par) / 5 is the percentage clear, so the round total is what makes it readable
+		const fresh = tombPar(createTombState(1));
+		expect((500 - fresh) / 5).toBe(0);
+		expect((500 - (fresh - 250)) / 5).toBe(50);
 	});
 
 	test('a card going home takes exactly its value off the whole', () => {
