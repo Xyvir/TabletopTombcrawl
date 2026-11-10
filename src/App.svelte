@@ -703,9 +703,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 		if (state.armed) {
 			const armed = armedClick(state, card.location);
-			if (armed) commit(armed);
-			else shake(el);
-			return;
+			if (armed) {
+				commit(armed);
+				return;
+			}
+			// A Remedy, Revive or BYSSEPS holds no target: it waits for the action it covers, so the
+			// click still has to do its ordinary job (dig the fog, select, move) — otherwise the item
+			// in hand locks the whole board, including the dig that heals it.
+			const waits = state.armed.kind === 'remedy' || state.armed.kind === 'revive' || state.armed.kind === 'sack';
+			if (!waits) {
+				shake(el);
+				return;
+			}
 		}
 
 		const now = Date.now();
