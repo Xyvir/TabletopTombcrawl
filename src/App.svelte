@@ -1185,7 +1185,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:locking={!!preview?.locks.includes(i)}
-					class:need={!!preview?.need.includes(i)}
+					class:need={!!preview?.need.includes(i) || !!preview?.fatal}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
 					data-role={entry ? entry.role : undefined}

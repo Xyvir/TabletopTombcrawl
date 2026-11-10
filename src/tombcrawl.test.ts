@@ -310,6 +310,8 @@ describe('burden and mana burn', () => {
 		expect(preview.legal).toBe(false);
 		// the one empty cell that has to take a card first, so the track can absorb the wounds
 		expect(preview.need).toEqual([4]);
+		// the track is the blocker, so every heart slot reads as one, empty ones included
+		expect(preview.fatal).toBe(true);
 		expect(preview.wounds).toEqual([]);
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
@@ -332,6 +334,7 @@ describe('burden and mana burn', () => {
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.legal).toBe(false);
 		expect(preview.reason).toContain('needs 4 HP');
+		expect(preview.fatal).toBe(true);
 		expect(attackWith(state, cascade(0, 0))).toBeNull();
 	});
 
@@ -494,6 +497,7 @@ describe('the remedy', () => {
 		const armed = useAbility(kill, 0)!;
 		const preview = attackPreview(armed, cascade(0, 0));
 		expect(preview.legal).toBe(true);
+		expect(preview.fatal).toBe(false);
 		expect(preview.locks).not.toContain(0);
 
 		const next = attackWith(armed, cascade(0, 0))!;
@@ -745,6 +749,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 
 		expect(preview.legal).toBe(false);
 		expect(preview.need).toEqual([2, 3]);
+		expect(preview.fatal).toBe(true);
 		expect(preview.wounds).toEqual([]);
 	});
 

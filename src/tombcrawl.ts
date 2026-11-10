@@ -702,6 +702,11 @@ export interface AttackPreview {
 	locks: number[];
 	/** Empty cells that would have to be filled first — the kill is one HP short. */
 	need: number[];
+	/**
+	 * The track itself refuses this kill: it costs more hearts than you can spare at all, so no
+	 * arrangement of the board pays it. The whole track reads as the blocker, empty cells included.
+	 */
+	fatal: boolean;
 	/** The track cards that would turn face-down, in the order the wounds land. */
 	wounds: string[];
 }
@@ -712,8 +717,9 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The aim is passed in explicitly too, because the spell is spent before the attack lands.
 	const ignoreCover = reachThroughCover || (state.armed?.kind === 'burndayraz' && from.fixture === 'cascade');
 	const check = canSendHome(state, from, ignoreCover);
-	if (!card) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], wounds: [] };
-	if (!check.legal) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], wounds: [] };
+	if (!card) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], fatal: false, wounds: [] };
+	if (!check.legal)
+		return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], fatal: false, wounds: [] };
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
@@ -748,6 +754,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		damage,
 		locks,
 		need,
+		fatal: short > 0,
 		wounds: legal ? woundCardIds(state, afterItem, itemCell, afterWounds.wounded) : [],
 	};
 }
