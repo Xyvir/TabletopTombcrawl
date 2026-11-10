@@ -1222,7 +1222,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				title={openSlots
 					? `${tombHp} of ${maxHp(tomb)} held, and ${openSlots} empty free cell${openSlots === 1 ? '' : 's'} worth a heart each`
 					: `${tombHp} of ${maxHp(tomb)} held`}
-			>HP {tombHp}/{maxHp(tomb)}{#if openSlots}<span class="open">(+{openSlots})</span>{/if}</span
+			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
 			<span>Level {tombLevel}</span>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
