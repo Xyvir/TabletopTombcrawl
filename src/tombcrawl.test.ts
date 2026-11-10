@@ -33,6 +33,7 @@ import {	MONSTERS,
 	playerLevel,
 	tombExit,
 	tombMove,
+	parCleared,
 	tombPar,
 	tombScore,
 	useAbility,
@@ -1716,6 +1717,14 @@ describe('par', () => {
 		expect(tombPar(makeTomb({ columns: [['2H']] }))).toBe(500);
 		expect(tombPar(makeTomb({ columns: [['2H']], boss: 'KD' }))).toBe(500);
 		expect(tombPar(createTombState(1))).toBe(500);
+	});
+
+	test('the cleared percentage reads the par as a share of the five hundred', () => {
+		expect(parCleared(createTombState(1))).toBe(0);
+		// a king, a queen, a jack and a ten are 60 of the 500: twelve percent
+		const home = makeTomb({ columns: [['2H']], foundations: ['KS', 'QH', 'JD', 'TC'] });
+		expect(parCleared(home)).toBe(12);
+		expect(parCleared(makeTomb({ columns: [['2H']], boss: 'KD' }))).toBe(0);
 	});
 
 	test('par divides into a clean percentage of the tomb cleared', () => {

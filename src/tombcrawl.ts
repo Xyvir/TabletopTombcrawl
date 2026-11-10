@@ -935,6 +935,14 @@ export function tombPar(state: TombState): number {
 	return PAR_TOTAL - taken - (bossHome ? 80 : 0);
 }
 
+/**
+ * How much of the tomb is clear, as a whole percentage: nothing sent home yet reads 0, and an empty
+ * tomb reads 100. One card is a fraction of a percent, so this rounds — par itself is the exact count.
+ */
+export function parCleared(state: TombState): number {
+	return Math.round((PAR_TOTAL - tombPar(state)) / (PAR_TOTAL / 100));
+}
+
 /** Golf score: every card still off the foundation counts against you, court cards as ten. */
 export function tombScore(state: TombState): number {
 	return -state.game.cards

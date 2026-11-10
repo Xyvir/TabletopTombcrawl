@@ -971,6 +971,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 	font-weight: 700;
 }
 
+/* the parenthetical is a reading of the same number, not a second score */
+.tombhud .par .pct {
+	color: rgba(255, 255, 255, 0.6);
+	font-weight: 600;
+}
+
 /* A world-agnostic screen tint: gold washes over a level up, red on a hit. */
 .flash {
 	position: fixed;
