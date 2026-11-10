@@ -430,27 +430,10 @@ body:has(.card.dragging) .cells.tomb .chip {
 .top.tomb .cells.tomb {
 	flex: 1 1 100%;
 	max-width: calc(var(--cell-count) * var(--col-w) + (var(--cell-count) - 1) * var(--gap));
-}		/*
-		 * The wound track and the graveyard share one row out here with only air between them, so a thin
-		 * bar stands where the graveyard begins and keeps the two piles apart at a glance.
-		 */
-		.top.tomb .foundations {
-			flex: 0 1 auto;
-			margin-left: 0;
-			position: relative;
-			padding-left: calc(var(--gap) * 1.5);
-		}
-
-		.top.tomb .foundations::before {
-			content: '';
-			position: absolute;
-			left: calc(var(--gap) * 0.25);
-			top: 0;
-			bottom: 0;
-			width: 2px;
-			border-radius: 2px;
-			background: rgba(241, 232, 212, 0.22);
-		}
+}	.top.tomb .foundations {
+		flex: 0 1 auto;
+		margin-left: 0;
+	}
 
 /*
  * On a wide screen the header stays one row: title, wound track, graveyard. The mark keeps the upper
@@ -489,9 +472,26 @@ body:has(.card.dragging) .cells.tomb .chip {
 		margin-inline: 0;
 	}
 
+	/*
+	 * The wound track and the graveyard share this row with only air between them, so a thin bar
+	 * stands where the graveyard begins and keeps the two piles apart at a glance.
+	 */
 	.top.tomb .foundations {
 		flex: 0 1 auto;
 		margin-left: 0;
+		position: relative;
+		padding-left: calc(var(--gap) * 1.5);
+	}
+
+	.top.tomb .foundations::before {
+		content: '';
+		position: absolute;
+		left: calc(var(--gap) * 0.25);
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		border-radius: 2px;
+		background: rgba(241, 232, 212, 0.22);
 	}
 }
 
