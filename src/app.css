@@ -1,6 +1,11 @@
 :root {
 	--felt: #0b6b2b;
-	--col-w: min(11.2vw, 104px);
+	/*
+	 * Cards answer to the viewport's height as well as its width: the header costs two card rows
+	 * and the tallest columns cost two and a bit card heights, so a short window has to shrink
+	 * them or the tableau runs into the controls.
+	 */
+	--col-w: min(11.2vw, 104px, max(48px, calc((100dvh - 145px) / 6.9)));
 	--gap: min(0.9vw, 10px);
 	--card-h: calc(var(--col-w) * 1.4);
 	--radius: min(1.1vw, 8px);
