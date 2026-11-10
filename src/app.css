@@ -337,6 +337,26 @@ img {
 	box-shadow: 0 0 8px rgba(150, 90, 240, 0.35);
 }
 
+/*
+ * The tomb board always gives its wound track a row of its own, however wide the screen: seven cells
+ * cannot fit beside the graveyard, and the board clips whatever overflows. The track is capped to
+ * card width so the slots stay card-sized and centred instead of stretching to fill the board.
+ */
+.top.tomb {
+	flex-wrap: wrap;
+	row-gap: var(--gap);
+}
+
+.top.tomb .cells.tomb {
+	flex: 1 1 100%;
+	max-width: calc(var(--cell-count) * var(--col-w) + (var(--cell-count) - 1) * var(--gap));
+	margin-inline: auto;
+}
+
+.top.tomb .foundations {
+	margin-left: auto;
+}
+
 /* a narrow window cannot fit seven cells beside the foundations: give each its own row */
 @media (max-width: 1100px) {
 	.top {

@@ -994,7 +994,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	aria-label="FreeCell board"
 	onpointerdown={onBoardPointerDown}
 >
-	<header class="top">
+	<header class="top" class:tomb={!!tomb}>
 		{#if tomb}
 			<div class="titlecard">
 				<span>Tabletop</span>
