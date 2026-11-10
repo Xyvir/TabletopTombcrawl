@@ -78,7 +78,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'Human',
-		text: 'Courageous: send a card home skipping one missing rank — a gap anyone can fill afterwards.',
+		text: 'Courageous: send a card home skipping one missing rank.',
 	},
 	clubs: {
 		name: 'Elf',
