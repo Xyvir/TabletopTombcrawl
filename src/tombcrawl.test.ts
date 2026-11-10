@@ -100,7 +100,7 @@ function makeTomb({
 const cascade = (column: number, card = 0) => ({ fixture: 'cascade' as const, data: [column, card] });
 const cell = (index: number) => ({ fixture: 'cell' as const, data: [index] });
 
-describe("the wizard's freecast", () => {
+describe("the wizard's affinity", () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
 		{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },

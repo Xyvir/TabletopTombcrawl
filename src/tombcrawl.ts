@@ -82,7 +82,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Freecast: cast your Glyph on the very move after it is refreshed and that cast costs no exhaustion. Cast it again straight after and it pays as usual.',
+		text: 'Affinity: cast your Glyph on the very move after it is refreshed and that cast costs no exhaustion. Cast it again straight after and it pays as usual.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -1294,7 +1294,7 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
-	// A Wizard's Freecast: the Glyph cast made on the very move after a refresh costs no exhaustion.
+	// A Wizard's Affinity: the Glyph cast made on the very move after a refresh costs no exhaustion.
 	// This cast spends the window with it, so the one after it pays as usual.
 	const free = hasPassive(state, 'Wizard') && state.freeCast && entry.role === 'glyph';
 	state = closeFreeCast(state);
