@@ -210,16 +210,34 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	const homeAt = new WeakMap<Map<string, DOMRect>, Set<string>>();
 
+	/**
+	 * Where each cascade card sits, keyed by the same measurement as its rect: its column and its
+	 * place in that column's stack. A card that stays in its column can only move by whole steps.
+	 */
+	const placeAt = new WeakMap<Map<string, DOMRect>, Map<string, { col: number; index: number }>>();
+
+	function columnPlace(el: HTMLElement) {
+		const cascade = el.closest<HTMLElement>('.cascade');
+		if (!cascade) return undefined;
+		const col = Number(cascade.dataset.drop?.split(':')[1]);
+		const index = Number(el.style.getPropertyValue('--i'));
+		return Number.isFinite(col) && Number.isFinite(index) ? { col, index } : undefined;
+	}
+
 	function cardRects() {
 		const rects = new Map<string, DOMRect>();
 		const home = new Set<string>();
+		const places = new Map<string, { col: number; index: number }>();
 		board?.querySelectorAll<HTMLElement>('[data-card]').forEach((el) => {
 			const id = el.dataset.card;
 			// measure the picture, not the slot: a dragged cell card is translated inside its slot
 			if (id) rects.set(id, visualRect(el));
 			if (id && el.closest('.foundations')) home.add(id);
+			const place = id ? columnPlace(el) : undefined;
+			if (id && place) places.set(id, place);
 		});
 		homeAt.set(rects, home);
+		placeAt.set(rects, places);
 		return rects;
 	}
 
@@ -265,8 +283,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				return;
 			}
 
-			const dx = prev.left - now.left;
-			const dy = prev.top - now.top;
+			let dx = prev.left - now.left;
+			let dy = prev.top - now.top;
+			// A card that stayed in its column only ever moves by whole stack steps, so take that flight
+			// from the step count. The measured rect is where the card was *drawn*, which is still the
+			// middle of an earlier flight when a move lands on top of one — starting from that stale spot
+			// threw the card off the bottom of the screen before letting it climb back into place.
+			const was = el.dataset.card ? placeAt.get(before)?.get(el.dataset.card) : undefined;
+			const sits = columnPlace(el);
+			if (was && sits && was.col === sits.col) {
+				dx = 0;
+				dy = (was.index - sits.index) * el.offsetHeight * 0.26;
+			}
 			if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
 
 			el.getAnimations().forEach((animation) => animation.cancel());
