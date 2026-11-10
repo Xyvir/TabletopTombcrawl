@@ -32,6 +32,7 @@ import {	MONSTERS,
 	playerLevel,
 	tombExit,
 	tombMove,
+	tombPar,
 	tombScore,
 	useAbility,
 	type DraftCard,
@@ -1594,5 +1595,36 @@ describe('tombcrawl endgame', () => {
 	test('court cards count as ten apiece and the total stays negative', () => {
 		const state = makeTomb({ columns: [['KH', 'QH', 'JH'], ['2S']] });
 		expect(tombScore(state)).toBe(-32);
+	});
+});
+
+describe('par', () => {
+	// Sending a card home takes it out of the dungeon, so par drops by exactly that card's value.
+	const lifted = (id: string, boss?: string) =>
+		tombPar(makeTomb({ columns: [['2H']], boss })) -
+		tombPar(makeTomb({ columns: [['2H']], foundations: [id], boss }));
+
+	test('aces count one and the number cards count their face', () => {
+		expect(lifted('AH')).toBe(1);
+		expect(lifted('9D')).toBe(9);
+		expect(lifted('TS')).toBe(10);
+	});
+
+	test('court cards count ten, kings twenty and the boss king a hundred', () => {
+		expect(lifted('JC')).toBe(10);
+		expect(lifted('QH')).toBe(10);
+		expect(lifted('KD')).toBe(20);
+		expect(lifted('KD', 'KD')).toBe(100);
+	});
+
+	test('a card counts the same however it is lying', () => {
+		const plain = tombPar(makeTomb({ columns: [['2H']], cells: ['KD'] }));
+		expect(tombPar(makeTomb({ columns: [['2H']], cells: ['KD'], hidden: ['KD'] }))).toBe(plain);
+		expect(tombPar(makeTomb({ columns: [['2H']], cells: ['KD'], wounded: [1] }))).toBe(plain);
+	});
+
+	test('a whole deal reads 460 with a boss on the board and 380 without', () => {
+		const fresh = createTombState(1);
+		expect(tombPar(fresh)).toBe(fresh.bossId ? 460 : 380);
 	});
 });

@@ -965,6 +965,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #c79bff;
 }
 
+/* Par is the score: what the dungeon still holds, so it should only ever fall. */
+.tombhud .par {
+	color: #ffd95e;
+	font-weight: 700;
+}
+
 /* A world-agnostic screen tint: gold washes over a level up, red on a hit. */
 .flash {
 	position: fixed;

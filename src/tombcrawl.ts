@@ -904,6 +904,21 @@ function refreshGlyphs(state: TombState): TombState {
 	return cloneWith(state, { exhausted, freeCast: state.freeCast || window });
 }
 
+/**
+ * Par: what the dungeon is still holding, read card by card like a blackjack hand. Every card off
+ * the foundation counts — aces low at one, court cards at ten — except kings, which cost twenty, and
+ * the boss king, which costs a hundred until it is sent home. Lower is better.
+ */
+export function tombPar(state: TombState): number {
+	return state.game.cards
+		.filter((card) => card.location.fixture !== 'foundation')
+		.reduce((sum, card) => {
+			if (cardId(card) === state.bossId) return sum + 100;
+			if (card.rank === 'king') return sum + 20;
+			return sum + Math.min(rankOf(card.rank), 10);
+		}, 0);
+}
+
 /** Golf score: every card still off the foundation counts against you, court cards as ten. */
 export function tombScore(state: TombState): number {
 	return -state.game.cards

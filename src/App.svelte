@@ -64,6 +64,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombFirstCell,
 		tombHomeAll,
 		tombMove,
+		tombPar,
 		tombRun,
 		tombTapTargets,
 		useAbility,
@@ -1273,6 +1274,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
+			<span
+				class="par"
+				title="Par: every card still in the dungeon, priced like blackjack — aces one, court cards ten, kings twenty and the boss king a hundred. Lower is better."
+			>Par {tombPar(tomb)}</span
+			>
 		</div>
 	{/if}
 
