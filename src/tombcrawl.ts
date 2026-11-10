@@ -82,7 +82,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: cast your Glyph on the very move after it is refreshed and that cast costs no exhaustion. Cast it again straight after and it pays as usual.',
+		text: 'Affinity: cast your glyph once for free on the very next turn it is refreshed.',
 	},
 	diamonds: {
 		name: 'Thief',
