@@ -93,15 +93,15 @@ const KIN: Record<Suit, Ability> = {
 const CLASSES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Fighter',
-		text: 'Veteran: ignore the lowest card when calculating your level, so you level up sooner than the rest.',
+		text: 'Veteran: ignore the lowest card when calculating your level, and no kill costs him more than two hearts.',
 	},
 	hearts: {
 		name: 'Priest',
-		text: 'Vigil: exploration heals two exhausted cells instead of one.',
+		text: 'Vigil: exploration heals two exhausted cells instead of one, and a level up mends two.',
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: your first glyph cast is free, and so is any cast made on the very next turn after it is refreshed.',
+		text: 'Affinity: your first glyph cast is free, and so is any cast made on the very next turn after it is refreshed. A free cast also mends one wound.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -807,6 +807,8 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	if (TOMB_RULES.levelDamageCap > 0) damage = Math.min(damage, TOMB_RULES.levelDamageCap);
+	// The Fighter wears the hit: whatever the rank, no kill takes more than two hearts off him.
+	if (hasPassive(state, 'Fighter')) damage = Math.min(damage, 2);
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
@@ -1058,7 +1060,8 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	const level = currentLevel(next);
 	if (level > levelBefore) {
-		const result = heal(next, TOMB_RULES.levelUpHeal);
+		// Vigil mends two at a time, a dig and a level up alike.
+		const result = heal(next, TOMB_RULES.levelUpHeal + (hasPassive(next, 'Priest') ? 1 : 0));
 		next = cloneWith(next, {
 			wounded: result.wounded,
 		});
@@ -1438,7 +1441,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	// can never leave a second free cast waiting behind it.
 	const free = freeCastReady(state, cell);
 	state = closeFreeCast(state);
-	if (free) state = cloneWith(state, { freeCastBank: false });
+	// Affinity pays in hearts as well as in exhaustion: a free cast mends one wounded cell.
+	if (free) state = cloneWith(state, { freeCastBank: false, wounded: heal(state, 1).wounded });
 	const exhausted = [...state.exhausted];
 	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
 	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;

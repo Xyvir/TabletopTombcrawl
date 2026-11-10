@@ -1861,3 +1861,50 @@ describe('tombcrawl a kill that costs nothing', () => {
 		expect(attackPreview(state, cascade(0))).toMatchObject({ legal: false, fatal: true });
 	});
 });
+
+describe('tombcrawl the class powers and the hearts they pay', () => {
+	const wounds = (state: TombState) => state.wounded.reduce((sum, count) => sum + count, 0);
+
+	test('the Fighter wears the hit: no kill costs him more than two hearts', () => {
+		const fighter: DraftCard[] = [{ cell: 0, role: 'class', id: '2S', suit: 'spades', name: 'Fighter', text: '' }];
+		const board = (draft: DraftCard[] = []) =>
+			makeTomb({ columns: [['9S'], []], foundations: ['8S'], cells: ['2H', '3H', '4H'], draft });
+		expect(attackPreview(board(fighter), cascade(0))).toMatchObject({ legal: true, damage: 2 });
+		// the same kill without the passive costs eight hearts, which is more than the track can hold
+		expect(attackPreview(board(), cascade(0)).legal).toBe(false);
+	});
+
+	test('the Priest mends two on a level up', () => {
+		const priest: DraftCard[] = [{ cell: 2, role: 'class', id: '2H', suit: 'hearts', name: 'Priest', text: '' }];
+		const board = (draft: DraftCard[] = []) =>
+			makeTomb({
+				columns: [['2D'], []],
+				foundations: ['2S', '2H', '2C', 'AD'],
+				cells: ['5S', '6S', '7S', '8S'],
+				wounded: [0, 1],
+				draft,
+			});
+		// diamonds is the pile holding the level back, so its two levels the run up
+		const plain = attackWith(board(), cascade(0))!;
+		const holy = attackWith(board(priest), cascade(0))!;
+		expect(wounds(plain) - wounds(holy)).toBe(1);
+	});
+
+	test('a free cast mends a wound the way a level up does', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: '2C', suit: 'clubs', name: 'Wizard', text: '' },
+			{ cell: 1, role: 'glyph', id: '3C', suit: 'clubs', name: 'WEYTWUT', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5D'], []],
+			cells: ['5S', '6S', '7S'],
+			wounded: [2],
+			draft,
+			freeCastBank: true,
+		});
+		expect(wounds(state)).toBe(1);
+		const cast = useAbility(state, 1)!;
+		expect(cast.armed).toMatchObject({ kind: 'weytwut' });
+		expect(wounds(cast)).toBe(0);
+	});
+});
