@@ -200,13 +200,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return (el.querySelector('img') ?? el).getBoundingClientRect();
 	}
 
+	/**
+	 * The cards already sitting at home when a board was measured. Keyed by that measurement, so a
+	 * drop can keep the shot it took at the start of its drag.
+	 */
+	const homeAt = new WeakMap<Map<string, DOMRect>, Set<string>>();
+
 	function cardRects() {
 		const rects = new Map<string, DOMRect>();
+		const home = new Set<string>();
 		board?.querySelectorAll<HTMLElement>('[data-card]').forEach((el) => {
 			const id = el.dataset.card;
 			// measure the picture, not the slot: a dragged cell card is translated inside its slot
 			if (id) rects.set(id, visualRect(el));
+			if (id && el.closest('.foundations')) home.add(id);
 		});
+		homeAt.set(rects, home);
 		return rects;
 	}
 
@@ -237,6 +246,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (typeof el.animate !== 'function') return;
 			const now = visualRect(el);
 			const prev = el.dataset.card ? before.get(el.dataset.card) : undefined;
+			// A card that was already home has nowhere to fly from: only the trip that just happened
+			// earns the flight, or every later action would fly it in again from the pile it left.
+			if (el.dataset.card && el.closest('.foundations') && homeAt.get(before)?.has(el.dataset.card)) return;
 
 			if (!prev) {
 				el.animate(
