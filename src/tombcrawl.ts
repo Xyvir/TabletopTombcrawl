@@ -27,6 +27,15 @@ export type Difficulty = 'easy' | 'med' | 'hard';
 export const TOMB_CELL_COUNT = DRAFT_CELL_COUNT + FREE_CELL_COUNT.med;
 export const TOMB_CASCADE_COUNT = 8;
 
+/**
+ * Tunable rules, so a balance experiment can be run without forking the engine. The shipped game runs
+ * these defaults; only a tuning run in the solver changes them, and only for that process.
+ */
+export const TOMB_RULES = {
+	/** Hearts a level up mends. The card game this borrows from healed fully. */
+	levelUpHeal: 1,
+};
+
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
 
 export const ROLE_LABEL: Record<DraftRole, string> = {
@@ -984,7 +993,7 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	const level = currentLevel(next);
 	if (level > levelBefore) {
-		const result = heal(next, 1);
+		const result = heal(next, TOMB_RULES.levelUpHeal);
 		next = cloneWith(next, {
 			wounded: result.wounded,
 		});
