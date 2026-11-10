@@ -64,7 +64,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		revealFaceDown,
 		tombExit,
 		tombFirstCell,
-		tombHomeAll,
 		tombMove,
 		tombPar,
 		tombRun,
@@ -800,13 +799,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (exited) commit(exited);
 	}
 
+	/**
+	 * Vanilla only: the tomb has no auto-to-home at all. A chain of foundation moves would spend the
+	 * item restock window, the free cast and the glyph refresh on cards the player never chose to
+	 * play, so in the tomb every card goes home as a deliberate click.
+	 */
 	function sendHome() {
 		flushPending();
-		if (tomb) {
-			const next = tombHomeAll(tomb);
-			if (next !== tomb) commit(next);
-			return;
-		}
 		apply(homeAll(game));
 	}
 
@@ -1388,9 +1387,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{/each}
 		</div>
 		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
-		<button class="btn" onclick={sendHome}>
-			Auto to home
-		</button>
+		{#if !tomb}
+			<button class="btn" onclick={sendHome}>Auto to home</button>
+		{/if}
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 		<button class="btn" onclick={replay}>Restart deal</button>
 

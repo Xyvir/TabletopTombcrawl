@@ -1551,22 +1551,3 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	return settle(cloneWith(state, { game, armed: null }), currentLevel(state));
 }
 
-/** Auto to home for the tomb: send everything the rules allow, in priority order. */
-export function tombHomeAll(state: TombState): TombState {
-	let next = state;
-	for (let pass = 0; pass < 60; pass++) {
-		const moved = next;
-		const candidates = next.game.cards.filter((card) => card.location.fixture !== 'foundation');
-		let applied: TombState | null = null;
-		for (const card of candidates) {
-			const target = attackWith(next, card.location);
-			if (target) {
-				applied = target;
-				break;
-			}
-		}
-		if (!applied || applied === moved) break;
-		next = applied;
-	}
-	return next;
-}

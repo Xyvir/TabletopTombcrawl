@@ -65,7 +65,9 @@ sideways tilt mid-flight and always land perfectly vertical; new deals fade in. 
 an auto-foundation take turns: the first waits 240 ms, and each later card starts only once the
 previous one has landed, so two cards never fly home at the same time. `prefers-reduced-motion` disables all of it.
 
-Undo, auto-to-home, restart and deal numbers (the standard 1–32,000 Microsoft deals) are in the footer.
+Undo, restart and deal numbers (the standard 1–32,000 Microsoft deals) are in the footer. Auto-to-home
+belongs to the vanilla deal only: the tomb has no automatic foundation move, so a card goes home when
+the player plays it, which keeps the item restock, free cast and glyph refresh windows honest.
 
 ## Solver
 
