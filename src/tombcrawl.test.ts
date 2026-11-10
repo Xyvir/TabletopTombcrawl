@@ -483,20 +483,21 @@ describe('the potion and the elixir', () => {
 	const board = (overrides: Partial<Setup> = {}) =>
 		makeTomb({ columns: [['4C']], cells: ['2S', '5H'], draft, wounded: [0], ...overrides });
 
-	test('the potion heals the wound you pick, not the right edge', () => {
-		const armed = useAbility(board(), 1)!;
-		expect(armed.armed).toMatchObject({ kind: 'potion', cell: 1 });
-		expect(armed.exhausted[1]).toBe(true);
+	test('the potion heals every wound at once, wherever it sits', () => {
+		const state = board({ cells: ['2S', '5H', 'KD'], wounded: [0, 2] });
+		expect(hp(state)).toBe(1);
 
-		const healed = armedClick(armed, cell(0))!;
-		expect(healed.wounded[0]).toBe(0);
-		expect(healed.armed).toBe(null);
-		expect(hp(healed)).toBe(2);
+		const drunk = useAbility(state, 1)!;
+		expect(drunk.wounded.every((wound) => wound === 0)).toBe(true);
+		expect(hp(drunk)).toBe(3);
+		expect(drunk.exhausted[1]).toBe(true);
+		expect(drunk.armed).toBe(null);
 	});
 
-	test('clicking an unwounded cell does not waste the potion', () => {
-		const armed = useAbility(board(), 1)!;
-		expect(armedClick(armed, cell(3))).toBe(null);
+	test('the potion needs no wound to be aimed at', () => {
+		const drunk = useAbility(board({ wounded: [] }), 1)!;
+		expect(drunk.wounded[0]).toBe(0);
+		expect(drunk.exhausted[1]).toBe(true);
 	});
 
 	test('the elixir heals the glyph and un-exhausts it', () => {
@@ -1082,9 +1083,8 @@ describe('tombcrawl wounds and exhaustion', () => {
 		const state = makeTomb({ columns: [['3S']], cells: ['2S', '5H'], draft, wounded: [0], exhausted: [0] });
 		expect(hp(state)).toBe(1);
 
-		// the Potion is aimed at the wound it heals
-		const armed = useAbility(state, 1)!;
-		const healed = armedClick(armed, cell(0))!;
+		// the Potion drinks for the whole track, but a spent glyph stays spent
+		const healed = useAbility(state, 1)!;
 		expect(healed.wounded[0]).toBe(0);
 		expect(healed.exhausted[0]).toBe(true);
 		expect(hp(healed)).toBe(2);

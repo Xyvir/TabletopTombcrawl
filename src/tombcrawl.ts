@@ -105,7 +105,7 @@ const CONSUMABLES: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'Potion',
-		text: 'Arm and select one wound to heal anywhere on the track.',
+		text: 'Drink to heal every wound on the track at once.',
 	},
 	clubs: {
 		name: 'Elixir',
@@ -137,7 +137,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'potion' | 'sack';
+	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'sack';
 	cell: number;
 	first?: string;
 };
@@ -1258,8 +1258,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
 		case 'Potion':
-			// The Potion is aimed: pick any wound on the track, ignoring the usual right-edge order.
-			next = cloneWith(next, { armed: { kind: 'potion', cell } });
+			// The Potion drinks for the whole track at once instead of being aimed at one wound.
+			next = cloneWith(next, { wounded: next.wounded.map(() => 0) });
 			break;
 		case 'Elixir':
 			next = healGlyph(next);
@@ -1373,16 +1373,6 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 		const head = cardAt(state.game, location);
 		if (!pair || !head) return null;
 		return cloneWith(state, { armed: { ...armed, first: cardId(head) } });
-	}
-
-	// The Potion heals exactly the wound it is clicked on, wherever it sits on the track.
-	if (armed.kind === 'potion') {
-		if (location.fixture !== 'cell') return null;
-		const target = location.data[0];
-		if (!state.wounded[target]) return null;
-		const wounded = [...state.wounded];
-		wounded[target] -= 1;
-		return closeItemWindow(cloneWith(state, { wounded, armed: null }));
 	}
 
 	// A draft card in its cell is never a target: an ability only aims at the board.
