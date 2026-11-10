@@ -16,6 +16,7 @@ import {	MONSTERS,
 	bossUnlocked,
 	canSendHome,
 	cellCardMovable,
+	cellTopWounded,
 	chipBoundary,
 	convertibleCell,
 	newlyHealed,
@@ -874,6 +875,7 @@ describe('tombcrawl a boss king behind a glyph', () => {
 	test('no hand shifts it, a movement glyph can, and it stays unkillable', () => {
 		expect(tombMove(board(), cascade(0), cascade(1))).toBe(null);
 
+		const shipit = TOMB_RULES.glyphMoveBoss;
 		TOMB_RULES.glyphMoveBoss = true;
 		try {
 			const primed = useAbility(board(), 0)!;
@@ -885,8 +887,30 @@ describe('tombcrawl a boss king behind a glyph', () => {
 			expect(canSendHome(primed, cascade(0)).legal).toBe(false);
 			expect(canSendHome(primed, cascade(0)).reason).toContain('frozen');
 		} finally {
-			TOMB_RULES.glyphMoveBoss = false;
+			TOMB_RULES.glyphMoveBoss = shipit;
 		}
+	});
+});
+
+describe('tombcrawl a wounded card', () => {
+	test('the foundation is the one way out that needs no heal', () => {
+		const state = makeTomb({
+			columns: [['KS'], []],
+			cells: ['3C', '9S', '9H', '9D', '8C', '8D'],
+			foundations: ['2C'],
+			wounded: [1, 0, 0, 0, 0, 0],
+		});
+		expect(cellTopWounded(state, 0)).toBe(true);
+		// locked against the board, even to an empty column
+		expect(tombMove(state, { fixture: 'cell', data: [0] }, cascade(1))).toBe(null);
+		// but the kill is still on offer
+		const preview = attackPreview(state, { fixture: 'cell', data: [0] });
+		expect(preview.legal).toBe(true);
+		expect(preview.damage).toBe(2);
+		const kill = attackWith(state, { fixture: 'cell', data: [0] })!;
+		expect(kill.game.cards.find((card) => shorthandCard(card) === '3C')!.location.fixture).toBe('foundation');
+		// the wound leaves with the card instead of haunting the empty slot
+		expect(kill.wounded[0]).toBe(0);
 	});
 });
 

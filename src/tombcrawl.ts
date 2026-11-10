@@ -43,7 +43,7 @@ export const TOMB_RULES = {
 	 * Whether a movement glyph may carry the frozen boss king: no hand can shift it, but a spell can
 	 * lift it out of the way, which frees the column it was sitting on. Killing it stays gated.
 	 */
-	glyphMoveBoss: false,
+	glyphMoveBoss: true,
 };
 
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
@@ -700,7 +700,8 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	if (card.location.fixture === 'foundation') return { legal: false, reason: 'already home' };
 
 	if (from.fixture === 'cell') {
-		if (cellTopWounded(state, from.data[0])) return { legal: false, reason: 'wounded' };
+		// A wound locks a card against building, spells and passives, but the foundation is the one way
+		// out that does not need healing first: slaying the creature takes the wound with it.
 		// Conversion runs in order: only the drafted item beside the chip may leave its slot.
 		if (draftAt(state, from.data[0]) && from.data[0] !== convertibleCell(state)) {
 			return { legal: false, reason: 'convert the item beside the chip first' };
@@ -1221,9 +1222,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const bury = imawalCanBury(state, cards, to);
 
 	if (source >= 0 && to.fixture === 'foundation') {
-		// Home is always an option for the face-up card in a free cell: the chip's conversion order
-		// only governs leaving the cell for the board, and canSendHome enforces it there.
-		return cellTopWounded(state, source) ? null : attackWith(state, from);
+		// Home is always an option, wounded or not: the chip's conversion order only governs leaving
+		// the cell for the board, and canSendHome enforces it there.
+		return attackWith(state, from);
 	}
 
 	if (source >= 0) {

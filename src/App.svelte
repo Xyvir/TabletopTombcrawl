@@ -1237,9 +1237,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:affinity={!!tomb && freeCastReady(tomb, i) && abilityUsable(tomb, i)}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
-					data-role={entry ? entry.role : undefined}
-					title={wounded
-						? `Wounded ${wounded.rank} of ${wounded.suit} — face down. Heal it face up before it can be used.`
+					data-role={entry ? entry.role : undefined}						title={wounded
+							? `Wounded ${wounded.rank} of ${wounded.suit} — face down. Heal it face up or slay this creature before you can use it.`
 						: entry
 							? `${entry.name} — ${ROLE_LABEL[entry.role]}.\n${entry.text}${
 									tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''
@@ -1359,7 +1358,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						style={cardStyle(card, i)}
 						data-card={shorthandCard(card)}
 						title={tomb && boss
-							? `${monsterName(tomb)} King${bossProtected(tomb) ? ' — protected until one other king is slain' : ''}\n${auraTitle(tomb, false)}`
+							? `${monsterName(tomb)} King${
+									bossProtected(tomb)
+										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
+										: ''
+								}\n${auraTitle(tomb, false)}`
 							: minion && !down && tomb
 								? auraTitle(tomb)
 								: undefined}

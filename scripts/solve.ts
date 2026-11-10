@@ -30,7 +30,7 @@ function parse(argv: string[]): Options {
 		strategy: 'best',
 		heal: 1,
 		cap: 0,
-		glyphBoss: false,
+		glyphBoss: true,
 		seconds: 120,
 		limit: null,
 		quiet: false,
@@ -75,6 +75,9 @@ function parse(argv: string[]): Options {
 				break;
 			case '--glyphboss':
 				options.glyphBoss = true;
+				break;
+			case '--no-glyphboss':
+				options.glyphBoss = false;
 				break;
 			case '--strategy':
 				options.strategy = value === 'dfs' || value === 'beam' ? value : 'best';
@@ -236,7 +239,7 @@ options
   --strategy best|beam|dfs     search order (default best)
   --heal N                     hearts a level up restores (default 1; tuning only)
   --cap N                      most hearts one kill may cost (default 0, no ceiling)
-  --glyphboss                  let a movement glyph carry the frozen boss king
+  --no-glyphboss               keep the boss king immovable, glyphs included
   --depth N                    longest line to follow (default 220)
   --time S                     seconds before giving up (default 120)
   --steps N                    print only the first N moves of a line
