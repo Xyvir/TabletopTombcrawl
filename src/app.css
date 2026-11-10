@@ -608,19 +608,28 @@ img {
 	filter: brightness(0.8) saturate(0.85);
 }
 
-/* A card coming out of the fog leans, squashes to its edge, turns over, then opens back out.
-   The animation sits on an inner wrapper so the card's own flight transform cannot cancel it. */
+/*
+ * A card coming out of the fog leans, squashes to its edge, turns over, then opens back out.
+ * The animation sits on an inner wrapper so the card's own flight transform cannot cancel it,
+ * and the wrapper owns the card's box (5:7, the shape of the artwork): if the box came from the
+ * face image, the first frames of the turn would draw nothing while that image was still decoding.
+ */
 .card .flip {
 	display: block;
 	position: relative;
+	width: 100%;
+	aspect-ratio: 5 / 7;
 	animation: card-flip 210ms ease-in-out both;
 }
 
-.card .flip .flip-back {
+.card .flip img {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
+}
+
+.card .flip .flip-back {
 	/* hold the back until the card is edge-on, then show the face already underneath */
 	animation: flip-back-away 210ms step-end both;
 }

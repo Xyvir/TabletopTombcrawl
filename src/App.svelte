@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { FreeCell } from './game/game';
 import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import {
@@ -73,6 +73,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const DIFFICULTIES: Difficulty[] = ['easy', 'med', 'hard'];
 	const DIFFICULTY_LABEL: Record<Difficulty, string> = { easy: 'Easy', med: 'Med', hard: 'Hard' };
 	const BASE = import.meta.env.BASE_URL;
+	/**
+	 * Every face plus the two backs. A card coming out of the fog shows its face for the first time
+	 * mid-turn, so the picture has to be fetched and decoded before the animation needs it.
+	 */
+	const CARD_IMAGES = [
+		'back',
+		'blank',
+		...[...'A23456789TJQK'].flatMap((rank) => [...'shdc'].map((suit) => `${rank}${suit}`)),
+	];
 	/** How long a move is held so a double click can still be recognised. */
 	const DOUBLE_TAP_MS = 150;
 	/** How long after that a second click can still rewind an applied move into a double click. */
@@ -968,6 +977,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const short = shorthandCard(card);
 		return `${BASE}images/${short[0]}${short[1].toLowerCase()}.png`;
 	}
+
+	/** Warm every picture once, so a flip never waits on a fetch or a decode. */
+	function warmCardImages() {
+		for (const name of CARD_IMAGES) {
+			const image = new Image();
+			image.src = `${BASE}images/${name}.png`;
+			// decode() resolves once the bitmap itself is ready; a failure only costs a late picture
+			void image.decode?.().catch(() => {});
+		}
+	}
+
+	onMount(warmCardImages);
 
 	/**
 	 * Every card on one foundation, bottom to top. Rendering only the top card meant the pile was
