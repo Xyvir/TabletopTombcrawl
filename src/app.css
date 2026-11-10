@@ -669,26 +669,38 @@ img {
 	}
 }
 
-.card.boss::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	border-radius: var(--radius);
-	background: rgba(150, 60, 255, 0.42);
-	box-shadow: 0 0 0 2px #c79bff inset;
-	pointer-events: none;
-	z-index: 2;
+/*
+ * A boss-suit minion is stained by its master and the boss king burns brighter. The stain is a
+ * colour matrix on the face image itself (the same blend the old translucent wash drew, folded into
+ * the artwork), so it turns, leans, squashes and flies with the card: no animation has to know a
+ * separate rectangle exists, and nothing can hang over a card that is mid-turn.
+ */
+.card.aura img:not(.flip-back) {
+	filter: url(#tombMinion);
 }
 
-.card.aura::after {
-	content: '';
+.card.boss img:not(.flip-back) {
+	filter: url(#tombBoss);
+}
+
+/* the rim sits inside the face like the selection ring, so it too rides the card rather than the column */
+.card.aura:not(.selected) img:not(.flip-back) {
+	outline: 1px solid rgba(199, 155, 255, 0.8);
+	outline-offset: -1px;
+}
+
+.card.boss:not(.selected) img:not(.flip-back) {
+	outline: 2px solid #c79bff;
+	outline-offset: -2px;
+}
+
+/* the filters themselves live in the board markup, out of sight */
+.tints {
 	position: absolute;
-	inset: 0;
-	border-radius: var(--radius);
-	background: linear-gradient(160deg, rgba(150, 60, 220, 0.28), rgba(80, 20, 140, 0.12));
-	box-shadow: 0 0 0 1px rgba(199, 155, 255, 0.8) inset;
+	width: 0;
+	height: 0;
+	overflow: hidden;
 	pointer-events: none;
-	z-index: 2;
 }
 
 /* the frozen boss king leans over in its column as a reminder that it cannot move yet */

@@ -1016,6 +1016,28 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	aria-label="FreeCell board"
 	onpointerdown={onBoardPointerDown}
 >
+	<!--
+		Boss and minion cards are tinted with a colour matrix applied to their own face image, not with
+		a translucent layer stacked over the card. Both define the same blend the old overlay drew
+		(alpha x purple), so the artwork carries the stain through flips, leans and any motion to come.
+	-->
+	<svg class="tints" aria-hidden="true" focusable="false">
+		<defs>
+			<filter id="tombMinion" color-interpolation-filters="sRGB">
+				<feColorMatrix
+					type="matrix"
+					values="0.78 0 0 0 0.1035 0 0.78 0 0 0.0414 0 0 0.78 0 0.1639 0 0 0 1 0"
+				/>
+			</filter>
+			<filter id="tombBoss" color-interpolation-filters="sRGB">
+				<feColorMatrix
+					type="matrix"
+					values="0.58 0 0 0 0.2471 0 0.58 0 0 0.0988 0 0 0.58 0 0.42 0 0 0 1 0"
+				/>
+			</filter>
+		</defs>
+	</svg>
+
 	<header class="top" class:tomb={!!tomb}>
 		{#if tomb}
 			<div class="titlecard">
