@@ -100,7 +100,7 @@ const GLYPHS: Record<Suit, Ability> = {
 
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
-		name: 'Bag of Holding',
+		name: 'Sack',
 		text: 'Arm, then move a valid stack of any size, even one your free cells could not carry. Spent by that move.',
 	},
 	hearts: {
@@ -137,7 +137,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'potion' | 'bag';
+	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'potion' | 'sack';
 	cell: number;
 	first?: string;
 };
@@ -595,7 +595,7 @@ export function imawalCanBury(state: TombState, cards: Card[], to: CardLocation)
 
 /**
  * The tomb's version of FreeCell's move limit: every card past the first in a run needs a free
- * cell to wait in, and the track's cells are the only ones there are. The Bag of Holding is the
+ * cell to wait in, and the track's cells are the only ones there are. The Sack is the
  * one thing that ignores it.
  */
 export function moveCapacity(state: TombState): number {
@@ -1089,9 +1089,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		matchesItemSuit(state, cards[0], window.suit)
 			? window
 			: null;
-	// Only a run the free cells could not carry spends the bag; a normal stack move leaves it armed.
+	// Only a run the free cells could not carry spends the sack; a normal stack move leaves it armed.
 	const overfull = cards.length > moveCapacity(state);
-	const bag = state.armed?.kind === 'bag' && overfull;
+	const sack = state.armed?.kind === 'sack' && overfull;
 	const bury = imawalCanBury(state, cards, to);
 
 	if (source >= 0 && to.fixture === 'foundation') {
@@ -1110,8 +1110,8 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 
 	if (to.fixture === 'foundation') return attackWith(state, from);
 	if (!bury && !canBuildOn(state, cards, to)) return null;
-	// A run longer than the free cells can hold only moves with the bag open.
-	if (overfull && !bag) return null;
+	// A run longer than the free cells can hold only moves with the sack open.
+	if (overfull && !sack) return null;
 
 	const moves = cards.map((card, offset) => ({
 		id: cardId(card),
@@ -1121,11 +1121,11 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 				: { fixture: 'cascade' as const, data: [to.data[0], (state.game.tableau[to.data[0]]?.length ?? 0) + offset] },
 	}));
 	// Every action closes an older window unless this one claims it (or opens a fresh one below).
-	// A run the bag carried, or a card buried on the fog, spends the arm; the item stays exhausted.
+	// A run the sack carried, or a card buried on the fog, spends the arm; the item stays exhausted.
 	let next = cloneWith(state, {
 		game: relocate(state, moves),
 		itemWindow: null,
-		armed: bag || bury ? null : state.armed,
+		armed: sack || bury ? null : state.armed,
 	});
 
 	if (entry && source >= 0) {
@@ -1216,8 +1216,8 @@ export function tombTapTargets(state: TombState, from: CardLocation): CardLocati
 	if (!cards.length) return [];
 	if (from.fixture === 'cascade' && !runReachesBottom(state, from, cards)) return [];
 	if (from.fixture === 'cell' && !cellCardMovable(state, from.data[0])) return [];
-	// A run the free cells cannot hold is not a single click away, bag or no bag.
-	if (cards.length > moveCapacity(state) && state.armed?.kind !== 'bag') return [];
+	// A run the free cells cannot hold is not a single click away, sack or no sack.
+	if (cards.length > moveCapacity(state) && state.armed?.kind !== 'sack') return [];
 	const targets: CardLocation[] = [];
 	state.game.tableau.forEach((column, index) => {
 		const location: CardLocation = { fixture: 'cascade', data: [index, Math.max(0, column.length - 1)] };
@@ -1267,8 +1267,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		case 'IMAWAL':
 			next = cloneWith(next, { armed: { kind: 'imawal', cell } });
 			break;
-		case 'Bag of Holding':
-			next = cloneWith(next, { armed: { kind: 'bag', cell } });
+		case 'Sack':
+			next = cloneWith(next, { armed: { kind: 'sack', cell } });
 			break;
 		case 'BURNDAYRAZ':
 		case 'PISORF':
@@ -1289,8 +1289,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
  */
 export function armedDrop(state: TombState, from: CardLocation, to: CardLocation): TombState | null {
 	if (!state.armed) return null;
-	// The bag answers the drop itself: the grabbed run is the one it carries.
-	if (state.armed.kind === 'bag') return tombMove(state, from, to);
+	// The sack answers the drop itself: the grabbed run is the one it carries.
+	if (state.armed.kind === 'sack') return tombMove(state, from, to);
 	// IMAWAL answers the drop with the grabbed card laid on the fog.
 	if (state.armed.kind === 'imawal') return tombMove(state, from, to);
 	// A Remedy covers whatever action comes next, so a drop is just the action it covers.
@@ -1333,8 +1333,8 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	// A Remedy waits for the action it covers: clicks elsewhere leave it armed.
 	if (armed.kind === 'remedy') return null;
 
-	// The bag is a state rather than a target: it waits for the next stack move to carry.
-	if (armed.kind === 'bag') return null;
+	// The sack is a state rather than a target: it waits for the next stack move to carry.
+	if (armed.kind === 'sack') return null;
 
 	// IMAWAL takes a card first, then the fog it is laid on.
 	if (armed.kind === 'imawal') {

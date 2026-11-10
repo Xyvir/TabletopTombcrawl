@@ -641,8 +641,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const keys: string[] = [];
 		// A drafted item left of the chip, or a wounded cell, has no board targets.
 		const parked = location.fixture === 'cell' && !cellCardMovable(state, location.data[0]);
-		// A run longer than the free cells can hold only moves with the bag open.
-		const overfull = run.cards.length > moveCapacity(state) && arm?.kind !== 'bag';
+		// A run longer than the free cells can hold only moves with the sack open.
+		const overfull = run.cards.length > moveCapacity(state) && arm?.kind !== 'sack';
 		state.game.tableau.forEach((column, index) => {
 			const target = { fixture: 'cascade' as const, data: [index, Math.max(0, column.length - 1)] };
 			if ((!parked && !overfull && canBuildOn(state, run.cards, target)) || imawalCanBury(state, run.cards, target))

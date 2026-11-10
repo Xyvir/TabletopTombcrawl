@@ -1237,14 +1237,14 @@ describe('tombcrawl levels', () => {
 	});
 });
 
-describe('tombcrawl the bag of holding', () => {
-	const bag: DraftCard[] = [{ cell: 0, role: 'consumable', id: '2S', suit: 'spades', name: 'Bag of Holding', text: '' }];
+describe('tombcrawl the the sack', () => {
+	const sack: DraftCard[] = [{ cell: 0, role: 'consumable', id: '2S', suit: 'spades', name: 'Sack', text: '' }];
 	// a six-card run with only one free cell to help it move
 	const make = () =>
 		makeTomb({
 			columns: [['9D', '8S', '7H', '6C', '5D', '4S'], ['TC']],
 			cells: ['2S', '3S', '4C', '5C', '7S', '8D'],
-			draft: bag,
+			draft: sack,
 		});
 
 	test('a run longer than the free cells will not move on its own', () => {
@@ -1252,9 +1252,9 @@ describe('tombcrawl the bag of holding', () => {
 		expect(tombMove(state, cascade(0, 0), cascade(1))).toBe(null);
 	});
 
-	test('the bag carries the whole run, then it is spent', () => {
+	test('the sack carries the whole run, then it is spent', () => {
 		const primed = useAbility(make(), 0)!;
-		expect(primed.armed).toMatchObject({ kind: 'bag' });
+		expect(primed.armed).toMatchObject({ kind: 'sack' });
 
 		const carried = tombMove(primed, cascade(0, 0), cascade(1))!;
 		expect(carried.game.tableau[1].length).toBe(7);
@@ -1262,13 +1262,13 @@ describe('tombcrawl the bag of holding', () => {
 		expect(carried.exhausted[0]).toBe(true);
 	});
 
-	test('a run that fits does not spend the bag', () => {
-		const state = makeTomb({ columns: [['9D', '8S'], ['TC']], cells: ['2S', '3S'], draft: bag });
+	test('a run that fits does not spend the sack', () => {
+		const state = makeTomb({ columns: [['9D', '8S'], ['TC']], cells: ['2S', '3S'], draft: sack });
 		const primed = useAbility(state, 0)!;
 		const built = tombMove(primed, cascade(0, 0), cascade(1))!;
 
 		expect(built.game.tableau[1].length).toBe(3);
-		expect(built.armed).toMatchObject({ kind: 'bag' });
+		expect(built.armed).toMatchObject({ kind: 'sack' });
 	});
 });
 
