@@ -329,6 +329,49 @@ describe('burden and mana burn', () => {
 		expect(hp(next)).toBe(0);
 	});
 
+	test('parking a Gorgon in a free cell burdens the Consumable, just like a kill', () => {
+		const state = board();
+		const next = tombMove(state, cascade(0, 0), cell(4))!;
+
+		expect(shorthandCard(next.game.cells[4]!)).toBe('4C');
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.wounded[0]).toBe(1);
+		// the card was not killed, so the power's one wound is the whole bill
+		expect(next.wounded).toEqual([1, 0, 0, 0, 0, 0, 0]);
+	});
+
+	test('parking a Wraith in a free cell burns the Glyph too', () => {
+		const state = board({ columns: [['4D']], foundations: ['3D'], boss: 'KD' });
+		const next = tombMove(state, cascade(0, 0), cell(4))!;
+
+		expect(next.exhausted[1]).toBe(true);
+		expect(next.wounded[1]).toBe(1);
+		expect(next.exhausted[0]).toBe(false);
+	});
+
+	test('sending a boss-suit minion home from the tableau sets its power off', () => {
+		const state = board();
+		const next = tombMove(state, cascade(0, 0), { fixture: 'foundation', data: [0] })!;
+
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.wounded[0]).toBe(1);
+	});
+
+	test('the card that restocks a spent slot becomes the item, so the power holds its fire', () => {
+		const state = makeTomb({
+			columns: [['4C']],
+			cells: [null, 'TS', 'KD', 'QD'],
+			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
+			boss: 'KC',
+		});
+		const feeding = { ...state, itemWindow: { cell: 0, role: 'consumable' as const, suit: 'clubs' as const } };
+
+		const next = tombMove(feeding, cascade(0, 0), cell(0))!;
+		expect(next.draft.find((entry) => entry.cell === 0)?.role).toBe('consumable');
+		expect(next.exhausted[0]).toBe(false);
+		expect(next.wounded[0]).toBe(0);
+	});
+
 	test('a converted item is not there to drain, so the kill costs only its damage', () => {
 		const state = board({
 			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],

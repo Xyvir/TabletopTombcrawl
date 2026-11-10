@@ -956,7 +956,11 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 	return cell;
 }
 
-function bossAura(state: TombState, card: Card, fromCell: boolean): TombState {
+/**
+ * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
+ * and parking one in a free cell sets the power off just the same.
+ */
+function bossAura(state: TombState, card: Card): TombState {
 	if (!isBossMinion(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
@@ -1096,6 +1100,12 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		});
 	}
 
+	// A boss-suit minion parked in a free cell still sets off its power. A card fed into a spent
+	// item slot becomes that item, so it is no longer a monster and the power holds its fire.
+	if (from.fixture === 'cascade' && to.fixture === 'cell' && !feed) {
+		for (const card of cards) next = bossAura(next, card);
+	}
+
 	next = settle(next, currentLevel(state));
 
 	// An item played out to the board (not home) leaves its slot open for exactly one action.
@@ -1133,7 +1143,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		});
 	}
 
-	next = bossAura(next, card, wasCell);
+	next = bossAura(next, card);
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
