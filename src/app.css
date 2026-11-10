@@ -376,6 +376,23 @@ body:has(.card.dragging) .cells.tomb .chip {
 	white-space: nowrap;
 }
 
+/*
+ * The title is Vinque, traced into paths: the typeface is licensed for fixed artwork, not for use as
+ * a web font, so the page carries the shapes alone. Sizing by height in em keeps the mark on the
+ * card's own type scale whatever units the artwork happens to be drawn in.
+ */
+.titlecard .titlemark {
+	display: block;
+	height: 1.95em;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+.titlecard .titlemark svg {
+	display: block;
+	height: 100%;
+	width: auto;
+}
+
 /* foundations are the graveyard: a plain tombstone outline */
 .foundations.tomb .slot {
 	background-repeat: no-repeat;
