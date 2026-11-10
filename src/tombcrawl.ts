@@ -408,6 +408,17 @@ export function newlyHealed(before: TombState, after: TombState): string[] {
 	});
 }
 
+/**
+ * The track cards exploring a fogged card would turn back face up. Hovering the fog reads this out
+ * the way hovering a kill reads out its wounds: the dig's mending is known before the action is spent.
+ */
+export function healPreview(state: TombState, from: CardLocation): string[] {
+	if (!canRevealFaceDown(state, from)) return [];
+	// A Priest's Vigil mends two cells a dig; anyone else mends one.
+	const { wounded } = heal(state, hasPassive(state, 'Priest') ? 2 : 1);
+	return newlyHealed(state, cloneWith(state, { wounded }));
+}
+
 export function cellTopWounded(state: TombState, cell: number): boolean {
 	const cards = cellCards(state, cell).length;
 	return cards > 0 && state.wounded[cell] >= cards;

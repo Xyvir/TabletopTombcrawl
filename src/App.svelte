@@ -32,6 +32,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		armedDrop,
 		attackPreview,
 		attackWith,
+		healPreview,
 		auraActive,
 		auraItem,
 		canBuildOn,
@@ -171,6 +172,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const preview = $derived(tomb && aim ? attackPreview(tomb, aim) : null);
 	/** The track cards an aimed kill would turn face-down, marked red before the blow lands. */
 	const woundPreview = $derived(new Set(preview?.wounds ?? []));
+	/** The track cards digging the hovered fog would turn back up, marked green before it is spent. */
+	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
 	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
@@ -1151,7 +1154,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								<img
 									class="held"
 									class:deep={deeper}
-									class:wound-next={woundPreview.has(shorthandCard(stacked))}
+									class:wound-next={woundPreview.has(shorthandCard(stacked))} class:heal-next={healNext.has(shorthandCard(stacked))}
 									src={faceDown ? `${BASE}images/back.png` : img(stacked)}
 									alt=""
 									draggable="false"

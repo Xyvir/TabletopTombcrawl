@@ -565,6 +565,15 @@ img {
 	}
 }
 
+/* Hovering the fog with wounds on the track reads out what the dig would mend, the way a kill's
+   price reads out in red. It sits before the wound rule so a card facing both warns red. */
+.slot .held.heal-next {
+	outline: 2px solid #57e08a;
+	outline-offset: -2px;
+	box-shadow: 0 0 8px rgba(87, 224, 138, 0.6);
+	z-index: 2;
+}
+
 /* A kill you are aiming at reads out its price: every card it would turn face-down glows red. */
 .slot .held.wound-next {
 	outline: 2px solid #ff4d4d;

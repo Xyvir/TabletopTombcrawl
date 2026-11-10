@@ -10,6 +10,7 @@ import {	MONSTERS,
 
 	attackPreview,
 	attackWith,
+	healPreview,
 	bossSlain,
 	bossUnlocked,
 	canSendHome,
@@ -761,6 +762,33 @@ describe('tombcrawl progression rules', () => {
 		test('does not change the rule for anyone else', () => {
 			const state = makeTomb({ columns: [['3S']], foundations: ['5S'] });
 			expect(canSendHome(state, cascade(0)).legal).toBe(false);
+		});
+	});
+
+	describe('heal preview', () => {
+		test('names the card a dig would turn back up, and nothing for a card already face up', () => {
+			const state = makeTomb({ columns: [['3D', '2C']], cells: ['KC', 'QC'], hidden: ['2C'], wounded: [0] });
+			// the fog card at the end of the column can be dug, and mending starts at the left edge
+			expect(healPreview(state, cascade(0, 1))).toEqual(['KC']);
+			// a card that is already face up is no dig at all
+			expect(healPreview(state, cascade(0, 0))).toEqual([]);
+		});
+
+		test('a Priest reads out both cells a dig would mend', () => {
+			const party: DraftCard[] = [{ cell: 2, role: 'kin', id: 'KH', suit: 'hearts', name: 'Priest', text: '' }];
+			const state = makeTomb({
+				columns: [['3D', '2C']],
+				cells: ['KC', 'QC', 'JC'],
+				hidden: ['2C'],
+				wounded: [0, 1],
+				draft: party,
+			});
+			expect(healPreview(state, cascade(0, 1))).toEqual(['KC', 'QC']);
+		});
+
+		test('nothing to mend reads out nothing', () => {
+			const state = makeTomb({ columns: [['3D', '2C']], hidden: ['2C'] });
+			expect(healPreview(state, cascade(0, 1))).toEqual([]);
 		});
 	});
 
