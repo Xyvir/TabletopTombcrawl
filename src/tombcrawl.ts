@@ -92,8 +92,8 @@ const CLASSES: Record<Suit, Ability> = {
 
 const GLYPHS: Record<Suit, Ability> = {
 	spades: {
-		name: 'BURNDAYRAZ',
-		text: 'Arm to slay any visible card on the board, however many cards are stacked on top of it.',
+		name: 'BYSSEPS',
+		text: 'Arm, then move a valid stack of any size, even one your free cells could not carry. Spent by that move.',
 	},
 	hearts: {
 		name: 'IMAWAL',
@@ -111,8 +111,8 @@ const GLYPHS: Record<Suit, Ability> = {
 
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
-		name: 'Sack',
-		text: 'Arm, then move a valid stack of any size, even one your free cells could not carry. Spent by that move.',
+		name: 'Revive',
+		text: 'Arm to take one wound more than your track can hold: that action may spend the last heart, and the item is spent with it.',
 	},
 	hearts: {
 		name: 'Potion',
@@ -148,7 +148,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'sack';
+	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'revive' | 'sack';
 	cell: number;
 	first?: string;
 };
@@ -730,7 +730,10 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
-	const short = Math.max(0, total - free + 1);
+	// A Revive buys the one wound the track cannot hold: that action may spend the last heart, and
+	// the item is spent with it, so the reserve only applies when the spell is not armed.
+	const revive = state.armed?.kind === 'revive';
+	const short = Math.max(0, total - free + (revive ? 0 : 1));
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
 	const afterItem = itemCell === null ? state : woundCell(state, itemCell);
@@ -960,7 +963,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return spendRemedy(closeItemWindow(next));
+	return spendArmedItem(closeItemWindow(next));
 }
 
 /** Same suit, or any card of the same colour for an Orc's Scavenger. */
@@ -974,9 +977,9 @@ function closeItemWindow(state: TombState): TombState {
 }
 
 /** A Remedy is spent by the action it covers: the arm clears and the item exhausts. */
-function spendRemedy(state: TombState): TombState {
+function spendArmedItem(state: TombState): TombState {
 	const armed = state.armed;
-	if (armed?.kind !== 'remedy') return state;
+	if (armed?.kind !== 'remedy' && armed?.kind !== 'revive') return state;
 	const exhausted = [...state.exhausted];
 	exhausted[armed.cell] = true;
 	return cloneWith(state, { exhausted, armed: null });
@@ -1174,7 +1177,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		next = cloneWith(next, { itemWindow: { cell: source, role: entry.role, suit: entry.suit } });
 	}
 
-	return spendRemedy(next);
+	return spendArmedItem(next);
 }
 
 /** Send a card home, paying the HP cost and applying the boss aura. */
@@ -1220,7 +1223,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}
 
-	const settled = spendRemedy(settle(next, levelBefore));
+	const settled = spendArmedItem(settle(next, levelBefore));
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card of the
 	// colour, for an Orc) restocks the item and the chip stays put. Any other action drops the
 	// window, so the chip steps left and the cell is ordinary from then on.
@@ -1267,8 +1270,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
 	const exhausted = [...state.exhausted];
-	// A Remedy is not spent by arming it: the action it covers is what exhausts it.
-	if (entry.name !== 'Remedy') exhausted[cell] = true;
+	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
+	if (entry.name !== 'Remedy' && entry.name !== 'Revive') exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
@@ -1286,7 +1289,11 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 			next = cloneWith(next, { armed: { kind: 'imawal', cell } });
 			break;
 		case 'Sack':
+		case 'BYSSEPS':
 			next = cloneWith(next, { armed: { kind: 'sack', cell } });
+			break;
+		case 'Revive':
+			next = cloneWith(next, { armed: { kind: 'revive', cell } });
 			break;
 		case 'BURNDAYRAZ':
 		case 'PISORF':
@@ -1311,8 +1318,8 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 	if (state.armed.kind === 'sack') return tombMove(state, from, to);
 	// IMAWAL answers the drop with the grabbed card laid on the fog.
 	if (state.armed.kind === 'imawal') return tombMove(state, from, to);
-	// A Remedy covers whatever action comes next, so a drop is just the action it covers.
-	if (state.armed.kind === 'remedy') return tombMove(state, from, to);
+	// A Remedy or Revive covers whatever action comes next, so a drop is just the action it covers.
+	if (state.armed.kind === 'remedy' || state.armed.kind === 'revive') return tombMove(state, from, to);
 	if (state.armed.kind === 'pisorf' || state.armed.kind === 'weytwut') {
 		const cleared = state.armed.first
 			? cloneWith(state, { armed: { ...state.armed, first: undefined } })
@@ -1348,8 +1355,8 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	// Clicking the card that armed the ability puts it away unspent instead of aiming it at itself.
 	if (location.fixture === 'cell' && location.data[0] === armed.cell) return disarm(state);
 
-	// A Remedy waits for the action it covers: clicks elsewhere leave it armed.
-	if (armed.kind === 'remedy') return null;
+	// A Remedy or Revive waits for the action it covers: clicks elsewhere leave it armed.
+	if (armed.kind === 'remedy' || armed.kind === 'revive') return null;
 
 	// The sack is a state rather than a target: it waits for the next stack move to carry.
 	if (armed.kind === 'sack') return null;

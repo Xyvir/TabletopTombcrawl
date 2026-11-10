@@ -215,7 +215,7 @@ describe('conversion order', () => {
 		// a spade on the next action restocks the slot, so the chip never passes it
 		const restocked = tombMove(home, cell(1), cell(0));
 		expect(restocked).not.toBe(null);
-		expect(restocked!.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BURNDAYRAZ', id: '3S' });
+		expect(restocked!.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BYSSEPS', id: '3S' });
 		expect(restocked!.itemWindow).toBe(null);
 		expect(chipBoundary(restocked!)).toBe(1);
 		expect(abilityUsable(restocked!, 0)).toBe(true);
@@ -399,6 +399,56 @@ describe('burden and mana burn', () => {
 		const next = attackWith(state, cascade(0, 0))!;
 		expect(next.wounded[0]).toBe(0);
 		expect(hp(next)).toBe(1);
+	});
+});
+
+describe('the revive', () => {
+	const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TS', suit: 'spades', name: 'Revive', text: '' }];
+	const board = () =>
+		makeTomb({
+			columns: [['4C']],
+			cells: ['TS', 'KD', 'QD', '7C'],
+			foundations: ['3C'],
+			draft,
+			boss: 'KC',
+		});
+
+	test('it buys the one wound the track cannot hold, then it is spent', () => {
+		// four hearts against a four-wound kill: the last heart is exactly what the rule forbids
+		const state = board();
+		expect(hp(state)).toBe(4);
+		expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
+
+		const armed = useAbility(state, 0)!;
+		expect(armed.armed).toMatchObject({ kind: 'revive' });
+		// arming it costs nothing: the action it covers is what spends it
+		expect(armed.exhausted[0]).toBe(false);
+		expect(attackPreview(armed, cascade(0, 0)).legal).toBe(true);
+
+		const next = attackWith(armed, cascade(0, 0))!;
+		expect(hp(next)).toBe(0);
+		expect(next.armed).toBe(null);
+		expect(next.exhausted[0]).toBe(true);
+	});
+
+	test('without the revive armed the same kill is refused', () => {
+		const state = board();
+		expect(attackWith(state, cascade(0, 0))).toBe(null);
+	});
+});
+
+describe('the bysseps glyph', () => {
+	test('arms the stack carry from a glyph slot, which level up refreshes', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '5S', suit: 'spades', name: 'BYSSEPS', text: '' }];
+		const state = makeTomb({
+			columns: [['KC', 'QS', 'JD', 'TC', '9H']],
+			cells: ['5S', '2D'],
+			foundations: ['AS'],
+			draft,
+		});
+		const armed = useAbility(state, 0)!;
+		expect(armed.armed).toMatchObject({ kind: 'sack' });
+		expect(armed.exhausted[0]).toBe(true);
 	});
 });
 
@@ -1335,7 +1385,7 @@ describe('tombcrawl item refresh', () => {
 		expect(refilled.itemWindow).toBe(null);
 		expect(shorthandCard(refilled.game.cells[0]!)).toBe('3S');
 		expect(refilled.draft).toHaveLength(1);
-		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BURNDAYRAZ', id: '3S' });
+		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BYSSEPS', id: '3S' });
 	});
 
 	test('a plain card parked in another free cell can be fed in too', () => {
@@ -1343,7 +1393,7 @@ describe('tombcrawl item refresh', () => {
 		const refilled = tombMove(played, cell(1), cell(0))!;
 
 		expect(shorthandCard(refilled.game.cells[0]!)).toBe('4S');
-		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BURNDAYRAZ', id: '4S' });
+		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BYSSEPS', id: '4S' });
 	});
 
 	test('the wrong suit is not a feed: it misses and the slot stays a plain free cell', () => {
