@@ -18,14 +18,19 @@ import { FreeCell } from './game/game';
  * pure: every action returns a new state, so the UI can keep a snapshot per move for undo.
  */
 
-export const TOMB_CELL_COUNT = 7;
+/** The drafted party always fills the first four cells, one per suit. */
+export const DRAFT_CELL_COUNT = 4;
+/** Free cells past the party: the difficulty knob, and the size of the HP track. */
+export const FREE_CELL_COUNT: Record<Difficulty, number> = { easy: 4, med: 3, hard: 2 };
+export type Difficulty = 'easy' | 'med' | 'hard';
+/** The default track: four drafted items and three free cells. */
+export const TOMB_CELL_COUNT = DRAFT_CELL_COUNT + FREE_CELL_COUNT.med;
 export const TOMB_CASCADE_COUNT = 8;
-const DRAFT_CELL_COUNT = 4;
 
-export type DraftRole = 'race' | 'class' | 'glyph' | 'consumable';
+export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
 
 export const ROLE_LABEL: Record<DraftRole, string> = {
-	race: 'Race · passive',
+	kin: 'Kin · passive',
 	class: 'Class · passive',
 	glyph: 'Glyph · active, refreshes on level up',
 	consumable: 'Consumable · active, refilled by playing it home',
@@ -36,90 +41,90 @@ interface Ability {
 	text: string;
 }
 
-const RACES: Record<Suit, Ability> = {
+const KIN: Record<Suit, Ability> = {
 	spades: {
 		name: 'Orc',
 		text: 'Scavenger: when a Consumable refills, any card of the same colour will do.',
 	},
 	hearts: {
 		name: 'Human',
-		text: 'Ignore up to two missing ranks when placing a card on a foundation.',
+		text: 'Courageous: send a card home skipping one missing rank, and slide a lower card in under the pile.',
 	},
 	clubs: {
 		name: 'Elf',
-		text: 'Rootsight: reach under the fog and reveal any face-down card, even a buried one, to explore it.',
+		text: 'Insight: reach under the fog and reveal any face-down card, even a buried one, to explore it.',
 	},
 	diamonds: {
 		name: 'Dwarf',
-		text: 'The boss king has no protection: kill it without sending another king home first.',
+		text: 'Grudge: the boss king has no protection — kill it without sending another king home first.',
 	},
 };
 
 const CLASSES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Fighter',
-		text: 'Killing an enemy ranked above your level triggers a free heal.',
+		text: 'Veteran: ignore the lowest card when calculating your level, so you level up sooner than the rest.',
 	},
 	hearts: {
 		name: 'Priest',
-		text: 'Exploration heals two exhausted cells instead of one.',
+		text: 'Vigil: exploration heals two exhausted cells instead of one.',
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Sending a club home immediately refreshes your Glyph.',
+		text: 'Affinity: sending a club home immediately refreshes your Glyph.',
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Backstab: killing from a free cell, or a lone column card, costs no HP.',
+		text: 'Bounty: slay into the foundation holding the highest card and the kill costs no HP.',
 	},
 };
 
 const GLYPHS: Record<Suit, Ability> = {
 	spades: {
-		name: 'GETINDARE',
-		text: 'Spend to attack an enemy even with one card stacked on top of it.',
+		name: 'BURNDAYRAZ',
+		text: 'Arm to slay any visible card on the board, however many cards are stacked on top of it.',
 	},
 	hearts: {
-		name: 'CYDSTEPP',
-		text: 'Spend to make your next attack cost no HP.',
+		name: 'IMAWAL',
+		text: 'Arm to play any exposed card on top of a face-down card, as if it were an empty column.',
 	},
 	clubs: {
 		name: 'PISORF',
-		text: 'Spend, then choose a card and a column: it moves there, ignoring build rules.',
+		text: 'Arm, then send a proper stack of two cards into one open free cell: two cards, two hearts.',
 	},
 	diamonds: {
 		name: 'WEYTWUT',
-		text: 'Spend, then choose two exposed cards: they trade places.',
+		text: 'Arm, then choose two exposed cards: they trade places.',
 	},
 };
 
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
-		name: 'Key',
-		text: 'Spend, then choose a face-down card: it turns face-up without an exploration heal.',
+		name: 'Bag of Holding',
+		text: 'Arm, then move a valid stack of any size, even one your free cells could not carry. Spent by that move.',
 	},
 	hearts: {
 		name: 'Potion',
-		text: 'Spend to heal one exhausted free cell.',
+		text: 'Arm and select one wound to heal anywhere on the track.',
 	},
 	clubs: {
 		name: 'Elixir',
-		text: 'Spend to refresh your exhausted Glyph.',
+		text: 'Arm to heal and/or refresh (un-exhaust) your spell glyph.',
 	},
 	diamonds: {
 		name: 'Cure-All',
-		text: 'Spend to ignore the boss-suit aura for your current level.',
+		text: 'Arm, exhausted after your next action. Slay a boss-suit minion and you can ignore its special ability.',
 	},
 };
 
 const ABILITY_TABLE: Record<DraftRole, Record<Suit, Ability>> = {
-	race: RACES,
+	kin: KIN,
 	class: CLASSES,
 	glyph: GLYPHS,
 	consumable: CONSUMABLES,
 };
 
-const ROLES_BY_DRAW_ORDER: DraftRole[] = ['race', 'class', 'glyph', 'consumable'];
+const ROLES_BY_DRAW_ORDER: DraftRole[] = ['kin', 'class', 'glyph', 'consumable'];
 
 export interface DraftCard {
 	/** Free cell index, 0-3 by draw order. */
@@ -132,7 +137,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'getindare' | 'key' | 'pisorf' | 'weytwut';
+	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'cure' | 'potion' | 'bag';
 	cell: number;
 	first?: string;
 };
@@ -145,14 +150,16 @@ export interface TombState {
 	draft: DraftCard[];
 	bossId: string | null;
 	bossSuit: Suit | null;
-	/** State 2: a cell card turned on its side. Exhausted cells are locked and spent HP. */
+	/** An exhausted cell: its ability is spent and the card lies on its side. Still counts as HP. */
 	exhausted: boolean[];
+	/**
+	 * Wounds per free cell: how many of its cards lie face-down. A stack fills from the bottom up,
+	 * and it is worth two hearts, so it takes two wounds and each needs a heal of its own.
+	 */
+	wounded: number[];
 	won: boolean;
 	/** Golf total, set when the player leaves through the exit. */
 	score: number | null;
-	nextAttackFree: boolean;
-	/** Level at which a Cure-All was spent; the aura is ignored while the level matches. */
-	curedLevel: number | null;
 	armed: ArmedAbility | null;
 	/** A spent item slot: feed it a matching card on the very next action to remake the item. */
 	itemWindow: { cell: number; role: DraftRole; suit: Suit } | null;
@@ -216,7 +223,11 @@ function firstRevealedKing(cards: Card[], hidden: string[]): Card | null {
 	);
 }
 
-export function createTombState(seed = randomTombSeed()): TombState {
+/**
+ * A deal whose party is drafted into the first four cells and leaves `freeCells` cells open. The
+ * seed alone decides the cards, so the same seed deals the same board at any difficulty.
+ */
+export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_COUNT.med): TombState {
 	const deck = seededShuffle(initializeDeckOfCards(), seed).map((card) => ({ ...card }));
 
 	// Draft: reveal until four different suits have come up, in the order they appeared.
@@ -239,7 +250,8 @@ export function createTombState(seed = randomTombSeed()): TombState {
 	});
 
 	const cards = [...picks, ...rest];
-	const game = new FreeCell({ cellCount: TOMB_CELL_COUNT, cascadeCount: TOMB_CASCADE_COUNT, cards });
+	const cellCount = DRAFT_CELL_COUNT + freeCells;
+	const game = new FreeCell({ cellCount, cascadeCount: TOMB_CASCADE_COUNT, cards });
 
 	// Fog of war: row 1 (the bottom of each column, the row you can actually touch) is face up.
 	const hidden: string[] = [];
@@ -267,11 +279,10 @@ export function createTombState(seed = randomTombSeed()): TombState {
 		draft,
 		bossId: bossCard ? cardId(bossCard) : null,
 		bossSuit: bossCard ? bossCard.suit : null,
-		exhausted: new Array(TOMB_CELL_COUNT).fill(false),
+		exhausted: new Array(cellCount).fill(false),
+		wounded: new Array(cellCount).fill(0),
 		won: false,
 		score: null,
-		nextAttackFree: false,
-		curedLevel: null,
 		armed: null,
 		itemWindow: null,
 	};
@@ -288,22 +299,36 @@ export function draftAt(state: TombState, cell: number): DraftCard | undefined {
 }
 
 export function hasPassive(state: TombState, name: string): boolean {
-	return state.draft.some((entry) => entry.name === name && (entry.role === 'race' || entry.role === 'class'));
+	// A wounded passive is face-down and locked: it does nothing until it is healed.
+	return state.draft.some(
+		(entry) => entry.name === name && (entry.role === 'kin' || entry.role === 'class') && !state.wounded[entry.cell]
+	);
 }
 
 export function hasGlyph(state: TombState, name: string): boolean {
-	return state.draft.some((entry) => entry.name === name && entry.role === 'glyph');
+	return state.draft.some((entry) => entry.name === name && entry.role === 'glyph' && !state.wounded[entry.cell]);
 }
 
 export function playerLevel(game: FreeCell): number {
 	// The delver starts at level 1: an empty foundation counts as its ace, so the first level up
-	// only arrives once every suit has reached its two.
-	const ranks = game.foundations.map((card) => (card ? rankOf(card.rank) : 1));
-	return ranks.length ? Math.min(...ranks) : 1;
+	// only arrives once every suit has reached its two. Each pile is read by its highest card, since
+	// a Human can slide a lower one underneath.
+	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) =>
+		game.cards
+			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
+			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 1)
+	);
+	return Math.min(...ranks);
 }
 
 export function currentLevel(state: TombState): number {
-	return playerLevel(state.game);
+	const level = playerLevel(state.game);
+	if (!hasPassive(state, 'Fighter')) return level;
+	// A Fighter ignores the lowest card, so one lagging suit stops holding him back: with three suits
+	// ahead of the slowest one, he is a level higher than anyone else would be.
+	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) => foundationTopRank(state, suit) || 1);
+	const sorted = ranks.sort((a, b) => a - b);
+	return sorted[1] ?? level;
 }
 
 export function isBoss(state: TombState, card: Card): boolean {
@@ -328,21 +353,80 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 		power: 'Poison',
 		text: 'killing this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
 	},
-	clubs: { name: 'Gorgon', power: 'Burden', text: 'killing this exhausts your Consumable.' },
-	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts your Glyph.' },
+	clubs: { name: 'Gorgon', power: 'Burden', text: 'killing this exhausts and wounds your Consumable.' },
+	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts and wounds your Glyph.' },
 };
 
-/** The aura is off only while a Cure-All is active for this level. */
+/** The aura is off while a Cure-All is armed: the action it covers ignores the power. */
 export function auraActive(state: TombState): boolean {
-	if (state.curedLevel !== null && state.curedLevel === currentLevel(state)) return false;
-	return true;
+	return state.armed?.kind !== 'cure';
+}
+
+/** Cards in one free cell, bottom first: a PISORF stack puts two cards in the same cell. */
+export function cellCards(state: TombState, cell: number): Card[] {
+	return state.game.cards
+		.filter((card) => card.location.fixture === 'cell' && card.location.data[0] === cell)
+		.sort((a, b) => (a.location.data[1] ?? 0) - (b.location.data[1] ?? 0));
+}
+
+/** Face-up cards in a cell: the heart bar is made of cards, not slots. */
+export function faceUp(state: TombState, cell: number): number {
+	return Math.max(0, cellCards(state, cell).length - state.wounded[cell]);
+}
+
+/** The face-down cards of a cell: wounds fill a stack from the bottom up. */
+export function woundedCards(state: TombState, cell: number): Card[] {
+	const cards = cellCards(state, cell);
+	return cards.slice(0, Math.min(cards.length, state.wounded[cell]));
+}
+
+/** Only the card on top can be touched, so only its wound locks the cell. */
+/**
+ * The cards that just turned face-down, so the board can turn them over with the same animation
+ * the fog uses. Wounds are paid from the right edge of the track, one card per point.
+ */
+export function newlyWounded(before: TombState, after: TombState): string[] {
+	return before.wounded.flatMap((count, i) => {
+		const stack = cellCards(after, i);
+		const down = Math.min(stack.length, after.wounded[i] ?? 0);
+		if (down <= count) return [];
+		const card = stack[down - 1];
+		return card ? [shorthandCard(card)] : [];
+	});
+}
+
+/**
+ * The cards that just came back face-up, so the board can turn them over with the same animation a
+ * wound uses, run the other way. Healing runs right edge inward, one card per point healed.
+ */
+export function newlyHealed(before: TombState, after: TombState): string[] {
+	return before.wounded.flatMap((count, i) => {
+		const stack = cellCards(after, i);
+		const down = Math.min(stack.length, after.wounded[i] ?? 0);
+		if (down >= count) return [];
+		return stack.slice(down, Math.min(count, stack.length)).map((card) => shorthandCard(card));
+	});
+}
+
+export function cellTopWounded(state: TombState, cell: number): boolean {
+	const cards = cellCards(state, cell).length;
+	return cards > 0 && state.wounded[cell] >= cards;
 }
 
 export function verticalCells(state: TombState): number[] {
 	return state.game.cells
 		.map((card, index) => ({ card, index }))
-		.filter(({ card, index }) => !!card && !state.exhausted[index])
+		.filter(({ card, index }) => !!card && faceUp(state, index) > 0)
 		.map(({ index }) => index);
+}
+
+/** A cell holding a stack of two cards is worth two hearts while it lasts. */
+export function stackedCells(state: TombState): number {
+	return state.game.cells.filter((_, index) => cellCards(state, index).length > 1).length;
+}
+
+export function maxHp(state: TombState): number {
+	return state.game.cells.length + stackedCells(state);
 }
 
 export function emptyCells(state: TombState): number[] {
@@ -350,7 +434,7 @@ export function emptyCells(state: TombState): number[] {
 }
 
 export function hp(state: TombState): number {
-	return verticalCells(state).length;
+	return state.game.cells.reduce((total, _, index) => total + faceUp(state, index), 0);
 }
 
 /** Kings other than the boss that are already home. */
@@ -388,12 +472,18 @@ export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 	const occupied = game.foundations.findIndex((card) => card?.suit === suit);
 	if (occupied !== -1) return occupied;
 	return game.foundations.findIndex((card) => !card);
-}
+}	export function foundationTopRank(state: TombState, suit: Suit): number {
+		// A pile can hold more than one card (a Human slides low cards underneath): the top is the highest.
+		return state.game.cards
+			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
+			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0);
+	}
 
-export function foundationTopRank(state: TombState, suit: Suit): number {
-	const card = state.game.foundations.find((candidate) => candidate?.suit === suit);
-	return card ? rankOf(card.rank) : 0;
-}
+/** The pile with the highest card on it: the only one a Bounty pays for. Ties all count as leading. */
+	export function leadingFoundation(state: TombState, suit: Suit): boolean {
+		const top = foundationTopRank(state, suit);
+		return state.game.foundations.every((card) => !card || foundationTopRank(state, card.suit) <= top);
+	}
 
 /**
  * Phantom rank: a drafted card still sitting in a free cell counts as already home, so the next
@@ -438,11 +528,74 @@ function runReachesBottom(state: TombState, from: CardLocation, run: Card[]): bo
 	return run[run.length - 1] === column[column.length - 1];
 }
 
-/** Only a drafted card leaves its cell for the board; a plain card leaves by going home. */
+/**
+ * The poker chip's boundary: ability cells sit to its left, plain free cells to its right, and the
+ * mark walks one slot left each time an item converts. A slot waiting on its refill is still an
+ * ability slot — the chip only moves once that window closes unfed.
+ */
+export function chipBoundary(state: TombState): number {
+	const drafted = convertibleCell(state) + 1;
+	const pending = state.itemWindow ? state.itemWindow.cell + 1 : 0;
+	return Math.max(drafted, pending);
+}
+
+/** The one item that may leave its slot: the drafted card sitting just left of the chip. */
+export function convertibleCell(state: TombState): number {
+	return state.draft.reduce((highest, entry) => Math.max(highest, entry.cell), -1);
+}
+
+/**
+ * A plain scratch cell (to the right of the chip) hands its card back like FreeCell does: it builds
+ * onto a column, waits in another cell, or goes home. A drafted item may leave only once the chip
+ * reaches it, because conversions run in order. A wound locks either kind until it is healed.
+ */
 export function cellCardMovable(state: TombState, cell: number): boolean {
 	const card = state.game.cells[cell];
-	if (!card || state.exhausted[cell]) return false;
-	return !!draftAt(state, cell); // Cell Conversion is always available
+	// Only a wound locks a cell: a spent card can still be picked up and played.
+	if (!card || cellTopWounded(state, cell)) return false;
+	if (!draftAt(state, cell)) return true;
+	return cell === convertibleCell(state);
+}
+
+/** The column a click lands on whose top card is still fog. */
+function foggedColumn(state: TombState, location: CardLocation): number | null {
+	if (location.fixture !== 'cascade') return null;
+	const column = state.game.tableau[location.data[0]] ?? [];
+	const top = column[column.length - 1];
+	return top && isFaceDown(state, top) ? location.data[0] : null;
+}
+
+/**
+ * IMAWAL buys one illegal play: a single exposed card may be laid on top of a face-down card,
+ * which normally blocks its whole column. The fog then stays face-down, buried for good.
+ */
+export function imawalCanBury(state: TombState, cards: Card[], to: CardLocation): boolean {
+	if (state.armed?.kind !== 'imawal' || to.fixture !== 'cascade' || cards.length !== 1) return false;
+	if (isFaceDown(state, cards[0])) return false;
+	return foggedColumn(state, { fixture: 'cascade', data: [to.data[0], 0] }) !== null;
+}
+
+/**
+ * The tomb's version of FreeCell's move limit: every card past the first in a run needs a free
+ * cell to wait in, and the track's cells are the only ones there are. The Bag of Holding is the
+ * one thing that ignores it.
+ */
+export function moveCapacity(state: TombState): number {
+	return emptyCells(state).length + 1;
+}
+
+/** A proper stack: exactly two exposed cards, descending and alternating, at the bottom of a column. */
+export function pisorfPair(state: TombState, from: CardLocation): Card[] | null {
+	if (from.fixture !== 'cascade') return null;
+	const run = tombRun(state, from);
+	if (run.length !== 2 || !runReachesBottom(state, from, run)) return null;
+	if (run.some((card) => isFaceDown(state, card) || frozenBoss(state, card))) return null;
+	return run;
+}
+
+/** PISORF needs a proper pair and an open free cell to put it in. */
+export function pisorfCanStack(state: TombState, from: CardLocation, cell: number): boolean {
+	return !!pisorfPair(state, from) && !state.game.cells[cell];
 }
 
 export function canBuildOn(state: TombState, cards: Card[], to: CardLocation): boolean {
@@ -472,7 +625,11 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	if (card.location.fixture === 'foundation') return { legal: false, reason: 'already home' };
 
 	if (from.fixture === 'cell') {
-		if (state.exhausted[from.data[0]]) return { legal: false, reason: 'cell exhausted' };
+		if (cellTopWounded(state, from.data[0])) return { legal: false, reason: 'wounded' };
+		// Conversion runs in order: only the drafted item beside the chip may leave its slot.
+		if (draftAt(state, from.data[0]) && from.data[0] !== convertibleCell(state)) {
+			return { legal: false, reason: 'convert the item beside the chip first' };
+		}
 	} else {
 		const column = state.game.tableau[from.data[0]] ?? [];
 		const index = from.data[1];
@@ -486,8 +643,12 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 
 	const rank = rankOf(card.rank);
 	const home = foundationTopRank(state, card.suit);
-	const gap = hasPassive(state, 'Human') ? 3 : 1;
-	if (rank <= home) return { legal: false, reason: 'foundation already past this rank' };
+	const human = hasPassive(state, 'Human');
+	const gap = human ? 2 : 1;
+	// A Human may still slide a card under its pile: the pile keeps the higher card on top.
+	if (rank === home || (rank < home && !human)) {
+		return { legal: false, reason: 'foundation already past this rank' };
+	}
 
 	// A drafted card in a free cell opens the rank above it, but never withholds the ranks below:
 	// the suit can still be built up from its ace while that card sits out of the foundation.
@@ -510,32 +671,46 @@ export interface AttackPreview {
 	locks: number[];
 	/** Empty cells that would have to be filled first — the kill is one HP short. */
 	need: number[];
+	/** The track cards that would turn face-down, in the order the wounds land. */
+	wounds: string[];
 }
 
-export function attackPreview(state: TombState, from: CardLocation): AttackPreview {
+export function attackPreview(state: TombState, from: CardLocation, reachThroughCover = false): AttackPreview {
 	const card = cardAt(state.game, from);
-	const check = canSendHome(state, from);
-	if (!card) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [] };
-	if (!check.legal) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [] };
+	// BURNDAYRAZ burns any card it can see: the whole cover is ignored, however deep the card lies.
+	// The aim is passed in explicitly too, because the spell is spent before the attack lands.
+	const ignoreCover = reachThroughCover || (state.armed?.kind === 'burndayraz' && from.fixture === 'cascade');
+	const check = canSendHome(state, from, ignoreCover);
+	if (!card) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], wounds: [] };
+	if (!check.legal) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], wounds: [] };
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
 	if (isBossMinion(state, card) && state.bossSuit === 'spades' && auraActive(state)) {
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
-	if (state.nextAttackFree) damage = 0;
-	const loneColumn = from.fixture === 'cascade' && (state.game.tableau[from.data[0]]?.length ?? 0) === 1;
-	if (hasPassive(state, 'Thief') && (from.fixture === 'cell' || loneColumn)) damage = 0;
+	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
+	// never touched still costs its full damage.
+	if (hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
 
-	const free = verticalCells(state).sort((a, b) => b - a);
-	const locks = free.slice(0, Math.min(damage, free.length));
-	const need = damage > free.length ? emptyCells(state).slice(0, damage - free.length) : [];
+	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
+	const itemCell = auraItemWound(state, card, from);
+	const total = damage + (itemCell === null ? 0 : 1);
+	const free = hp(state);
+	const need = total > free ? emptyCells(state).slice(0, total - free) : [];
+	const afterItem = itemCell === null ? state : woundCell(state, itemCell);
+	const afterWounds = wound(afterItem, damage);
+	const locks =
+		total <= free
+			? Array.from(new Set([...(itemCell === null ? [] : [itemCell]), ...afterWounds.locks]))
+			: [];
 	return {
-		legal: damage <= free.length,
-		reason: damage > free.length ? `needs ${damage} HP, you have ${free.length}` : '',
+		legal: total <= free,
+		reason: total > free ? `needs ${total} HP, you have ${free}` : '',
 		damage,
 		locks,
 		need,
+		wounds: total <= free ? woundCardIds(state, afterItem, itemCell, afterWounds.wounded) : [],
 	};
 }
 
@@ -551,31 +726,73 @@ function relocate(state: TombState, moves: { id: string; to: CardLocation }[]): 
 		const to = targets.get(cardId(card));
 		return to ? { ...card, location: to } : card;
 	});
-	return new FreeCell({ cellCount: state.game.cells.length, cascadeCount: state.game.tableau.length, cards });
+	const game = new FreeCell({ cellCount: state.game.cells.length, cascadeCount: state.game.tableau.length, cards });
+	// Two cards can share a free cell: the slot always shows the top of the stack.
+	game.cells.forEach((_, cell) => {
+		game.cells[cell] = cellCards(cloneWith(state, { game }), cell).pop() ?? null;
+	});
+	return game;
 }
 
-function exhaust(state: TombState, count: number): boolean[] {
-	const next = [...state.exhausted];
-	verticalCells(state)
-		.sort((a, b) => b - a)
-		.slice(0, count)
-		.forEach((cell) => {
-			next[cell] = true;
-		});
-	return next;
-}
-
-/** Healing runs from the right edge, like a Zelda heart bar. */
-function heal(exhausted: boolean[], count: number): { exhausted: boolean[]; healed: number } {
-	const next = [...exhausted];
-	let healed = 0;
-	for (let i = next.length - 1; i >= 0 && healed < count; i--) {
-		if (next[i]) {
-			next[i] = false;
-			healed++;
+/**
+ * Damage wounds the rightmost face-up cards; inside a stack it fills from the bottom up, so the
+ * first point turns over the card underneath and the next one turns over the top card.
+ */
+function wound(state: TombState, damage: number): { wounded: number[]; locks: number[] } {
+	const wounded = [...state.wounded];
+	const locks: number[] = [];
+	let left = damage;
+	for (let cell = wounded.length - 1; cell >= 0 && left > 0; cell--) {
+		const cards = cellCards(state, cell).length;
+		while (left > 0 && wounded[cell] < cards) {
+			wounded[cell] += 1;
+			left -= 1;
+			if (!locks.includes(cell)) locks.push(cell);
 		}
 	}
-	return { exhausted: next, healed };
+	return { wounded, locks };
+}
+
+/**
+ * The exact cards a blow would turn face-down: the aura item first, then the track right edge
+ * inward. Inside a stack the bottom card turns before the one on top of it.
+ */
+function woundCardIds(state: TombState, afterItem: TombState, itemCell: number | null, after: number[]): string[] {
+	const drained =
+		itemCell === null
+			? []
+			: cellCards(state, itemCell)
+					.slice(state.wounded[itemCell] ?? 0, (state.wounded[itemCell] ?? 0) + 1)
+					.map((card) => shorthandCard(card));
+	const turned = after.flatMap((count, cell) => {
+		const stack = cellCards(afterItem, cell);
+		const was = Math.min(stack.length, afterItem.wounded[cell] ?? 0);
+		const now = Math.min(stack.length, count);
+		return stack.slice(was, now).map((card) => shorthandCard(card));
+	});
+	return [...drained, ...turned];
+}
+
+/** Healing flips wounds face-up again, right edge first; every wounded card needs its own heal. */
+function heal(state: TombState, count: number): { wounded: number[]; healed: number } {
+	const wounded = [...state.wounded];
+	let healed = 0;
+	for (let cell = wounded.length - 1; cell >= 0 && healed < count; cell--) {
+		while (wounded[cell] > 0 && healed < count) {
+			wounded[cell] -= 1;
+			healed += 1;
+		}
+	}
+	return { wounded, healed };
+}
+
+/** The Elixir mends its own glyph: one of its wounds turns face-up and the spell un-exhausts. */
+function healGlyph(state: TombState): TombState {
+	const entry = state.draft.find((candidate) => candidate.role === 'glyph');
+	if (!entry) return state;
+	const wounded = [...state.wounded];
+	if ((wounded[entry.cell] ?? 0) > 0) wounded[entry.cell] -= 1;
+	return refreshGlyphs(cloneWith(state, { wounded }));
 }
 
 function refreshGlyphs(state: TombState): TombState {
@@ -608,7 +825,12 @@ export function tombExit(state: TombState): TombState | null {
  * a heal kept in reserve.
  */
 function settle(state: TombState, levelBefore: number): TombState {
-	let next = closeItemWindow(state);
+	// A card leaving a stacked cell must not leave a wound behind on an empty slot.
+	let next = closeItemWindow(
+		cloneWith(state, {
+			wounded: state.wounded.map((count, cell) => Math.min(count, cellCards(state, cell).length)),
+		})
+	);
 
 	if (!next.bossId) {
 		const boss = firstRevealedKing(next.game.cards, next.hidden);
@@ -622,9 +844,9 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	const level = currentLevel(next);
 	if (level > levelBefore) {
-		const result = heal(next.exhausted, 1);
+		const result = heal(next, 1);
 		next = cloneWith(next, {
-			exhausted: result.exhausted,
+			wounded: result.wounded,
 		});
 		next = refreshGlyphs(next);
 	}
@@ -636,8 +858,7 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 /**
  * Digging is always the player's click: a face-down card is only turned over when asked for, so
- * it can be kept face-down as a heal for later. An ordinary dig needs the card exposed at the
- * bottom of its column; an Elf (Rootsight) can reach under the pile.
+ * it can be kept face-down as a heal for later. An ordinary dig needs the card exposed at the	 * bottom of its column; an Elf (Insight) can reach under the pile.
  */
 export function canRevealFaceDown(state: TombState, location: CardLocation): boolean {
 	if (state.won || location.fixture !== 'cascade') return false;
@@ -655,8 +876,8 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 
 	const hidden = state.hidden.filter((id) => id !== cardId(card));
 	const perFlip = hasPassive(state, 'Priest') ? 2 : 1;
-	const result = heal(state.exhausted, perFlip);
-	let next = cloneWith(state, { hidden, exhausted: result.exhausted });
+	const result = heal(state, perFlip);
+	let next = cloneWith(state, { hidden, wounded: result.wounded });
 
 	if (!next.bossId) {
 		const boss = firstRevealedKing(next.game.cards, hidden);
@@ -668,7 +889,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return closeItemWindow(next);
+	return spendCure(closeItemWindow(next));
 }
 
 /** Same suit, or any card of the same colour for an Orc's Scavenger. */
@@ -681,8 +902,47 @@ function closeItemWindow(state: TombState): TombState {
 	return state.itemWindow ? cloneWith(state, { itemWindow: null }) : state;
 }
 
+/** A Cure-All is spent by the action it covers: the arm clears and the item exhausts. */
+function spendCure(state: TombState): TombState {
+	const armed = state.armed;
+	if (armed?.kind !== 'cure') return state;
+	const exhausted = [...state.exhausted];
+	exhausted[armed.cell] = true;
+	return cloneWith(state, { exhausted, armed: null });
+}
+
 function consumeDraft(state: TombState, cell: number): DraftCard[] {
 	return state.draft.filter((entry) => entry.cell !== cell);
+}
+
+/** The item a monster power drains: the Consumable under a Gorgon, the Glyph under a Wraith. */
+export function auraItem(state: TombState): number | null {
+	const role: DraftRole | null = state.bossSuit === 'clubs' ? 'consumable' : state.bossSuit === 'diamonds' ? 'glyph' : null;
+	if (!role) return null;
+	const entry = state.draft.find((candidate) => candidate.role === role);
+	return entry ? entry.cell : null;
+}
+
+/** Turn one card of an item cell face-down, if it still has a face-up card to give. */
+function woundCell(state: TombState, cell: number): TombState {
+	const wounded = [...state.wounded];
+	if ((wounded[cell] ?? 0) >= cellCards(state, cell).length) return state;
+	wounded[cell] += 1;
+	return cloneWith(state, { wounded });
+}
+
+/**
+ * The item cell a kill drains before its own wounds, or null when there is nothing left to drain.
+ * The aura exhausts that item (one already spent simply stays spent) and wounds it.
+ */
+export function auraItemWound(state: TombState, card: Card, from: CardLocation): number | null {
+	if (!isBossMinion(state, card) || !auraActive(state)) return null;
+	const cell = auraItem(state);
+	if (cell === null) return null;
+	// a card leaving that very cell takes the item with it: there is nothing left behind to drain
+	if (from.fixture === 'cell' && from.data[0] === cell) return null;
+	if ((state.wounded[cell] ?? 0) >= cellCards(state, cell).length) return null;
+	return cell;
 }
 
 function bossAura(state: TombState, card: Card, fromCell: boolean): TombState {
@@ -704,19 +964,14 @@ function bossAura(state: TombState, card: Card, fromCell: boolean): TombState {
 			if (!poison) return state;
 			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(poison)) });
 		}
-		case 'clubs': {
-			const entry = state.draft.find((candidate) => candidate.role === 'consumable');
-			if (!entry) return state;
-			const exhausted = [...state.exhausted];
-			exhausted[entry.cell] = true;
-			return cloneWith(state, { exhausted });
-		}
+		case 'clubs':
 		case 'diamonds': {
-			const entry = state.draft.find((candidate) => candidate.role === 'glyph');
-			if (!entry) return state;
+			// Burden and Mana Burn take the item itself: spent, and turned face-down as a wound.
+			const cell = auraItem(state);
+			if (cell === null) return state;
 			const exhausted = [...state.exhausted];
-			exhausted[entry.cell] = true;
-			return cloneWith(state, { exhausted });
+			exhausted[cell] = true;
+			return woundCell(cloneWith(state, { exhausted }), cell);
 		}
 		default:
 			return state;
@@ -759,6 +1014,8 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 
 	const source = from.fixture === 'cell' ? from.data[0] : -1;
 	const entry = source >= 0 ? draftAt(state, source) : undefined;
+	// An item only leaves its slot when it is the one beside the chip: conversions run in order.
+	if (entry && source !== convertibleCell(state)) return null;
 
 	// A spent item slot claims exactly one card on the very next action, and that card becomes
 	// the new item. It is always the same ability: the suit has to match, or the colour for an Orc.
@@ -772,17 +1029,29 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		matchesItemSuit(state, cards[0], window.suit)
 			? window
 			: null;
+	// Only a run the free cells could not carry spends the bag; a normal stack move leaves it armed.
+	const overfull = cards.length > moveCapacity(state);
+	const bag = state.armed?.kind === 'bag' && overfull;
+	const bury = imawalCanBury(state, cards, to);
+
+	if (source >= 0 && to.fixture === 'foundation') {
+		// Home is always an option for the face-up card in a free cell: the chip's conversion order
+		// only governs leaving the cell for the board, and canSendHome enforces it there.
+		return cellTopWounded(state, source) ? null : attackWith(state, from);
+	}
 
 	if (source >= 0) {
 		if (!cellCardMovable(state, source)) {
-			// The one exception to a plain cell card staying put: feeding a spent item slot.
-			if (!feed || state.exhausted[source]) return null;
+			// The two exceptions to a plain cell card staying put: feeding a spent item slot, and
+			// laying it on fog with IMAWAL armed.
+			if ((!feed && !bury) || cellTopWounded(state, source)) return null;
 		}
-		if (to.fixture === 'foundation') return attackWith(state, from);
 	}
 
 	if (to.fixture === 'foundation') return attackWith(state, from);
-	if (!canBuildOn(state, cards, to)) return null;
+	if (!bury && !canBuildOn(state, cards, to)) return null;
+	// A run longer than the free cells can hold only moves with the bag open.
+	if (overfull && !bag) return null;
 
 	const moves = cards.map((card, offset) => ({
 		id: cardId(card),
@@ -792,7 +1061,12 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 				: { fixture: 'cascade' as const, data: [to.data[0], (state.game.tableau[to.data[0]]?.length ?? 0) + offset] },
 	}));
 	// Every action closes an older window unless this one claims it (or opens a fresh one below).
-	let next = cloneWith(state, { game: relocate(state, moves), itemWindow: null });
+	// A run the bag carried, or a card buried on the fog, spends the arm; the item stays exhausted.
+	let next = cloneWith(state, {
+		game: relocate(state, moves),
+		itemWindow: null,
+		armed: bag || bury ? null : state.armed,
+	});
 
 	if (entry && source >= 0) {
 		next = cloneWith(next, { draft: consumeDraft(next, source) });
@@ -818,12 +1092,12 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		next = cloneWith(next, { itemWindow: { cell: source, role: entry.role, suit: entry.suit } });
 	}
 
-	return next;
+	return spendCure(next);
 }
 
 /** Send a card home, paying the HP cost and applying the boss aura. */
-export function attackWith(state: TombState, from: CardLocation): TombState | null {
-	const preview = attackPreview(state, from);
+export function attackWith(state: TombState, from: CardLocation, reachThroughCover = false): TombState | null {
+	const preview = attackPreview(state, from, reachThroughCover);
 	if (!preview.legal) return null;
 	const card = cardAt(state.game, from);
 	if (!card) return null;
@@ -834,10 +1108,7 @@ export function attackWith(state: TombState, from: CardLocation): TombState | nu
 	const entry = wasCell ? draftAt(state, cellIndex) : undefined;
 	const spentConsumable = entry?.role === 'consumable' && state.exhausted[cellIndex];
 
-	let next = cloneWith(state, {
-		exhausted: exhaust(state, preview.damage),
-		nextAttackFree: preview.damage === 0 && state.nextAttackFree ? false : state.nextAttackFree,
-	});
+	let next = state;
 
 	const foundation = foundationIndexOf(next.game, card.suit);
 	next = cloneWith(next, {
@@ -853,10 +1124,9 @@ export function attackWith(state: TombState, from: CardLocation): TombState | nu
 
 	next = bossAura(next, card, wasCell);
 
-	if (hasPassive(next, 'Fighter') && rankOf(card.rank) > levelBefore) {
-		const result = heal(next.exhausted, 1);
-		next = cloneWith(next, { exhausted: result.exhausted });
-	}
+	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
+	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
+
 	if (hasPassive(next, 'Wizard') && card.suit === 'clubs') {
 		next = refreshGlyphs(next);
 	}
@@ -865,7 +1135,7 @@ export function attackWith(state: TombState, from: CardLocation): TombState | nu
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}
 
-	return settle(next, levelBefore);
+	return spendCure(settle(next, levelBefore));
 }
 
 /** Single click movement affordance: the best tableau build, if there is one. */
@@ -874,6 +1144,8 @@ export function tombTapTargets(state: TombState, from: CardLocation): CardLocati
 	if (!cards.length) return [];
 	if (from.fixture === 'cascade' && !runReachesBottom(state, from, cards)) return [];
 	if (from.fixture === 'cell' && !cellCardMovable(state, from.data[0])) return [];
+	// A run the free cells cannot hold is not a single click away, bag or no bag.
+	if (cards.length > moveCapacity(state) && state.armed?.kind !== 'bag') return [];
 	const targets: CardLocation[] = [];
 	state.game.tableau.forEach((column, index) => {
 		const location: CardLocation = { fixture: 'cascade', data: [index, Math.max(0, column.length - 1)] };
@@ -891,36 +1163,45 @@ export function tombFirstCell(state: TombState): CardLocation | null {
 
 export function abilityUsable(state: TombState, cell: number): boolean {
 	const entry = draftAt(state, cell);
-	return !!entry && !state.exhausted[cell] && (entry.role === 'glyph' || entry.role === 'consumable') && !state.armed && !state.won;
+	return (
+		!!entry &&
+		!state.exhausted[cell] &&
+		!state.wounded[cell] &&
+		(entry.role === 'glyph' || entry.role === 'consumable') &&
+		!state.armed &&
+		!state.won
+	);
 }
 
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
 	const exhausted = [...state.exhausted];
-	exhausted[cell] = true;
+	// A Cure-All is not spent by arming it: the action it covers is what exhausts it.
+	if (entry.name !== 'Cure-All') exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
-		case 'Potion': {
-			const result = heal(next.exhausted, 1);
-			next = cloneWith(next, { exhausted: result.exhausted });
+		case 'Potion':
+			// The Potion is aimed: pick any wound on the track, ignoring the usual right-edge order.
+			next = cloneWith(next, { armed: { kind: 'potion', cell } });
 			break;
-		}
 		case 'Elixir':
-			next = refreshGlyphs(next);
+			next = healGlyph(next);
 			break;
 		case 'Cure-All':
-			next = cloneWith(next, { curedLevel: currentLevel(next) });
+			next = cloneWith(next, { armed: { kind: 'cure', cell } });
 			break;
-		case 'CYDSTEPP':
-			next = cloneWith(next, { nextAttackFree: true });
+		case 'IMAWAL':
+			next = cloneWith(next, { armed: { kind: 'imawal', cell } });
 			break;
-		case 'GETINDARE':
-		case 'Key':
+		case 'Bag of Holding':
+			next = cloneWith(next, { armed: { kind: 'bag', cell } });
+			break;
+		case 'BURNDAYRAZ':
 		case 'PISORF':
 		case 'WEYTWUT': {
-			const kind = entry.name === 'GETINDARE' ? 'getindare' : entry.name === 'Key' ? 'key' : entry.name === 'PISORF' ? 'pisorf' : 'weytwut';
+			const kind = entry.name === 'BURNDAYRAZ' ? 'burndayraz' : entry.name === 'PISORF' ? 'pisorf' : 'weytwut';
 			next = cloneWith(next, { armed: { kind, cell } });
 			break;
 		}
@@ -936,6 +1217,12 @@ export function useAbility(state: TombState, cell: number): TombState | null {
  */
 export function armedDrop(state: TombState, from: CardLocation, to: CardLocation): TombState | null {
 	if (!state.armed) return null;
+	// The bag answers the drop itself: the grabbed run is the one it carries.
+	if (state.armed.kind === 'bag') return tombMove(state, from, to);
+	// IMAWAL answers the drop with the grabbed card laid on the fog.
+	if (state.armed.kind === 'imawal') return tombMove(state, from, to);
+	// A Cure-All covers whatever action comes next, so a drop is just the action it covers.
+	if (state.armed.kind === 'cure') return tombMove(state, from, to);
 	if (state.armed.kind === 'pisorf' || state.armed.kind === 'weytwut') {
 		const cleared = state.armed.first
 			? cloneWith(state, { armed: { ...state.armed, first: undefined } })
@@ -955,8 +1242,8 @@ export function disarm(state: TombState): TombState {
 }
 
 /**
- * Resolve a click while an ability is armed. GETINDARE attacks a card exactly one card deep,
- * Key flips a face-down card, PISORF moves an exposed card anywhere, WEYTWUT swaps two cards.
+ * Resolve a click while an ability is armed. BURNDAYRAZ burns a card it can see however deeply it
+ * lies, IMAWAL lays a card on the fog, PISORF moves an exposed card anywhere, WEYTWUT swaps two.
  */
 export function armedClick(state: TombState, location: CardLocation): TombState | null {
 	state = closeItemWindow(state);
@@ -966,42 +1253,66 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	// Clicking the card that armed the ability puts it away unspent instead of aiming it at itself.
 	if (location.fixture === 'cell' && location.data[0] === armed.cell) return disarm(state);
 
-	// A draft card in its cell is never a target: an ability only aims at the board.
-	if (location.fixture === 'cell') return null;
+	// A Cure-All waits for the action it covers: clicks elsewhere leave it armed.
+	if (armed.kind === 'cure') return null;
 
-	if (armed.kind === 'getindare') {
-		const card = cardAt(state.game, location);
-		if (!card) return null;
-		const coveredByOne =
-			location.fixture === 'cascade' &&
-			(state.game.tableau[location.data[0]]?.length ?? 0) === location.data[1] + 2;
-		if (!coveredByOne) return null;
-		const next = cloneWith(state, { armed: null });
-		return attackWith(next, location);
-	}
+	// The bag is a state rather than a target: it waits for the next stack move to carry.
+	if (armed.kind === 'bag') return null;
 
-	if (armed.kind === 'key') {
+	// IMAWAL takes a card first, then the fog it is laid on.
+	if (armed.kind === 'imawal') {
+		const column = foggedColumn(state, location);
+		if (column !== null) {
+			const card = armed.first ? state.game.cards.find((candidate) => cardId(candidate) === armed.first) : undefined;
+			if (!card) return null;
+			return tombMove(state, card.location, { fixture: 'cascade', data: [column] });
+		}
 		const card = cardAt(state.game, location);
-		if (!card || !isFaceDown(state, card)) return null;
-		return cloneWith(state, {
-			hidden: state.hidden.filter((id) => id !== cardId(card)),
-			armed: null,
-		});
+		if (!card || isFaceDown(state, card)) return null;
+		if (location.fixture === 'cell' && draftAt(state, location.data[0])) return null;
+		return cloneWith(state, { armed: { ...armed, first: cardId(card) } });
 	}
 
 	if (armed.kind === 'pisorf') {
+		// Second click: an open free cell takes the whole pair, two cards and two hearts.
+		if (armed.first) {
+			if (location.fixture !== 'cell') return null;
+			const to = location.data[0];
+			if (state.game.cells[to] || to === armed.cell) return null;
+			const upper = state.game.cards.find((candidate) => cardId(candidate) === armed.first);
+			const pair = upper ? pisorfPair(state, upper.location) : null;
+			if (!pair) return null;
+			const game = relocate(cloneWith(state, { armed: null }), [
+				{ id: cardId(pair[0]), to: { fixture: 'cell', data: [to, 1] } },
+				{ id: cardId(pair[1]), to: { fixture: 'cell', data: [to, 0] } },
+			]);
+			return settle(cloneWith(state, { game, armed: null }), currentLevel(state));
+		}
+		// First click: the head of a proper two-card stack.
+		const pair = pisorfPair(state, location);
+		const head = cardAt(state.game, location);
+		if (!pair || !head) return null;
+		return cloneWith(state, { armed: { ...armed, first: cardId(head) } });
+	}
+
+	// The Potion heals exactly the wound it is clicked on, wherever it sits on the track.
+	if (armed.kind === 'potion') {
+		if (location.fixture !== 'cell') return null;
+		const target = location.data[0];
+		if (!state.wounded[target]) return null;
+		const wounded = [...state.wounded];
+		wounded[target] -= 1;
+		return closeItemWindow(cloneWith(state, { wounded, armed: null }));
+	}
+
+	// A draft card in its cell is never a target: an ability only aims at the board.
+	if (location.fixture === 'cell') return null;
+
+	if (armed.kind === 'burndayraz') {
 		const card = cardAt(state.game, location);
-		if (!card) return null;
-		if (!armed.first) return cloneWith(state, { armed: { ...armed, first: cardId(card) } });
-		const first = state.game.cards.find((candidate) => cardId(candidate) === armed.first);
-		if (!first || isFaceDown(state, first) || frozenBoss(state, first)) return null;
-		const fromColumn = first.location.fixture === 'cascade' ? first.location.data[0] : -1;
-		const toColumn = location.fixture === 'cascade' ? location.data[0] : -1;
-		if (toColumn < 0 || fromColumn === toColumn) return null;
-		const game = relocate(cloneWith(state, { armed: null }), [
-			{ id: armed.first, to: { fixture: 'cascade', data: [toColumn, state.game.tableau[toColumn].length] } },
-		]);
-		return settle(cloneWith(state, { game, armed: null }), currentLevel(state));
+		// Buried is fine, hidden is not: the spell has to see the card it burns.
+		if (!card || isFaceDown(state, card) || location.fixture !== 'cascade') return null;
+		return attackWith(cloneWith(state, { armed: null }), location, true);
 	}
 
 	// WEYTWUT: two exposed cards trade physical places.

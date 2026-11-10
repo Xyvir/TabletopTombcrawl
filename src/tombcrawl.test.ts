@@ -3,6 +3,8 @@ import { initializeDeckOfCards, shorthandCard, type Card } from './game/card/car
 import { FreeCell } from './game/game';
 import {	MONSTERS,
 	TOMB_CELL_COUNT,
+	FREE_CELL_COUNT,
+	abilityUsable,
 	armedClick,
 		armedDrop,
 
@@ -11,9 +13,18 @@ import {	MONSTERS,
 	bossSlain,
 	bossUnlocked,
 	canSendHome,
+	cellCardMovable,
+	chipBoundary,
+	convertibleCell,
+	newlyHealed,
+	newlyWounded,
 	createTombState,
 	currentLevel,
+	emptyCells,
 	hp,
+	cellCards,
+	maxHp,
+	woundedCards,
 	isFaceDown,
 	revealFaceDown,
 	kingsHome,
@@ -33,10 +44,20 @@ interface Setup {
 	hidden?: string[];
 	draft?: DraftCard[];
 	exhausted?: number[];
+	wounded?: number[];
 	boss?: string;
 }
 
-function makeTomb({ columns, cells = [], foundations = [], hidden = [], draft = [], exhausted = [], boss }: Setup): TombState {
+function makeTomb({
+	columns,
+	cells = [],
+	foundations = [],
+	hidden = [],
+	draft = [],
+	exhausted = [],
+	wounded = [],
+	boss,
+}: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
 	const byId = new Map<string, Card>();
 	cards.forEach((card) => byId.set(shorthandCard(card), card));
@@ -66,10 +87,9 @@ function makeTomb({ columns, cells = [], foundations = [], hidden = [], draft = 
 		bossId: boss ?? null,
 		bossSuit: boss ? byId.get(boss)!.suit : null,
 		exhausted: Array.from({ length: TOMB_CELL_COUNT }, (_, i) => exhausted.includes(i)),
+		wounded: Array.from({ length: TOMB_CELL_COUNT }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
 		score: null,
-		nextAttackFree: false,
-		curedLevel: null,
 		armed: null,
 		itemWindow: null,
 	};
@@ -78,10 +98,310 @@ function makeTomb({ columns, cells = [], foundations = [], hidden = [], draft = 
 const cascade = (column: number, card = 0) => ({ fixture: 'cascade' as const, data: [column, card] });
 const cell = (index: number) => ({ fixture: 'cell' as const, data: [index] });
 
+describe('monster damage on the way home', () => {
+	test('a card one level above you wounds the rightmost face-up card', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Elf', text: '' },
+			{ cell: 3, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({ columns: [['2H']], cells: ['KC', 'QC', 'JC', 'TC'], foundations: ['AH'], draft });
+		expect(currentLevel(state)).toBe(1);
+		expect(hp(state)).toBe(4);
+
+		const next = attackWith(state, cascade(0, 0));
+		expect(next).not.toBeNull();
+		// the kill costs one HP, paid from the right edge of the track
+		expect(hp(next!)).toBe(3);
+		expect(next!.wounded).toEqual([0, 0, 0, 1, 0, 0, 0]);
+		// that wound landed on the drafted item, so it is out of reach until it is healed
+		expect(abilityUsable(next!, 3)).toBe(false);
+	});
+
+	test('a wound you cannot pay for refuses the kill', () => {
+		const state = makeTomb({ columns: [['2H']], cells: ['KC', 'QC'], foundations: ['AH'], wounded: [0, 1] });
+		expect(hp(state)).toBe(0);
+		expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
+		expect(attackWith(state, cascade(0, 0))).toBeNull();
+		expect(tombMove(state, cascade(0, 0), { fixture: 'foundation', data: [0] })).toBeNull();
+	});
+});
+
+describe("the fighter's level", () => {
+	const draft: DraftCard[] = [{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Fighter', text: '' }];
+
+	test('ignores the lowest card, so one lagging suit does not hold him back', () => {
+		const board = { columns: [['5D']], cells: ['KC'], foundations: ['AS', '2S', '2H', '2C'] };
+		expect(currentLevel(makeTomb(board))).toBe(1);
+		expect(currentLevel(makeTomb({ ...board, draft }))).toBe(2);
+	});
+
+	test('still starts at level 1 while every suit is only an ace', () => {
+		const state = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', 'AH', 'AC', 'AD'], draft });
+		expect(currentLevel(state)).toBe(1);
+	});
+
+	test('a wounded fighter loses the passive', () => {
+		const state = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', '2S', '2H', '2C'], draft, wounded: [0] });
+		expect(currentLevel(state)).toBe(1);
+	});
+});
+
+describe('conversion order', () => {
+	test('the chip starts between the party and the plain free cells', () => {
+		const easy = createTombState(4242, FREE_CELL_COUNT.easy);
+		const hard = createTombState(4242, FREE_CELL_COUNT.hard);
+		[easy, hard].forEach((state) => {
+			expect(chipBoundary(state)).toBe(4);
+			expect(convertibleCell(state)).toBe(3);
+		});
+	});
+
+	test('only the item beside the chip may leave its slot', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: 'AC', suit: 'clubs', name: 'Fighter', text: '' },
+		];
+		const state = makeTomb({ columns: [['5D', '6D']], cells: ['2S', 'AC'], foundations: ['AS'], draft });
+		expect(convertibleCell(state)).toBe(1);
+
+		// the spade is rank-legal, but it sits left of the chip so it has to wait its turn
+		expect(canSendHome(state, cell(0)).legal).toBe(false);
+		expect(canSendHome(state, cell(0)).reason).toContain('chip');
+		expect(attackWith(state, cell(0))).toBeNull();
+		expect(tombMove(state, cell(0), { fixture: 'foundation', data: [0] })).toBeNull();
+		expect(cellCardMovable(state, 0)).toBe(false);
+
+		// the item beside the chip converts, and the chip then steps one slot left
+		const next = attackWith(state, cell(1));
+		expect(next).not.toBeNull();
+		expect(next!.draft.map((entry) => entry.cell)).toEqual([0]);
+		expect(convertibleCell(next!)).toBe(0);
+		expect(chipBoundary(next!)).toBe(1);
+		expect(cellCardMovable(next!, 0)).toBe(true);
+	});
+
+	test('the chip holds while a refill window is open, then steps left', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 3, role: 'consumable', id: '5S', suit: 'spades', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({ columns: [['6H'], ['3S']], cells: ['4C', null, null, '5S'], draft, hidden: ['3S'] });
+		expect(chipBoundary(state)).toBe(4);
+
+		// the potion is played out: its slot is normal for one action, but the chip has not moved yet
+		const played = tombMove(state, cell(3), cascade(0))!;
+		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades' });
+		expect(chipBoundary(played)).toBe(4);
+
+		// the refill was missed, so the slot is plain for good and the chip steps one slot left
+		const missed = revealFaceDown(played, cascade(1))!;
+		expect(missed.itemWindow).toBe(null);
+		expect(chipBoundary(missed)).toBe(1);
+	});
+
+	test('a plain card in a free cell goes home by drag as well as by double click', () => {
+		const state = makeTomb({ columns: [['2H']], cells: ['AD', 'KC'] });
+		const next = tombMove(state, cell(0), { fixture: 'foundation', data: [0] });
+
+		expect(next).not.toBeNull();
+		expect(next!.game.cards.find((card) => shorthandCard(card) === 'AD')!.location.fixture).toBe('foundation');
+	});
+});
+
+describe('the wound turn', () => {
+	test('reports the card that just turned face-down', () => {
+		const state = makeTomb({ columns: [['2H']], cells: ['KC', 'QC'], foundations: ['AH'] });
+		const next = attackWith(state, cascade(0, 0))!;
+
+		expect(next.wounded[1]).toBe(1);
+		expect(newlyWounded(state, next)).toEqual(['QC']);
+		expect(newlyWounded(next, next)).toEqual([]);
+		expect(newlyHealed(state, next)).toEqual([]);
+	});
+
+	test('reports the cards that just came back face-up', () => {
+		const state = makeTomb({ columns: [['3S']], cells: ['KC', 'QC'], foundations: ['AH'], wounded: [1], hidden: ['3S'] });
+		const next = revealFaceDown(state, cascade(0, 0))!;
+
+		expect(next.wounded[1]).toBe(0);
+		expect(newlyHealed(state, next)).toEqual(['QC']);
+		expect(newlyHealed(next, next)).toEqual([]);
+		expect(newlyWounded(state, next)).toEqual([]);
+	});
+});
+
+describe('burden and mana burn', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' },
+		{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+	];
+	const board = (overrides: Partial<Setup> = {}) =>
+		makeTomb({
+			columns: [['4C']],
+			cells: ['TC', 'TS', 'KD', 'QD'],
+			foundations: ['3C'],
+			draft,
+			boss: 'KC',
+			...overrides,
+		});
+
+	test('a Gorgon kill spends and wounds the Consumable before the damage lands', () => {
+		const state = board();
+		expect(currentLevel(state)).toBe(1);
+		expect(hp(state)).toBe(4);
+
+		const preview = attackPreview(state, cascade(0, 0));
+		expect(preview.damage).toBe(3);
+		expect(preview.locks).toContain(0);
+
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.wounded[0]).toBe(1);
+		expect(abilityUsable(next, 0)).toBe(false);
+		// one HP for the item, then the kill's own three, paid from the right edge inward
+		expect(next.wounded).toEqual([1, 1, 1, 1, 0, 0, 0]);
+		expect(hp(next)).toBe(0);
+	});
+
+	test('an already spent Consumable is still wounded', () => {
+		const state = board({ exhausted: [0] });
+		const next = attackWith(state, cascade(0, 0))!;
+
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.wounded[0]).toBe(1);
+	});
+
+	test('the aura wound is owed on top, so a kill one HP short is refused', () => {
+		const state = board({
+			cells: ['TC', 'TS', 'KD'],
+			draft: [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }],
+		});
+		expect(hp(state)).toBe(3);
+
+		const preview = attackPreview(state, cascade(0, 0));
+		expect(preview.legal).toBe(false);
+		expect(preview.reason).toContain('needs 4 HP');
+		expect(attackWith(state, cascade(0, 0))).toBeNull();
+	});
+
+	test('a Wraith kill drains the Glyph instead', () => {
+		const state = board({ columns: [['4D']], foundations: ['3D'], boss: 'KD' });
+		const next = attackWith(state, cascade(0, 0))!;
+
+		expect(next.exhausted[1]).toBe(true);
+		expect(next.wounded[1]).toBe(1);
+		expect(next.exhausted[0]).toBe(false);
+		expect(hp(next)).toBe(0);
+	});
+
+	test('a converted item is not there to drain, so the kill costs only its damage', () => {
+		const state = board({
+			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
+		});
+		const preview = attackPreview(state, cascade(0, 0));
+		expect(preview.damage).toBe(3);
+		expect(preview.legal).toBe(true);
+
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(next.wounded[0]).toBe(0);
+		expect(hp(next)).toBe(1);
+	});
+});
+
+describe('the cure-all', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Cure-All', text: '' },
+		{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+	];
+	const board = (overrides: Partial<Setup> = {}) =>
+		makeTomb({
+			columns: [['4C']],
+			cells: ['TD', 'TS', 'KD', 'QD'],
+			foundations: ['3C'],
+			draft,
+			boss: 'KC',
+			...overrides,
+		});
+
+	test('arming it does not spend it, and putting it away costs nothing', () => {
+		const armed = useAbility(board(), 0)!;
+		expect(armed.armed).toMatchObject({ kind: 'cure', cell: 0 });
+		expect(armed.exhausted[0]).toBe(false);
+
+		const putAway = armedClick(armed, cell(0))!;
+		expect(putAway.armed).toBe(null);
+		expect(putAway.exhausted[0]).toBe(false);
+	});
+
+	test('the next action exhausts it', () => {
+		const armed = useAbility(board(), 0)!;
+		const next = tombMove(armed, cascade(0, 0), cell(4))!;
+
+		expect(next.armed).toBe(null);
+		expect(next.exhausted[0]).toBe(true);
+	});
+
+	test('while it is armed, a boss-suit kill ignores the power', () => {
+		// without the cure the Gorgon's Burden would drain the Consumable before the wounds land
+		expect(attackPreview(board(), cascade(0, 0)).locks).toContain(0);
+
+		const armed = useAbility(board(), 0)!;
+		const preview = attackPreview(armed, cascade(0, 0));
+		expect(preview.legal).toBe(true);
+		expect(preview.locks).not.toContain(0);
+
+		const next = attackWith(armed, cascade(0, 0))!;
+		expect(next.wounded[0]).toBe(0);
+		// the action it covered is what exhausts it
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.armed).toBe(null);
+	});
+});
+
+describe('the potion and the elixir', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+		{ cell: 1, role: 'consumable', id: '5H', suit: 'hearts', name: 'Potion', text: '' },
+	];
+	const board = (overrides: Partial<Setup> = {}) =>
+		makeTomb({ columns: [['4C']], cells: ['2S', '5H'], draft, wounded: [0], ...overrides });
+
+	test('the potion heals the wound you pick, not the right edge', () => {
+		const armed = useAbility(board(), 1)!;
+		expect(armed.armed).toMatchObject({ kind: 'potion', cell: 1 });
+		expect(armed.exhausted[1]).toBe(true);
+
+		const healed = armedClick(armed, cell(0))!;
+		expect(healed.wounded[0]).toBe(0);
+		expect(healed.armed).toBe(null);
+		expect(hp(healed)).toBe(2);
+	});
+
+	test('clicking an unwounded cell does not waste the potion', () => {
+		const armed = useAbility(board(), 1)!;
+		expect(armedClick(armed, cell(3))).toBe(null);
+	});
+
+	test('the elixir heals the glyph and un-exhausts it', () => {
+		const elixir: DraftCard[] = [
+			{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+			{ cell: 1, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
+		];
+		const state = makeTomb({ columns: [['4C']], cells: ['2S', '5C'], draft: elixir, wounded: [0], exhausted: [0] });
+		expect(hp(state)).toBe(1);
+
+		const next = useAbility(state, 1)!;
+		expect(next.wounded[0]).toBe(0);
+		expect(next.exhausted[0]).toBe(false);
+		expect(next.exhausted[1]).toBe(true);
+		expect(hp(next)).toBe(2);
+	});
+});
+
 describe('tombcrawl deal and draft', () => {
 	test('drafts four suits in draw order and deals the rest under fog', () => {
 		const state = createTombState(1234);
-		expect(state.draft.map((entry) => entry.role)).toEqual(['race', 'class', 'glyph', 'consumable']);
+		expect(state.draft.map((entry) => entry.role)).toEqual(['kin', 'class', 'glyph', 'consumable']);
 		expect(new Set(state.draft.map((entry) => entry.suit)).size).toBe(4);
 		expect(state.draft.every((entry) => state.game.cells[entry.cell])).toBe(true);
 		expect(state.game.tableau.map((column) => column.length)).toEqual([6, 6, 6, 6, 6, 6, 6, 6]);
@@ -93,6 +413,32 @@ describe('tombcrawl deal and draft', () => {
 		state.game.tableau.forEach((column) => {
 			expect(isFaceDown(state, column[column.length - 1])).toBe(false);
 			expect(isFaceDown(state, column[column.length - 2])).toBe(true);
+		});
+	});
+
+	test('difficulty adds or drops free cells without touching the deal', () => {
+		const easy = createTombState(1234, FREE_CELL_COUNT.easy);
+		const med = createTombState(1234, FREE_CELL_COUNT.med);
+		const hard = createTombState(1234, FREE_CELL_COUNT.hard);
+
+		// four drafted items plus 4 / 3 / 2 free cells, and the HP pool is the whole track
+		expect([easy, med, hard].map((state) => state.game.cells.length)).toEqual([8, 7, 6]);
+		expect([easy, med, hard].map(maxHp)).toEqual([8, 7, 6]);
+		expect(hard.exhausted).toHaveLength(6);
+		expect(hard.wounded).toHaveLength(6);
+
+		// the seed alone decides the cards, so every difficulty shows the same deal and fog
+		const layout = (state: TombState) =>
+			state.game.tableau.map((column) => column.map(shorthandCard).join(' '));
+		expect(layout(easy)).toEqual(layout(med));
+		expect(layout(hard)).toEqual(layout(med));
+
+		[easy, med, hard].forEach((state) => {
+			expect(state.draft.map((entry) => entry.cell)).toEqual([0, 1, 2, 3]);
+			expect(emptyCells(state)).toEqual(
+				Array.from({ length: state.game.cells.length - 4 }, (_, i) => 4 + i)
+			);
+			expect(hp(state)).toBe(4);
 		});
 	});
 
@@ -199,10 +545,33 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(state, cascade(0)).damage).toBe(5);
 	});
 
-	test('backstab costs nothing from a free cell', () => {
+	test('a kill preview names the cards it would turn face-down', () => {
+		const state = makeTomb({ columns: [['2H']], cells: ['KC', 'QC'], foundations: ['AH'] });
+		const preview = attackPreview(state, cascade(0, 0));
+
+		expect(preview.damage).toBe(1);
+		expect(preview.locks).toEqual([1]);
+		expect(preview.wounds).toEqual(['QC']);
+	});
+
+	test('an unpayable kill previews no wounds, only the cells it needs', () => {
+		const state = makeTomb({ columns: [['2H']], cells: ['KC', 'QC'], foundations: ['AH'], wounded: [0, 1] });
+		const preview = attackPreview(state, cascade(0, 0));
+
+		expect(preview.legal).toBe(false);
+		expect(preview.need).toEqual([2]);
+		expect(preview.wounds).toEqual([]);
+	});
+
+	test('bounty pays only for a kill into the leading foundation', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
-		const state = makeTomb({ columns: [['7H']], cells: ['8H'], foundations: ['7H', 'AS'], draft });
-		expect(attackPreview(state, cell(0)).damage).toBe(0);
+		// hearts leads, so the 5 of hearts is worth the bounty
+		const leading = makeTomb({ columns: [['5H']], foundations: ['4H', '3S'], draft });
+		expect(attackPreview(leading, cascade(0)).damage).toBe(0);
+
+		// spades is further along, so the same kill pays its full four damage again
+		const behind = makeTomb({ columns: [['5H']], foundations: ['4H', '8S'], draft });
+		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
 	});
 
 	test('the boss king is frozen until one other king is home', () => {
@@ -224,7 +593,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 
 describe('tombcrawl progression rules', () => {
 	test('a drafted card never withholds the ranks below it, so a buried suit ace can still go home', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: 'KS', suit: 'spades', name: 'Orc', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'KS', suit: 'spades', name: 'Orc', text: '' }];
 		const state = makeTomb({ columns: [['AS']], cells: ['KS'], draft });
 		expect(attackPreview(state, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
 
@@ -243,7 +612,7 @@ describe('tombcrawl progression rules', () => {
 	});
 
 	test('a drafted card counts as home for the next rank', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
 		const withPhantom = makeTomb({ columns: [['9C'], ['KS']], cells: ['8C'], foundations: ['7C'], draft });
 		expect(canSendHome(withPhantom, cascade(0)).legal).toBe(true);
 
@@ -251,21 +620,109 @@ describe('tombcrawl progression rules', () => {
 		expect(canSendHome(without, cascade(0)).legal).toBe(false);
 	});
 
+	describe('the human', () => {
+		const human: DraftCard[] = [{ cell: 0, role: 'kin', id: 'KS', suit: 'spades', name: 'Human', text: '' }];
+
+		test('may skip exactly one rank on the way home', () => {
+			const skipping = makeTomb({ columns: [['2H']], cells: ['KS'], draft: human });
+			expect(canSendHome(skipping, cascade(0)).legal).toBe(true);
+
+			const reaching = makeTomb({ columns: [['3H']], cells: ['KS'], draft: human });
+			expect(canSendHome(reaching, cascade(0)).legal).toBe(false);
+		});
+
+		test('may slide a card under a pile that has already passed it', () => {
+			const state = makeTomb({ columns: [['3S'], ['6S']], cells: ['KS', '2C', '2D'], foundations: ['5S'], draft: human });
+			expect(canSendHome(state, cascade(0)).legal).toBe(true);
+
+			const home = attackWith(state, cascade(0))!;
+			const spades = home.game.cards.filter(
+				(card) => card.suit === 'spades' && card.location.fixture === 'foundation'
+			);
+			expect(spades.map((card) => shorthandCard(card)).sort()).toEqual(['3S', '5S']);
+			// the pile still reads five, so the six is still the card it wants next
+			expect(canSendHome(home, cascade(1)).legal).toBe(true);
+		});
+
+		test('does not change the rule for anyone else', () => {
+			const state = makeTomb({ columns: [['3S']], foundations: ['5S'] });
+			expect(canSendHome(state, cascade(0)).legal).toBe(false);
+		});
+	});
+
+	describe('BURNDAYRAZ through any cover', () => {
+		const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+
+		test('reaches a card with exactly one card stacked on it', () => {
+			const state = makeTomb({ columns: [['4H', '9C']], cells: ['2S', '5D', '6C'], draft: glyph, foundations: ['3H'] });
+			expect(canSendHome(state, cascade(0, 0)).legal).toBe(false);
+			expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
+
+			const primed = useAbility(state, 0)!;
+			expect(attackPreview(primed, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
+
+			const home = armedClick(primed, cascade(0, 0))!;
+			expect(home.game.cards.find((card) => shorthandCard(card) === '4H')!.location.fixture).toBe('foundation');
+		});
+
+		test('reaches a card under any number of covers', () => {
+			const state = makeTomb({
+				columns: [['4H', '9C', '8D', 'JS', 'KC']],
+				cells: ['2S', '5D', '6C'],
+				draft: glyph,
+				foundations: ['3H'],
+			});
+			expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
+
+			const primed = useAbility(state, 0)!;
+			expect(attackPreview(primed, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
+
+			const home = armedClick(primed, cascade(0, 0))!;
+			expect(home.game.cards.find((card) => shorthandCard(card) === '4H')!.location.fixture).toBe('foundation');
+		});
+
+		test('still has to see the card: fog is not a target', () => {
+			const state = makeTomb({
+				columns: [['4H', '9C']],
+				cells: ['2S', '5D', '6C'],
+				draft: glyph,
+				foundations: ['3H'],
+				hidden: ['4H'],
+			});
+			const primed = useAbility(state, 0)!;
+			expect(attackPreview(primed, cascade(0, 0)).legal).toBe(false);
+			expect(armedClick(primed, cascade(0, 0))).toBe(null);
+		});
+
+		test('a Human can skip the missing ace and still reach through the cover', () => {
+			const party: DraftCard[] = [
+				{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+				{ cell: 1, role: 'kin', id: 'KS', suit: 'spades', name: 'Human', text: '' },
+			];
+			const state = makeTomb({ columns: [['2H', '6S']], cells: ['2S', 'KS', '5D'], draft: party });
+			const primed = useAbility(state, 0)!;
+
+			expect(attackPreview(primed, cascade(0, 0))).toMatchObject({ legal: true });
+			const home = armedClick(primed, cascade(0, 0))!;
+			expect(home.game.cards.find((card) => shorthandCard(card) === '2H')!.location.fixture).toBe('foundation');
+		});
+	});
+
 	test('digging is the player\'s call: a newly exposed card stays face down until clicked', () => {
 		const state = makeTomb({
 			columns: [['2C', '3D'], [], [], [], [], [], [], []],
 			cells: [null, null, null, null, null, '8H', '9H'],
 			hidden: ['2C'],
-			exhausted: [5, 6],
+			wounded: [5, 6],
 		});
 		const moved = tombMove(state, cascade(0, 1), cascade(1))!;
 		expect(isFaceDown(moved, moved.game.cards.find((card) => shorthandCard(card) === '2C')!)).toBe(true);
-		expect(moved.exhausted[6]).toBe(true);
+		expect(moved.wounded[6]).toBe(1);
 
 		const dug = revealFaceDown(moved, cascade(0, 0))!;
 		expect(isFaceDown(dug, dug.game.cards.find((card) => shorthandCard(card) === '2C')!)).toBe(false);
-		expect(dug.exhausted[6]).toBe(false);
-		expect(dug.exhausted[5]).toBe(true);
+		expect(dug.wounded[6]).toBe(0);
+		expect(dug.wounded[5]).toBe(1);
 	});
 
 	test('a face-down card can never be sent home, so an auto move cannot reveal it', () => {
@@ -291,8 +748,8 @@ describe('tombcrawl progression rules', () => {
 		expect(next.hidden).toContain('3D');
 		expect(next.hidden).toContain('2C');
 		expect(next.hidden).toContain('KS');
-		// the kill cost one cell and poison healed nothing
-		expect(next.exhausted[0]).toBe(true);
+		// the kill wounded one cell and poison healed nothing
+		expect(next.wounded[0]).toBe(1);
 	});
 
 	test('a draft card can be converted out of its cell', () => {
@@ -303,20 +760,32 @@ describe('tombcrawl progression rules', () => {
 		expect(next.game.cells[0]).toBe(null);
 	});
 
-	test('a plain card in a cell cannot be dragged onto the board', () => {
+	test('a plain card in a free cell is scratch space: it builds back onto the board', () => {
 		const state = makeTomb({ columns: [['4D'], ['5S']], cells: ['4H'] });
+		expect(cellCardMovable(state, 0)).toBe(true);
+
+		const next = tombMove(state, cell(0), cascade(1))!;
+		expect(next).not.toBeNull();
+		expect(shorthandCard(next.game.tableau[1][1]!)).toBe('4H');
+		expect(next.game.cells[0]).toBe(null);
+		// home is still a separate, rank-checked route
+		expect(tombMove(state, cell(0), { fixture: 'foundation', data: [0] })).toBe(null);
+	});
+
+	 test('a wounded free cell keeps its card stuck until it is healed', () => {
+		const state = makeTomb({ columns: [['4D'], ['5S']], cells: ['4H'], wounded: [0] });
+		expect(cellCardMovable(state, 0)).toBe(false);
 		expect(tombMove(state, cell(0), cascade(1))).toBe(null);
 		expect(tombMove(state, cell(0), { fixture: 'foundation', data: [0] })).toBe(null);
-		expect(shorthandCard(state.game.cells[0]!)).toBe('4H');
 	});
 
 	test('an Elf digs a buried card out and heals with it', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
 		const state = makeTomb({
 			columns: [['KS', '2C', '3D'], ['4S']],
 			cells: ['JC', '9H'],
 			hidden: ['KS', '3D'],
-			exhausted: [1],
+			wounded: [1],
 			draft,
 		});
 		expect(state.bossId).toBe(null);
@@ -324,7 +793,7 @@ describe('tombcrawl progression rules', () => {
 		const next = revealFaceDown(state, cascade(0, 0))!;
 		const king = next.game.cards.find((card) => shorthandCard(card) === 'KS')!;
 		expect(isFaceDown(next, king)).toBe(false);
-		expect(next.exhausted[1]).toBe(false);
+		expect(next.wounded[1]).toBe(0);
 		expect(next.bossId).toBe('KS');
 		expect(next.bossSuit).toBe('spades');
 	});
@@ -335,15 +804,15 @@ describe('tombcrawl progression rules', () => {
 	});
 
 	test('revealing at full health wastes the heal instead of banking it', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
 		const state = makeTomb({ columns: [['KS', '2C']], cells: ['JC'], hidden: ['KS'], draft });
 		const next = revealFaceDown(state, cascade(0, 0))!;
 		expect(next.hidden).not.toContain('KS');
-		expect(next.exhausted.every((spent) => !spent)).toBe(true);
+		expect(next.wounded.every((count) => count === 0)).toBe(true);
 	});
 
 	test('a level up heals and refreshes the glyph', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '4H', suit: 'hearts', name: 'CYDSTEPP', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '4H', suit: 'hearts', name: 'IMAWAL', text: '' }];
 		const state = makeTomb({
 			columns: [['3C'], ['KS']],
 			cells: ['4H'],
@@ -354,11 +823,119 @@ describe('tombcrawl progression rules', () => {
 
 		const armed = useAbility(state, 0)!;
 		expect(armed.exhausted[0]).toBe(true);
-		expect(armed.nextAttackFree).toBe(true);
+		expect(armed.armed).toMatchObject({ kind: 'imawal' });
 
 		const kill = attackWith(armed, cascade(0))!;
 		expect(currentLevel(kill)).toBe(3);
 		expect(kill.exhausted[0]).toBe(false);
+	});
+});
+
+describe('tombcrawl wounds and exhaustion', () => {
+	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+
+	test('a wound is damage: it costs HP and locks the cell', () => {
+		const state = makeTomb({ columns: [['3S']], cells: ['2S'], draft: glyph, wounded: [0] });
+		expect(hp(state)).toBe(0);
+		expect(abilityUsable(state, 0)).toBe(false);
+		expect(cellCardMovable(state, 0)).toBe(false);
+	});
+
+	test('a heal flips the wound back up but leaves the card exhausted', () => {
+		const draft: DraftCard[] = [
+			...glyph,
+			{ cell: 1, role: 'consumable', id: '5H', suit: 'hearts', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({ columns: [['3S']], cells: ['2S', '5H'], draft, wounded: [0], exhausted: [0] });
+		expect(hp(state)).toBe(1);
+
+		// the Potion is aimed at the wound it heals
+		const armed = useAbility(state, 1)!;
+		const healed = armedClick(armed, cell(0))!;
+		expect(healed.wounded[0]).toBe(0);
+		expect(healed.exhausted[0]).toBe(true);
+		expect(hp(healed)).toBe(2);
+	});
+
+	test('a spent card still counts as HP until it is wounded', () => {
+		const spent: DraftCard[] = [{ cell: 0, role: 'glyph', id: '3S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+		const state = makeTomb({
+			columns: [['2S']],
+			cells: ['3S'],
+			foundations: ['AS', 'AH', 'AD', 'AC'],
+			draft: spent,
+			exhausted: [0],
+		});
+		expect(hp(state)).toBe(1);
+
+		const kill = attackWith(state, cascade(0))!;
+		expect(kill.wounded[0]).toBe(1);
+		expect(kill.exhausted[0]).toBe(true);
+		expect(hp(kill)).toBe(0);
+	});
+});
+
+describe('tombcrawl PISORF stacks', () => {
+	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '5C', suit: 'clubs', name: 'PISORF', text: '' }];
+
+	/** A drafted PISORF, a 7-6 pair, a 3C worth one damage and a 4S worth two. */
+	function stackBoard() {
+		return makeTomb({
+			columns: [['7H', '6S'], ['4S'], ['3C'], ['4H'], ['5D']],
+			cells: ['5C'],
+			hidden: ['4H', '5D'],
+			foundations: ['3S', '2H', '2D', '2C'],
+			draft: glyph,
+		});
+	}
+
+	function stacked() {
+		const armed = useAbility(stackBoard(), 0)!;
+		const head = armedClick(armed, cascade(0, 0))!;
+		return armedClick(head, cell(1))!;
+	}
+
+	test('a proper pair goes into one open free cell and is worth two hearts', () => {
+		const state = stacked();
+		expect(state.armed).toBe(null);
+		expect(state.exhausted[0]).toBe(true); // the glyph is spent
+		expect(cellCards(state, 1).map(shorthandCard)).toEqual(['6S', '7H']);
+		expect(hp(state)).toBe(3);
+		expect(maxHp(state)).toBe(8);
+	});
+
+	test('damage turns over the bottom card of a stack first', () => {
+		const kill = attackWith(stacked(), cascade(2))!; // 3C costs one point at level 2
+		expect(kill.wounded[1]).toBe(1);
+		expect(hp(kill)).toBe(2);
+		expect(woundedCards(kill, 1).map(shorthandCard)).toEqual(['6S']);
+	});
+
+	test('the next point of damage turns over the other card', () => {
+		const kill = attackWith(stacked(), cascade(1))!; // 4S costs two points at level 2
+		expect(kill.wounded[1]).toBe(2);
+		expect(hp(kill)).toBe(1);
+		expect(woundedCards(kill, 1).map(shorthandCard)).toEqual(['6S', '7H']);
+	});
+
+	test('each wounded card in a stack needs its own heal', () => {
+		const state = attackWith(stacked(), cascade(1))!;
+		const first = revealFaceDown(state, cascade(3))!; // 4H heals the top card first
+		expect(first.wounded[1]).toBe(1);
+		expect(woundedCards(first, 1).map(shorthandCard)).toEqual(['6S']);
+		expect(hp(first)).toBe(2);
+
+		const second = revealFaceDown(first, cascade(4))!; // 5D
+		expect(second.wounded[1]).toBe(0);
+		expect(hp(second)).toBe(3);
+	});
+
+	test('PISORF needs an open free cell and a proper pair', () => {
+		const state = makeTomb({ columns: [['7H', '6S']], cells: ['5C', '9D'], draft: glyph });
+		const armed = useAbility(state, 0)!;
+		const head = armedClick(armed, cascade(0, 0))!;
+		expect(armedClick(head, cell(1))).toBe(null); // 9D is parked there already
+		expect(armedClick(armed, cascade(0, 1))).toBe(null); // the card under the head heads no pair
 	});
 });
 
@@ -375,16 +952,16 @@ describe('tombcrawl abilities', () => {
 		expect(away.hidden).toEqual(state.hidden);
 	});
 
-	test('a drag resolves pisorf: the grabbed card lands on the column it is dropped on', () => {
+	test('a drag resolves pisorf: the grabbed pair lands in the open free cell', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'PISORF', text: '' }];
-		const state = makeTomb({ columns: [['KS', '2C'], ['3D']], cells: ['2S'], draft });
+		const state = makeTomb({ columns: [['7H', '6S'], ['3D']], cells: ['2S'], draft });
 		const armed = useAbility(state, 0)!;
 
-		const next = armedDrop(armed, cascade(0, 1), cascade(1, 0))!;
+		const next = armedDrop(armed, cascade(0, 0), cell(1))!;
 		expect(next.armed).toBe(null);
 		const spot = (id: string) => next.game.cards.find((card) => shorthandCard(card) === id)!.location;
-		expect(spot('2C')).toEqual({ fixture: 'cascade', data: [1, 1] });
-		expect(spot('3D')).toEqual({ fixture: 'cascade', data: [1, 0] });
+		expect(spot('6S')).toEqual({ fixture: 'cell', data: [1, 0] });
+		expect(spot('7H')).toEqual({ fixture: 'cell', data: [1, 1] });
 	});
 
 	test('an armed ability never aims at a draft card in its cell', () => {
@@ -404,10 +981,91 @@ describe('tombcrawl levels', () => {
 		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['2S', '2H', '2D'] }).game)).toBe(1);
 		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['2S', '2H', '2D', '2C'] }).game)).toBe(2);
 	});
+});	describe('tombcrawl IMAWAL', () => {
+	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'IMAWAL', text: '' }];
+	const make = (columns: string[][] = [['3S'], ['9D', '5H'], ['4H']]) =>
+		makeTomb({ columns, cells: ['2S', '4C'], draft: glyph, hidden: ['5H'] });
+
+	test('a card can be laid on the fog only while IMAWAL is armed', () => {
+		const state = make();
+		expect(tombMove(state, cell(1), cascade(1))).toBe(null);
+
+		const primed = useAbility(state, 0)!;
+		expect(primed.armed).toMatchObject({ kind: 'imawal', cell: 0 });
+		const buried = tombMove(primed, cell(1), cascade(1))!;
+
+		const column = buried.game.tableau[1];
+		expect(shorthandCard(column[column.length - 1]!)).toBe('4C');
+		// the fog stays face down, now buried under the card that was paid for it
+		expect(buried.hidden).toContain('5H');
+		expect(buried.armed).toBe(null);
+		expect(buried.exhausted[0]).toBe(true);
+	});
+
+	test('a normal build does not spend it', () => {
+		const primed = useAbility(make(), 0)!;
+		const built = tombMove(primed, cascade(0), cascade(2))!;
+
+		const column = built.game.tableau[2];
+		expect(shorthandCard(column[column.length - 1]!)).toBe('3S');
+		expect(built.armed).toMatchObject({ kind: 'imawal' });
+	});
+
+	test('it can also be aimed by clicking a card and then the fog', () => {
+		const primed = useAbility(make(), 0)!;
+		const picked = armedClick(primed, cascade(0))!;
+		expect(picked.armed).toMatchObject({ kind: 'imawal', first: '3S' });
+
+		const buried = armedClick(picked, cascade(1))!;
+		expect(shorthandCard(buried.game.tableau[1][2])).toBe('3S');
+		expect(buried.hidden).toContain('5H');
+		expect(buried.armed).toBe(null);
+	});
+
+	test('it never turns a face-down card over', () => {
+		const primed = useAbility(make(), 0)!;
+		expect(armedClick(primed, cascade(1))).toBe(null);
+		expect(primed.hidden).toContain('5H');
+	});
+});
+
+describe('tombcrawl the bag of holding', () => {
+	const bag: DraftCard[] = [{ cell: 0, role: 'consumable', id: '2S', suit: 'spades', name: 'Bag of Holding', text: '' }];
+	// a six-card run with only one free cell to help it move
+	const make = () =>
+		makeTomb({
+			columns: [['9D', '8S', '7H', '6C', '5D', '4S'], ['TC']],
+			cells: ['2S', '3S', '4C', '5C', '7S', '8D'],
+			draft: bag,
+		});
+
+	test('a run longer than the free cells will not move on its own', () => {
+		const state = make();
+		expect(tombMove(state, cascade(0, 0), cascade(1))).toBe(null);
+	});
+
+	test('the bag carries the whole run, then it is spent', () => {
+		const primed = useAbility(make(), 0)!;
+		expect(primed.armed).toMatchObject({ kind: 'bag' });
+
+		const carried = tombMove(primed, cascade(0, 0), cascade(1))!;
+		expect(carried.game.tableau[1].length).toBe(7);
+		expect(carried.armed).toBe(null);
+		expect(carried.exhausted[0]).toBe(true);
+	});
+
+	test('a run that fits does not spend the bag', () => {
+		const state = makeTomb({ columns: [['9D', '8S'], ['TC']], cells: ['2S', '3S'], draft: bag });
+		const primed = useAbility(state, 0)!;
+		const built = tombMove(primed, cascade(0, 0), cascade(1))!;
+
+		expect(built.game.tableau[1].length).toBe(3);
+		expect(built.armed).toMatchObject({ kind: 'bag' });
+	});
 });
 
 describe('tombcrawl item refresh', () => {
-	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'GETINDARE', text: '' }];
+	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
 	const base = (draft: DraftCard[] = glyph, cells: string[] = ['2S']) =>
 		makeTomb({ columns: [['5H'], ['3S'], ['9D', '3H'], ['8S'], ['7C']], cells, draft });
 
@@ -425,7 +1083,7 @@ describe('tombcrawl item refresh', () => {
 		expect(refilled.itemWindow).toBe(null);
 		expect(shorthandCard(refilled.game.cells[0]!)).toBe('3S');
 		expect(refilled.draft).toHaveLength(1);
-		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'GETINDARE', id: '3S' });
+		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BURNDAYRAZ', id: '3S' });
 	});
 
 	test('a plain card parked in another free cell can be fed in too', () => {
@@ -433,7 +1091,7 @@ describe('tombcrawl item refresh', () => {
 		const refilled = tombMove(played, cell(1), cell(0))!;
 
 		expect(shorthandCard(refilled.game.cells[0]!)).toBe('4S');
-		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'GETINDARE', id: '4S' });
+		expect(refilled.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BURNDAYRAZ', id: '4S' });
 	});
 
 	test('the wrong suit is not a feed: it misses and the slot stays a plain free cell', () => {
@@ -447,26 +1105,27 @@ describe('tombcrawl item refresh', () => {
 
 	test('any other action misses the chance for good', () => {
 		const draft: DraftCard[] = [
-			...glyph,
-			{ cell: 1, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
+			{ cell: 0, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
+			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
-		const played = tombMove(base(draft, ['2S', '5C']), cell(0), cascade(2))!;
-		expect(played.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades' });
+		// the glyph sits beside the chip, so it is the one that may be played out
+		const played = tombMove(base(draft, ['5C', '2S']), cell(1), cascade(2))!;
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades' });
 
-		const spent = useAbility(played, 1)!;
+		const spent = useAbility(played, 0)!;
 		expect(spent.itemWindow).toBe(null);
 	});
 
 	test('an Orc can feed any card of the same colour, which makes the colour’s item', () => {
 		const draft: DraftCard[] = [
-			...glyph,
-			{ cell: 1, role: 'race', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
-		const played = tombMove(base(draft, ['2S', '4C']), cell(0), cascade(2))!;
-		const refilled = tombMove(played, cascade(4), cell(0))!;
+		const played = tombMove(base(draft, ['4C', '2S']), cell(1), cascade(2))!;
+		const refilled = tombMove(played, cascade(4), cell(1))!;
 
 		expect(refilled.draft).toHaveLength(2);
-		expect(refilled.draft.find((item) => item.cell === 0)).toMatchObject({
+		expect(refilled.draft.find((item) => item.cell === 1)).toMatchObject({
 			role: 'glyph',
 			suit: 'clubs',
 			name: 'PISORF',
@@ -477,7 +1136,7 @@ describe('tombcrawl item refresh', () => {
 
 describe('tombcrawl boss protection', () => {
 	test('a drafted dwarf can go straight for the boss', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: '9D', suit: 'diamonds', name: 'Dwarf', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '9D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 		const dwarf = makeTomb({
 			columns: [['KH']],
 			cells: ['9D', '3C', '4C'],
@@ -498,7 +1157,7 @@ describe('tombcrawl boss protection', () => {
 	});
 
 	test('a drafted dwarf no longer silences the boss aura', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: '9D', suit: 'diamonds', name: 'Dwarf', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '9D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 		const dwarf = makeTomb({
 			columns: [['9S']],
 			cells: ['9D', '3C'],
@@ -538,7 +1197,7 @@ describe('tombcrawl endgame', () => {
 	});
 
 	test('the boss kill ends the game and scores the leftovers', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'race', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
 		const state = makeTomb({
 			columns: [['KH'], ['5H']],
 			cells: ['8C'],

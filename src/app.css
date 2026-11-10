@@ -163,16 +163,6 @@ img {
 	outline-offset: -3px;
 }
 
-.slot.target {
-	box-shadow:
-		0 0 0 3px #7bffb0 inset,
-		0 0 10px rgba(123, 255, 176, 0.55);
-}
-
-.cascade.target {
-	box-shadow: 0 0 0 3px #7bffb0 inset;
-}
-
 /* controls */
 .controls {
 	display: flex;
@@ -203,6 +193,32 @@ img {
 .btn.primary {
 	background: #1a8f45;
 	border-color: #2bb35c;
+}
+
+/* difficulty: one segmented control, three states */
+.difficulty {
+	display: inline-flex;
+}
+
+.difficulty .btn {
+	border-radius: 0;
+	border-right-width: 0;
+	padding: 0.5em 0.7em;
+}
+
+.difficulty .btn:first-child {
+	border-radius: 999px 0 0 999px;
+}
+
+.difficulty .btn:last-child {
+	border-radius: 0 999px 999px 0;
+	border-right-width: 1px;
+}
+
+.difficulty .btn[aria-pressed='true'] {
+	background: #1a8f45;
+	border-color: #2bb35c;
+	color: #fff;
 }
 
 .seed {
@@ -250,8 +266,9 @@ img {
 /* ---------- Tabletop Tombcrawl ---------- */
 
 .cells.tomb {
+	position: relative;
 	display: grid;
-	grid-template-columns: repeat(7, 1fr);
+	grid-template-columns: repeat(var(--cell-count, 7), 1fr);
 	flex: 1 1 auto;
 	min-width: 0;
 }
@@ -260,22 +277,64 @@ img {
 	width: 100%;
 }
 
-/* free cells are the wound track: a hollow red cross sits under whatever card is in them */
-.cells.tomb .slot,
-.foundations.tomb .slot {
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 40% auto;
+/*
+ * The conversion chip: a poker chip wedged in the gap between the last ability slot and the first
+ * plain free cell. Its track is the boundary between them, so it walks one slot left each time an
+ * item converts, and disappears once every slot on the track is plain.
+ */
+.cells.tomb .chip {
+	position: absolute;
+	top: 50%;
+	left: calc(
+		((100% - (var(--cell-count) - 1) * var(--gap)) / var(--cell-count)) * var(--chip-index) +
+			(var(--chip-index) - 1) * var(--gap) + var(--gap) * 0.5
+	);
+	width: max(15px, calc(var(--gap) * 2.4));
+	aspect-ratio: 1;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	background:
+		radial-gradient(circle, #efe4cc 0 26%, transparent 27%),
+		repeating-conic-gradient(from 0deg, #a72c2c 0 22.5deg, #efe4cc 22.5deg 45deg);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+	pointer-events: none;
+	z-index: 2;
 }
 
-.cells.tomb .slot {
-	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff6060" stroke-width="1.5" stroke-opacity="0.7" stroke-linejoin="round"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>');
+/* the table's name in bare type, sized to the corner it stands in */
+.titlecard {
+	flex: 0 0 auto;
+	align-self: center;
+	display: grid;
+	color: #f1e8d4;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: clamp(15px, calc(var(--card-h) * 0.38), 44px);
+	line-height: 1.02;
+	letter-spacing: 0.01em;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+	white-space: nowrap;
 }
 
 /* foundations are the graveyard: a plain tombstone outline */
 .foundations.tomb .slot {
+	background-repeat: no-repeat;
+	background-position: center;
 	background-size: 44% auto;
 	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cfd8d0" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round"><path d="M5 20.5V10a7 7 0 0 1 14 0v10.5z"/><path d="M4 21.5h16"/></svg>');
+}
+
+/* free cells are the wound track: a hollow red cross sits under whatever card is in them */
+.cells.tomb .slot {
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 40% auto;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff6060" stroke-width="1.5" stroke-opacity="0.7" stroke-linejoin="round"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>');
+}
+
+/* a drafted item slot reads as special with a purple ring */
+.slot.draft {
+	border-color: rgba(185, 139, 255, 0.85);
+	box-shadow: 0 0 8px rgba(150, 90, 240, 0.35);
 }
 
 /* a narrow window cannot fit seven cells beside the foundations: give each its own row */
@@ -292,11 +351,6 @@ img {
 	.foundations {
 		margin-left: auto;
 	}
-}
-
-.slot.draft {
-	border-color: rgba(185, 139, 255, 0.85);
-	box-shadow: 0 0 8px rgba(150, 90, 240, 0.35);
 }
 
 /* a spent item slot: one action to feed it a matching card and remake the item */
@@ -327,6 +381,92 @@ img {
 	opacity: 0.75;
 }
 
+/* a wound lies face-down and locks its cell; hovering peeks at it, since it is not hidden info */
+.slot .wound {
+	filter: saturate(0.45) brightness(0.78);
+}
+
+/* a stack sits in one cell: the deeper card peeks out from under the top one */
+.slot .held.deep {
+	transform: translate(-8px, -8px) scale(0.92);
+}
+
+/* A PISORF pair leans its top card over like the frozen boss king, so the corner of the card
+   underneath is in plain sight instead of being inferred from a thin sliver. */
+.slot.stacked:not(.exhausted) .held:not(.deep) {
+	transform: rotate(22.5deg) scale(0.88);
+}
+
+.slot .peek {
+	opacity: 0;
+	transition: opacity 120ms ease-out;
+}
+
+.slot:hover .peek,
+.slot:focus-visible .peek {
+	opacity: 1;
+	z-index: 3;
+}
+
+/* A card taking a wound turns over with the same lean and squash the fog uses, run backwards:
+   the face shows first, the card goes edge-on, and the back lands where the face was. */
+.slot .held.flip {
+	display: block;
+	position: absolute;
+	inset: 0;
+	animation: card-flip 210ms ease-in-out both;
+}
+
+.slot .held.flip img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.slot .held.flip .flip-back {
+	/* hold the back invisible until the card is edge-on, then it covers the face for good */
+	animation: flip-back-in 210ms step-end both;
+}
+
+/* A healed card makes the same turn the other way: the back leaves as the card opens. */
+.slot .held.flip.up .flip-back {
+	animation: flip-back-away 210ms step-end both;
+}
+
+@keyframes flip-back-in {
+	0% {
+		opacity: 0;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.slot .held.flip {
+		animation: none;
+	}
+
+	.slot .held.flip .flip-back {
+		animation: none;
+	}
+
+	.slot .held.flip.up .flip-back {
+		animation: none;
+		opacity: 0;
+	}
+}
+
+/* A kill you are aiming at reads out its price: every card it would turn face-down glows red. */
+.slot .held.wound-next {
+	outline: 2px solid #ff4d4d;
+	outline-offset: -2px;
+	box-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+	filter: saturate(0.65) sepia(0.35) saturate(2.2) hue-rotate(-16deg);
+	z-index: 2;
+}
+
 .slot.locking {
 	box-shadow: 0 0 0 3px #ffb84d inset;
 }
@@ -347,7 +487,8 @@ img {
 	left: 0;
 	right: 0;
 	bottom: 3px;
-	z-index: 2;
+	/* above a hovered wound's peek, so the party band stays readable while you look at the card */
+	z-index: 4;
 	font-size: 0.5rem;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -523,6 +664,46 @@ img {
 		ellipse at 50% 50%,
 		rgba(255, 60, 60, 0.34),
 		rgba(150, 0, 0, 0.18) 55%,
+		transparent 84%
+	);
+	animation-duration: 420ms;
+}
+
+.flash.heal {
+	background: radial-gradient(
+		ellipse at 50% 50%,
+		rgba(96, 230, 146, 0.32),
+		rgba(10, 112, 62, 0.16) 55%,
+		transparent 84%
+	);
+	animation-duration: 420ms;
+}
+
+.flash.poison {
+	background: radial-gradient(
+		ellipse at 50% 50%,
+		rgba(168, 84, 255, 0.34),
+		rgba(86, 20, 150, 0.18) 55%,
+		transparent 84%
+	);
+	animation-duration: 420ms;
+}
+
+.flash.mana {
+	background: radial-gradient(
+		ellipse at 50% 50%,
+		rgba(64, 148, 255, 0.34),
+		rgba(12, 52, 140, 0.18) 55%,
+		transparent 84%
+	);
+	animation-duration: 420ms;
+}
+
+.flash.burden {
+	background: radial-gradient(
+		ellipse at 50% 50%,
+		rgba(255, 156, 54, 0.34),
+		rgba(150, 72, 0, 0.18) 55%,
 		transparent 84%
 	);
 	animation-duration: 420ms;
