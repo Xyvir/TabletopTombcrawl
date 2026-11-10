@@ -171,12 +171,13 @@ describe('conversion order', () => {
 		expect(tombMove(state, cell(0), { fixture: 'foundation', data: [0] })).toBeNull();
 		expect(cellCardMovable(state, 0)).toBe(false);
 
-		// the item beside the chip converts, and the chip then steps one slot left
+		// the item beside the chip converts: its slot waits one action, so the chip holds at 2
 		const next = attackWith(state, cell(1));
 		expect(next).not.toBeNull();
 		expect(next!.draft.map((entry) => entry.cell)).toEqual([0]);
 		expect(convertibleCell(next!)).toBe(0);
-		expect(chipBoundary(next!)).toBe(1);
+		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs' });
+		expect(chipBoundary(next!)).toBe(2);
 		expect(cellCardMovable(next!, 0)).toBe(true);
 	});
 
@@ -197,6 +198,40 @@ describe('conversion order', () => {
 		const missed = revealFaceDown(played, cascade(1))!;
 		expect(missed.itemWindow).toBe(null);
 		expect(chipBoundary(missed)).toBe(1);
+	});
+
+	test('an item sent home leaves its slot open for one action to restock', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: 'AS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+		const state = makeTomb({ columns: [['5D']], cells: ['AS', '3S'], draft });
+		expect(chipBoundary(state)).toBe(1);
+
+		// the spell goes home for free: the slot waits instead of turning plain straight away
+		const home = attackWith(state, cell(0))!;
+		expect(home.draft).toEqual([]);
+		expect(home.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades' });
+		expect(chipBoundary(home)).toBe(1);
+
+		// a spade on the next action restocks the slot, so the chip never passes it
+		const restocked = tombMove(home, cell(1), cell(0));
+		expect(restocked).not.toBe(null);
+		expect(restocked!.draft[0]).toMatchObject({ cell: 0, role: 'glyph', suit: 'spades', name: 'BURNDAYRAZ', id: '3S' });
+		expect(restocked!.itemWindow).toBe(null);
+		expect(chipBoundary(restocked!)).toBe(1);
+		expect(abilityUsable(restocked!, 0)).toBe(true);
+	});
+
+	test('any other action sends the chip past the emptied slot', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: 'AS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+		const state = makeTomb({ columns: [['5D'], ['4H']], cells: ['AS', '3S'], draft });
+		const home = attackWith(state, cell(0))!;
+		expect(chipBoundary(home)).toBe(1);
+
+		// a move somewhere else closes the window: the cell is plain and the chip steps left
+		const other = tombMove(home, cell(1), cascade(1));
+		expect(other).not.toBe(null);
+		expect(other!.itemWindow).toBe(null);
+		expect(other!.game.cells[0]).toBe(null);
+		expect(chipBoundary(other!)).toBe(0);
 	});
 
 	test('a plain card in a free cell goes home by drag as well as by double click', () => {
@@ -572,6 +607,22 @@ describe('tombcrawl damage and free-cell HP', () => {
 		// spades is further along, so the same kill pays its full four damage again
 		const behind = makeTomb({ columns: [['5H']], foundations: ['4H', '8S'], draft });
 		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
+	});
+
+	test('bounty needs the outright lead, and a finished pile is not in the running', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
+
+		// level with spades is not a lead: the tie pays full price
+		const tied = makeTomb({ columns: [['5H']], foundations: ['4H', '4S'], draft });
+		expect(attackPreview(tied, cascade(0)).damage).toBe(4);
+
+		// a king on top takes that pile out of the comparison, so hearts still leads
+		const finished = makeTomb({ columns: [['5H']], foundations: ['4H', 'KS'], draft });
+		expect(attackPreview(finished, cascade(0)).damage).toBe(0);
+
+		// with two piles finished, the only live pile is the leader again
+		const donePiles = makeTomb({ columns: [['5H']], foundations: ['4H', 'KD', 'KC'], draft });
+		expect(attackPreview(donePiles, cascade(0)).damage).toBe(0);
 	});
 
 	test('the boss king is frozen until one other king is home', () => {

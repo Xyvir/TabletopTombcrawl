@@ -75,7 +75,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Bounty: slay into the foundation holding the highest card and the kill costs no HP.',
+		text: 'Bounty: slay into the single most advanced foundation still in play and the kill costs no HP.',
 	},
 };
 
@@ -477,13 +477,20 @@ export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 		return state.game.cards
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
 			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0);
-	}
-
-/** The pile with the highest card on it: the only one a Bounty pays for. Ties all count as leading. */
-	export function leadingFoundation(state: TombState, suit: Suit): boolean {
-		const top = foundationTopRank(state, suit);
-		return state.game.foundations.every((card) => !card || foundationTopRank(state, card.suit) <= top);
-	}
+	}/**
+ * The one pile a Bounty pays for: it has to be the outright highest, so a tie is not a lead. A
+ * finished pile (a king on top) is out of the running entirely, so completing one never takes the
+ * passive away from the Thief for the rest of the run.
+ */
+export function leadingFoundation(state: TombState, suit: Suit): boolean {
+	const top = foundationTopRank(state, suit);
+	return state.game.foundations.every((card) => {
+		// its own pile is the measure, not a rival
+		if (!card || card.suit === suit) return true;
+		const other = foundationTopRank(state, card.suit);
+		return other >= 13 || other < top;
+	});
+}
 
 /**
  * Phantom rank: a drafted card still sitting in a free cell counts as already home, so the next
@@ -1135,7 +1142,12 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}
 
-	return spendCure(settle(next, levelBefore));
+	const settled = spendCure(settle(next, levelBefore));
+	// An item sent home leaves its slot waiting for one action: a card of its suit (any card of the
+	// colour, for an Orc) restocks the item and the chip stays put. Any other action drops the
+	// window, so the chip steps left and the cell is ordinary from then on.
+	if (!entry || settled.game.cells[cellIndex]) return settled;
+	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit } });
 }
 
 /** Single click movement affordance: the best tableau build, if there is one. */
