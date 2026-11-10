@@ -795,6 +795,25 @@ describe('tombcrawl progression rules', () => {
 			expect(home.game.cards.find((card) => shorthandCard(card) === '4H')!.location.fixture).toBe('foundation');
 		});
 
+		test('the gap a burn leaves closes up behind it', () => {
+			const state = makeTomb({
+				columns: [['4H', '9C', '8D', 'JS', 'KC']],
+				cells: ['2S', '5D', '6C'],
+				draft: glyph,
+				foundations: ['3H'],
+			});
+			const primed = useAbility(state, 0)!;
+			const home = armedClick(primed, cascade(0, 0))!;
+
+			const column = home.game.tableau[0];
+			// nothing is left behind where the card stood
+			expect(column.length).toBe(4);
+			expect(column.every(Boolean)).toBe(true);
+			// the run above the gap keeps its order and steps down one place
+			expect(column.map((card) => shorthandCard(card))).toEqual(['9C', '8D', 'JS', 'KC']);
+			expect(column.map((card) => card.location.data[1])).toEqual([0, 1, 2, 3]);
+		});
+
 		test('still has to see the card: fog is not a target', () => {
 			const state = makeTomb({
 				columns: [['4H', '9C']],

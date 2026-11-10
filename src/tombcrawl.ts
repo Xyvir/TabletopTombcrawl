@@ -731,16 +731,48 @@ function cloneWith(state: TombState, patch: Partial<TombState>): TombState {
 
 function relocate(state: TombState, moves: { id: string; to: CardLocation }[]): FreeCell {
 	const targets = new Map(moves.map((move) => [move.id, move.to]));
-	const cards = state.game.cards.map((card) => {
+	const moved = state.game.cards.map((card) => {
 		const to = targets.get(cardId(card));
 		return to ? { ...card, location: to } : card;
 	});
+	const cards = closeColumns(moved);
 	const game = new FreeCell({ cellCount: state.game.cells.length, cascadeCount: state.game.tableau.length, cards });
 	// Two cards can share a free cell: the slot always shows the top of the stack.
 	game.cells.forEach((_, cell) => {
 		game.cells[cell] = cellCards(cloneWith(state, { game }), cell).pop() ?? null;
 	});
 	return game;
+}
+
+/**
+ * A card can leave the middle of a column — BURNDAYRAZ slays through cover — and the base game seats
+ * its columns by index, so the hole would be left behind as a gap with nothing in it (and render as
+ * an undefined card). Re-seat every column from the bottom up instead: the run that sat above the
+ * gap closes it and keeps the order it already had.
+ */
+function closeColumns(cards: Card[]): Card[] {
+	const columns = new Map<number, Card[]>();
+	for (const card of cards) {
+		if (card.location.fixture !== 'cascade') continue;
+		const column = columns.get(card.location.data[0]) ?? [];
+		column.push(card);
+		columns.set(card.location.data[0], column);
+	}
+	const reseated = new Map<string, CardLocation>();
+	for (const [index, column] of columns) {
+		column
+			.sort((a, b) => a.location.data[1] - b.location.data[1])
+			.forEach((card, order) => {
+				if (card.location.data[1] !== order) {
+					reseated.set(cardId(card), { fixture: 'cascade', data: [index, order] });
+				}
+			});
+	}
+	if (!reseated.size) return cards;
+	return cards.map((card) => {
+		const to = reseated.get(cardId(card));
+		return to ? { ...card, location: to } : card;
+	});
 }
 
 /**
