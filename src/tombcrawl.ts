@@ -112,8 +112,8 @@ const CONSUMABLES: Record<Suit, Ability> = {
 		text: 'Arm to heal and/or refresh (un-exhaust) your spell glyph.',
 	},
 	diamonds: {
-		name: 'Cure-All',
-		text: 'Arm, exhausted after your next action. Slay a boss-suit minion and you can ignore its special ability.',
+		name: 'Remedy',
+		text: 'Arm, exhausted after your next action. Ignore the boss-suit power for that action: a kill, or a card parked in a free cell.',
 	},
 };
 
@@ -137,7 +137,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'cure' | 'potion' | 'bag';
+	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'potion' | 'bag';
 	cell: number;
 	first?: string;
 };
@@ -357,9 +357,9 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts and wounds your Glyph.' },
 };
 
-/** The aura is off while a Cure-All is armed: the action it covers ignores the power. */
+/** The aura is off while a Remedy is armed: the action it covers ignores the power, kill or park. */
 export function auraActive(state: TombState): boolean {
-	return state.armed?.kind !== 'cure';
+	return state.armed?.kind !== 'remedy';
 }
 
 /** Cards in one free cell, bottom first: a PISORF stack puts two cards in the same cell. */
@@ -945,7 +945,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return spendCure(closeItemWindow(next));
+	return spendRemedy(closeItemWindow(next));
 }
 
 /** Same suit, or any card of the same colour for an Orc's Scavenger. */
@@ -958,10 +958,10 @@ function closeItemWindow(state: TombState): TombState {
 	return state.itemWindow ? cloneWith(state, { itemWindow: null }) : state;
 }
 
-/** A Cure-All is spent by the action it covers: the arm clears and the item exhausts. */
-function spendCure(state: TombState): TombState {
+/** A Remedy is spent by the action it covers: the arm clears and the item exhausts. */
+function spendRemedy(state: TombState): TombState {
 	const armed = state.armed;
-	if (armed?.kind !== 'cure') return state;
+	if (armed?.kind !== 'remedy') return state;
 	const exhausted = [...state.exhausted];
 	exhausted[armed.cell] = true;
 	return cloneWith(state, { exhausted, armed: null });
@@ -1003,7 +1003,7 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 
 /**
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
- * and parking one in a free cell sets the power off just the same.
+ * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
  */
 function bossAura(state: TombState, card: Card): TombState {
 	if (!isBossMinion(state, card) || !auraActive(state)) return state;
@@ -1145,9 +1145,10 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		});
 	}
 
-	// A boss-suit minion parked in a free cell still sets off its power. A card fed into a spent
-	// item slot becomes that item, so it is no longer a monster and the power holds its fire.
-	if (from.fixture === 'cascade' && to.fixture === 'cell' && !feed) {
+	// A boss-suit minion parked in a free cell still sets off its power, and a Remedy covers that
+	// park exactly as it covers a kill: the arm is checked here, not just inside the aura. A card
+	// fed into a spent item slot becomes that item, so it is no longer a monster either way.
+	if (from.fixture === 'cascade' && to.fixture === 'cell' && !feed && auraActive(next)) {
 		for (const card of cards) next = bossAura(next, card);
 	}
 
@@ -1158,7 +1159,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		next = cloneWith(next, { itemWindow: { cell: source, role: entry.role, suit: entry.suit } });
 	}
 
-	return spendCure(next);
+	return spendRemedy(next);
 }
 
 /** Send a card home, paying the HP cost and applying the boss aura. */
@@ -1201,7 +1202,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}
 
-	const settled = spendCure(settle(next, levelBefore));
+	const settled = spendRemedy(settle(next, levelBefore));
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card of the
 	// colour, for an Orc) restocks the item and the chip stays put. Any other action drops the
 	// window, so the chip steps left and the cell is ordinary from then on.
@@ -1248,8 +1249,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
 	const exhausted = [...state.exhausted];
-	// A Cure-All is not spent by arming it: the action it covers is what exhausts it.
-	if (entry.name !== 'Cure-All') exhausted[cell] = true;
+	// A Remedy is not spent by arming it: the action it covers is what exhausts it.
+	if (entry.name !== 'Remedy') exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
@@ -1260,8 +1261,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		case 'Elixir':
 			next = healGlyph(next);
 			break;
-		case 'Cure-All':
-			next = cloneWith(next, { armed: { kind: 'cure', cell } });
+		case 'Remedy':
+			next = cloneWith(next, { armed: { kind: 'remedy', cell } });
 			break;
 		case 'IMAWAL':
 			next = cloneWith(next, { armed: { kind: 'imawal', cell } });
@@ -1292,8 +1293,8 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 	if (state.armed.kind === 'bag') return tombMove(state, from, to);
 	// IMAWAL answers the drop with the grabbed card laid on the fog.
 	if (state.armed.kind === 'imawal') return tombMove(state, from, to);
-	// A Cure-All covers whatever action comes next, so a drop is just the action it covers.
-	if (state.armed.kind === 'cure') return tombMove(state, from, to);
+	// A Remedy covers whatever action comes next, so a drop is just the action it covers.
+	if (state.armed.kind === 'remedy') return tombMove(state, from, to);
 	if (state.armed.kind === 'pisorf' || state.armed.kind === 'weytwut') {
 		const cleared = state.armed.first
 			? cloneWith(state, { armed: { ...state.armed, first: undefined } })
@@ -1329,8 +1330,8 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	// Clicking the card that armed the ability puts it away unspent instead of aiming it at itself.
 	if (location.fixture === 'cell' && location.data[0] === armed.cell) return disarm(state);
 
-	// A Cure-All waits for the action it covers: clicks elsewhere leave it armed.
-	if (armed.kind === 'cure') return null;
+	// A Remedy waits for the action it covers: clicks elsewhere leave it armed.
+	if (armed.kind === 'remedy') return null;
 
 	// The bag is a state rather than a target: it waits for the next stack move to carry.
 	if (armed.kind === 'bag') return null;

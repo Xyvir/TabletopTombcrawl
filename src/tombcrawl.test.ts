@@ -387,9 +387,9 @@ describe('burden and mana burn', () => {
 	});
 });
 
-describe('the cure-all', () => {
+describe('the remedy', () => {
 	const draft: DraftCard[] = [
-		{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Cure-All', text: '' },
+		{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
 		{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 	];
 	const board = (overrides: Partial<Setup> = {}) =>
@@ -404,7 +404,7 @@ describe('the cure-all', () => {
 
 	test('arming it does not spend it, and putting it away costs nothing', () => {
 		const armed = useAbility(board(), 0)!;
-		expect(armed.armed).toMatchObject({ kind: 'cure', cell: 0 });
+		expect(armed.armed).toMatchObject({ kind: 'remedy', cell: 0 });
 		expect(armed.exhausted[0]).toBe(false);
 
 		const putAway = armedClick(armed, cell(0))!;
@@ -421,7 +421,7 @@ describe('the cure-all', () => {
 	});
 
 	test('while it is armed, a boss-suit kill ignores the power', () => {
-		// without the cure the Gorgon's Burden would drain the Consumable before the wounds land
+		// without the remedy the Gorgon's Burden would drain the Consumable before the wounds land
 		expect(attackPreview(board(), cascade(0, 0)).locks).toContain(0);
 
 		const armed = useAbility(board(), 0)!;
@@ -434,6 +434,19 @@ describe('the cure-all', () => {
 		// the action it covered is what exhausts it
 		expect(next.exhausted[0]).toBe(true);
 		expect(next.armed).toBe(null);
+	});
+
+	test('a minion parked in a free cell is covered too', () => {
+		// unarmed, the Burden drains the Consumable even when the card is only going to a cell
+		const plain = tombMove(board(), cascade(0, 0), cell(4))!;
+		expect(plain.wounded[0]).toBe(1);
+
+		const armed = useAbility(board(), 0)!;
+		const next = tombMove(armed, cascade(0, 0), cell(4))!;
+		expect(next.wounded[0]).toBe(0);
+		// the park is the action the remedy covers, so the arm is spent and the item exhausts
+		expect(next.armed).toBe(null);
+		expect(next.exhausted[0]).toBe(true);
 	});
 });
 
