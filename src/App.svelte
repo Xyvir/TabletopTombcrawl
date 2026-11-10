@@ -1163,6 +1163,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{/each}
 		</div>
 
+		<span class="gravesplit" aria-hidden="true"></span>
+
 		<div class="cells" class:tomb={!!tomb} style={`--cell-count:${game.cells.length}`}>
 			{#each game.cells as card, i}
 				{@const location = { fixture: 'cell' as const, data: [i] }}

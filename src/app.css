@@ -393,6 +393,11 @@ body:has(.card.dragging) .cells.tomb .chip {
 	width: auto;
 }
 
+/* the bar that parts the wound track from the graveyard: a wide-layout item only */
+.gravesplit {
+	display: none;
+}
+
 /* foundations are the graveyard: a plain tombstone outline */
 .foundations.tomb .slot {
 	background-repeat: no-repeat;
@@ -448,7 +453,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 	.board.tomb .titlecard {
 		/* first in the row, ahead of the track: the corner reads the same at every width */
-		order: -2;
+		order: -3;
 		font-size: 26px;
 	}
 
@@ -466,30 +471,28 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 
 	.top.tomb .cells.tomb {
-		order: -1;
+		order: -2;
 		flex: 1 1 auto;
 		min-width: 0;
 		margin-inline: 0;
 	}
 
-	/*
-	 * The wound track and the graveyard share this row with only air between them, so a thin bar
-	 * stands where the graveyard begins and keeps the two piles apart at a glance.
-	 */
 	.top.tomb .foundations {
 		flex: 0 1 auto;
 		margin-left: 0;
-		position: relative;
-		padding-left: calc(var(--gap) * 1.5);
 	}
 
-	.top.tomb .foundations::before {
-		content: '';
-		position: absolute;
-		left: calc(var(--gap) * 0.25);
-		top: 0;
-		bottom: 0;
-		width: 2px;
+	/*
+	 * The wound track and the graveyard share this row with only air between them. The bar is a real
+	 * item between the two rather than a mark on the graveyard's edge, so the row's spacing leaves it
+	 * dead centre of that air instead of pressed up against the graves.
+	 */
+	.top.tomb .gravesplit {
+		display: block;
+		order: -1;
+		flex: 0 0 2px;
+		align-self: center;
+		height: var(--card-h);
 		border-radius: 2px;
 		background: rgba(241, 232, 212, 0.22);
 	}
