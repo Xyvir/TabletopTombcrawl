@@ -97,7 +97,7 @@ const GLYPHS: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'IMAWAL',
-		text: 'Arm to play any exposed card on top of a face-down card, as if it were an empty column.',
+		text: 'Arm to play a run your free cells could carry on top of a face-down card, as if it were an empty column.',
 	},
 	clubs: {
 		name: 'PISORF',
@@ -607,11 +607,13 @@ function foggedColumn(state: TombState, location: CardLocation): number | null {
 }
 
 /**
- * IMAWAL buys one illegal play: a single exposed card may be laid on top of a face-down card,
- * which normally blocks its whole column. The fog then stays face-down, buried for good.
+ * IMAWAL buys one illegal play: an exposed run may be laid on top of a face-down card, which
+ * normally blocks its whole column. The fog then stays face-down, buried for good. The run is a
+ * normal supermove, so the free cells still have to carry it — IMAWAL buys the fog, not a longer arm.
  */
 export function imawalCanBury(state: TombState, cards: Card[], to: CardLocation): boolean {
-	if (state.armed?.kind !== 'imawal' || to.fixture !== 'cascade' || cards.length !== 1) return false;
+	if (state.armed?.kind !== 'imawal' || to.fixture !== 'cascade' || !cards.length) return false;
+	if (cards.length > moveCapacity(state)) return false;
 	if (isFaceDown(state, cards[0])) return false;
 	return foggedColumn(state, { fixture: 'cascade', data: [to.data[0], 0] }) !== null;
 }

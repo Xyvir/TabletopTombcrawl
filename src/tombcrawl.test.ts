@@ -25,6 +25,7 @@ import {	MONSTERS,
 	hp,
 	cellCards,
 	maxHp,
+	moveCapacity,
 	woundedCards,
 	isFaceDown,
 	revealFaceDown,
@@ -1383,6 +1384,41 @@ describe('tombcrawl levels', () => {
 		const column = built.game.tableau[2];
 		expect(shorthandCard(column[column.length - 1]!)).toBe('3S');
 		expect(built.armed).toMatchObject({ kind: 'imawal' });
+	});
+
+	test('a run the free cells can carry is buried whole', () => {
+		const state = makeTomb({
+			columns: [['9D', '8S', '7D'], ['5H']],
+			cells: ['2S'],
+			draft: glyph,
+			hidden: ['5H'],
+		});
+		const primed = useAbility(state, 0)!;
+		// three cards need two free cells to wait in, and the track has six to spare
+		expect(moveCapacity(primed)).toBe(7);
+
+		const buried = tombMove(primed, cascade(0, 0), cascade(1))!;
+		const column = buried.game.tableau[1];
+		// the fog stays down, buried for good, with the whole run laid over it
+		expect(buried.hidden).toContain('5H');
+		expect(column.map((card) => shorthandCard(card))).toEqual(['5H', '9D', '8S', '7D']);
+		// the play spends the spell
+		expect(buried.armed).toBe(null);
+		// the arm clears without a wound, and the glyph is spent
+		expect(buried.exhausted[0]).toBe(true);
+	});
+
+	test('a run too long for the free cells cannot be buried', () => {
+		const state = makeTomb({
+			columns: [['9D', '8S', '7D'], ['5H']],
+			cells: ['2S', '4C', '5D', '9C', '6H', '7S', '8C'],
+			draft: glyph,
+			hidden: ['5H'],
+		});
+		const primed = useAbility(state, 0)!;
+		// no free cell to wait in: IMAWAL buys the fog, not a longer arm
+		expect(moveCapacity(primed)).toBe(1);
+		expect(tombMove(primed, cascade(0, 0), cascade(1))).toBe(null);
 	});
 
 	test('it can also be aimed by clicking a card and then the fog', () => {
