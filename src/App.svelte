@@ -174,6 +174,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const woundPreview = $derived(new Set(preview?.wounds ?? []));
 	/** The track cards digging the hovered fog would turn back up, marked green before it is spent. */
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
+	/** The card an aim would slay outright: it wears crossed swords until the pointer leaves. */
+	const slayAt = $derived(!drag && preview?.legal ? aim : null);
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
 	/** Empty free cells: each one is a single card away from being another heart. */
 	const openSlots = $derived(tomb ? emptyCells(tomb).length : 0);
@@ -1047,6 +1049,23 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	);
 </script>
 
+{#snippet swords()}
+	<svg viewBox="0 0 24 24" aria-hidden="true">
+		<g transform="rotate(45 12 12)">
+			<path d="M12 1.6 14.1 5.2V13h-4.2V5.2z" fill="#e9f1f6" stroke="#3d4a55" stroke-width="0.55" />
+			<rect x="8.2" y="13" width="7.6" height="1.9" rx="0.95" fill="#f4c96b" />
+			<rect x="10.9" y="14.9" width="2.2" height="4.2" fill="#e5926f" />
+			<circle cx="12" cy="20.4" r="1.4" fill="#f4c96b" />
+		</g>
+		<g transform="rotate(-45 12 12)">
+			<path d="M12 1.6 14.1 5.2V13h-4.2V5.2z" fill="#e9f1f6" stroke="#3d4a55" stroke-width="0.55" />
+			<rect x="8.2" y="13" width="7.6" height="1.9" rx="0.95" fill="#f4c96b" />
+			<rect x="10.9" y="14.9" width="2.2" height="4.2" fill="#e5926f" />
+			<circle cx="12" cy="20.4" r="1.4" fill="#f4c96b" />
+		</g>
+	</svg>
+{/snippet}
+
 <div
 	class="board"
 	class:tomb={!!tomb}
@@ -1114,6 +1133,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const stack = tomb ? cellCards(tomb, i) : card ? [card] : []}
 				{@const down = tomb ? Math.min(stack.length, tomb.wounded[i]) : 0}
 				{@const wounded = down > 0 ? stack[down - 1] : null}
+				{@const slaying = !!slayAt && key(slayAt) === key(location)}
 				<button
 					class="slot"
 					class:selected={!!card && selected.has(key(location))}
@@ -1182,6 +1202,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 					{/if}
+					<span class="slay" class:on={slaying} aria-hidden="true">{@render swords()}</span>
 					{#if entry}
 						<span class="role">{entry.name}</span>
 					{/if}
@@ -1226,6 +1247,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{@const boss = !!tomb && isBoss(tomb, card)}
 					{@const minion = !!tomb && isBossMinion(tomb, card)}
 					{@const flipping = flippingIds.includes(shorthandCard(card))}
+					{@const slaying = !!slayAt && key(slayAt) === key(card.location)}
 					<button
 						class="card"
 						class:selected={selected.has(key(card.location))}
@@ -1260,6 +1282,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{:else}
 							<img src={down ? `${BASE}images/back.png` : img(card)} alt="" draggable="false" />
 						{/if}
+						<span class="slay" class:on={slaying} aria-hidden="true">{@render swords()}</span>
 					</button>
 				{/each}
 			</div>

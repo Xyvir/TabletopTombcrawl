@@ -168,6 +168,46 @@ img {
 	outline-offset: -3px;
 }
 
+/*
+ * A card that can be slain wears crossed swords, so the kill reads as a kill before you swing. The
+ * mark is always in the DOM and only fades: fading out needs an element that is still there.
+ */
+.card .slay,
+.slot .slay {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 58%;
+	aspect-ratio: 1;
+	display: grid;
+	place-items: center;
+	transform: translate(-50%, -50%);
+	opacity: 0;
+	transition: opacity 150ms ease;
+	pointer-events: none;
+	z-index: 3;
+	filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+
+.card .slay svg,
+.slot .slay svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.card .slay.on,
+.slot .slay.on {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card .slay,
+	.slot .slay {
+		transition: none;
+	}
+}
+
 /* controls */
 .controls {
 	display: flex;
