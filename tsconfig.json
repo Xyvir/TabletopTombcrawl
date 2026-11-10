@@ -15,6 +15,6 @@
 		"paths": { "@/*": ["./src/*"] },
 		"types": ["vite/client", "node"]
 	},
-	"include": ["src/**/*.ts", "src/**/*.mts", "src/**/*.svelte", "vite.config.ts"],
+	"include": ["src/**/*.ts", "src/**/*.mts", "src/**/*.svelte", "scripts/**/*.ts", "vite.config.ts"],
 	"exclude": ["node_modules", "dist"]
 }

@@ -66,3 +66,22 @@ an auto-foundation take turns: the first waits 240 ms, and each later card start
 previous one has landed, so two cards never fly home at the same time. `prefers-reduced-motion` disables all of it.
 
 Undo, auto-to-home, restart and deal numbers (the standard 1–32,000 Microsoft deals) are in the footer.
+
+## Solver
+
+`src/solver.ts` searches a deal with best-first search over the real rules: every move it offers is
+replayed through `tombMove`, `attackWith`, `revealFaceDown` or `useAbility`, so a line it reports is
+a line the game accepts. The CLI is run through Vite (`scripts/run.mjs`) because the vendored rules
+import lodash as CommonJS, which plain `node` cannot load by named export.
+
+```sh
+npm run solve -- --seed 4242                # one deal, printed move by move
+npm run solve -- --seeds 1-50               # a range, one summary line each
+npm run solve -- --seed 4242 --goal boss    # stop at the boss kill instead of 100%
+npm run solve -- --seed 4242 --time 300 --nodes 2000000   # look harder
+```
+
+Each line of a printed solution is one move: what it did, then the fog, hearts, level, par and
+cleared percentage after it. A found line proves the deal winnable; finding none does not prove the
+opposite — it is a lower bound at the stated budget. PISORF, WEYTWUT and the Elixir are not armed by
+the search yet, so a line that needs one of them will be missed.
