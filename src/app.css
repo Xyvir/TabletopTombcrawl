@@ -357,6 +357,42 @@ img {
 	margin-left: auto;
 }
 
+/*
+ * On a wide screen the title lies on its side in the left margin, one line, taking no room from the
+ * board at all. With it out of the header the wound track and the graveyard share a single row, so
+ * the header is one card tall and the tableau rises into the space the second row used to hold.
+ */
+@media (min-width: 1400px) {
+	.board.tomb .titlecard {
+		position: fixed;
+		left: max(6px, calc((100vw - 1180px) / 4));
+		top: 50%;
+		/* one line: the two words run on as a single spine, read bottom to top */
+		display: block;
+		font-size: 26px;
+		writing-mode: vertical-rl;
+		transform: translateY(-50%) rotate(180deg);
+		pointer-events: none;
+	}
+
+	/* one header row: the track takes the upper left corner, the graveyard keeps the right */
+	.top.tomb {
+		flex-wrap: nowrap;
+	}
+
+	.top.tomb .cells.tomb {
+		order: -1;
+		flex: 1 1 auto;
+		min-width: 0;
+		margin-inline: 0;
+	}
+
+	.top.tomb .foundations {
+		flex: 0 1 auto;
+		margin-left: 0;
+	}
+}
+
 /* a narrow window cannot fit seven cells beside the foundations: give each its own row */
 @media (max-width: 1100px) {
 	.top {

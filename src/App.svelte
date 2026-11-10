@@ -989,6 +989,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 <div
 	class="board"
+	class:tomb={!!tomb}
 	bind:this={board}
 	role="application"
 	aria-label="FreeCell board"
