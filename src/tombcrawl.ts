@@ -181,7 +181,7 @@ export interface TombState {
 	freeCast: boolean;
 	/**
 	 * The Wizard's first Glyph cast is free whenever it comes. This is that cast, still unspent: it
-	 * waits through any number of moves, and a cast paid for by the refresh window leaves it alone.
+	 * waits through any number of moves, and any free cast spends it along with the refresh window.
 	 */
 	freeCastBank: boolean;
 }
@@ -1316,12 +1316,11 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
 	// A Wizard's Affinity: one cast banked from the start, plus any cast made on the move after a
-	// refresh. A cast spends the window if there is one and leaves the bank alone, so the banked cast
-	// is never swallowed by a refresh window; either way it can only ever pay for one cast.
+	// refresh. Either grant makes this cast free, and a free cast spends both of them, so a window
+	// can never leave a second free cast waiting behind it.
 	const free = freeCastReady(state, cell);
-	const spendsWindow = free && state.freeCast;
 	state = closeFreeCast(state);
-	if (free && !spendsWindow) state = cloneWith(state, { freeCastBank: false });
+	if (free) state = cloneWith(state, { freeCastBank: false });
 	const exhausted = [...state.exhausted];
 	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
 	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;

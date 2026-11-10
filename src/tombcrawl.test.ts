@@ -144,16 +144,16 @@ describe("the wizard's affinity", () => {
 		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
 	});
 
-	test('a refresh window spends itself and leaves the banked cast alone', () => {
+	test('a free cast spends the window and the banked cast together', () => {
 		const state = refreshed({ freeCastBank: true });
 		expect(state.freeCast).toBe(true);
 
 		const cast = useAbility(state, 1)!;
 		expect(cast.exhausted[1]).toBe(false);
 		expect(cast.freeCast).toBe(false);
-		// the window paid for that cast, so the banked one is still waiting
-		expect(cast.freeCastBank).toBe(true);
-		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(false);
+		// one free cast, never two in a row: the window takes the bank down with it
+		expect(cast.freeCastBank).toBe(false);
+		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
 	});
 
 	test('a class that is not the wizard casts at full price', () => {
