@@ -1038,7 +1038,7 @@ function bossAura(state: TombState, card: Card): TombState {
 	}
 }
 
-/** Fill the cell a spent consumable just vacated with a card of the same suit (or colour). */
+/** Fill the cell a spent consumable's own card just vacated with a card of the same suit (or colour). */
 function refillConsumable(state: TombState, cell: number, suit: Suit): TombState {
 	const orc = hasPassive(state, 'Orc');
 	const candidates = state.game.cards.filter((card) => {
@@ -1173,7 +1173,10 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	const wasCell = from.fixture === 'cell';
 	const cellIndex = wasCell ? from.data[0] : -1;
 	const entry = wasCell ? draftAt(state, cellIndex) : undefined;
-	const spentConsumable = entry?.role === 'consumable' && state.exhausted[cellIndex];
+	// Only the item's own card carries the item with it. A plain card can lie on top of an item slot,
+	// and sending that one home leaves the item, its exhaustion and its restock window untouched.
+	const itemCard = !!entry && entry.id === cardId(card);
+	const spentConsumable = !!entry && itemCard && entry.role === 'consumable' && state.exhausted[cellIndex];
 
 	let next = state;
 
@@ -1183,7 +1186,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	});
 
 	// Cell conversion: a draft card sent home is gone for good and the cell becomes plain.
-	if (entry) {
+	if (itemCard) {
 		next = cloneWith(next, {
 			draft: consumeDraft(next, cellIndex),
 		});
@@ -1206,7 +1209,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card of the
 	// colour, for an Orc) restocks the item and the chip stays put. Any other action drops the
 	// window, so the chip steps left and the cell is ordinary from then on.
-	if (!entry || settled.game.cells[cellIndex]) return settled;
+	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
 	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit } });
 }
 

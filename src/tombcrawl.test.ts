@@ -448,6 +448,31 @@ describe('the remedy', () => {
 		expect(next.armed).toBe(null);
 		expect(next.exhausted[0]).toBe(true);
 	});
+
+	test('a plain card parked on an item slot goes home without refilling the item', () => {
+		// the diamond in the column is the card the old bookkeeping would have dragged into the slot
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['6S', '7S', '3S', 'JD'], ['KD']],
+			cells: ['AC'],
+			draft,
+			exhausted: [0],
+		});
+
+		const next = attackWith(state, cell(0))!;
+
+		expect(next.game.foundations[0]?.rank).toBe('ace');
+		// the Cure-All stays in its slot, still exhausted, and nothing is dragged out of a column
+		expect(next.draft.find((entry) => entry.cell === 0)?.name).toBe('Remedy');
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.itemWindow).toBe(null);
+		expect(next.game.cards.some((card) => shorthandCard(card) === 'JD' && card.location.fixture === 'cell')).toBe(
+			false
+		);
+		expect(next.game.tableau[0]).toHaveLength(4);
+	});
 });
 
 describe('the potion and the elixir', () => {
