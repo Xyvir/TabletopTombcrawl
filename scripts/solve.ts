@@ -11,6 +11,7 @@ interface Options {
 	beamWidth: number;
 	strategy: 'best' | 'beam' | 'dfs';
 	heal: number;
+	cap: number;
 	seconds: number;
 	limit: number | null;
 	quiet: boolean;
@@ -27,6 +28,7 @@ function parse(argv: string[]): Options {
 		beamWidth: 0,
 		strategy: 'best',
 		heal: 1,
+		cap: 0,
 		seconds: 120,
 		limit: null,
 		quiet: false,
@@ -63,6 +65,10 @@ function parse(argv: string[]): Options {
 				break;
 			case '--heal':
 				options.heal = Number(value);
+				i++;
+				break;
+			case '--cap':
+				options.cap = Number(value);
 				i++;
 				break;
 			case '--strategy':
@@ -106,7 +112,7 @@ function heading(state: TombState, options: Options): string {
 	const free = FREE_CELL_COUNT[options.difficulty];
 	const goal = options.goal === 'boss' ? 'slay the boss' : '100% clear';
 	return [
-		`seed ${state.seed}  ·  ${options.difficulty} (${free} free cells)  ·  goal: ${goal}  ·  level up heals ${TOMB_RULES.levelUpHeal}`,
+		`seed ${state.seed}  ·  ${options.difficulty} (${free} free cells)  ·  goal: ${goal}  ·  level up heals ${TOMB_RULES.levelUpHeal}${TOMB_RULES.levelDamageCap ? `  ·  no blow over ${TOMB_RULES.levelDamageCap}` : ''}`,
 		`boss  ${state.bossSuit ? `${state.bossSuit} king` : 'not yet revealed'}  ·  party  ${party(state) || '(none)'}`,
 	].join('\n');
 }
@@ -204,7 +210,8 @@ function range(options: Options): void {
 	const lengths = found.map((row) => row.length).sort((a, b) => a - b);
 	console.log('');
 	const heal = TOMB_RULES.levelUpHeal === 1 ? '' : `, level up heals ${TOMB_RULES.levelUpHeal}`;
-	console.log(`${found.length}/${rows.length} solved at ${options.difficulty}${heal} (${Math.round((found.length / rows.length) * 100)}%)`);
+	const cap = TOMB_RULES.levelDamageCap ? `, no blow over ${TOMB_RULES.levelDamageCap}` : '';
+	console.log(`${found.length}/${rows.length} solved at ${options.difficulty}${heal}${cap} (${Math.round((found.length / rows.length) * 100)}%)`);
 	if (lengths.length) {
 		const median = lengths[Math.floor(lengths.length / 2)];
 		console.log(`move counts: min ${lengths[0]} · median ${median} · max ${lengths[lengths.length - 1]}`);
@@ -223,6 +230,7 @@ options
   --beam N                     keep N boards per ply instead of best-first order
   --strategy best|beam|dfs     search order (default best)
   --heal N                     hearts a level up restores (default 1; tuning only)
+  --cap N                      most hearts one kill may cost (default 0, no ceiling)
   --depth N                    longest line to follow (default 220)
   --time S                     seconds before giving up (default 120)
   --steps N                    print only the first N moves of a line
@@ -242,6 +250,7 @@ function main(): void {
 	const options = parse(argv);
 	// A tuning knob for experiments only: the shipped game keeps the default of one heart.
 	TOMB_RULES.levelUpHeal = options.heal;
+	TOMB_RULES.levelDamageCap = options.cap;
 	if (options.seeds) {
 		range(options);
 		return;

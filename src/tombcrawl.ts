@@ -34,6 +34,11 @@ export const TOMB_CASCADE_COUNT = 8;
 export const TOMB_RULES = {
 	/** Hearts a level up mends. The card game this borrows from healed fully. */
 	levelUpHeal: 1,
+	/**
+	 * The most hearts one kill may cost, or 0 for no ceiling. Damage is rank minus level, so the
+	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
+	 */
+	levelDamageCap: 0,
 };
 
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
@@ -749,6 +754,8 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	if (isBossMinion(state, card) && state.bossSuit === 'spades' && auraActive(state)) {
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
+	// The ceiling is applied before Bounty, so a free kill stays free.
+	if (TOMB_RULES.levelDamageCap > 0) damage = Math.min(damage, TOMB_RULES.levelDamageCap);
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
