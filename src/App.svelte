@@ -175,6 +175,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The track cards digging the hovered fog would turn back up, marked green before it is spent. */
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
+	/** Empty free cells: each one is a single card away from being another heart. */
+	const openSlots = $derived(tomb ? emptyCells(tomb).length : 0);
 	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
@@ -1182,7 +1184,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	{#if tomb}
 		<div class="tombhud">
-			<span class="hearts">HP {tombHp}/{maxHp(tomb)}</span>
+			<span
+				class="hearts"
+				title={openSlots
+					? `${tombHp} of ${maxHp(tomb)} held, and ${openSlots} empty free cell${openSlots === 1 ? '' : 's'} worth a heart each`
+					: `${tombHp} of ${maxHp(tomb)} held`}
+			>HP {tombHp}/{maxHp(tomb)}{#if openSlots}<span class="open">(+{openSlots})</span>{/if}</span
+			>
 			<span>Level {tombLevel}</span>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
 		</div>

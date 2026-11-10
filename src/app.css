@@ -772,6 +772,14 @@ img {
 	font-weight: 700;
 }
 
+/* An empty free cell is a heart you have not picked up yet: it reads out in plain white, because it
+   is not HP — it is one card away from it. When there are none the whole mark collapses. */
+.tombhud .hearts .open {
+	color: #ffffff;
+	font-weight: 600;
+	margin-left: 0.2em;
+}
+
 .tombhud .bosstag {
 	color: #c79bff;
 }
