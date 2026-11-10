@@ -24,6 +24,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tapTableau,
 		type TapResult,
 	} from './interaction';
+	import titleMark from './assets/title.svg?raw';
 	import {
 		MONSTERS,
 		ROLE_LABEL,
@@ -1099,9 +1100,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	<header class="top" class:tomb={!!tomb}>
 		{#if tomb}
-			<div class="titlecard">
-				<span>Tabletop</span>
-				<span>Tombcrawl</span>
+			<div class="titlecard" role="img" aria-label="Tabletop Tombcrawl">
+				<span class="titlemark">{@html titleMark}</span>
 			</div>
 		{/if}
 
