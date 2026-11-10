@@ -93,11 +93,49 @@ function makeTomb({
 		score: null,
 		armed: null,
 		itemWindow: null,
+		freeCast: false,
 	};
 }
 
 const cascade = (column: number, card = 0) => ({ fixture: 'cascade' as const, data: [column, card] });
 const cell = (index: number) => ({ fixture: 'cell' as const, data: [index] });
+
+describe("the wizard's freecast", () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
+		{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },
+		{ cell: 2, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
+	];
+	// the Elixir is the cleanest way to refresh on demand: it opens the window with its own action
+	const preparing = (extra: Partial<Setup> = {}) =>
+		makeTomb({ columns: [['5H'], ['9D']], cells: ['KC', '2S', '5C'], draft, exhausted: [1], hidden: ['5H'], ...extra });
+	const refreshed = (extra: Partial<Setup> = {}) => useAbility(preparing(extra), 2)!;
+
+	test('the glyph cast on the move after a refresh costs no exhaustion', () => {
+		expect(refreshed().freeCast).toBe(true);
+
+		const cast = useAbility(refreshed(), 1)!;
+		expect(cast.armed).toMatchObject({ kind: 'sack' });
+		expect(cast.exhausted[1]).toBe(false);
+		// the window is spent by the free cast itself, so a second one in a row is not
+		expect(cast.freeCast).toBe(false);
+		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
+	});
+
+	test('any other move closes the window', () => {
+		const dug = revealFaceDown(refreshed(), cascade(0, 0))!;
+		expect(dug.freeCast).toBe(false);
+		expect(useAbility(dug, 1)!.exhausted[1]).toBe(true);
+	});
+
+	test('a class that is not the wizard casts at full price', () => {
+		const fighter = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Fighter' } : entry));
+		const state = useAbility(preparing({ draft: fighter }), 2)!;
+
+		expect(state.freeCast).toBe(false);
+		expect(useAbility(state, 1)!.exhausted[1]).toBe(true);
+	});
+});
 
 describe('monster damage on the way home', () => {
 	test('a card one level above you wounds the rightmost face-up card', () => {

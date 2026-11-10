@@ -82,7 +82,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: sending a club home immediately refreshes your Glyph.',
+		text: 'Freecast: cast your Glyph on the very move after it is refreshed and that cast costs no exhaustion. Cast it again straight after and it pays as usual.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -174,6 +174,11 @@ export interface TombState {
 	armed: ArmedAbility | null;
 	/** A spent item slot: feed it a matching card on the very next action to remake the item. */
 	itemWindow: { cell: number; role: DraftRole; suit: Suit } | null;
+	/**
+	 * The Glyph was refreshed by this action, so a Wizard's very next move may be a free cast. Any
+	 * other action closes the window: it never survives a second move.
+	 */
+	freeCast: boolean;
 }
 
 const rankOf = (rank: Rank) => getRankForCompare(rank) + 1;
@@ -296,6 +301,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		score: null,
 		armed: null,
 		itemWindow: null,
+		freeCast: false,
 	};
 }
 
@@ -877,14 +883,19 @@ function healGlyph(state: TombState): TombState {
 }
 
 function refreshGlyphs(state: TombState): TombState {
-	if (!state.draft.some((entry) => entry.role === 'glyph')) return state;
+	const glyphs = state.draft.filter((entry) => entry.role === 'glyph');
+	if (!glyphs.length) return state;
 	const exhausted = [...state.exhausted];
-	state.draft
-		.filter((entry) => entry.role === 'glyph')
-		.forEach((entry) => {
-			if (state.game.cells[entry.cell]) exhausted[entry.cell] = false;
-		});
-	return cloneWith(state, { exhausted });
+	let refreshed = false;
+	glyphs.forEach((entry) => {
+		if (!state.game.cells[entry.cell]) return;
+		refreshed = refreshed || state.exhausted[entry.cell];
+		exhausted[entry.cell] = false;
+	});
+	// A Wizard's window opens on a real refresh: tidying a glyph that was already fresh hands nothing
+	// out, so there has to have been an exhaustion to spend for the free cast to be worth anything.
+	const window = refreshed && hasPassive(state, 'Wizard');
+	return cloneWith(state, { exhausted, freeCast: state.freeCast || window });
 }
 
 /** Golf score: every card still off the foundation counts against you, court cards as ten. */
@@ -907,10 +918,12 @@ export function tombExit(state: TombState): TombState | null {
  */
 function settle(state: TombState, levelBefore: number): TombState {
 	// A card leaving a stacked cell must not leave a wound behind on an empty slot.
-	let next = closeItemWindow(
-		cloneWith(state, {
-			wounded: state.wounded.map((count, cell) => Math.min(count, cellCards(state, cell).length)),
-		})
+	let next = closeFreeCast(
+		closeItemWindow(
+			cloneWith(state, {
+				wounded: state.wounded.map((count, cell) => Math.min(count, cellCards(state, cell).length)),
+			})
+		)
 	);
 
 	if (!next.bossId) {
@@ -970,7 +983,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return spendArmedItem(closeItemWindow(next));
+	return spendArmedItem(closeFreeCast(closeItemWindow(next)));
 }
 
 /** Same suit, or any card of the same colour for an Orc's Scavenger. */
@@ -981,6 +994,11 @@ function matchesItemSuit(state: TombState, card: Card, suit: Suit): boolean {
 /** Any action other than the feed closes a spent item slot for good. */
 function closeItemWindow(state: TombState): TombState {
 	return state.itemWindow ? cloneWith(state, { itemWindow: null }) : state;
+}
+
+/** Any action other than the free cast closes the Wizard's window. */
+function closeFreeCast(state: TombState): TombState {
+	return state.freeCast ? cloneWith(state, { freeCast: false }) : state;
 }
 
 /** A Remedy is spent by the action it covers: the arm clears and the item exhausts. */
@@ -1276,9 +1294,13 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
+	// A Wizard's Freecast: the Glyph cast made on the very move after a refresh costs no exhaustion.
+	// This cast spends the window with it, so the one after it pays as usual.
+	const free = hasPassive(state, 'Wizard') && state.freeCast && entry.role === 'glyph';
+	state = closeFreeCast(state);
 	const exhausted = [...state.exhausted];
 	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
-	if (entry.name !== 'Remedy' && entry.name !== 'Revive') exhausted[cell] = true;
+	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
