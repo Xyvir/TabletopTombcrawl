@@ -471,7 +471,8 @@ img {
 	background-color: rgba(120, 24, 24, 0.35);
 }
 
-.slot.exhausted img {
+/* the spent item leans and dims; a face-down wound's own face is left alone so it cannot show */
+.slot.exhausted img:not(.peek) {
 	transform: rotate(90deg) scale(0.7);
 	opacity: 0.75;
 }
@@ -492,15 +493,26 @@ img {
 	transform: rotate(22.5deg) scale(0.88);
 }
 
+/*
+ * The face of a face-down wound is a hover peek and nothing else. Visibility carries the hiding, not
+ * opacity alone, so the dimming of a spent item and the lift of an armed one cannot paint the face
+ * over the back image.
+ */
 .slot .peek {
 	opacity: 0;
-	transition: opacity 120ms ease-out;
+	visibility: hidden;
+	/* the face may linger just long enough to fade out, but it never paints while the pointer is away */
+	transition:
+		opacity 120ms ease-out,
+		visibility 0s linear 120ms;
 }
 
 .slot:hover .peek,
 .slot:focus-visible .peek {
 	opacity: 1;
+	visibility: visible;
 	z-index: 3;
+	transition: opacity 120ms ease-out;
 }
 
 /* A card taking a wound turns over with the same lean and squash the fog uses, run backwards:
@@ -700,7 +712,7 @@ img {
 	animation: tomb-armed 1.5s ease-in-out infinite;
 }
 
-.slot.armed img {
+.slot.armed img:not(.peek) {
 	transform: rotate(22.5deg) scale(0.86);
 	opacity: 1;
 	transition: transform 160ms ease;
