@@ -1384,10 +1384,6 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	const revive = state.armed?.kind === 'revive';
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
 
-	if (hasPassive(next, 'Wizard') && card.suit === 'clubs') {
-		next = refreshGlyphs(next);
-	}
-
 	if (spentConsumable && entry) {
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}

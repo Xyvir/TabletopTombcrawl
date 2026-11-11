@@ -174,6 +174,31 @@ describe("the wizard's affinity", () => {
 	});
 });
 
+describe('a club going home', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
+		{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },
+		{ cell: 2, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
+	];
+
+	test("does not refresh the wizard's glyph", () => {
+		const state = makeTomb({
+			columns: [['2C'], ['9D']],
+			cells: ['KC', '2S', '5C'],
+			foundations: ['AC'],
+			draft,
+			exhausted: [1],
+		});
+		// the ace's own pile is the clubs foundation: play the two there
+		const home = state.game.cards.find((card) => shorthandCard(card) === 'AC')!.location;
+		const next = tombMove(state, cascade(0, 0), home)!;
+
+		// the glyph only comes back on a level up or an Elixir, never because a club went home
+		expect(next.exhausted[1]).toBe(true);
+		expect(next.freeCast).toBe(false);
+	});
+});
+
 describe('monster damage on the way home', () => {
 	test('a card one level above you wounds the rightmost face-up card', () => {
 		const draft: DraftCard[] = [
