@@ -216,9 +216,10 @@ describe('an armed spell', () => {
 		{ cell: 2, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },
 	];
 	// the track pays a blow from the right edge inward, so the rightmost cell is the one that breaks
-	const board = () => makeTomb({ columns: [['2H']], cells: ['KC', '5C', '2S'], foundations: ['AH'], draft });
+	const board = (extra: Partial<Setup> = {}) =>
+		makeTomb({ columns: [['2H']], cells: ['KC', '5C', '2S'], foundations: ['AH'], draft, ...extra });
 
-	test('a wound puts the spell down with the card carrying it', () => {
+	test('a wound puts the spell down, and putting it down gives it back', () => {
 		const armed = useAbility(board(), 2)!;
 		expect(armed.armed).toMatchObject({ kind: 'sack' });
 
@@ -226,8 +227,21 @@ describe('an armed spell', () => {
 		const struck = attackWith(armed, cascade(0, 0))!;
 		expect(struck.wounded[2]).toBe(1);
 		expect(struck.armed).toBe(null);
-		// interrupted, not fetched back: the glyph was spent arming and stays spent
-		expect(struck.exhausted[2]).toBe(true);
+		// knocked out of hand reads as a misclick: the spell is unspent, exactly as a disarm leaves it
+		expect(struck.exhausted[2]).toBe(false);
+	});
+
+	test('a free cast knocked out of hand gives the bank back, wound and all', () => {
+		const wizard = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Wizard' } : entry));
+		const armed = useAbility(board({ draft: wizard, freeCastBank: true }), 2)!;
+		expect(armed.freeCastBank).toBe(false);
+
+		const struck = attackWith(armed, cascade(0, 0))!;
+		expect(struck.armed).toBe(null);
+		expect(struck.freeCastBank).toBe(true);
+		expect(freeCastReady(struck, 2)).toBe(true);
+		// the refund's snapshot predates the blow, so the wound that interrupted the cast still stands
+		expect(struck.wounded[2]).toBe(1);
 	});
 
 	test('the board never holds an arm it has already refused', () => {

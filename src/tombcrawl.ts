@@ -875,23 +875,8 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 /* ------------------------------------------------------------- mechanics */
 
-/**
- * An armed spell sits on a face-up card in its own cell, and it is dropped the moment that card is
- * wounded: a wound turns the card over, so the arm would otherwise point at a card that cannot cast
- * anything, leaving the board offering a spell `abilityUsable` has already refused. The spell is not
- * fetched back, though: the wound interrupted it, so this is not `disarm` and nothing is refunded —
- * a glyph that was spent arming stays spent, and a Remedy is simply put down unconsumed.
- * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
- * already spent, and the only powers that exhaust an unspent item (Burden, Mana Burn) wound it too.
- */
-function armHoldsFaceUpCard(state: TombState): TombState {
-	const armed = state.armed;
-	if (!armed) return state;
-	return (state.wounded[armed.cell] ?? 0) > 0 ? { ...state, armed: null } : state;
-}
-
 function cloneWith(state: TombState, patch: Partial<TombState>): TombState {
-	return armHoldsFaceUpCard({ ...state, ...patch });
+	return { ...state, ...patch };
 }
 
 function relocate(state: TombState, moves: { id: string; to: CardLocation }[]): FreeCell {
@@ -1244,7 +1229,7 @@ function bossAura(state: TombState, card: Card): TombState {
 			if (cell === null) return state;
 			const exhausted = [...state.exhausted];
 			exhausted[cell] = true;
-			return woundCell(cloneWith(state, { exhausted }), cell);
+			return dropKnockedArm(woundCell(cloneWith(state, { exhausted }), cell));
 		}
 		default:
 			return state;
@@ -1418,7 +1403,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// A Revive pays the whole bill before the level up is settled, so a kill that raises the delver a
 	// level still mends off the wiped track: they come back on one heart rather than none.
 	if (revive) next = cloneWith(next, { wounded: wipeTrack(next) });
-	const settled = spendArmedItem(settle(next, levelBefore));
+	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
 	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
 	// chip steps left and the cell is ordinary from then on.
@@ -1563,11 +1548,42 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 
 /** Put an armed ability away unspent: the cell it came from is released again. */
 export function disarm(state: TombState): TombState {
+	return releaseArm(state);
+}
+
+/**
+ * A spell whose own card is turned over is knocked out of hand. An arm sits on a face-up card, so it
+ * cannot outlive that card: the board would go on offering a cast `abilityUsable` has already
+ * refused. It is put down exactly as a disarm puts it down — the cell released, a free cast's grant
+ * handed back — because losing the spell to a wound reads as a misclick, not as a lost cast.
+ * This runs where the injury lands, after the arm that paid for the action has been spent, so a
+ * Revive is never knocked out of hand before it can pay its own bill.
+ * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
+ * already spent, and the only powers that exhaust an unspent item (Burden, Mana Burn) wound it too.
+ */
+function dropKnockedArm(state: TombState): TombState {
+	const armed = state.armed;
+	if (!armed) return state;
+	// A Remedy or a Revive is spent by the action it covers, so while that action is being resolved
+	// the item is in hand: a power that drains it does not knock it out of hand first.
+	if (armed.kind === 'remedy' || armed.kind === 'revive') return state;
+	if ((state.wounded[armed.cell] ?? 0) === 0) return state;
+	// The wounds stay as they are: the refund's snapshot predates the blow, and restoring it would
+	// undo the very wound that knocked the spell out of hand.
+	return releaseArm(state, state.wounded);
+}
+
+/**
+ * Putting a spell down, whether by hand or by having it knocked out of hand. `wounded` is only
+ * overridden for the second case: a wound that interrupts a free cast must keep itself, so the
+ * refund restores the grant and leaves the track alone.
+ */
+function releaseArm(state: TombState, wounded?: number[]): TombState {
 	if (!state.armed) return state;
 	const exhausted = [...state.exhausted];
 	exhausted[state.armed.cell] = false;
 	const refund = state.armed.refund;
-	// Backing out of a free cast returns the grant and the heart it mended, so the blue offer is exactly
+	// Putting a free cast down returns the grant and the heart it mended, so the blue offer is exactly
 	// where it was: nothing was cast, so nothing was spent.
 	const next = refund
 		? cloneWith(state, {
@@ -1575,7 +1591,7 @@ export function disarm(state: TombState): TombState {
 				exhausted,
 				freeCast: refund.freeCast,
 				freeCastBank: refund.freeCastBank,
-				wounded: refund.wounded,
+				wounded: wounded ?? refund.wounded,
 			})
 		: cloneWith(state, { armed: null, exhausted });
 	return closeItemWindow(next);
