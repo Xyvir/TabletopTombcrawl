@@ -5,6 +5,66 @@
 	"keys": 256,
 	"entries": [
 		{
+			"loadout": "chhs",
+			"boss": "clubs",
+			"seed": 2013,
+			"moves": 98,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "csdd",
+			"boss": "diamonds",
+			"seed": 3023,
+			"moves": 95,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			]
+		},
+		{
 			"loadout": "ddcc",
 			"boss": "clubs",
 			"seed": 440,
@@ -875,6 +935,96 @@
 			]
 		},
 		{
+			"loadout": "sddd",
+			"boss": "clubs",
+			"seed": 5035,
+			"moves": 159,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			]
+		},
+		{
+			"loadout": "sdss",
+			"boss": "hearts",
+			"seed": 2033,
+			"moves": 130,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "sssc",
+			"boss": "clubs",
+			"seed": 4007,
+			"moves": 146,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
 			"loadout": "sssh",
 			"boss": "spades",
 			"seed": 3,
@@ -984,6 +1134,18 @@
 				"moves": 95
 			}
 		},
+		"chhs": {
+			"boss": {
+				"seed": 2013,
+				"moves": 98
+			}
+		},
+		"sdss": {
+			"boss": {
+				"seed": 2033,
+				"moves": 130
+			}
+		},
 		"hcsh": {
 			"boss": {
 				"seed": 219,
@@ -1006,6 +1168,12 @@
 			"boss": {
 				"seed": 4,
 				"moves": 62
+			}
+		},
+		"csdd": {
+			"boss": {
+				"seed": 3023,
+				"moves": 95
 			}
 		},
 		"dsdh": {
@@ -1038,6 +1206,12 @@
 				"moves": 86
 			}
 		},
+		"sssc": {
+			"boss": {
+				"seed": 4007,
+				"moves": 146
+			}
+		},
 		"ddcc": {
 			"boss": {
 				"seed": 440,
@@ -1048,6 +1222,12 @@
 			"boss": {
 				"seed": 452,
 				"moves": 63
+			}
+		},
+		"sddd": {
+			"boss": {
+				"seed": 5035,
+				"moves": 159
 			}
 		},
 		"hsch": {
@@ -1135,7 +1315,6 @@
 		"chhh",
 		"chhc",
 		"chhd",
-		"chhs",
 		"chch",
 		"chcc",
 		"chcd",
@@ -1190,7 +1369,6 @@
 		"cscs",
 		"csdh",
 		"csdc",
-		"csdd",
 		"csds",
 		"cssh",
 		"cssc",
@@ -1293,12 +1471,10 @@
 		"sdcs",
 		"sddh",
 		"sddc",
-		"sddd",
 		"sdds",
 		"sdsh",
 		"sdsc",
 		"sdsd",
-		"sdss",
 		"sshh",
 		"sshc",
 		"sshd",
@@ -1311,7 +1487,6 @@
 		"ssdc",
 		"ssdd",
 		"ssds",
-		"sssc",
 		"sssd",
 		"ssss"
 	]
