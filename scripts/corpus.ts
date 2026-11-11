@@ -185,6 +185,9 @@ if (mode === 'scan') {
 	// Parallel workers share no shard file, so each also skips whatever the published corpus has
 	// already found: without this, six workers chase the same parties and six times the seeds.
 	const done = new Set([...entries.map((entry) => entry.loadout), ...publishedLoadouts()]);
+	// Counted so the log says how much searching a range actually did: a run that skipped every deal
+	// and a run that searched them all and found nothing otherwise read exactly the same.
+	let searched = 0;
 	for (let seed = from; seed <= to; seed++) {
 		if ((seed - from) % 5 === 0) {
 			// Workers win parties while this one is running, so the skip list is refreshed as it goes:
@@ -197,6 +200,7 @@ if (mode === 'scan') {
 		const key = keyOf(state);
 		if (done.has(key)) continue;
 		if (kin.length && !kin.includes(key[0])) continue;
+		searched += 1;
 		const result = solveTomb({
 			state,
 			goal,
@@ -222,7 +226,9 @@ if (mode === 'scan') {
 		writeFileSync(out, JSON.stringify(entries, null, '\t'));
 		console.log(`seed ${seed} ${key} solved ${result.steps.length} · ${done.size} keys`);
 	}
-	console.log(`scan ${from}-${to}: ${entries.length} entries`);
+	console.log(
+		`scan ${from}-${to}: ${entries.length} entries · ${searched} deals searched${kin.length ? ` · kin ${kin.join('')}` : ''}`
+	);
 }
 
 if (mode === 'merge') {
