@@ -53,12 +53,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		maxHp,
 		draftAt,
 		emptyCells,
+		flipFaceDown,
 		freeCastReady,
 		hasPassive,
 		isBoss,
 		isBossMinion,
 		isFaceDown,
 		imawalCanBury,
+		imawalCanFlip,
 		moveCapacity,
 		parCleared,
 		bossSlain,
@@ -737,7 +739,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const el = event.currentTarget as HTMLElement;
 		const id = shorthandCard(card);
 
+		const now = Date.now();
+		const double = tombLast?.id === id && now - tombLast.time < DOUBLE_CLICK_MS;
+		tombLast = double ? null : { id, time: now };
+
 		if (state.armed) {
+			// IMAWAL's second use: double-click a face-up card to turn it back over into fog, a place to
+			// bury a run later or one to dig again for the heal a dig pays. A single click still picks
+			// the card the spell is holding, so the two uses never collide.
+			if (double && imawalCanFlip(state, card.location)) {
+				const flipped = flipFaceDown(state, card.location);
+				if (flipped) {
+					commit(flipped);
+					return;
+				}
+			}
 			const armed = armedClick(state, card.location);
 			if (armed) {
 				commit(armed);
@@ -752,10 +768,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				return;
 			}
 		}
-
-		const now = Date.now();
-		const double = tombLast?.id === id && now - tombLast.time < DOUBLE_CLICK_MS;
-		tombLast = double ? null : { id, time: now };
 
 		if (card.location.fixture === 'cell') {
 			const index = card.location.data[0];

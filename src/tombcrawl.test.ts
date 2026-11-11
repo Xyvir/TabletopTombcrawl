@@ -15,8 +15,9 @@ import {	MONSTERS,
 	bossSlain,
 	bossUnlocked,
 	canSendHome,
-	cellCardMovable,
-	cellTopWounded,
+	cellCardMovable,		cellTopWounded,
+		flipFaceDown,
+
 	chipBoundary,
 	convertibleCell,
 	newlyHealed,
@@ -1919,5 +1920,37 @@ describe('tombcrawl the class powers and the hearts they pay', () => {
 		const cast = useAbility(state, 1)!;
 		expect(cast.armed).toMatchObject({ kind: 'weytwut' });
 		expect(wounds(cast)).toBe(0);
+	});
+});
+
+describe('tombcrawl IMAWAL turning a card back over', () => {
+	const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2H', suit: 'hearts', name: 'IMAWAL', text: '' }];
+	const board = () =>
+		makeTomb({
+			columns: [['5C', '4D'], ['KS'], ['QC']],
+			cells: ['2H', '2C', '3C'],
+			hidden: ['QC'],
+			draft,
+			wounded: [1],
+		});
+
+	test('a face-up card goes back to fog, and the dig it allows still pays a heal', () => {
+		const state = board();
+		const armed = useAbility(state, 0)!;
+		expect(armed.armed).toMatchObject({ kind: 'imawal' });
+
+		const flipped = flipFaceDown(armed, cascade(0, 1))!;
+		expect(flipped.armed).toBe(null);
+		expect(flipped.hidden).toContain('4D');
+		// the spell made itself the fog it needs: the card can be dug again for a heal
+		expect(healPreview(flipped, cascade(0, 1)).length).toBe(1);
+	});
+
+	test('a card already face down, and a spell that is not armed, turn nothing over', () => {
+		const state = board();
+		expect(flipFaceDown(state, cascade(0, 1))).toBe(null);
+		const armed = useAbility(state, 0)!;
+		expect(flipFaceDown(armed, cascade(2, 0))).toBe(null);
+		expect(flipFaceDown(armed, { fixture: 'cell', data: [1] })).toBe(null);
 	});
 });

@@ -116,7 +116,7 @@ const GLYPHS: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'IMAWAL',
-		text: 'Arm to play a run your free cells could carry on top of a face-down card, as if it were an empty column.',
+		text: 'Arm to play a run your free cells could carry on top of a face-down card, as if it were an empty column — or double-click a face-up card to turn it back over.',
 	},
 	clubs: {
 		name: 'PISORF',
@@ -672,6 +672,28 @@ function foggedColumn(state: TombState, location: CardLocation): number | null {
  * normally blocks its whole column. The fog then stays face-down, buried for good. The run is a
  * normal supermove, so the free cells still have to carry it — IMAWAL buys the fog, not a longer arm.
  */
+/**
+ * IMAWAL's second use: turn a face-up card back over. Once the fog is gone the spell has nothing left
+ * to lay a run on, so it makes its own: the card becomes fog again, either as a place to bury a run
+ * or as something to dig for the heal a dig pays.
+ */
+export function imawalCanFlip(state: TombState, location: CardLocation): boolean {
+	if (state.armed?.kind !== 'imawal') return false;
+	if (location.fixture !== 'cascade') return false;
+	const card = cardAt(state.game, location);
+	return !!card && !isFaceDown(state, card) && !immobileBoss(state, card);
+}
+
+/** Spend the spell by turning one face-up card back over. Nothing is paid: it costs no hearts. */
+export function flipFaceDown(state: TombState, location: CardLocation): TombState | null {
+	if (!imawalCanFlip(state, location)) return null;
+	const card = cardAt(state.game, location);
+	if (!card) return null;
+	const hidden = [...state.hidden, cardId(card)];
+	const next = closeItemWindow(cloneWith(state, { hidden, armed: null }));
+	return spendArmedItem(settle(next, currentLevel(state)));
+}
+
 export function imawalCanBury(state: TombState, cards: Card[], to: CardLocation): boolean {
 	if (state.armed?.kind !== 'imawal' || to.fixture !== 'cascade' || !cards.length) return false;
 	if (cards.length > moveCapacity(state)) return false;
