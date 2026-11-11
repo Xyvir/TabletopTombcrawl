@@ -68,6 +68,32 @@ const readEntries = (path: string): Entry[] => {
 	}
 };
 
+/**
+ * Every party any worker has already won, across the published corpus and every shard on disk. A seed
+ * whose party is in here costs a deal scan and no search at all.
+ */
+const foundAnywhere = (): string[] => {
+	const found = new Set(publishedLoadouts());
+	if (existsSync(shardDir)) {
+		for (const name of readdirSync(shardDir)) {
+			if (!name.endsWith('.json')) continue;
+			for (const entry of readEntries(`${shardDir}/${name}`)) found.add(entry.loadout);
+		}
+	}
+	return [...found];
+};
+
+/** Parties the published corpus already has a seed for, so parallel workers do not chase them twice. */
+const publishedLoadouts = (): string[] => {
+	if (!existsSync('public/corpus.json')) return [];
+	try {
+		const parsed = JSON.parse(readFileSync('public/corpus.json', 'utf8'));
+		return Array.isArray(parsed?.entries) ? parsed.entries.map((entry: Entry) => entry.loadout) : [];
+	} catch {
+		return [];
+	}
+};
+
 if (mode === 'plan') {
 	const to = Number(process.env.TO ?? 20_000);
 	const perKey = Number(process.env.PER_KEY ?? 6);
@@ -146,8 +172,13 @@ if (mode === 'scan') {
 	const seconds = Number(process.env.TIME ?? 0);
 	const out = process.env.OUT ?? `${shardDir}/scan-${from}.json`;
 	const entries = readEntries(out);
-	const done = new Set(entries.map((entry) => entry.loadout));
+	// Parallel workers share no shard file, so each also skips whatever the published corpus has
+	// already found: without this, six workers chase the same parties and six times the seeds.
+	const done = new Set([...entries.map((entry) => entry.loadout), ...publishedLoadouts()]);
 	for (let seed = from; seed <= to; seed++) {
+		// Workers win parties while this one is still running, so the skip list is refreshed as it
+		// goes: without this, each worker only skips what was already covered when it started.
+		if ((seed - from) % 10 === 0) for (const loadout of foundAnywhere()) done.add(loadout);
 		const state = createTombState(seed, FREE_CELL_COUNT[difficulty]);
 		const key = keyOf(state);
 		if (done.has(key)) continue;
