@@ -10,8 +10,7 @@ button.titlecard {
 	border: 0;
 	padding: 0;
 	background: none;
-	color: inherit;
-	font: inherit;
+	appearance: none;
 	cursor: pointer;
 	transition: filter 140ms ease;
 }
