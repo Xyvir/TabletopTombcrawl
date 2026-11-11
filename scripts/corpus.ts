@@ -27,6 +27,11 @@ const mode = process.env.MODE ?? 'plan';
 const difficulty = (process.env.DIFFICULTY ?? 'med') as Difficulty;
 /** A boss kill is the bar for the first corpus; a full clear is a bonus it may turn up on the way. */
 const goal = (process.env.GOAL ?? 'boss') as 'boss' | 'clear';
+/**
+ * Best-first is the cheaper policy under a state budget: the hybrid's beam spends 60% of the budget
+ * before best-first starts, and a boss kill is usually found by the grind, not the survey.
+ */
+const strategy = (process.env.STRATEGY ?? 'best') as 'best' | 'beam' | 'dfs' | 'hybrid';
 const planPath = process.env.PLAN ?? 'corpus/plan.json';
 /** Shard files sit beside the plan, so a merge is one directory read and no path can go astray. */
 const shardDir = process.env.DIR ?? 'corpus';
@@ -90,7 +95,7 @@ if (mode === 'solve') {
 			const result = solveTomb({
 				state,
 				goal,
-				strategy: 'hybrid',
+				strategy,
 				beamWidth: 300,
 				depth: 300,
 				nodes: budget,
@@ -140,7 +145,7 @@ if (mode === 'scan') {
 		const result = solveTomb({
 			state,
 			goal,
-			strategy: 'hybrid',
+			strategy,
 			beamWidth: 300,
 			depth: 300,
 			nodes: budget,
