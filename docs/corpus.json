@@ -873,9 +873,45 @@
 					"suit": "spades"
 				}
 			]
+		},
+		{
+			"loadout": "sssh",
+			"boss": "spades",
+			"seed": 3,
+			"moves": 103,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
 		}
 	],
 	"found": {
+		"sssh": {
+			"boss": {
+				"seed": 3,
+				"moves": 103
+			}
+		},
 		"hhcs": {
 			"boss": {
 				"seed": 2,
@@ -1275,7 +1311,6 @@
 		"ssdc",
 		"ssdd",
 		"ssds",
-		"sssh",
 		"sssc",
 		"sssd",
 		"ssss"
