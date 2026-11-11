@@ -358,11 +358,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const dragIds = $derived(new Set(drag?.cards ?? []));
 
 	/**
-	 * The hint over a spent item slot names the one suit that will restock it — except for an Orc,
-	 * whose Scavenger takes any card at all.
+	 * The hint over a spent slot names the one suit that will restock it — except where a Scavenger
+	 * opened the window, which takes any card at all.
 	 */
 	function itemSlotHint(state: TombState | null, suit: string): string {
-		const feed = state && hasPassive(state, 'Orc') ? 'any card' : `a ${suit} card`;
+		const feed = state?.itemWindow?.any ? 'any card' : `a ${suit} card`;
 		return `Exhausted item slot — play ${feed} here on your next action to remake the item. Miss it and this is an ordinary free cell.`;
 	}
 

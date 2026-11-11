@@ -359,7 +359,8 @@ describe('conversion order', () => {
 		expect(next).not.toBeNull();
 		expect(next!.draft.map((entry) => entry.cell)).toEqual([0]);
 		expect(convertibleCell(next!)).toBe(0);
-		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs' });
+		// the party has an Orc in it, so the window takes any card at all
+		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs', any: true });
 		expect(chipBoundary(next!)).toBe(2);
 		expect(cellCardMovable(next!, 0)).toBe(true);
 	});
@@ -381,7 +382,7 @@ describe('conversion order', () => {
 
 		// the potion goes home: its slot waits one action, but the chip has not moved yet
 		const played = attackWith(state, cell(3))!;
-		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades' });
+		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades', any: true });
 		expect(chipBoundary(played)).toBe(4);
 
 		// the refill was missed, so the slot is plain for good and the chip steps one slot left
@@ -398,7 +399,7 @@ describe('conversion order', () => {
 		// the spell goes home for free: the slot waits instead of turning plain straight away
 		const home = attackWith(state, cell(0))!;
 		expect(home.draft).toEqual([]);
-		expect(home.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades' });
+		expect(home.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades', any: false });
 		expect(chipBoundary(home)).toBe(1);
 
 		// a spade on the next action restocks the slot, so the chip never passes it
@@ -572,7 +573,10 @@ describe('burden and mana burn', () => {
 			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
 			boss: 'KC',
 		});
-		const feeding = { ...state, itemWindow: { cell: 0, role: 'consumable' as const, suit: 'clubs' as const } };
+		const feeding = {
+			...state,
+			itemWindow: { cell: 0, role: 'consumable' as const, suit: 'clubs' as const, any: true },
+		};
 
 		const next = tombMove(feeding, cascade(0, 0), cell(0))!;
 		expect(next.draft.find((entry) => entry.cell === 0)?.role).toBe('consumable');
@@ -1807,7 +1811,7 @@ describe('tombcrawl item refresh', () => {
 		const next = attackWith(base(), cell(0))!;
 		expect(next.draft).toHaveLength(0);
 		expect(next.game.cells[0]).toBe(null);
-		expect(next.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades' });
+		expect(next.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades', any: false });
 	});
 
 	test('playing an item out to the board spends it, and opens no window', () => {
@@ -1817,6 +1821,46 @@ describe('tombcrawl item refresh', () => {
 		expect(next.game.cells[0]).toBe(null);
 		expect(next.draft).toHaveLength(0);
 		expect(next.itemWindow).toBe(null);
+	});
+
+	test('an Orc playing a spell out keeps the slot, the chip, and takes any suit back', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Orc', text: '' },
+			{ cell: 1, role: 'glyph', id: '3C', suit: 'clubs', name: 'PISORF', text: '' },
+		];
+		const state = makeTomb({ columns: [['4H']], cells: ['2S', '3C', '7D', '8D'], draft });
+		expect(chipBoundary(state)).toBe(2);
+
+		// the spell goes out to the board, so it is spent — but the slot waits an action, unslotted
+		const played = tombMove(state, cell(1), cascade(0))!;
+		expect(played.draft.map((entry) => entry.cell)).toEqual([0]);
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'clubs', any: true });
+		expect(chipBoundary(played)).toBe(2);
+
+		// a diamond, not a club: Scavenger takes it and the slot is now a different spell entirely
+		const restocked = tombMove(played, cell(2), cell(1))!;
+		expect(restocked.itemWindow).toBe(null);
+		expect(restocked.draft.find((entry) => entry.cell === 1)).toMatchObject({
+			role: 'glyph',
+			suit: 'diamonds',
+			name: 'WEYTWUT',
+		});
+		expect(abilityUsable(restocked, 1)).toBe(true);
+	});
+
+	test('an Orc may even trade his own kin card for another kin', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Orc', text: '' }];
+		const state = makeTomb({ columns: [['3H']], cells: ['2S', '7C'], draft });
+
+		const played = tombMove(state, cell(0), cascade(0))!;
+		expect(played.draft).toHaveLength(0);
+		expect(played.itemWindow).toEqual({ cell: 0, role: 'kin', suit: 'spades', any: true });
+		expect(chipBoundary(played)).toBe(1);
+
+		// the window remembers the Scavenger even though the Orc himself has left the party
+		const restocked = tombMove(played, cell(1), cell(0))!;
+		expect(hasPassive(restocked, 'Elf')).toBe(true);
+		expect(hasPassive(restocked, 'Orc')).toBe(false);
 	});
 
 	test('feeding the slot a matching card remakes the very same item', () => {
@@ -1853,7 +1897,7 @@ describe('tombcrawl item refresh', () => {
 		];
 		// the glyph sits beside the chip, so it is the one that may go home and open its slot
 		const played = attackWith(base(draft, ['5C', '2S', '5S', '6S']), cell(1))!;
-		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades' });
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', any: false });
 
 		// any other action closes the window: the plain move into the third free cell is not a feed
 		const spent = tombMove(played, cascade(0), cell(4))!;
@@ -1927,7 +1971,7 @@ describe('tombcrawl item refresh', () => {
 		expect(home.game.cells[1]).toBe(null);
 		expect(home.draft).toHaveLength(1);
 		// and the slot is still waiting for whichever card he does feed it
-		expect(home.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'diamonds' });
+		expect(home.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'diamonds', any: true });
 	});
 });
 

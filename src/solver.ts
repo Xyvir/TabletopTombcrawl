@@ -12,7 +12,6 @@ import {
 	currentLevel,
 	draftAt,
 	emptyCells,
-	hasPassive,
 	hp,
 	imawalCanBury,
 	isFaceDown,
@@ -407,7 +406,7 @@ function itemPull(state: TombState): { potion: number; restock: number } {
 	const window = state.itemWindow;
 	if (window) {
 		// Everyone else must feed the suit the slot just lost; an Orc takes any card at all.
-		for (const suit of hasPassive(state, 'Orc') ? SUITS : [window.suit]) {
+		for (const suit of window.any ? SUITS : [window.suit]) {
 			restock = Math.max(restock, itemWorth(abilityFor(window.role, suit).name, missing));
 		}
 	}
@@ -451,7 +450,9 @@ function stateKey(state: TombState): string {
 	const slots = state.game.cells.map((card) => (card ? 'x' : '-')).join('');
 	const draft = state.draft.map((entry) => `${entry.cell}:${entry.id}`).join(',');
 	const armed = state.armed ? `${state.armed.kind}${state.armed.cell}${state.armed.first ?? ''}` : '';
-	const window = state.itemWindow ? `${state.itemWindow.cell}${state.itemWindow.role}${state.itemWindow.suit}` : '';
+	const window = state.itemWindow
+		? `${state.itemWindow.cell}${state.itemWindow.role}${state.itemWindow.suit}${state.itemWindow.any ? 'a' : ''}`
+		: '';
 	return `${cards}#${slots}#${state.exhausted.map(Number).join('')}#${state.wounded.join('')}#${draft}#${armed}#${window}`;
 }
 

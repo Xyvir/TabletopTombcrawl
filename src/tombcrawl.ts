@@ -201,8 +201,13 @@ export interface TombState {
 	/** Golf total, set when the player leaves through the exit. */
 	score: number | null;
 	armed: ArmedAbility | null;
-	/** A spent item slot: feed it a matching card on the very next action to remake the item. */
-	itemWindow: { cell: number; role: DraftRole; suit: Suit } | null;
+	/**
+	 * A spent slot: feed it a card on the very next action to remake the item. The suit is the one
+	 * that left; `any` records that an Orc's Scavenger was in the party when the window opened, and it
+	 * is held on the window rather than read from the party so the permission outlives even the kin
+	 * card itself leaving for another kin.
+	 */
+	itemWindow: { cell: number; role: DraftRole; suit: Suit; any: boolean } | null;
 	/**
 	 * The Glyph was refreshed by this action, so a Wizard's very next move may be a free cast. Any
 	 * other action closes the window: it never survives a second move.
@@ -1155,8 +1160,8 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
  * What a spent item slot will take: a card of the suit it just lost, or — for the Orc's Scavenger —
  * any card at all, so he may restock a slot with an item the dungeon never gave him.
  */
-function restockTakes(state: TombState, card: Card, suit: Suit): boolean {
-	return hasPassive(state, 'Orc') || card.suit === suit;
+function restockTakes(card: Card, window: { suit: Suit; any: boolean }): boolean {
+	return window.any || card.suit === window.suit;
 }
 
 /** Any action other than the feed closes a spent item slot for good. */
@@ -1300,8 +1305,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		!entry &&
 		to.fixture === 'cell' &&
 		to.data[0] === window.cell &&
-		cards.length === 1 &&
-		restockTakes(state, cards[0], window.suit)
+		cards.length === 1 &&			restockTakes(cards[0], window)
 			? window
 			: null;
 	// Only a run the free cells could not carry spends the sack; a normal stack move leaves it armed.
@@ -1368,7 +1372,17 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card);
 	}
 
+	// Scavenging: a card played out of its slot is spent, but an Orc's slot is not closed by it. The
+	// card and its item are gone, and the empty slot waits one action for any card at all — a
+	// different suit turns it into a different spell, class or kin. The chip holds where it is while
+	// that window is open, which is what lets him work through a whole party's worth of items.
+	const scavenged =
+		entry && source >= 0 && !next.game.cells[source] && hasPassive(state, 'Orc')
+			? { cell: source, role: entry.role, suit: entry.suit, any: true }
+			: null;
+
 	next = settle(next, currentLevel(state));
+	if (scavenged) next = cloneWith(next, { itemWindow: scavenged });
 
 	return spendArmedItem(next);
 }
@@ -1386,6 +1400,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	const entry = wasCell ? draftAt(state, cellIndex) : undefined;
 	// Only the item's own card carries the item with it. A plain card can lie on top of an item slot,
 	// and sending that one home leaves the item, its exhaustion and its restock window untouched.
+	const wasOrc = hasPassive(state, 'Orc');
 	const itemCard = !!entry && entry.id === cardId(card);
 	const spentConsumable = !!entry && itemCard && entry.role === 'consumable' && state.exhausted[cellIndex];
 
@@ -1421,7 +1436,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
 	// chip steps left and the cell is ordinary from then on.
 	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
-	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit } });
+	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, any: wasOrc } });
 }
 
 /** Single click movement affordance: the best tableau build, if there is one. */
