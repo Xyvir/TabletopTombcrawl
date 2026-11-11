@@ -168,6 +168,15 @@ if (mode === 'scan') {
 	const from = Number(process.env.FROM ?? 1);
 	const to = Number(process.env.TO ?? 50);
 	const budget = Number(process.env.BUDGET ?? 200_000);
+	/**
+	 * Target a subset of kin by suit initial, e.g. `KIN=s,c` for the Orc and Elf alone. A run over
+	 * freshly changed abilities wants its whole budget on those parties rather than two thirds of it on
+	 * the kin that were never in doubt; every other deal costs a scan and no search.
+	 */
+	const kin = (process.env.KIN ?? '')
+		.split(',')
+		.map((letter) => letter.trim())
+		.filter(Boolean);
 	// No clock by default: the corpus has to read the same on any machine, and across rule variants.
 	const seconds = Number(process.env.TIME ?? 0);
 	const out = process.env.OUT ?? `${shardDir}/scan-${from}.json`;
@@ -187,6 +196,7 @@ if (mode === 'scan') {
 		const state = createTombState(seed, FREE_CELL_COUNT[difficulty]);
 		const key = keyOf(state);
 		if (done.has(key)) continue;
+		if (kin.length && !kin.includes(key[0])) continue;
 		const result = solveTomb({
 			state,
 			goal,
