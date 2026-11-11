@@ -95,6 +95,36 @@
 			]
 		},
 		{
+			"loadout": "dscd",
+			"boss": "spades",
+			"seed": 14,
+			"moves": 88,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			]
+		},
+		{
 			"loadout": "dscs",
 			"boss": "clubs",
 			"seed": 521,
@@ -216,9 +246,9 @@
 		},
 		{
 			"loadout": "dssc",
-			"boss": "clubs",
-			"seed": 46,
-			"moves": 110,
+			"boss": "hearts",
+			"seed": 505,
+			"moves": 76,
 			"difficulty": "med",
 			"goal": "boss",
 			"party": [
@@ -236,6 +266,36 @@
 					"role": "glyph",
 					"name": "BYSSEPS",
 					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "hccc",
+			"boss": "hearts",
+			"seed": 33,
+			"moves": 68,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
 				},
 				{
 					"role": "consumable",
@@ -335,6 +395,36 @@
 			]
 		},
 		{
+			"loadout": "hdds",
+			"boss": "diamonds",
+			"seed": 327,
+			"moves": 86,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
 			"loadout": "hdsh",
 			"boss": "diamonds",
 			"seed": 243,
@@ -391,6 +481,36 @@
 					"role": "consumable",
 					"name": "Revive",
 					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hhcd",
+			"boss": "clubs",
+			"seed": 224,
+			"moves": 103,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
 				}
 			]
 		},
@@ -481,6 +601,36 @@
 					"role": "consumable",
 					"name": "Elixir",
 					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "hscd",
+			"boss": "spades",
+			"seed": 34,
+			"moves": 52,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
 				}
 			]
 		},
@@ -746,14 +896,32 @@
 		},
 		"dssc": {
 			"boss": {
-				"seed": 46,
-				"moves": 110
+				"seed": 505,
+				"moves": 76
 			}
 		},
 		"hdss": {
 			"boss": {
 				"seed": 47,
 				"moves": 65
+			}
+		},
+		"dscd": {
+			"boss": {
+				"seed": 14,
+				"moves": 88
+			}
+		},
+		"hccc": {
+			"boss": {
+				"seed": 33,
+				"moves": 68
+			}
+		},
+		"hscd": {
+			"boss": {
+				"seed": 34,
+				"moves": 52
 			}
 		},
 		"hdsh": {
@@ -792,6 +960,12 @@
 				"moves": 52
 			}
 		},
+		"hhcd": {
+			"boss": {
+				"seed": 224,
+				"moves": 103
+			}
+		},
 		"hsds": {
 			"boss": {
 				"seed": 4,
@@ -820,6 +994,12 @@
 			"boss": {
 				"seed": 337,
 				"moves": 73
+			}
+		},
+		"hdds": {
+			"boss": {
+				"seed": 327,
+				"moves": 86
 			}
 		},
 		"ddcc": {
@@ -878,7 +1058,6 @@
 		"hhhs",
 		"hhch",
 		"hhcc",
-		"hhcd",
 		"hhdh",
 		"hhdc",
 		"hhdd",
@@ -891,7 +1070,6 @@
 		"hchd",
 		"hchs",
 		"hcch",
-		"hccc",
 		"hccs",
 		"hcdh",
 		"hcdc",
@@ -910,11 +1088,9 @@
 		"hddh",
 		"hddc",
 		"hddd",
-		"hdds",
 		"hdsc",
 		"hdsd",
 		"hshd",
-		"hscd",
 		"hscs",
 		"hsdh",
 		"hsdc",
@@ -1035,7 +1211,6 @@
 		"dshs",
 		"dsch",
 		"dscc",
-		"dscd",
 		"dsds",
 		"dssh",
 		"dssd",
