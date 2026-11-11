@@ -35,6 +35,36 @@
 			]
 		},
 		{
+			"loadout": "hsch",
+			"boss": "hearts",
+			"seed": 506,
+			"moves": 69,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
+		},
+		{
 			"loadout": "hsds",
 			"boss": "diamonds",
 			"seed": 4,
@@ -56,6 +86,36 @@
 					"role": "glyph",
 					"name": "WEYTWUT",
 					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hshs",
+			"boss": "clubs",
+			"seed": 201,
+			"moves": 111,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
@@ -108,10 +168,22 @@
 				"moves": 95
 			}
 		},
+		"hshs": {
+			"boss": {
+				"seed": 201,
+				"moves": 111
+			}
+		},
 		"hsds": {
 			"boss": {
 				"seed": 4,
 				"moves": 62
+			}
+		},
+		"hsch": {
+			"boss": {
+				"seed": 506,
+				"moves": 69
 			}
 		}
 	},
@@ -166,8 +238,6 @@
 		"hshh",
 		"hshc",
 		"hshd",
-		"hshs",
-		"hsch",
 		"hscc",
 		"hscd",
 		"hscs",
