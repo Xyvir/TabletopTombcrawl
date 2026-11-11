@@ -76,22 +76,10 @@ export function describeStep(before: TombState, after: TombState): string | null
 		return digLabel(card, at);
 	}
 
-	// Arming or dropping a spell: no card moves, so nothing above has caught it.
-	const beforeArm = before.armed;
-	const afterArm = after.armed;
-	const changed =
-		!!beforeArm !== !!afterArm ||
-		(!!beforeArm && !!afterArm && (beforeArm.kind !== afterArm.kind || beforeArm.cell !== afterArm.cell));
-	if (changed) {
-		const arm = afterArm ?? beforeArm;
-		const entry = arm
-			? (after.draft.find((candidate) => candidate.cell === arm.cell) ??
-				before.draft.find((candidate) => candidate.cell === arm.cell))
-			: undefined;
-		if (entry && arm) return afterArm ? armLabel(entry.name, arm.cell) : disarmLabel(entry.name, arm.cell);
-	}
-
-	// Cards that changed pile: a park into a cell, a build, a bury, a swap.
+	// Cards that changed pile: a park into a cell, a build, a bury, a swap. This comes before the
+	// armed slot, because a move made under an armed item changes that slot too: the Remedy covering
+	// a park is spent by the park, and a bury spends the IMAWAL that allowed it. The line has to say
+	// what actually moved, or the move disappears from the transcript entirely.
 	const moved = [...now.values()].filter((card) => {
 		const previous = old(card);
 		return !!previous && !sameLocation(previous.location, card.location);
@@ -114,6 +102,21 @@ export function describeStep(before: TombState, after: TombState): string | null
 		if (first.location.fixture === 'cell' && from.fixture === 'cascade')
 			return parkLabel(first, from, first.location);
 		return moveLabel(moved, from, first.location, buried);
+	}
+
+	// Arming or dropping a spell: no card moves, so this is the whole of the step.
+	const beforeArm = before.armed;
+	const afterArm = after.armed;
+	const changed =
+		!!beforeArm !== !!afterArm ||
+		(!!beforeArm && !!afterArm && (beforeArm.kind !== afterArm.kind || beforeArm.cell !== afterArm.cell));
+	if (changed) {
+		const arm = afterArm ?? beforeArm;
+		const entry = arm
+			? (after.draft.find((candidate) => candidate.cell === arm.cell) ??
+				before.draft.find((candidate) => candidate.cell === arm.cell))
+			: undefined;
+		if (entry && arm) return afterArm ? armLabel(entry.name, arm.cell) : disarmLabel(entry.name, arm.cell);
 	}
 
 	// An item spent without moving anything: a Potion drunk, an Elixir taken.
