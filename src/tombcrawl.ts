@@ -875,8 +875,23 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 /* ------------------------------------------------------------- mechanics */
 
+/**
+ * An armed spell sits on a face-up card in its own cell, and it is dropped the moment that card is
+ * wounded: a wound turns the card over, so the arm would otherwise point at a card that cannot cast
+ * anything, leaving the board offering a spell `abilityUsable` has already refused. The spell is not
+ * fetched back, though: the wound interrupted it, so this is not `disarm` and nothing is refunded —
+ * a glyph that was spent arming stays spent, and a Remedy is simply put down unconsumed.
+ * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
+ * already spent, and the only powers that exhaust an unspent item (Burden, Mana Burn) wound it too.
+ */
+function armHoldsFaceUpCard(state: TombState): TombState {
+	const armed = state.armed;
+	if (!armed) return state;
+	return (state.wounded[armed.cell] ?? 0) > 0 ? { ...state, armed: null } : state;
+}
+
 function cloneWith(state: TombState, patch: Partial<TombState>): TombState {
-	return { ...state, ...patch };
+	return armHoldsFaceUpCard({ ...state, ...patch });
 }
 
 function relocate(state: TombState, moves: { id: string; to: CardLocation }[]): FreeCell {

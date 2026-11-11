@@ -209,6 +209,36 @@ describe("the wizard's affinity", () => {
 	});
 });
 
+describe('an armed spell', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Fighter', text: '' },
+		{ cell: 1, role: 'consumable', id: '5C', suit: 'clubs', name: 'Remedy', text: '' },
+		{ cell: 2, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },
+	];
+	// the track pays a blow from the right edge inward, so the rightmost cell is the one that breaks
+	const board = () => makeTomb({ columns: [['2H']], cells: ['KC', '5C', '2S'], foundations: ['AH'], draft });
+
+	test('a wound puts the spell down with the card carrying it', () => {
+		const armed = useAbility(board(), 2)!;
+		expect(armed.armed).toMatchObject({ kind: 'sack' });
+
+		// a 2 is one rank over a level-1 delver, so this kill costs the rightmost cell a heart
+		const struck = attackWith(armed, cascade(0, 0))!;
+		expect(struck.wounded[2]).toBe(1);
+		expect(struck.armed).toBe(null);
+		// interrupted, not fetched back: the glyph was spent arming and stays spent
+		expect(struck.exhausted[2]).toBe(true);
+	});
+
+	test('the board never holds an arm it has already refused', () => {
+		const struck = attackWith(useAbility(board(), 2)!, cascade(0, 0))!;
+
+		expect(abilityUsable(struck, 2)).toBe(false);
+		// the whole point: no armed slot pointing at a cell abilityUsable says no to
+		expect(struck.armed === null || abilityUsable(struck, struck.armed.cell)).toBe(true);
+	});
+});
+
 describe('a club going home', () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
