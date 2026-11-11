@@ -7,10 +7,12 @@ import {
 	canBuildOn,
 	canRevealFaceDown,
 	cellCardMovable,
+	abilityFor,
 	createTombState,
 	currentLevel,
 	draftAt,
 	emptyCells,
+	hasPassive,
 	hp,
 	imawalCanBury,
 	isFaceDown,
@@ -260,6 +262,17 @@ export interface ScoreWeights {
 	 * so the winning line visits boards this penalty makes ugly.
 	 */
 	lowHearts: number;
+	/**
+	 * A Potion in hand, priced in the hearts the track is missing: it is a heal-all, so what it is
+	 * worth is exactly what the delver has lost.
+	 */
+	potion: number;
+	/**
+	 * A spent item slot waiting to be fed: worth the best item the rules would let it be remade into,
+	 * which is where an Orc's Scavenger pays, since he may feed any suit and so can forge a Potion out
+	 * of a hearts card the dungeon never dealt him.
+	 */
+	restock: number;
 	/** The boss king exposed on a column top with nothing protecting it: the kill is a move away. */
 	bossOpen: number;
 	/** Each card standing between the boss king and the top of its column. */
@@ -280,6 +293,12 @@ export const SCORE_WEIGHTS: ScoreWeights = {
 	// cost seeds 2 and 5 their clears — both are one card from home at a two-heart board, and both
 	// close in about twenty seconds once the charge is gone.
 	lowHearts: 0,
+	// Hearts are the bottleneck every failed line bleeds out on, and the item economy is the only way
+	// to make more of them: a Potion is worth the hearts the track is missing, since its heal-all is
+	// exactly that many, and a slot that could be fed into one is worth the same at a discount, since
+	// forging it costs a move and a card.
+	potion: 4,
+	restock: 2,
 	// A boss run is decided by one card, so the weights that see it are the ones that turn a survey
 	// into a plan: an exposed, unprotected king is nearly the win; a buried one costs a dig per card
 	// above it; and every king already home is one step closer to unfreezing that king.
@@ -354,6 +373,47 @@ function bossPull(state: TombState): { open: number; depth: number; kings: numbe
 	return { open, depth: above, kings };
 }
 
+/**
+ * What remaking an item is worth on this board. Hearts are the currency every tight deal runs out of,
+ * so a heal-all is priced in the hearts the track is missing; a Remedy or a Revive buys one action the
+ * rules would otherwise refuse; an Elixir only mends the glyph, which a level up does for free.
+ */
+function itemWorth(name: string, missing: number): number {
+	switch (name) {
+		case 'Potion':
+			return missing;
+		case 'Remedy':
+		case 'Revive':
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+/**
+ * The item economy, which the foundation terms cannot see: a Potion is a bank of hearts, and a spent
+ * slot waiting to be fed is the chance to forge another one. Weighting only the item in hand would
+ * leave the feed itself unpriced, so an open slot is scored as what it could still become, now.
+ */
+function itemPull(state: TombState): { potion: number; restock: number } {
+	const missing = Math.max(0, maxHp(state) - hp(state));
+	let potion = 0;
+	for (const entry of state.draft) {
+		// A spent item is not a bank: drinking it has to wait for a refill.
+		if (entry.name !== 'Potion' || state.exhausted[entry.cell] || !state.game.cells[entry.cell]) continue;
+		potion = Math.max(potion, missing);
+	}
+	let restock = 0;
+	const window = state.itemWindow;
+	if (window) {
+		// Everyone else must feed the suit the slot just lost; an Orc takes any card at all.
+		for (const suit of hasPassive(state, 'Orc') ? SUITS : [window.suit]) {
+			restock = Math.max(restock, itemWorth(abilityFor(window.role, suit).name, missing));
+		}
+	}
+	return { potion, restock };
+}
+
 /** How good a position looks, as the weighted sum of everything the tuner can move. */
 function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 	const w = SCORE_WEIGHTS;
@@ -364,6 +424,8 @@ function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 	// A clear run has no boss term at all: its objective is every card, which the foundations
 	// already measure, and adding a king's position would only pull the line away from that.
 	const boss = goal === 'boss' ? bossPull(state) : { open: 0, depth: 0, kings: 0 };
+	// The item bank is weighed whatever the goal is: hearts are what either objective is paid for in.
+	const items = itemPull(state);
 	return (
 		(500 - tombPar(state)) * w.clear +
 		currentLevel(state) * w.level +
@@ -373,6 +435,8 @@ function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 		blocked.buried * w.buried +
 		emptyCells(state).length * w.room +
 		reserve +
+		items.potion * w.potion +
+		items.restock * w.restock +
 		boss.open * w.bossOpen +
 		boss.kings * w.kings -
 		boss.depth * w.bossDepth

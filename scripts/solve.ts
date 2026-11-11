@@ -270,6 +270,8 @@ function main(): void {
 		['BOSS_OPEN', 'bossOpen'],
 		['BOSS_DEPTH', 'bossDepth'],
 		['KINGS', 'kings'],
+		['POTION', 'potion'],
+		['RESTOCK', 'restock'],
 	] as const) {
 		const value = process.env[name];
 		if (value !== undefined) SCORE_WEIGHTS[key] = Number(value);
