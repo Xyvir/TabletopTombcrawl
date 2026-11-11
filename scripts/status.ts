@@ -86,17 +86,21 @@ interface Worker {
 
 const workers = (): Worker[] => {
 	if (!existsSync(DIR)) return [];
-	const rows: Worker[] = [];
+	// A worker that has not won anything yet has no shard file, only a heartbeat, so both count as
+	// a worker being there: otherwise a fresh pool shows nothing until its first find.
+	const started = new Set<number>();
 	for (const name of readdirSync(DIR)) {
-		const match = /^scan-(\d+)\.json$/.exec(name);
-		if (!match) continue;
-		const from = Number(match[1]);
+		const found = /^(?:scan|heartbeat)-(\d+)\.json$/.exec(name);
+		if (found) started.add(Number(found[1]));
+	}
+	const rows: Worker[] = [];
+	for (const from of [...started].sort((a, b) => a - b)) {
 		const path = `${DIR}/scan-${from}.json`;
 		let written = 0;
 		try {
 			written = statSync(path).mtimeMs;
 		} catch {
-			continue;
+			written = 0;
 		}
 		const beat = readJson<Beat | null>(`${DIR}/heartbeat-${from}.json`, null);
 		const updated = Math.max(written, beat?.at ?? 0);
@@ -113,7 +117,7 @@ const workers = (): Worker[] => {
 			win,
 		});
 	}
-	return rows.sort((a, b) => a.from - b.from);
+	return rows;
 };
 
 function frame(): string {
