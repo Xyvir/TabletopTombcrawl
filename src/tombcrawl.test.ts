@@ -1839,39 +1839,6 @@ describe('par', () => {
 	});
 });
 
-describe('tombcrawl an ascended delver', () => {
-	// The boss is home and one suit still owes its king: the last few cards of the clear.
-	const board = (patch: Partial<Setup> = {}) =>
-		makeTomb({
-			columns: [['QS'], []],
-			foundations: ['KC', 'JS'],
-			boss: 'KC',
-			...patch,
-		});
-
-	test('with the boss slain and the track bare, the kill costs nothing at all', () => {
-		const state = board();
-		expect(hp(state)).toBe(0);
-		const preview = attackPreview(state, cascade(0));
-		expect(preview.reason).toBe('');
-		expect(preview.legal).toBe(true);
-		expect(preview.damage).toBe(0);
-		expect(preview.locks).toEqual([]);
-	});
-
-	test('one card back on the track and the old bill returns', () => {
-		const state = board({ cells: ['2H'] });
-		const preview = attackPreview(state, cascade(0));
-		expect(preview.legal).toBe(false);
-		expect(preview.fatal).toBe(true);
-	});
-
-	test('a boss still standing means no ascension', () => {
-		const state = makeTomb({ columns: [['QS'], []], foundations: ['JS'], boss: 'KC' });
-		expect(attackPreview(state, cascade(0)).legal).toBe(false);
-	});
-});
-
 describe('tombcrawl a kill that costs nothing', () => {
 	// The Thief's Bounty pays for the pile leading the board, so this kill is free and the track is bare.
 	const thief = (): DraftCard[] => [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];

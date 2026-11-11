@@ -38,7 +38,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		healPreview,
 		auraActive,
 		auraItem,
-		ascended,
 		canBuildOn,
 		cellCardMovable,
 		cellCards,
@@ -1344,14 +1343,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
-			{#if ascended(tomb)}
-				<span
-					class="ascended"
-					style="color:#ffe9a8;font-weight:700;letter-spacing:0.06em;text-transform:uppercase"
-					title={`Ascended: the boss is slain and every free cell stands empty, so nothing can wound you and nothing is owed — finish the tomb.`}
-					>Ascended</span
-				>
-			{/if}
 			<span
 				class="par"
 				title="Par: a full tomb is worth 500, and every card takes its own value off that as it goes home — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. Lower is better, and (500 - par) / 5 is the percentage cleared."

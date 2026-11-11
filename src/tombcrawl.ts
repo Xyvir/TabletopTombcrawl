@@ -512,14 +512,6 @@ export function bossSlain(state: TombState): boolean {
 	return boss?.location.fixture === 'foundation';
 }
 
-/**
- * Ascension: the boss is slain and not one card is left on the track. The tomb is already won, and
- * a delver with no hearts left has nothing to pay a bill with — so nothing is owed. The empty track
- * alone would not do it: a fresh deal has an empty track too.
- */
-export function ascended(state: TombState): boolean {
-	return bossSlain(state) && state.game.cells.every((card) => !card);
-}
 
 /**
  * The difficulty a state was dealt at. The track is the whole difference between the three — four
@@ -836,13 +828,8 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
-	// Ascended: no heart is left to take a wound, and the tomb is already won. Nothing lands, and
-	// the last cards of the clear are the victory lap.
-	const ascendant = ascended(state);
-	if (ascendant) damage = 0;
-
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
-	const itemCell = ascendant ? null : auraItemWound(state, card, from);
+	const itemCell = auraItemWound(state, card, from);
 	const total = damage + (itemCell === null ? 0 : 1);
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
@@ -851,8 +838,8 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// the item is spent with it, so the reserve only applies when the spell is not armed.
 	const revive = state.armed?.kind === 'revive';
 	// The reserve wants a heart held back, but only a bill can spend one: a kill that costs nothing
-	// spends nothing, so it never owes the spare heart. An ascended delver owes nothing at all.
-	const chargeable = total > 0 && !revive && !ascendant;
+	// spends nothing, so it never owes the spare heart.
+	const chargeable = total > 0 && !revive;
 	const short = Math.max(0, total - free + (chargeable ? 1 : 0));
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
@@ -1199,8 +1186,7 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
  */
 function bossAura(state: TombState, card: Card): TombState {
-	// Ascended, the boss is dead and her brood has no teeth left: no power fires at all.
-	if (!isBossMinion(state, card) || !auraActive(state) || ascended(state)) return state;
+	if (!isBossMinion(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
 			// Poison digs anywhere, buried or not: it finds the deepest face-down card of the
