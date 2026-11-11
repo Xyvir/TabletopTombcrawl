@@ -253,9 +253,27 @@ export interface ScoreWeights {
 	fog: number;
 	/** Empty cells: storage, which here is also the track the hearts are made of. */
 	room: number;
+	/**
+	 * Penalty for a track down to its last heart. It is a weight rather than a constant because the
+	 * endgame of a tight deal runs there on purpose: taking the last card out of a cell costs a heart,
+	 * so the winning line visits boards this penalty makes ugly.
+	 */
+	lowHearts: number;
 }
 
-export const SCORE_WEIGHTS: ScoreWeights = { clear: 10, level: 30, reach: 12, buried: 6, hearts: 4, fog: 3, room: 0 };
+export const SCORE_WEIGHTS: ScoreWeights = {
+	clear: 10,
+	level: 30,
+	reach: 12,
+	buried: 6,
+	hearts: 4,
+	fog: 3,
+	room: 0,
+	// No penalty at all: a tight deal's winning endgame runs on the last heart, and charging for it
+	// cost seeds 2 and 5 their clears — both are one card from home at a two-heart board, and both
+	// close in about twenty seconds once the charge is gone.
+	lowHearts: 0,
+};
 
 const SUITS = ['hearts', 'clubs', 'diamonds', 'spades'] as const;
 type SolverSuit = (typeof SUITS)[number];
@@ -303,7 +321,7 @@ function scoreOf(state: TombState): number {
 	const blocked = foundationPull(state);
 	const hearts = hp(state);
 	// A track down to its last card is scored badly: there is nothing left to spend on a kill.
-	const reserve = hearts <= 1 ? -400 : 0;
+	const reserve = hearts <= 1 ? -w.lowHearts : 0;
 	return (
 		(500 - tombPar(state)) * w.clear +
 		currentLevel(state) * w.level +
@@ -419,7 +437,16 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			timeBudgetMs: Math.max(2000, deadline - first.elapsedMs),
 			nodes: Math.max(1000, budget - first.nodes),
 		});
-		return !second.solved && scoreOf(second.best) < scoreOf(first.best) ? first : second;
+		if (!second.solved && scoreOf(second.best) < scoreOf(first.best)) {
+			// The beam's board was better, but both passes paid for it: report the whole spend.
+			return {
+				...first,
+				nodes: first.nodes + second.nodes,
+				elapsedMs: first.elapsedMs + second.elapsedMs,
+				timedOut: first.timedOut || second.timedOut,
+			};
+		}
+		return second;
 	}
 
 	const open = new NodeHeap();
