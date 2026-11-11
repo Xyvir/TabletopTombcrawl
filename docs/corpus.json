@@ -95,6 +95,26 @@
 			]
 		}
 	],
+	"found": {
+		"hhcs": {
+			"boss": {
+				"seed": 2,
+				"moves": 87
+			}
+		},
+		"hssh": {
+			"boss": {
+				"seed": 12,
+				"moves": 95
+			}
+		},
+		"hsds": {
+			"boss": {
+				"seed": 4,
+				"moves": 62
+			}
+		}
+	},
 	"missing": [
 		"hhhh",
 		"hhhc",

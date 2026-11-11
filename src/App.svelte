@@ -32,6 +32,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		MONSTERS,
 		ROLE_LABEL,
 		ROLE_WORD,
+		abilityFor,
 		abilityUsable,
 		armedClick,
 		armedDrop,
@@ -182,6 +183,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		rules: string;
 		keys: number;
 		entries: CorpusEntry[];
+		/** The shortest line the solver found for each goal a party has been solved for. */
+		found?: Record<string, { boss?: { seed: number; moves: number }; clear?: { seed: number; moves: number } }>;
 		missing: string[];
 	};
 	/** Draw order: the corpus keys a party the same way, one letter per role. */
@@ -198,6 +201,28 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let progress = $state<Map<string, LayoutRecord>>(new Map());
 	const entriesByLayout = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.loadout, entry])));
 	const currentLayout = $derived(loadoutOf(tomb));
+	const ROLE_ORDER = ['kin', 'class', 'glyph', 'consumable'] as const;
+	type SuitName = (typeof SUITS)[number];
+	const SUIT_BY_LETTER: Record<string, SuitName> = { h: 'hearts', c: 'clubs', d: 'diamonds', s: 'spades' };
+	/** The square the pointer or the keyboard is on, so the panel can read its party out. */
+	let hovered = $state<string | null>(null);
+	const inspectedKey = $derived(hovered || currentLayout || 'hhhh');
+	const inspected = $derived.by(() => {
+		if (inspectedKey.length !== 4) return null;
+		const suits = {} as Record<(typeof ROLE_ORDER)[number], SuitName>;
+		ROLE_ORDER.forEach((role, index) => {
+			suits[role] = SUIT_BY_LETTER[inspectedKey[index] ?? 'h'] ?? 'hearts';
+		});
+		return suits;
+	});
+	/** What the solver has proved for the square being read out, per goal, with its shortest line. */
+	const inspectedProof = $derived.by(() => {
+		const entry = entriesByLayout.get(inspectedKey);
+		const known = corpus?.found?.[inspectedKey];
+		const boss = known?.boss ?? (entry?.goal === 'boss' ? { seed: entry.seed, moves: entry.moves } : undefined);
+		const clear = known?.clear ?? (entry?.goal === 'clear' ? { seed: entry.seed, moves: entry.moves } : undefined);
+		return { boss, clear };
+	});
 
 	/** A party's four drafted suits in role order, letters only, e.g. `hcds`. */
 	function loadoutOf(state: TombState | null): string {
@@ -1690,35 +1715,78 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{corpus ? `${corpus.entries.length} of ${corpus.keys} parties have a seed` : 'reading the seed list…'}
 					</span>
 				</header>
-				<div class="trellis">
-					<span class="corner"></span>
-					{#each SUITS as suit (suit)}
-						<span class="tick" class:red={suit === 'hearts' || suit === 'diamonds'}>{SUIT_GLYPH[suit]}</span>
-					{/each}
-					{#each SUITS as kin (kin)}
-						<span class="tick" class:red={kin === 'hearts' || kin === 'diamonds'}>{SUIT_GLYPH[kin]}</span>
-						{#each SUITS as cls (cls)}
-							<div class="block" aria-label={`kin ${kin}, class ${cls}`}>
-								{#each SUITS as glyph (glyph)}
-									{#each SUITS as item (item)}
-										{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}
-										{@const entry = entriesByLayout.get(key)}
-										<button
-											type="button"
-											class="pip {layoutStatus(key)}"
-											class:mine={key === currentLayout}
-											disabled={!entry}
-											onclick={() => entry && startLayout(entry)}
-											title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
-												entry ? `seed ${entry.seed}, boss slain in ${entry.moves} moves` : 'no seed found yet'
-											}`}
-											aria-label={`${key} ${layoutStatus(key)}`}
-										></button>
-									{/each}
-								{/each}
-							</div>
+				<div class="layout-body" onmouseleave={() => (hovered = null)}>
+					<div class="trellis">
+						<span class="corner"></span>
+						{#each SUITS as suit (suit)}
+							<span class="tick top" class:red={suit === 'hearts' || suit === 'diamonds'}>
+								<span class="glyph">{SUIT_GLYPH[suit]}</span>
+								<span class="name">{abilityFor('class', suit).name}</span>
+							</span>
 						{/each}
-					{/each}
+						{#each SUITS as kin (kin)}
+							<span class="tick side" class:red={kin === 'hearts' || kin === 'diamonds'}>
+								<span class="name">{abilityFor('kin', kin).name}</span>
+								<span class="glyph">{SUIT_GLYPH[kin]}</span>
+							</span>
+							{#each SUITS as cls (cls)}
+								<div class="block" aria-label={`kin ${kin}, class ${cls}`}>
+									{#each SUITS as glyph (glyph)}
+										{#each SUITS as item (item)}
+											{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}
+											{@const entry = entriesByLayout.get(key)}
+											<button
+												type="button"
+												class="pip {layoutStatus(key)}"
+												class:mine={key === currentLayout}
+												disabled={!entry}
+												onmouseenter={() => (hovered = key)}
+												onfocus={() => (hovered = key)}
+												onclick={() => entry && startLayout(entry)}
+												title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
+													entry ? `seed ${entry.seed}, boss slain in ${entry.moves} moves` : 'no seed found yet'
+												}`}
+												aria-label={`${key} ${layoutStatus(key)}`}
+											></button>
+										{/each}
+									{/each}
+								</div>
+							{/each}
+						{/each}
+					</div>
+					<aside class="layout-preview" aria-live="polite">
+						{#if inspected}
+							<h3>{inspectedKey.toUpperCase()}</h3>
+							<ul>
+								{#each ROLE_ORDER as role (role)}
+									{@const suit = inspected[role]}
+									<li>
+										<span class="role">{ROLE_WORD[role]}</span>
+										<span class="glyph" class:red={suit === 'hearts' || suit === 'diamonds'}>{SUIT_GLYPH[suit]}</span>
+										<span class="ability">{abilityFor(role, suit).name}</span>
+									</li>
+								{/each}
+							</ul>
+							<p class="preview-goals">
+								<span class="goal">
+									<span class="label">boss killed</span>
+									{#if inspectedProof.boss}
+										seed {inspectedProof.boss.seed} · {inspectedProof.boss.moves} moves
+									{:else}
+										<span class="none">not found</span>
+									{/if}
+								</span>
+								<span class="goal">
+									<span class="label">tomb cleared</span>
+									{#if inspectedProof.clear}
+										seed {inspectedProof.clear.seed} · {inspectedProof.clear.moves} moves
+									{:else}
+										<span class="none">not found</span>
+									{/if}
+								</span>
+							</p>
+						{/if}
+					</aside>
 				</div>
 				<div class="legend">
 					<span><i class="cleared"></i>tomb cleared</span>

@@ -201,6 +201,16 @@ if (mode === 'merge') {
 	for (const name of (process.env.EXTRA ?? '').split(',').filter(Boolean)) {
 		if (existsSync(name)) all.push(...JSON.parse(readFileSync(name, 'utf8')));
 	}
+	// The published artifact is a source too: a merge with no shards to hand must not throw away what
+	// the last merge published.
+	if (existsSync('public/corpus.json')) {
+		try {
+			const parsed = JSON.parse(readFileSync('public/corpus.json', 'utf8'));
+			if (Array.isArray(parsed?.entries)) all.push(...parsed.entries);
+		} catch {
+			// an unreadable artifact simply contributes nothing
+		}
+	}
 	// One entry per key, and the stronger result wins: a 100% clear is also a boss kill, so it beats a
 	// boss-only entry for the same key, and a shorter line beats a longer one.
 	const rank = (entry: Entry) => (entry.goal === 'clear' ? 0 : 1);
@@ -212,12 +222,25 @@ if (mode === 'merge') {
 			unique.set(key, entry);
 		}
 	}
+	// What the solver has proved for each party, and the shortest line it found for each goal. A boss
+	// kill and a bare tomb are different claims, so the trellis keeps both rather than one per party.
+	const found: Record<string, Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>> = {};
+	for (const entry of all) {
+		const achieved = entry.goal === 'clear' ? 'clear' : 'boss';
+		const held = found[entry.loadout]?.[achieved];
+		if (held && held.moves <= entry.moves) continue;
+		found[entry.loadout] = { ...found[entry.loadout], [achieved]: { seed: entry.seed, moves: entry.moves } };
+	}
 	const entries = [...unique.values()].sort((a, b) => (a.loadout < b.loadout ? -1 : 1));
 	const missing = ALL_KEYS.filter((key) => !unique.has(key));
 	const target = existsSync('public') ? 'public/corpus.json' : `${shardDir}/corpus.json`;
 	writeFileSync(
 		target,
-		JSON.stringify({ difficulty, goal, rules: 'draft-any-suit', keys: ALL_KEYS.length, entries, missing }, null, '\t')
+		JSON.stringify(
+			{ difficulty, goal, rules: 'draft-any-suit', keys: ALL_KEYS.length, entries, found, missing },
+			null,
+			'\t'
+		)
 	);
 	console.log(`${entries.length}/${ALL_KEYS.length} keys covered · ${missing.length} still to find → ${target}`);
 }

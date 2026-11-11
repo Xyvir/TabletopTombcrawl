@@ -73,6 +73,14 @@ button.titlecard:focus-visible {
 	color: rgba(255, 255, 255, 0.5);
 }
 
+/* the trellis and the panel that reads out the square under the pointer */
+.layout-body {
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 1.15rem;
+	align-items: start;
+}
+
 .trellis {
 	display: grid;
 	grid-template-columns: auto repeat(4, auto);
@@ -82,15 +90,125 @@ button.titlecard:focus-visible {
 }
 
 .trellis .tick {
+	display: grid;
+	gap: 1px;
 	font-size: calc(var(--pip) * 0.78);
-	line-height: 1;
-	text-align: center;
+	line-height: 1.05;
 	color: rgba(255, 255, 255, 0.52);
 	user-select: none;
 }
 
-.trellis .tick.red {
+.trellis .tick .name {
+	font-size: 0.56rem;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.trellis .tick .glyph {
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.trellis .tick.top {
+	justify-items: center;
+	text-align: center;
+}
+
+.trellis .tick.side {
+	justify-items: end;
+	text-align: right;
+	padding-right: 2px;
+}
+
+.trellis .tick.red .glyph {
 	color: #ff8c9c;
+}
+
+.layout-preview {
+	min-width: 11rem;
+	max-width: 14rem;
+	padding: 0.55rem 0.7rem 0.65rem;
+	border: 1px solid rgba(241, 232, 212, 0.14);
+	border-radius: 0.45rem;
+	background: rgba(255, 255, 255, 0.045);
+}
+
+.layout-preview h3 {
+	margin: 0 0 0.45rem;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 0.78rem;
+	font-weight: 400;
+	letter-spacing: 0.14em;
+	color: rgba(241, 232, 212, 0.72);
+}
+
+.layout-preview ul {
+	display: grid;
+	gap: 0.32rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.layout-preview li {
+	display: grid;
+	grid-template-columns: 2.4rem auto 1fr;
+	align-items: baseline;
+	gap: 0.35rem;
+	font-size: 0.78rem;
+}
+
+.layout-preview .role {
+	font-size: 0.58rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.42);
+}
+
+.layout-preview .glyph {
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.layout-preview .glyph.red {
+	color: #ff8c9c;
+}
+
+.layout-preview .ability {
+	font-weight: 600;
+	color: #f1e8d4;
+}
+
+.layout-preview .preview-goals {
+	display: grid;
+	gap: 0.2rem;
+	margin: 0.6rem 0 0;
+	padding-top: 0.5rem;
+	border-top: 1px solid rgba(241, 232, 212, 0.12);
+	font-size: 0.68rem;
+	color: rgba(255, 255, 255, 0.78);
+}
+
+.layout-preview .goal .label {
+	margin-right: 0.4rem;
+	font-size: 0.58rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.45);
+}
+
+.layout-preview .goal .none {
+	color: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 620px) {
+	.layout-body {
+		grid-template-columns: 1fr;
+	}
+
+	.layout-preview {
+		min-width: 0;
+		max-width: none;
+	}
 }
 
 .trellis .corner {

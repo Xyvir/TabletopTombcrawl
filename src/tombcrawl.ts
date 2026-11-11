@@ -154,6 +154,11 @@ const ABILITY_TABLE: Record<DraftRole, Record<Suit, Ability>> = {
 	consumable: CONSUMABLES,
 };
 
+/** The ability a role brings when its card is a given suit: the layout trellis reads all 256 parties. */
+export function abilityFor(role: DraftRole, suit: Suit): Ability {
+	return ABILITY_TABLE[role][suit];
+}
+
 const ROLES_BY_DRAW_ORDER: DraftRole[] = ['kin', 'class', 'glyph', 'consumable'];
 
 export interface DraftCard {
