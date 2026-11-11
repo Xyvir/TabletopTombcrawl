@@ -76,7 +76,9 @@ button.titlecard:focus-visible {
 /* the trellis and the panel that reads out the square under the pointer */
 .layout-body {
 	display: grid;
-	grid-template-columns: auto auto;
+	/* The readout is a fixed column, not a content-sized one: sized to its text it would widen and
+	   narrow as the pointer moved, dragging the trellis sideways with it. */
+	grid-template-columns: auto 15rem;
 	gap: 1.15rem;
 	align-items: start;
 }
@@ -125,8 +127,10 @@ button.titlecard:focus-visible {
 }
 
 .layout-preview {
-	min-width: 11rem;
-	max-width: 14rem;
+	width: 100%;
+	min-width: 0;
+	max-width: none;
+	box-sizing: border-box;
 	padding: 0.55rem 0.7rem 0.65rem;
 	border: 1px solid rgba(241, 232, 212, 0.14);
 	border-radius: 0.45rem;
@@ -152,7 +156,8 @@ button.titlecard:focus-visible {
 
 .layout-preview li {
 	display: grid;
-	grid-template-columns: 2.4rem auto 1fr;
+	/* Every column is fixed or bounded, so a long ability name never widens the card. */
+	grid-template-columns: 2.4rem 0.9rem minmax(0, 1fr);
 	align-items: baseline;
 	gap: 0.35rem;
 	font-size: 0.78rem;
@@ -176,11 +181,15 @@ button.titlecard:focus-visible {
 .layout-preview .ability {
 	font-weight: 600;
 	color: #f1e8d4;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .layout-preview .preview-goals {
 	display: grid;
 	gap: 0.2rem;
+	white-space: nowrap;
 	margin: 0.6rem 0 0;
 	padding-top: 0.5rem;
 	border-top: 1px solid rgba(241, 232, 212, 0.12);
@@ -206,8 +215,7 @@ button.titlecard:focus-visible {
 	}
 
 	.layout-preview {
-		min-width: 0;
-		max-width: none;
+		width: auto;
 	}
 }
 
