@@ -1,5 +1,5 @@
 import { FREE_CELL_COUNT, ROLE_WORD, TOMB_RULES, createTombState, type Difficulty, type TombState } from '../src/tombcrawl';
-import { boardSummary, solveTomb, type Goal, type SolveResult } from '../src/solver';
+import { SCORE_WEIGHTS, boardSummary, solveTomb, type Goal, type SolveResult } from '../src/solver';
 
 interface Options {
 	seed: number | null;
@@ -264,6 +264,16 @@ function main(): void {
 		return;
 	}
 	const options = parse(argv);
+	// A tuning hook for score experiments only: a sweep sets these to compare weightings without
+	// editing the solver, and the game never sets them.
+	for (const [name, key] of [
+		['BOSS_OPEN', 'bossOpen'],
+		['BOSS_DEPTH', 'bossDepth'],
+		['KINGS', 'kings'],
+	] as const) {
+		const value = process.env[name];
+		if (value !== undefined) SCORE_WEIGHTS[key] = Number(value);
+	}
 	// A tuning knob for experiments only: the shipped game keeps the default of one heart.
 	TOMB_RULES.levelUpHeal = options.heal;
 	TOMB_RULES.levelDamageCap = options.cap;

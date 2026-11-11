@@ -18,6 +18,7 @@ import {
 	moveCapacity,
 	parCleared,
 	revealFaceDown,
+	bossProtected,
 	tombMove,
 	tombPar,
 	tombRun,
@@ -259,6 +260,12 @@ export interface ScoreWeights {
 	 * so the winning line visits boards this penalty makes ugly.
 	 */
 	lowHearts: number;
+	/** The boss king exposed on a column top with nothing protecting it: the kill is a move away. */
+	bossOpen: number;
+	/** Each card standing between the boss king and the top of its column. */
+	bossDepth: number;
+	/** Kings home: each one is what unfreezes a protected boss king. */
+	kings: number;
 }
 
 export const SCORE_WEIGHTS: ScoreWeights = {
@@ -273,6 +280,15 @@ export const SCORE_WEIGHTS: ScoreWeights = {
 	// cost seeds 2 and 5 their clears — both are one card from home at a two-heart board, and both
 	// close in about twenty seconds once the charge is gone.
 	lowHearts: 0,
+	// A boss run is decided by one card, so the weights that see it are the ones that turn a survey
+	// into a plan: an exposed, unprotected king is nearly the win; a buried one costs a dig per card
+	// above it; and every king already home is one step closer to unfreezing that king.
+	// Swept against seeds 2, 4 and 12 at a 300k hybrid gate: seed 12 solves in ~1,300 states with
+	// these and never without them, seed 4 solves either way, and a heavy setting (70/9/22) loses
+	// seed 12 again — the boss term helps until it starts overriding the foundations.
+	bossOpen: 40,
+	bossDepth: 5,
+	kings: 10,
 };
 
 const SUITS = ['hearts', 'clubs', 'diamonds', 'spades'] as const;
@@ -315,13 +331,39 @@ function foundationPull(state: TombState): { reach: number; buried: number } {
 	return { reach, buried };
 }
 
+/**
+ * What a boss kill is still owed. The objective of a boss run is a single card, and the foundations
+ * say nothing about it: a king can sit exposed while par barely moves. So the search is told how far
+ * the king is from the top of its column, whether it is free to be taken, and how many kings are
+ * already home — because a protected king stays frozen until one other king goes home first.
+ */
+function bossPull(state: TombState): { open: number; depth: number; kings: number } {
+	const kings = state.game.cards.filter(
+		(card) => card.rank === 'king' && card.location.fixture === 'foundation'
+	).length;
+	if (!state.bossId) return { open: 0, depth: 0, kings };
+	const boss = state.game.cards.find(
+		(card) => card.rank === 'king' && card.location.fixture === 'cascade' && !isFaceDown(state, card)
+	);
+	if (!boss) return { open: 0, depth: 0, kings };
+	const pile = state.game.tableau[boss.location.data[0]] ?? [];
+	const above = Math.max(0, pile.length - 1 - boss.location.data[1]);
+	// An exposed king is only worth aiming at once the freeze is lifted; until then, kings home is
+	// the measure that matters, so an exposed but protected king is worth no more than a buried one.
+	const open = above === 0 && !bossProtected(state) ? 1 : 0;
+	return { open, depth: above, kings };
+}
+
 /** How good a position looks, as the weighted sum of everything the tuner can move. */
-function scoreOf(state: TombState): number {
+function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 	const w = SCORE_WEIGHTS;
 	const blocked = foundationPull(state);
 	const hearts = hp(state);
 	// A track down to its last card is scored badly: there is nothing left to spend on a kill.
 	const reserve = hearts <= 1 ? -w.lowHearts : 0;
+	// A clear run has no boss term at all: its objective is every card, which the foundations
+	// already measure, and adding a king's position would only pull the line away from that.
+	const boss = goal === 'boss' ? bossPull(state) : { open: 0, depth: 0, kings: 0 };
 	return (
 		(500 - tombPar(state)) * w.clear +
 		currentLevel(state) * w.level +
@@ -330,7 +372,10 @@ function scoreOf(state: TombState): number {
 		hearts * w.hearts -
 		blocked.buried * w.buried +
 		emptyCells(state).length * w.room +
-		reserve
+		reserve +
+		boss.open * w.bossOpen +
+		boss.kings * w.kings -
+		boss.depth * w.bossDepth
 	);
 }
 
@@ -437,7 +482,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			timeBudgetMs: Math.max(2000, deadline - first.elapsedMs),
 			nodes: Math.max(1000, budget - first.nodes),
 		});
-		if (!second.solved && scoreOf(second.best) < scoreOf(first.best)) {
+		if (!second.solved && scoreOf(second.best, goal) < scoreOf(first.best, goal)) {
 			// The beam's board was better, but both passes paid for it: report the whole spend.
 			return {
 				...first,
@@ -450,7 +495,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	}
 
 	const open = new NodeHeap();
-	const firstValue = scoreOf(start);
+	const firstValue = scoreOf(start, goal);
 	const first: Node = { state: start, path: null, score: firstValue, value: firstValue, depth: 0 };
 	open.push(first);
 	const seen = new Set<string>([stateKey(start)]);
@@ -499,7 +544,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 				const key = stateKey(move.next);
 				if (visited.has(key)) continue;
 				visited.add(key);
-				const value = scoreOf(move.next);
+				const value = scoreOf(move.next, goal);
 				const child: Node = { state: move.next, path, value, score: value, depth: node.depth + 1 };
 				if (value > best.value) best = child;
 				children.push(child);
@@ -537,7 +582,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 					const key = stateKey(move.next);
 					if (seen.has(key)) continue;
 					seen.add(key);
-					const value = scoreOf(move.next);
+					const value = scoreOf(move.next, goal);
 					const child: Node = { state: move.next, path, value, score: value, depth: ply + 1 };
 					children.push(child);
 					if (value > best.value) best = child;
@@ -580,7 +625,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			const key = stateKey(move.next);
 			if (seen.has(key)) continue;
 			seen.add(key);
-			const value = scoreOf(move.next);
+			const value = scoreOf(move.next, goal);
 			const child: Node = {
 				state: move.next,
 				path,
