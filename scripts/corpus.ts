@@ -77,7 +77,13 @@ const foundAnywhere = (): string[] => {
 	if (existsSync(shardDir)) {
 		for (const name of readdirSync(shardDir)) {
 			if (!name.endsWith('.json')) continue;
-			for (const entry of readEntries(`${shardDir}/${name}`)) found.add(entry.loadout);
+			// Only real shards. The plan file sits in the same directory and holds a row for every key it
+			// scanned, so reading it as a shard made every deal look already won and each range skipped
+			// itself in silence.
+			if (!name.startsWith('scan-') && !name.startsWith('shard-')) continue;
+			for (const entry of readEntries(`${shardDir}/${name}`)) {
+				if (typeof entry.loadout === 'string') found.add(entry.loadout);
+			}
 		}
 	}
 	return [...found];
