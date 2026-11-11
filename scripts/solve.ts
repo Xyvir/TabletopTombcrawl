@@ -9,7 +9,7 @@ interface Options {
 	nodes: number;
 	depth: number;
 	beamWidth: number;
-	strategy: 'best' | 'beam' | 'dfs';
+	strategy: 'best' | 'beam' | 'dfs' | 'hybrid';
 	heal: number;
 	cap: number;
 	glyphBoss: boolean;
@@ -24,10 +24,10 @@ function parse(argv: string[]): Options {
 		seeds: null,
 		difficulty: 'med',
 		goal: 'clear',
-		nodes: 400_000,
-		depth: 220,
-		beamWidth: 0,
-		strategy: 'best',
+		nodes: 2_000_000,
+		depth: 300,
+		beamWidth: 300,
+		strategy: 'hybrid',
 		heal: 1,
 		cap: 0,
 		glyphBoss: true,
@@ -80,7 +80,10 @@ function parse(argv: string[]): Options {
 				options.glyphBoss = false;
 				break;
 			case '--strategy':
-				options.strategy = value === 'dfs' || value === 'beam' ? value : 'best';
+				options.strategy =
+					value === 'dfs' || value === 'beam' || value === 'hybrid' ? value : 'best';
+				// The default width would keep best-first on the beam path, so choosing it clears the beam.
+				if (options.strategy === 'best') options.beamWidth = 0;
 				i++;
 				break;
 			case '--depth':
@@ -234,13 +237,13 @@ function usage(): void {
 
 options
   --difficulty easy|med|hard   free cells to begin with (default med)
-  --nodes N                    states to examine (default 400000)
-  --beam N                     keep N boards per ply instead of best-first order
-  --strategy best|beam|dfs     search order (default best)
+  --nodes N                    states to examine (default 2000000)
+  --beam N                     keep N boards per ply (default 300; 0 for best-first)
+  --strategy hybrid|best|beam|dfs   search order (default hybrid: beam, then best-first)
   --heal N                     hearts a level up restores (default 1; tuning only)
   --cap N                      most hearts one kill may cost (default 0, no ceiling)
   --no-glyphboss               keep the boss king immovable, glyphs included
-  --depth N                    longest line to follow (default 220)
+  --depth N                    longest line to follow (default 300)
   --time S                     seconds before giving up (default 120)
   --steps N                    print only the first N moves of a line
   --quiet                      no progress line

@@ -71,10 +71,14 @@ the player plays it, which keeps the item restock, free cast and glyph refresh w
 
 ## Solver
 
-`src/solver.ts` searches a deal with best-first search over the real rules: every move it offers is
+`src/solver.ts` searches a deal over the real rules — a beam first, then best-first on whatever is
+left of the budget: every move it offers is
 replayed through `tombMove`, `attackWith`, `revealFaceDown` or `useAbility`, so a line it reports is
-a line the game accepts. The CLI is run through Vite (`scripts/run.mjs`) because the vendored rules
-import lodash as CommonJS, which plain `node` cannot load by named export.
+a line the game accepts. Boards are ranked on what the foundations are owed — the next card of each
+suit, how deeply it is buried, and the hearts left to pay for it — rather than on the level alone,
+which is what lets it find a long grind like seed 12881 med (98 moves, 100% clear, 394k states).
+The CLI is run through Vite (`scripts/run.mjs`) because the vendored rules import lodash as
+CommonJS, which plain `node` cannot load by named export.
 
 ```sh
 npm run solve -- --seed 4242                # one deal, printed move by move

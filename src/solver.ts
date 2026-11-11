@@ -205,8 +205,11 @@ export interface SolveOptions {
 	nodes?: number;
 	/** Keep N states per ply instead of best-first order. Breadth forces progress; 0 disables. */
 	beamWidth?: number;
-	/** Search order: best-first (default), breadth by ply (beamWidth), or greedy depth-first. */
-	strategy?: 'best' | 'beam' | 'dfs';
+	/**
+	 * Search order: best-first (default), breadth by ply (beamWidth), greedy depth-first, or the
+	 * default policy of a beam followed by best-first on what is left of the budget.
+	 */
+	strategy?: 'best' | 'beam' | 'dfs' | 'hybrid';
 	/** Longest line the search will follow. */
 	depth?: number;
 	timeBudgetMs?: number;
@@ -232,18 +235,85 @@ const isGoal = (state: TombState, goal: Goal): boolean =>
 	goal === 'boss' ? bossSlain(state) : state.game.cards.every((card) => card.location.fixture === 'foundation');
 
 /**
- * How good a position looks. Levelling leads, because a level is a heal and a glyph refresh as well
- * as rank: it is the engine of a run. Then the cards already home, then ground gained on the fog,
- * then room in the cells. Hearts are not scored as damage — playing a card above your level spends
- * one by design — but a track down to its last heart is scored badly, since nothing can be played.
+ * Score weights, in the open so the search can be measured rather than guessed at: the tuning script
+ * rewrites them, and nothing else in the game depends on their values.
  */
+export interface ScoreWeights {
+	/** Par gained: the objective itself. */
+	clear: number;
+	/** Levels reached: a level is a heal, a glyph refresh and a rank all at once. */
+	level: number;
+	/** Cards the foundations are waiting on that can be played there right now. */
+	reach: number;
+	/** How deeply each card the foundations are waiting on is buried. */
+	buried: number;
+	/** Hearts: the currency for playing a card above your level, and for taking a card out of a cell. */
+	hearts: number;
+	/** Fog lifted: a full clear needs every card face up. */
+	fog: number;
+	/** Empty cells: storage, which here is also the track the hearts are made of. */
+	room: number;
+}
+
+export const SCORE_WEIGHTS: ScoreWeights = { clear: 10, level: 30, reach: 12, buried: 6, hearts: 4, fog: 3, room: 0 };
+
+const SUITS = ['hearts', 'clubs', 'diamonds', 'spades'] as const;
+type SolverSuit = (typeof SUITS)[number];
+const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const rankNumber = (rank: string) => RANKS.indexOf(rank) + 1;
+
+/**
+ * What the foundations are owed. `reach` counts the next card of a suit when it can be played there
+ * and then — the one measure that rewards setting a card up rather than merely having room for it.
+ * `buried` counts what stands in the way of each card the foundations want: cards above it, and four
+ * more for a card still face down, since it has to be dug out first. A card that was drafted can
+ * never come home, so its suit is stalled for the rest of the run.
+ */
+function foundationPull(state: TombState): { reach: number; buried: number } {
+	const tops: Record<SolverSuit, number> = { hearts: 0, clubs: 0, diamonds: 0, spades: 0 };
+	for (const card of state.game.cards) {
+		if (card.location.fixture !== 'foundation') continue;
+		const rank = rankNumber(card.rank);
+		if (rank > tops[card.suit]) tops[card.suit] = rank;
+	}
+	const wanted = new Map<SolverSuit, number>();
+	for (const suit of SUITS) if (tops[suit] < 13) wanted.set(suit, tops[suit] + 1);
+	let reach = 0;
+	let buried = 0;
+	for (const card of state.game.cards) {
+		const want = wanted.get(card.suit);
+		if (want === undefined || card.location.fixture === 'foundation' || rankNumber(card.rank) !== want) continue;
+		wanted.delete(card.suit);
+		if (card.location.fixture === 'cell') {
+			reach++;
+			continue;
+		}
+		const pile = state.game.tableau[card.location.data[0]] ?? [];
+		const above = Math.max(0, pile.length - 1 - card.location.data[1]);
+		if (above === 0 && !isFaceDown(state, card)) reach++;
+		else buried += above + (isFaceDown(state, card) ? 4 : 0);
+	}
+	buried += wanted.size * 6;
+	return { reach, buried };
+}
+
+/** How good a position looks, as the weighted sum of everything the tuner can move. */
 function scoreOf(state: TombState): number {
-	const level = currentLevel(state);
-	const cleared = 500 - tombPar(state);
-	const revealed = 48 - state.hidden.length;
-	const room = emptyCells(state).length;
-	const reserve = hp(state) <= 1 ? -400 : 0;
-	return level * 120 + cleared * 10 + revealed * 5 + room * 8 + reserve;
+	const w = SCORE_WEIGHTS;
+	const blocked = foundationPull(state);
+	const hearts = hp(state);
+	// A track down to its last card is scored badly: there is nothing left to spend on a kill.
+	const reserve = hearts <= 1 ? -400 : 0;
+	return (
+		(500 - tombPar(state)) * w.clear +
+		currentLevel(state) * w.level +
+		(48 - state.hidden.length) * w.fog +
+		blocked.reach * w.reach +
+		hearts * w.hearts -
+		blocked.buried * w.buried +
+		emptyCells(state).length * w.room +
+		reserve
+	);
 }
 
 /** A canonical key for the board, fog and bookkeeping included, so equal positions collapse. */
@@ -328,6 +398,29 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	const deadline = options.timeBudgetMs ?? 90_000;
 	const began = Date.now();
 	const capacity = 12_000;
+
+	// The shipped policy: survey with a beam, then grind with best-first on what is left of the budget.
+	// A beam cracks the deals whose winning line is a long, patient grind (seed 12881 med needs 135
+	// moves and spends the first hundred gaining nothing), while best-first is better on the shallow
+	// ones, where a beam of any useful width spreads itself too thin to reach the last few moves.
+	if (options.strategy === 'hybrid') {
+		const first = solveTomb({
+			...options,
+			strategy: 'beam',
+			beamWidth: options.beamWidth ?? 300,
+			timeBudgetMs: Math.round(deadline * 0.6),
+			nodes: Math.max(1000, Math.round(budget * 0.6)),
+		});
+		if (first.solved) return first;
+		const second = solveTomb({
+			...options,
+			strategy: 'best',
+			beamWidth: 0,
+			timeBudgetMs: Math.max(2000, deadline - first.elapsedMs),
+			nodes: Math.max(1000, budget - first.nodes),
+		});
+		return !second.solved && scoreOf(second.best) < scoreOf(first.best) ? first : second;
+	}
 
 	const open = new NodeHeap();
 	const firstValue = scoreOf(start);
