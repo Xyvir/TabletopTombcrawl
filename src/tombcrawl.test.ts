@@ -33,6 +33,8 @@ import {	MONSTERS,
 	isFaceDown,
 	revealFaceDown,
 	unpick,
+	disarm,
+	freeCastReady,
 	kingsHome,
 	playerLevel,
 	tombExit,
@@ -172,6 +174,38 @@ describe("the wizard's affinity", () => {
 
 		expect(state.freeCast).toBe(false);
 		expect(useAbility(state, 1)!.exhausted[1]).toBe(true);
+	});
+
+	test('putting the spell down unused gives the free cast back', () => {
+		const armed = useAbility(opening({ freeCastBank: true }), 1)!;
+		// arming a free cast spends the bank, so the blue offer goes out with it
+		expect(armed.freeCastBank).toBe(false);
+		expect(freeCastReady(armed, 1)).toBe(false);
+
+		const put = disarm(armed)!;
+		expect(put.freeCastBank).toBe(true);
+		expect(freeCastReady(put, 1)).toBe(true);
+		expect(put.exhausted[1]).toBe(false);
+	});
+
+	test('a free cast that is put down gives back the heart it mended', () => {
+		const state = makeTomb({
+			columns: [['5H'], ['9D']],
+			cells: ['KC', '2S', '5C'],
+			draft,
+			// wound the item, not the class card: a wounded Wizard has no passive to spend
+			wounded: [2],
+			freeCastBank: true,
+		});
+		expect(hp(state)).toBe(2);
+
+		const armed = useAbility(state, 1)!;
+		expect(armed.freeCastBank).toBe(false);
+		expect(hp(armed)).toBe(3);
+
+		const put = disarm(armed)!;
+		expect(hp(put)).toBe(2);
+		expect(put.freeCastBank).toBe(true);
 	});
 });
 

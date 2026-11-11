@@ -170,6 +170,11 @@ export type ArmedAbility = {
 	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'revive' | 'sack';
 	cell: number;
 	first?: string;
+	/**
+	 * What arming a free cast spent, so putting the spell down unused hands it back: a cast the player
+	 * backs out of must not cost the Wizard his bank, his window, or the heart it mended.
+	 */
+	refund?: { freeCast: boolean; freeCastBank: boolean; wounded: number[] };
 };
 
 export interface TombState {
@@ -1457,6 +1462,11 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	// refresh. Either grant makes this cast free, and a free cast spends both of them, so a window
 	// can never leave a second free cast waiting behind it.
 	const free = freeCastReady(state, cell);
+	// Take note of what the free cast is about to spend, before it is spent: a disarm can hand it all
+	// back, because arming is not the same as casting.
+	const refund = free
+		? { freeCast: state.freeCast, freeCastBank: state.freeCastBank, wounded: [...state.wounded] }
+		: undefined;
 	state = closeFreeCast(state);
 	// Affinity pays in hearts as well as in exhaustion: a free cast mends one wounded cell.
 	if (free) state = cloneWith(state, { freeCastBank: false, wounded: heal(state, 1).wounded });
@@ -1496,6 +1506,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		default:
 			break;
 	}
+	// The grant rides on the arm until the spell is used, so disarming gives it back rather than burning it.
+	if (refund && next.armed) next = cloneWith(next, { armed: { ...next.armed, refund } });
 	return closeItemWindow(next);
 }
 
@@ -1531,7 +1543,19 @@ export function disarm(state: TombState): TombState {
 	if (!state.armed) return state;
 	const exhausted = [...state.exhausted];
 	exhausted[state.armed.cell] = false;
-	return closeItemWindow(cloneWith(state, { armed: null, exhausted }));
+	const refund = state.armed.refund;
+	// Backing out of a free cast returns the grant and the heart it mended, so the blue offer is exactly
+	// where it was: nothing was cast, so nothing was spent.
+	const next = refund
+		? cloneWith(state, {
+				armed: null,
+				exhausted,
+				freeCast: refund.freeCast,
+				freeCastBank: refund.freeCastBank,
+				wounded: refund.wounded,
+			})
+		: cloneWith(state, { armed: null, exhausted });
+	return closeItemWindow(next);
 }
 
 /**
