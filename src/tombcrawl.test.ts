@@ -20,6 +20,7 @@ import {	MONSTERS,
 
 	chipBoundary,
 	convertibleCell,
+	hasPassive,
 	newlyHealed,
 	newlyWounded,
 	createTombState,
