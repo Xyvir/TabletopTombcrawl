@@ -1462,9 +1462,11 @@ describe('tombcrawl progression rules', () => {
 	test('an Elf digs a buried card out and heals with it', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
 		const state = makeTomb({
+			// the king is under two exposed pips, so the elf's lane reaches it: the fog above him is
+			// what would turn the shot aside, and that is the next test's business
 			columns: [['KS', '2C', '3D'], ['4S']],
 			cells: ['JC', '9H'],
-			hidden: ['KS', '3D'],
+			hidden: ['KS'],
 			wounded: [1],
 			draft,
 		});
@@ -1476,6 +1478,54 @@ describe('tombcrawl progression rules', () => {
 		expect(next.wounded[1]).toBe(0);
 		expect(next.bossId).toBe('KS');
 		expect(next.bossSuit).toBe('spades');
+	});
+
+	test('an Elf shoots a buried card home down a lane of number cards', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
+		const state = makeTomb({
+			columns: [['2S', '4H', '5D']],
+			cells: ['JC', '9H'],
+			foundations: ['AS'],
+			draft,
+		});
+
+		// the two sits under two pips, and the pile is only waiting for it
+		const next = attackWith(state, cascade(0, 0));
+		expect(next).not.toBeNull();
+		expect(next!.game.cards.find((card) => shorthandCard(card) === '2S')!.location.fixture).toBe('foundation');
+		expect(next!.game.tableau[0].map((card) => shorthandCard(card))).toEqual(['4H', '5D']);
+
+		// the same shot is not on offer to anyone else
+		const human = makeTomb({ columns: [['2S', '4H', '5D']], cells: ['JC', '9H'], foundations: ['AS'] });
+		expect(attackWith(human, cascade(0, 0))).toBeNull();
+	});
+
+	test('a face card in the lane turns the shot aside, and the fog under it too', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
+		const state = makeTomb({
+			columns: [['2S', 'QH', '5D']],
+			cells: ['JC', '9H'],
+			foundations: ['AS'],
+			draft,
+		});
+		expect(attackWith(state, cascade(0, 0))).toBeNull();
+
+		const fogged = makeTomb({
+			columns: [['2S', 'QH', '5D']],
+			cells: ['JC', '9H'],
+			hidden: ['2S'],
+			draft,
+		});
+		expect(revealFaceDown(fogged, cascade(0, 0))).toBe(null);
+	});
+
+	test('the fog a clear lane reaches can be dug out even when buried', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'JC', suit: 'clubs', name: 'Elf', text: '' }];
+		const state = makeTomb({ columns: [['2S', '4H', '5D']], cells: ['JC', '9H'], hidden: ['2S'], draft });
+
+		const next = revealFaceDown(state, cascade(0, 0));
+		expect(next).not.toBeNull();
+		expect(next!.hidden).not.toContain('2S');
 	});
 
 	test('only an Elf can reveal a buried card', () => {

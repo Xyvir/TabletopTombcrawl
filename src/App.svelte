@@ -983,7 +983,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 
 		if (isFaceDown(state, card)) {
-			// Digging is a click and nothing else: exposed cards for anyone, buried ones for an Elf.
+			// Digging is a click and nothing else: exposed cards for anyone, and anything an Elf's
+			// lane of number cards reaches.
 			const revealed = revealFaceDown(state, card.location);
 			if (revealed) return void commit(revealed);
 			shake(el);

@@ -12,6 +12,8 @@ import {
 	currentLevel,
 	draftAt,
 	emptyCells,
+	elfSight,
+	hasPassive,
 	hp,
 	imawalCanBury,
 	isFaceDown,
@@ -107,6 +109,21 @@ export function generateMoves(state: TombState): SolverMove[] {
 			add(
 				{ kind: 'home', at: card.location, reach: true },
 				`burn  ${cardName(card)} ${where(card.location)} row ${card.location.data[1] + 1}`,
+				attackWith(state, card.location, true)
+			);
+		}
+	}
+
+	// An Elf's ranged shot: a card down a lane of exposed number cards is killed where it lies.
+	if (hasPassive(state, 'Elf')) {
+		for (const card of state.game.cards) {
+			if (card.location.fixture !== 'cascade' || isFaceDown(state, card)) continue;
+			const pile = state.game.tableau[card.location.data[0]] ?? [];
+			if (pile[pile.length - 1] === card) continue;
+			if (!elfSight(state, card.location)) continue;
+			add(
+				{ kind: 'home', at: card.location, reach: true },
+				`range  ${cardName(card)} ${where(card.location)} row ${card.location.data[1] + 1}`,
 				attackWith(state, card.location, true)
 			);
 		}

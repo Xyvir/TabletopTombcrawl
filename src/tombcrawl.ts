@@ -82,7 +82,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Elf',
-		text: 'Insight: reach under the fog and reveal any face-down card, even a buried one, to explore it.',
+		text: 'Ranged: kill or reveal any card in a column whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
 	},
 	diamonds: {
 		name: 'Dwarf',
@@ -835,7 +835,11 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const card = cardAt(state.game, from);
 	// BURNDAYRAZ burns any card it can see: the whole cover is ignored, however deep the card lies.
 	// The aim is passed in explicitly too, because the spell is spent before the attack lands.
-	const ignoreCover = reachThroughCover || (state.armed?.kind === 'burndayraz' && from.fixture === 'cascade');
+	// An Elf's shot ignores cover the way a burn does, but only down a lane his sight reaches.
+	const ignoreCover =
+		reachThroughCover ||
+		(state.armed?.kind === 'burndayraz' && from.fixture === 'cascade') ||
+		elfSight(state, from);
 	const check = canSendHome(state, from, ignoreCover);
 	if (!card) return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], fatal: false, wounds: [] };
 	if (!check.legal)
@@ -1120,15 +1124,36 @@ function settle(state: TombState, levelBefore: number): TombState {
 	return next;
 }
 
+/** A court card: the face cards, which a ranged shot cannot see past. */
+function isFaceCard(card: Card): boolean {
+	return card.rank === 'jack' || card.rank === 'queen' || card.rank === 'king';
+}
+
+/**
+ * The Elf's line of sight down a column: every card standing above the target has to be an exposed
+ * number card. Unrevealed cards are walls, and a face card turns the shot aside, so a column of pips
+ * is a firing lane and one court card closes it for everything beneath.
+ */
+export function elfSight(state: TombState, location: CardLocation): boolean {
+	if (location.fixture !== 'cascade' || !hasPassive(state, 'Elf')) return false;
+	const column = state.game.tableau[location.data[0]] ?? [];
+	for (let index = location.data[1] + 1; index < column.length; index++) {
+		const cover = column[index];
+		if (!cover || isFaceDown(state, cover) || isFaceCard(cover)) return false;
+	}
+	return true;
+}
+
 /**
  * Digging is always the player's click: a face-down card is only turned over when asked for, so
- * it can be kept face-down as a heal for later. An ordinary dig needs the card exposed at the	 * bottom of its column; an Elf (Insight) can reach under the pile.
+ * it can be kept face-down as a heal for later. An ordinary dig needs the card exposed at the
+ * bottom of its column; an Elf shoots down the column and turns over whatever his lane reaches.
  */
 export function canRevealFaceDown(state: TombState, location: CardLocation): boolean {
 	if (state.won || location.fixture !== 'cascade') return false;
 	const card = cardAt(state.game, location);
 	if (!card || !isFaceDown(state, card)) return false;
-	if (hasPassive(state, 'Elf')) return true;
+	if (hasPassive(state, 'Elf')) return elfSight(state, location);
 	const column = state.game.tableau[location.data[0]] ?? [];
 	return column[column.length - 1] === card;
 }
