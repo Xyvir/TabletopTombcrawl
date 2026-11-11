@@ -5,6 +5,396 @@
 	"keys": 256,
 	"entries": [
 		{
+			"loadout": "ddcc",
+			"boss": "clubs",
+			"seed": 440,
+			"moves": 52,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "dddc",
+			"boss": "spades",
+			"seed": 542,
+			"moves": 57,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "ddsc",
+			"boss": "hearts",
+			"seed": 130,
+			"moves": 79,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "dscs",
+			"boss": "clubs",
+			"seed": 521,
+			"moves": 152,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "dsdc",
+			"boss": "diamonds",
+			"seed": 522,
+			"moves": 110,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "dsdd",
+			"boss": "diamonds",
+			"seed": 545,
+			"moves": 159,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			]
+		},
+		{
+			"loadout": "dsdh",
+			"boss": "hearts",
+			"seed": 315,
+			"moves": 97,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
+		},
+		{
+			"loadout": "dssc",
+			"boss": "clubs",
+			"seed": 46,
+			"moves": 110,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "hccd",
+			"boss": "diamonds",
+			"seed": 337,
+			"moves": 73,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			]
+		},
+		{
+			"loadout": "hcsh",
+			"boss": "diamonds",
+			"seed": 219,
+			"moves": 58,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
+		},
+		{
+			"loadout": "hdcc",
+			"boss": "hearts",
+			"seed": 543,
+			"moves": 58,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "hdsh",
+			"boss": "diamonds",
+			"seed": 243,
+			"moves": 69,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
+		},
+		{
+			"loadout": "hdss",
+			"boss": "diamonds",
+			"seed": 47,
+			"moves": 65,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
 			"loadout": "hhcs",
 			"boss": "diamonds",
 			"seed": 2,
@@ -31,6 +421,66 @@
 					"role": "consumable",
 					"name": "Revive",
 					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hhds",
+			"boss": "spades",
+			"seed": 452,
+			"moves": 63,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hscc",
+			"boss": "hearts",
+			"seed": 40,
+			"moves": 47,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
 				}
 			]
 		},
@@ -95,10 +545,70 @@
 			]
 		},
 		{
+			"loadout": "hshc",
+			"boss": "hearts",
+			"seed": 24,
+			"moves": 62,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			]
+		},
+		{
+			"loadout": "hshh",
+			"boss": "diamonds",
+			"seed": 518,
+			"moves": 81,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
+		},
+		{
 			"loadout": "hshs",
-			"boss": "clubs",
-			"seed": 201,
-			"moves": 111,
+			"boss": "diamonds",
+			"seed": 137,
+			"moves": 45,
 			"difficulty": "med",
 			"goal": "boss",
 			"party": [
@@ -121,6 +631,36 @@
 					"role": "consumable",
 					"name": "Revive",
 					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hssc",
+			"boss": "hearts",
+			"seed": 332,
+			"moves": 41,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
 				}
 			]
 		},
@@ -153,6 +693,36 @@
 					"suit": "hearts"
 				}
 			]
+		},
+		{
+			"loadout": "hsss",
+			"boss": "clubs",
+			"seed": 237,
+			"moves": 52,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
 		}
 	],
 	"found": {
@@ -162,16 +732,64 @@
 				"moves": 87
 			}
 		},
+		"hshc": {
+			"boss": {
+				"seed": 24,
+				"moves": 62
+			}
+		},
+		"hscc": {
+			"boss": {
+				"seed": 40,
+				"moves": 47
+			}
+		},
+		"dssc": {
+			"boss": {
+				"seed": 46,
+				"moves": 110
+			}
+		},
+		"hdss": {
+			"boss": {
+				"seed": 47,
+				"moves": 65
+			}
+		},
+		"hdsh": {
+			"boss": {
+				"seed": 243,
+				"moves": 69
+			}
+		},
+		"ddsc": {
+			"boss": {
+				"seed": 130,
+				"moves": 79
+			}
+		},
+		"hshs": {
+			"boss": {
+				"seed": 137,
+				"moves": 45
+			}
+		},
 		"hssh": {
 			"boss": {
 				"seed": 12,
 				"moves": 95
 			}
 		},
-		"hshs": {
+		"hcsh": {
 			"boss": {
-				"seed": 201,
-				"moves": 111
+				"seed": 219,
+				"moves": 58
+			}
+		},
+		"hsss": {
+			"boss": {
+				"seed": 237,
+				"moves": 52
 			}
 		},
 		"hsds": {
@@ -180,10 +798,76 @@
 				"moves": 62
 			}
 		},
+		"dsdh": {
+			"boss": {
+				"seed": 315,
+				"moves": 97
+			}
+		},
+		"hdcc": {
+			"boss": {
+				"seed": 543,
+				"moves": 58
+			}
+		},
+		"hssc": {
+			"boss": {
+				"seed": 332,
+				"moves": 41
+			}
+		},
+		"hccd": {
+			"boss": {
+				"seed": 337,
+				"moves": 73
+			}
+		},
+		"ddcc": {
+			"boss": {
+				"seed": 440,
+				"moves": 52
+			}
+		},
+		"hhds": {
+			"boss": {
+				"seed": 452,
+				"moves": 63
+			}
+		},
 		"hsch": {
 			"boss": {
 				"seed": 506,
 				"moves": 69
+			}
+		},
+		"hshh": {
+			"boss": {
+				"seed": 518,
+				"moves": 81
+			}
+		},
+		"dscs": {
+			"boss": {
+				"seed": 521,
+				"moves": 152
+			}
+		},
+		"dsdc": {
+			"boss": {
+				"seed": 522,
+				"moves": 110
+			}
+		},
+		"dddc": {
+			"boss": {
+				"seed": 542,
+				"moves": 57
+			}
+		},
+		"dsdd": {
+			"boss": {
+				"seed": 545,
+				"moves": 159
 			}
 		}
 	},
@@ -198,7 +882,6 @@
 		"hhdh",
 		"hhdc",
 		"hhdd",
-		"hhds",
 		"hhsh",
 		"hhsc",
 		"hhsd",
@@ -209,13 +892,11 @@
 		"hchs",
 		"hcch",
 		"hccc",
-		"hccd",
 		"hccs",
 		"hcdh",
 		"hcdc",
 		"hcdd",
 		"hcds",
-		"hcsh",
 		"hcsc",
 		"hcsd",
 		"hcss",
@@ -224,29 +905,21 @@
 		"hdhd",
 		"hdhs",
 		"hdch",
-		"hdcc",
 		"hdcd",
 		"hdcs",
 		"hddh",
 		"hddc",
 		"hddd",
 		"hdds",
-		"hdsh",
 		"hdsc",
 		"hdsd",
-		"hdss",
-		"hshh",
-		"hshc",
 		"hshd",
-		"hscc",
 		"hscd",
 		"hscs",
 		"hsdh",
 		"hsdc",
 		"hsdd",
-		"hssc",
 		"hssd",
-		"hsss",
 		"chhh",
 		"chhc",
 		"chhd",
@@ -348,15 +1021,12 @@
 		"ddhd",
 		"ddhs",
 		"ddch",
-		"ddcc",
 		"ddcd",
 		"ddcs",
 		"dddh",
-		"dddc",
 		"dddd",
 		"ddds",
 		"ddsh",
-		"ddsc",
 		"ddsd",
 		"ddss",
 		"dshh",
@@ -366,13 +1036,8 @@
 		"dsch",
 		"dscc",
 		"dscd",
-		"dscs",
-		"dsdh",
-		"dsdc",
-		"dsdd",
 		"dsds",
 		"dssh",
-		"dssc",
 		"dssd",
 		"dsss",
 		"shhh",
