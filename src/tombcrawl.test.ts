@@ -268,12 +268,15 @@ describe("the fighter's level", () => {
 	test('ignores the lowest card, so one lagging suit does not hold him back', () => {
 		const board = { columns: [['5D']], cells: ['KC'], foundations: ['AS', '2S', '2H', '2C'] };
 		expect(currentLevel(makeTomb(board))).toBe(1);
-		expect(currentLevel(makeTomb({ ...board, draft }))).toBe(2);
+		// the lagging diamonds pile is ignored: three suits at their two read as level 3 to him
+		expect(currentLevel(makeTomb({ ...board, draft }))).toBe(3);
 	});
 
-	test('still starts at level 1 while every suit is only an ace', () => {
-		const state = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', 'AH', 'AC', 'AD'], draft });
-		expect(currentLevel(state)).toBe(1);
+	test('starts at level 1 with nothing home, and all four aces lift him too', () => {
+		expect(currentLevel(makeTomb({ columns: [['5D']], cells: ['KC'], draft }))).toBe(1);
+		const aces = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', 'AH', 'AC', 'AD'], draft });
+		// one rank every suit has cleared, so there is no lagging pile left for him to ignore
+		expect(currentLevel(aces)).toBe(2);
 	});
 
 	test('a wounded fighter loses the passive', () => {
@@ -544,10 +547,10 @@ describe('burden and mana burn', () => {
 			exhausted: [1],
 			boss: 'KD',
 		});
-		expect(currentLevel(state)).toBe(2);
+		expect(currentLevel(state)).toBe(3);
 
 		const next = attackWith(state, cascade(0, 0))!;
-		expect(currentLevel(next)).toBe(3);
+		expect(currentLevel(next)).toBe(4);
 		// the burn landed, then the level up mended and refreshed it
 		expect(next.exhausted[1]).toBe(false);
 		expect(next.wounded[1]).toBe(0);
@@ -562,9 +565,9 @@ describe('burden and mana burn', () => {
 			exhausted: [1],
 			boss: 'KD',
 		});
-		expect(currentLevel(noLevel)).toBe(2);
+		expect(currentLevel(noLevel)).toBe(3);
 		const burned = attackWith(noLevel, cascade(0, 0))!;
-		expect(currentLevel(burned)).toBe(2);
+		expect(currentLevel(burned)).toBe(3);
 		expect(burned.exhausted[1]).toBe(true);
 	});
 
@@ -581,7 +584,7 @@ describe('burden and mana burn', () => {
 		});
 
 		const next = attackWith(state, cascade(0, 0))!;
-		expect(currentLevel(next)).toBe(3);
+		expect(currentLevel(next)).toBe(4);
 		expect(next.exhausted[1]).toBe(false);
 		expect(next.wounded[1]).toBe(1);
 		expect(abilityUsable(next, 1)).toBe(false);
@@ -1339,8 +1342,8 @@ describe('tombcrawl progression rules', () => {
 		expect(next.hidden).toContain('3D');
 		expect(next.hidden).toContain('2C');
 		expect(next.hidden).toContain('KS');
-		// the kill wounded the spare cell (the rightmost one) and poison healed nothing
-		expect(next.wounded[1]).toBe(1);
+		// a card that costs nothing wounds nothing, and poison healed nothing either
+		expect(next.wounded[1]).toBe(0);
 	});
 
 	test('a drafted card played out to the board is spent for good', () => {
@@ -1416,15 +1419,16 @@ describe('tombcrawl progression rules', () => {
 		const state = makeTomb({
 			columns: [['AD'], ['2D']],
 			cells: ['KC', 'QD'],
-			foundations: ['2S', '2H', '2C'],
+			foundations: ['AS', 'AH', 'AC'],
 		});
 		expect(currentLevel(state)).toBe(1);
 
-		// the ace takes the diamonds pile from nothing to its ace, which is the rank an empty pile is
-		// already read as, so nothing has reached its two that had not reached it before
+		// an empty pile has cleared nothing, so the three aces already home hold the level at 1 until
+		// the diamonds ace lands: all four aces are the first rank every suit has cleared
 		const ace = attackWith(state, cascade(0))!;
-		expect(currentLevel(ace)).toBe(1);
+		expect(currentLevel(ace)).toBe(2);
 
+		// then every pile has to reach its two, and the diamonds two is the last one left
 		const two = attackWith(ace, cascade(1))!;
 		expect(currentLevel(two)).toBe(2);
 	});
@@ -1437,14 +1441,14 @@ describe('tombcrawl progression rules', () => {
 			foundations: ['3S', '3H', '3D', '2C'],
 			draft,
 		});
-		expect(currentLevel(state)).toBe(2);
+		expect(currentLevel(state)).toBe(3);
 
 		const armed = useAbility(state, 0)!;
 		expect(armed.exhausted[0]).toBe(true);
 		expect(armed.armed).toMatchObject({ kind: 'imawal' });
 
 		const kill = attackWith(armed, cascade(0))!;
-		expect(currentLevel(kill)).toBe(3);
+		expect(currentLevel(kill)).toBe(4);
 		expect(kill.exhausted[0]).toBe(false);
 	});
 });
@@ -1480,7 +1484,7 @@ describe('tombcrawl wounds and exhaustion', () => {
 			columns: [['2S']],
 			// the spent glyph is the rightmost card, so the first wound lands on it
 			cells: ['5D', '3S'],
-			foundations: ['AS', 'AH', 'AD', 'AC'],
+			foundations: ['AS', 'AH', 'AD'],
 			draft: spent,
 			exhausted: [0, 1],
 		});
@@ -1503,7 +1507,7 @@ describe('tombcrawl PISORF stacks', () => {
 			columns: [['7H', '6S'], ['4S'], ['3C'], ['4H'], ['5D']],
 			cells: ['5C'],
 			hidden: ['4H', '5D'],
-			foundations: ['3S', '2H', '2D', '2C'],
+			foundations: ['3S', '2H', 'AD', '2C'],
 			draft: glyph,
 		});
 	}
@@ -1594,11 +1598,13 @@ describe('tombcrawl abilities', () => {
 });
 
 describe('tombcrawl levels', () => {
-	test('the delver starts at level 1 and levels up only when every suit reaches two', () => {
+	test('the level is one above the rank every suit has cleared, so the four aces are the first', () => {
 		expect(playerLevel(makeTomb({ columns: [['5H']] }).game)).toBe(1);
-		// one suit at two is not enough: the slowest foundation sets the level
+		// one suit still waiting on its ace has cleared nothing, and it sets the level
 		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['2S', '2H', '2D'] }).game)).toBe(1);
-		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['2S', '2H', '2D', '2C'] }).game)).toBe(2);
+		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['AS', 'AH', 'AD', 'AC'] }).game)).toBe(2);
+		// a suit only as far as its ace is not far enough for the next one
+		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['2S', '2H', '2D', 'AC'] }).game)).toBe(2);
 	});
 });	describe('tombcrawl IMAWAL', () => {
 	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'IMAWAL', text: '' }];
@@ -1885,8 +1891,8 @@ describe('tombcrawl boss protection', () => {
 			boss: 'KS',
 			draft,
 		});
-		// Weakness still adds a rank: 9 + 1 - 8
-		expect(attackPreview(dwarf, cascade(0, 0)).damage).toBe(2);
+		// Weakness still adds a rank: 9 + 1 - 9
+		expect(attackPreview(dwarf, cascade(0, 0)).damage).toBe(1);
 	});
 });
 
@@ -1921,7 +1927,7 @@ describe('tombcrawl endgame', () => {
 		const state = makeTomb({
 			columns: [['KH'], ['5H']],
 			cells: ['8C', '5D'],
-			foundations: ['QH', 'KS', 'KD', 'KC'],
+			foundations: ['QH', 'KS', 'KD', 'JC'],
 			draft,
 			boss: 'KH',
 		});

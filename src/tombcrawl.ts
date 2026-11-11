@@ -357,25 +357,26 @@ export function hasGlyph(state: TombState, name: string): boolean {
 }
 
 export function playerLevel(game: FreeCell): number {
-	// The delver starts at level 1: an empty foundation counts as its ace, so the first level up
-	// only arrives once every suit has reached its two. Each pile is read by its highest card, since
-	// any delver can slide a lower one underneath.
+	// The delver starts at level 1, and the level is one above the rank every suit has reached. A pile
+	// is read by its highest card, since any delver can slide a lower one underneath, and an empty pile
+	// has reached nothing at all: the four aces together are the first level up, and every rank all
+	// four piles complete after that is another.
 	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) =>
 		game.cards
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
-			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 1)
+			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0)
 	);
-	return Math.min(...ranks);
+	return 1 + Math.min(...ranks);
 }
 
 export function currentLevel(state: TombState): number {
 	const level = playerLevel(state.game);
 	if (!hasPassive(state, 'Fighter')) return level;
-	// A Fighter ignores the lowest card, so one lagging suit stops holding him back: with three suits
+	// A Fighter ignores the lowest pile, so one lagging suit stops holding him back: with three suits
 	// ahead of the slowest one, he is a level higher than anyone else would be.
-	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) => foundationTopRank(state, suit) || 1);
+	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) => foundationTopRank(state, suit));
 	const sorted = ranks.sort((a, b) => a - b);
-	return sorted[1] ?? level;
+	return 1 + (sorted[1] ?? 0);
 }
 
 export function isBoss(state: TombState, card: Card): boolean {
