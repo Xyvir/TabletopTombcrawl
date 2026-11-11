@@ -681,7 +681,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const card = state.game.cells[index];
 			if (!card) return null;
 			// An armed IMAWAL can pick up a wounded card that would otherwise be locked.
-			const parked = (!!draftAt(state, index) || !cellCardMovable(state, index)) && state.armed?.kind !== 'imawal';
+			const parked = !cellCardMovable(state, index) && state.armed?.kind !== 'imawal';
 			if (parked && !attackPreview(state, location).legal) return null;
 			return { location, cards: [card], peekOnly: false };
 		}
@@ -715,9 +715,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 		const keys: string[] = [];
 		// A drafted item left of the chip, or a wounded cell, has no board targets.
-		const parked =
-			location.fixture === 'cell' &&
-			(!!draftAt(state, location.data[0]) || !cellCardMovable(state, location.data[0]));
+		const parked = location.fixture === 'cell' && !cellCardMovable(state, location.data[0]);
 		// A run longer than the free cells can hold only moves with the sack open.
 		const overfull = run.cards.length > moveCapacity(state) && arm?.kind !== 'sack';
 		state.game.tableau.forEach((column, index) => {
@@ -794,7 +792,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				if (home) return void commit(home);
 				// The mirror of a tableau card falling back to a free cell: a plain cell's card goes to the
 				// first column that will take it, so the double click can always answer on the way out.
-				const column = tombDragTargets(state, card.location).find((key) => key.startsWith('cascade:'));
+				// An item is the exception: playing it out spends it for good, so that price is only ever
+				// paid by a drag, where the player has already seen the card leave their hand.
+				const column = draftAt(state, index)
+					? undefined
+					: tombDragTargets(state, card.location).find((key) => key.startsWith('cascade:'));
 				const landed = column
 					? tombMove(state, card.location, { fixture: 'cascade', data: [Number(column.split(':')[1])] })
 					: null;

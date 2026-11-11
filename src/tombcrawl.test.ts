@@ -1289,13 +1289,22 @@ describe('tombcrawl progression rules', () => {
 		expect(next.wounded[1]).toBe(1);
 	});
 
-	test('a draft card can only be converted home, never out onto the board', () => {
+	test('a drafted card played out to the board is spent for good', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '8C', suit: 'clubs', name: 'PISORF', text: '' }];
-		const state = makeTomb({ columns: [['9H'], ['KS']], cells: ['8C'], draft });
-		// the eight could build on the nine, and a spent spell could be cycled back in: both refused
-		expect(tombMove(state, cell(0), cascade(0))).toBe(null);
-		expect(state.draft).toHaveLength(1);
-		expect(state.game.cells[0]).not.toBe(null);
+		const state = makeTomb({ columns: [['9H'], ['7S']], cells: ['8C'], draft });
+		const next = tombMove(state, cell(0), cascade(0))!;
+
+		// the eight builds on the nine, and the slot it leaves is an ordinary free cell
+		expect(shorthandCard(next.game.tableau[0][1]!)).toBe('8C');
+		expect(next.game.cells[0]).toBe(null);
+		expect(next.draft).toHaveLength(0);
+		// nothing waits to remake it: the play out is a conversion, and a lost one
+		expect(next.itemWindow).toBe(null);
+
+		const parked = tombMove(next, cascade(1), cell(0))!;
+		expect(shorthandCard(parked.game.cells[0]!)).toBe('7S');
+		expect(parked.draft).toHaveLength(0);
+		expect(abilityUsable(parked, 0)).toBe(false);
 	});
 
 	test('a plain card in a free cell is scratch space: it builds back onto the board', () => {
@@ -1640,20 +1649,26 @@ describe('tombcrawl the the sack', () => {
 
 describe('tombcrawl item refresh', () => {
 	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
-	// The ace home lets the card beside the chip go home, which is the only exit an item has now.
+	// The ace home lets the card beside the chip go home, which is the exit that restocks its slot.
 	// Four cards on the track, so the single point that kill costs lands on the right edge and leaves
 	// the card the test wants to feed still face up.
 	const base = (draft: DraftCard[] = glyph, cells: string[] = ['2S', '4S', '5S', '6S']) =>
 		makeTomb({ columns: [['5H'], ['3S'], ['9D', '3H'], ['8S'], ['7C']], cells, foundations: ['AS'], draft });
 
-	test('sending the item home is its only exit, and it leaves the slot open for one action', () => {
-		// the board offers a build the spell could take, and it is refused
-		expect(tombMove(base(), cell(0), cascade(2))).toBe(null);
-
+	test('sending the item home leaves its slot open for one action', () => {
 		const next = attackWith(base(), cell(0))!;
 		expect(next.draft).toHaveLength(0);
 		expect(next.game.cells[0]).toBe(null);
 		expect(next.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades' });
+	});
+
+	test('playing an item out to the board spends it, and opens no window', () => {
+		const next = tombMove(base(), cell(0), cascade(2))!;
+
+		expect(shorthandCard(next.game.tableau[2][2]!)).toBe('2S');
+		expect(next.game.cells[0]).toBe(null);
+		expect(next.draft).toHaveLength(0);
+		expect(next.itemWindow).toBe(null);
 	});
 
 	test('feeding the slot a matching card remakes the very same item', () => {

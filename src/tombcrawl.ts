@@ -646,7 +646,8 @@ export function convertibleCell(state: TombState): number {
 /**
  * A plain scratch cell (to the right of the chip) hands its card back like FreeCell does: it builds
  * onto a column, waits in another cell, or goes home. A drafted item may leave only once the chip
- * reaches it, because conversions run in order. A wound locks either kind until it is healed.
+ * reaches it, because conversions run in order — and a card played out that way is spent for good.
+ * A wound locks either kind until it is healed.
  */
 export function cellCardMovable(state: TombState, cell: number): boolean {
 	const card = state.game.cells[cell];
@@ -1272,10 +1273,10 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const entry = source >= 0 ? draftAt(state, source) : undefined;
 	// An item only leaves its slot when it is the one beside the chip: conversions run in order.
 	if (entry && source !== convertibleCell(state)) return null;
-	// A live ability card leaves its slot for the foundation and nowhere else. Played out to a column
-	// it could be cycled in and out of an open column — spent, fed, and spent again — so its power
-	// would fire without limit. Going home is the one exit, and that is what restocks the slot.
-	if (entry && to.fixture !== 'foundation') return null;
+	// An item may still be played out of its slot onto the board — a card is a card — but the play
+	// spends it for good: the slot it leaves is an ordinary free cell. Only the trip home restocks
+	// the slot, because a move costs nothing, and a window opened on one let a matching card refill
+	// the slot for ever: spent, fed, and spent again without a heart paid.
 
 	// A spent item slot claims exactly one card on the very next action, and that card becomes the
 	// new item. It need not be the suit that left: an Orc's Scavenger takes any card at all.
@@ -1327,6 +1328,11 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		itemWindow: null,
 		armed: sack || bury ? null : state.armed,
 	});
+
+	// The item left its slot the other way: it is spent, and nothing waits to remake it.
+	if (entry && source >= 0) {
+		next = cloneWith(next, { draft: consumeDraft(next, source) });
+	}
 
 	if (feed) {
 		const ability = ABILITY_TABLE[feed.role][cards[0].suit];
@@ -1409,7 +1415,8 @@ export function tombTapTargets(state: TombState, from: CardLocation): CardLocati
 	const cards = tombRun(state, from);
 	if (!cards.length) return [];
 	if (from.fixture === 'cascade' && !runReachesBottom(state, from, cards)) return [];
-	// A live ability card has no board targets at all: it may only be played home.
+	// An ability card is never one click away from the board: playing it out spends it for good, so
+	// that price is only paid by a drag. A wounded cell is not one click away from anywhere.
 	if (from.fixture === 'cell' && (draftAt(state, from.data[0]) || !cellCardMovable(state, from.data[0]))) return [];
 	// A run the free cells cannot hold is not a single click away, sack or no sack.
 	if (cards.length > moveCapacity(state) && state.armed?.kind !== 'sack') return [];
