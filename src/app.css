@@ -911,21 +911,25 @@ body:has(.card.dragging) .cells.tomb .chip {
  * the artwork), so it turns, leans, squashes and flies with the card: no animation has to know a
  * separate rectangle exists, and nothing can hang over a card that is mid-turn.
  */
-.card.aura img:not(.flip-back) {
+.card.aura img:not(.flip-back),
+.slot.aura img:not(.flip-back) {
 	filter: url(#tombMinion);
 }
 
-.card.boss img:not(.flip-back) {
+.card.boss img:not(.flip-back),
+.slot.boss img:not(.flip-back) {
 	filter: url(#tombBoss);
 }
 
 /* the rim sits inside the face like the selection ring, so it too rides the card rather than the column */
-.card.aura:not(.selected) img:not(.flip-back) {
+.card.aura:not(.selected) img:not(.flip-back),
+.slot.aura:not(.selected) img:not(.flip-back) {
 	outline: 1px solid rgba(199, 155, 255, 0.8);
 	outline-offset: -1px;
 }
 
-.card.boss:not(.selected) img:not(.flip-back) {
+.card.boss:not(.selected) img:not(.flip-back),
+.slot.boss:not(.selected) img:not(.flip-back) {
 	outline: 2px solid #c79bff;
 	outline-offset: -2px;
 }

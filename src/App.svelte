@@ -1259,6 +1259,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:exhausted={!!tomb && tomb.exhausted[i]}
 					class:stacked={stack.length > 1}
 					class:wounded={!!wounded}
+					// the stain follows a boss-suit card into a free cell as well as down its column
+					class:boss={!!card && !!tomb && isBoss(tomb, card)}
+					class:aura={!!card && !!tomb && isBossMinion(tomb, card) && !down}
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:locking={!!preview?.locks.includes(i)}
