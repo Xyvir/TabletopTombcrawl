@@ -476,7 +476,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (tomb) {
 			const moved = tombGhostHit(event);
 			if (!moved) return;
-			if ((event.target as HTMLElement | null)?.closest('[data-card]')) return;
+			// The card below slides up into the box the moved card just left, so testing the pointer
+			// against cards made the ghost box answer only on the exposed strip: a double click landed
+			// on the card underneath and read as a single click. Claim the press whenever it is really
+			// the second click on the card that moved; a fresh click on any other card is still its own.
+			const onCard = (event.target as HTMLElement | null)?.closest('[data-card]');
+			if (onCard && tombLast?.id !== moved.id) return;
 			event.preventDefault();
 			event.stopPropagation();
 			tombMoved = null;
