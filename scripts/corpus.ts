@@ -59,6 +59,17 @@ const ALL_KEYS = (() => {
 	return loadouts.flatMap((loadout) => [...suits, 'hidden'].map((boss) => `${loadout}:${boss}`));
 })();
 
+/** A shard may be missing, empty, half-written or written by an older schema: none of those break a run. */
+const readEntries = (path: string): Entry[] => {
+	if (!existsSync(path)) return [];
+	try {
+		const parsed = JSON.parse(readFileSync(path, 'utf8'));
+		return Array.isArray(parsed) ? parsed : [];
+	} catch {
+		return [];
+	}
+};
+
 if (mode === 'plan') {
 	const to = Number(process.env.TO ?? 20_000);
 	const perKey = Number(process.env.PER_KEY ?? 6);
@@ -85,7 +96,7 @@ if (mode === 'solve') {
 	const budget = Number(process.env.BUDGET ?? 200_000);
 	const seconds = Number(process.env.TIME ?? 0);
 	const out = process.env.OUT ?? `${shardDir}/shard-${shard}.json`;
-	const entries: Entry[] = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : [];
+	const entries = readEntries(out);
 	const done = new Set(entries.map((entry) => `${entry.loadout}:${entry.boss ?? 'hidden'}`));
 	const mine = plan.filter((_, index) => index % shards === shard);
 	for (const candidate of mine) {
@@ -136,7 +147,7 @@ if (mode === 'scan') {
 	// No clock by default: the corpus has to read the same on any machine, and across rule variants.
 	const seconds = Number(process.env.TIME ?? 0);
 	const out = process.env.OUT ?? `${shardDir}/scan-${from}.json`;
-	const entries: Entry[] = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : [];
+	const entries = readEntries(out);
 	const done = new Set(entries.map((entry) => `${entry.loadout}:${entry.boss ?? 'hidden'}`));
 	for (let seed = from; seed <= to; seed++) {
 		const state = createTombState(seed, FREE_CELL_COUNT[difficulty]);
