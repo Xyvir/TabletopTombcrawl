@@ -97,7 +97,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'Priest',
-		text: 'Vigil: exploration heals two exhausted cells instead of one, and a level up mends two.',
+		text: 'Vigil: exploration and level up healing mends two wounds instead of one.',
 	},
 	clubs: {
 		name: 'Wizard',
