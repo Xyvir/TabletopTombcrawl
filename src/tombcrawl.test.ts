@@ -533,6 +533,60 @@ describe('burden and mana burn', () => {
 		expect(next.wounded[0]).toBe(0);
 	});
 
+	test('a level up lifts the burn the same kill dealt, so the glyph ends ready', () => {
+		// The third suit reaching three is the level up; the diamonds three is a Wraith, so one kill
+		// both burns the glyph and levels the delver up. The power resolves first and the level up
+		// after it, the way a level up in DD clears the ailment that was just laid on you.
+		const state = board({
+			columns: [['3D']],
+			cells: ['TC', 'TS', 'KS', 'QS'],
+			foundations: ['3S', '3H', '2D', '3C'],
+			exhausted: [1],
+			boss: 'KD',
+		});
+		expect(currentLevel(state)).toBe(2);
+
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(currentLevel(next)).toBe(3);
+		// the burn landed, then the level up mended and refreshed it
+		expect(next.exhausted[1]).toBe(false);
+		expect(next.wounded[1]).toBe(0);
+		expect(abilityUsable(next, 1)).toBe(true);
+
+		// the same kill without the level up leaves the glyph exactly as the Wraith left it, so the
+		// burn is really what the level up lifted, not something it never happened to take
+		const noLevel = board({
+			columns: [['3D']],
+			cells: ['TC', 'TS', 'KS', 'QS'],
+			foundations: ['3S', '3H', '2D', '2C'],
+			exhausted: [1],
+			boss: 'KD',
+		});
+		expect(currentLevel(noLevel)).toBe(2);
+		const burned = attackWith(noLevel, cascade(0, 0))!;
+		expect(currentLevel(burned)).toBe(2);
+		expect(burned.exhausted[1]).toBe(true);
+	});
+
+	test('a burned glyph a level up does not mend stays locked, so it cannot be cast', () => {
+		// The track already has a wound to the left, so the level up's one heal leaves the glyph
+		// face-down: the exhaustion is gone, but the ability is still not there to use.
+		const state = board({
+			columns: [['3D']],
+			cells: ['TC', 'TS', 'KS', 'QS'],
+			foundations: ['3S', '3H', '2D', '3C'],
+			exhausted: [1],
+			wounded: [0],
+			boss: 'KD',
+		});
+
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(currentLevel(next)).toBe(3);
+		expect(next.exhausted[1]).toBe(false);
+		expect(next.wounded[1]).toBe(1);
+		expect(abilityUsable(next, 1)).toBe(false);
+	});
+
 	test('a converted item is not there to drain, so the kill costs only its damage', () => {
 		const state = board({
 			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
@@ -1356,6 +1410,23 @@ describe('tombcrawl progression rules', () => {
 		const next = revealFaceDown(state, cascade(0, 0))!;
 		expect(next.hidden).not.toContain('KS');
 		expect(next.wounded.every((count) => count === 0)).toBe(true);
+	});
+
+	test('an ace home never levels the delver up: an empty pile already counts as its ace', () => {
+		const state = makeTomb({
+			columns: [['AD'], ['2D']],
+			cells: ['KC', 'QD'],
+			foundations: ['2S', '2H', '2C'],
+		});
+		expect(currentLevel(state)).toBe(1);
+
+		// the ace takes the diamonds pile from nothing to its ace, which is the rank an empty pile is
+		// already read as, so nothing has reached its two that had not reached it before
+		const ace = attackWith(state, cascade(0))!;
+		expect(currentLevel(ace)).toBe(1);
+
+		const two = attackWith(ace, cascade(1))!;
+		expect(currentLevel(two)).toBe(2);
 	});
 
 	test('a level up heals and refreshes the glyph', () => {
