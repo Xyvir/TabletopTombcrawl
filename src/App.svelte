@@ -115,6 +115,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const FOUNDATION_FLIGHT_MS = 250;
 	/** A card coming out of the fog squashes, shows its face, then opens back out. */
 	const FLIP_MS = 210;
+	/** How long a banner holds the screen before it clears. */
+	const FANFARE_MS = 2200;
 
 	/** Tabletop Tombcrawl is the table the app opens on; the toggle falls back to plain FreeCell. */
 	const opening = createTombState();
@@ -150,6 +152,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
 	type FlashKind = 'level' | 'damage' | 'heal' | 'poison' | 'mana' | 'burden';
 	let flash = $state<{ kind: FlashKind; id: number } | null>(null);
+	/** The two moments that change what a run is: the boss dies, and the tomb is emptied. */
+	type FanfareKind = 'boss' | 'tomb';
+	let fanfare = $state<{ kind: FanfareKind; id: number } | null>(null);
+	/** The boss note joins the status bar once its banner has cleared, so the two never talk at once. */
+	let bossNoted = $state(false);
 	let game = $state<FreeCell>(opening.game);
 	let seedInput = $state('');
 	let mode = $state<'auto' | 'pick'>('auto');
@@ -378,6 +385,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			},
 			kind === 'level' ? 700 : 500
 		);
+	}
+
+	function startFanfare(kind: FanfareKind, noteBoss = kind === 'boss') {
+		const done = () => {
+			if (fanfare?.kind === kind) fanfare = null;
+			if (noteBoss) bossNoted = true;
+		};
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+			// With no banner to wait for, the note is simply information and lands at once.
+			if (noteBoss) bossNoted = true;
+			return;
+		}
+		fanfare = { kind, id: (fanfare?.id ?? 0) + 1 };
+		setTimeout(done, FANFARE_MS);
 	}
 
 	function shake(el?: HTMLElement | null) {
@@ -643,6 +664,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		else if (wounding.length) startFlash('damage');
 		// A heal that comes with a level up is already gold: green is for the quiet repairs.
 		else if (healing.length) startFlash('heal');
+		// The boss dying and the tomb emptying are the two moments worth a banner. One move can do
+		// both — the boss king is a card like any other — and then the bigger banner wins while the
+		// kill is still noted once it clears.
+		const killedBoss = !bossSlain(tomb) && bossSlain(next);
+		const emptiedTomb = tombPar(next) === 0 && tombPar(tomb) > 0;
+		if (killedBoss) bossNoted = false;
+		if (emptiedTomb) startFanfare('tomb', killedBoss);
+		else if (killedBoss) startFanfare('boss');
 		tombHistory = [...tombHistory, tomb];
 		tomb = next;
 		game = next.game;
@@ -1372,6 +1401,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				title="Par: a full tomb is worth 500, and every card takes its own value off that as it goes home — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. Lower is better, and (500 - par) / 5 is the percentage cleared."
 			>Par {tombPar(tomb)} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
 			>
+			{#if bossNoted && bossSlain(tomb)}
+				<span
+					class="bossnote"
+					title="The boss king is home, so the exit will let you leave with whatever the tomb still owes."
+					>Boss slain</span
+				>
+			{/if}
 		</div>
 	{/if}
 
@@ -1502,6 +1538,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		{#if flash}
 		{#key flash.id}
 			<div class="flash {flash.kind}" aria-hidden="true"></div>
+		{/key}
+	{/if}
+
+	{#if fanfare}
+		{#key fanfare.id}
+			<div class="fanfare {fanfare.kind}" role="status">
+				<span>{fanfare.kind === 'boss' ? 'Boss Killed!' : 'Tomb Cleared!'}</span>
+			</div>
 		{/key}
 	{/if}
 
