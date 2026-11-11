@@ -18,7 +18,7 @@ import { FreeCell } from './game/game';
  * pure: every action returns a new state, so the UI can keep a snapshot per move for undo.
  */
 
-/** The drafted party always fills the first four cells, one per suit. */
+/** The drafted party always fills the first four cells, one per role. */
 export const DRAFT_CELL_COUNT = 4;
 /** Free cells past the party: the difficulty knob, and the size of the HP track. */
 export const FREE_CELL_COUNT: Record<Difficulty, number> = { easy: 4, med: 3, hard: 2 };
@@ -275,13 +275,11 @@ function firstRevealedKing(cards: Card[], hidden: string[]): Card | null {
 export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_COUNT.med): TombState {
 	const deck = seededShuffle(initializeDeckOfCards(), seed).map((card) => ({ ...card }));
 
-	// Draft: reveal until four different suits have come up, in the order they appeared.
-	const picks: Card[] = [];
-	const rest: Card[] = [];
-	deck.forEach((card) => {
-		if (picks.length < DRAFT_CELL_COUNT && !picks.some((pick) => pick.suit === card.suit)) picks.push(card);
-		else rest.push(card);
-	});
+	// Draft: the top four cards of the shuffled deck, in draw order. The roles are independent, so
+	// suits may repeat — all 256 suit assignments are legal parties, and a physical deal is simply the
+	// first four cards off the deck.
+	const picks = deck.slice(0, DRAFT_CELL_COUNT);
+	const rest = deck.slice(DRAFT_CELL_COUNT);
 
 	// The rest of the deck fills eight columns, row by row.
 	const columns: Card[][] = Array.from({ length: TOMB_CASCADE_COUNT }, () => []);
@@ -590,9 +588,15 @@ export function leadingFoundation(state: TombState, suit: Suit): boolean {
  * rank of that suit may be built even though the drafted card never touched the foundation.
  */
 export function phantomCard(state: TombState, suit: Suit, ignore?: string): Card | null {
-	const entry = state.draft.find((candidate) => candidate.suit === suit && candidate.id !== ignore);
-	if (!entry) return null;
-	return state.game.cards.find((candidate) => cardId(candidate) === entry.id) ?? null;
+	// Two drafted cards can share a suit, and the higher of them is the one the foundations build on:
+	// a drafted nine opens the ten even when a drafted four of the same suit sits in an earlier cell.
+	let best: Card | null = null;
+	for (const entry of state.draft) {
+		if (entry.suit !== suit || entry.id === ignore) continue;
+		const card = state.game.cards.find((candidate) => cardId(candidate) === entry.id);
+		if (card && (!best || rankOf(card.rank) > rankOf(best.rank))) best = card;
+	}
+	return best;
 }
 
 export function phantomRank(state: TombState, suit: Suit, ignore?: string): number {

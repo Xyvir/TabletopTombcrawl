@@ -850,10 +850,14 @@ describe('the potion and the elixir', () => {
 });
 
 describe('tombcrawl deal and draft', () => {
-	test('drafts four suits in draw order and deals the rest under fog', () => {
+	test('drafts four cards in role order and deals the rest under fog', () => {
 		const state = createTombState(1234);
 		expect(state.draft.map((entry) => entry.role)).toEqual(['kin', 'class', 'glyph', 'consumable']);
-		expect(new Set(state.draft.map((entry) => entry.suit)).size).toBe(4);
+		// the roles are independent, so suits may repeat: some seeds deal a party with a doubled suit
+		const parties = Array.from({ length: 60 }, (_, index) =>
+			createTombState(index + 1).draft.map((entry) => entry.suit)
+		);
+		expect(parties.some((suits) => new Set(suits).size < 4)).toBe(true);
 		expect(state.draft.every((entry) => state.game.cells[entry.cell])).toBe(true);
 		expect(state.game.tableau.map((column) => column.length)).toEqual([6, 6, 6, 6, 6, 6, 6, 6]);
 		expect(state.game.cards.filter((card) => card.location.fixture === 'deck')).toHaveLength(0);
@@ -1164,6 +1168,24 @@ describe('tombcrawl progression rules', () => {
 
 		const without = makeTomb({ columns: [['9C'], ['KS']], foundations: ['7C'] });
 		expect(canSendHome(without, cascade(0)).legal).toBe(false);
+	});
+
+	test('with two drafted cards of one suit, the higher one is the phantom', () => {
+		const party: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Elf', text: '' },
+			{ cell: 1, role: 'glyph', id: '8C', suit: 'clubs', name: 'PISORF', text: '' },
+		];
+		const state = makeTomb({ columns: [['9C'], ['KS']], cells: ['4C', '8C'], foundations: ['7C'], draft: party });
+		expect(canSendHome(state, cascade(0)).legal).toBe(true);
+
+		// the lower card alone opens nothing: the pile is waiting for the nine, not the five
+		const lower = makeTomb({
+			columns: [['9C'], ['KS']],
+			cells: ['4C', '8C'],
+			foundations: ['7C'],
+			draft: [party[0]],
+		});
+		expect(canSendHome(lower, cascade(0)).legal).toBe(false);
 	});
 
 	describe('the human', () => {
