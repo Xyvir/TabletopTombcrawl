@@ -360,6 +360,9 @@ function foundationPull(state: TombState): { reach: number; buried: number } {
 		const pile = state.game.tableau[card.location.data[0]] ?? [];
 		const above = Math.max(0, pile.length - 1 - card.location.data[1]);
 		if (above === 0 && !isFaceDown(state, card)) reach++;
+		// An Elf shoots down a lane of exposed number cards: cover he can see over is no cover, so a
+		// wanted card in his line is reachable now rather than buried under the cost of digging it out.
+		else if (elfSight(state, card.location)) reach++;
 		else buried += above + (isFaceDown(state, card) ? 4 : 0);
 	}
 	buried += wanted.size * 6;
