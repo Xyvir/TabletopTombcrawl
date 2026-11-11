@@ -131,7 +131,7 @@ const GLYPHS: Record<Suit, Ability> = {
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Revive',
-		text: 'Arm to take one wound more than your track can hold: that action may spend the last heart, and the item is spent with it.',
+		text: 'Arm to kill whatever you can reach at any price: the bill takes your whole track to zero instead, and the item is spent with it.',
 	},
 	hearts: {
 		name: 'Potion',
@@ -834,29 +834,35 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
-	// A Revive buys the one wound the track cannot hold: that action may spend the last heart, and
-	// the item is spent with it, so the reserve only applies when the spell is not armed.
-	const revive = state.armed?.kind === 'revive';
 	// The reserve wants a heart held back, but only a bill can spend one: a kill that costs nothing
 	// spends nothing, so it never owes the spare heart.
-	const chargeable = total > 0 && !revive;
+	const chargeable = total > 0;
 	const short = Math.max(0, total - free + (chargeable ? 1 : 0));
-	const legal = short === 0;
-	const need = short ? emptyCells(state).slice(0, short) : [];
+	// A Revive answers the bill whatever it comes to: the kill is always on offer, and the track is
+	// what it takes instead of hearts, so nothing is short and no cell is needed to make change.
+	const revive = state.armed?.kind === 'revive';
+	const legal = revive || short === 0;
+	const need = !revive && short ? emptyCells(state).slice(0, short) : [];
 	const afterItem = itemCell === null ? state : woundCell(state, itemCell);
 	const afterWounds = wound(afterItem, damage);
-	const locks =
-		legal
-			? Array.from(new Set([...(itemCell === null ? [] : [itemCell]), ...afterWounds.locks]))
-			: [];
+	const locks = !legal
+		? []
+		: revive
+			? // the whole track goes down, so the preview reads as every face-up card being spent
+				state.game.cells.map((_, index) => index).filter((index) => faceUp(state, index) > 0)
+			: Array.from(new Set([...(itemCell === null ? [] : [itemCell]), ...afterWounds.locks]));
 	return {
 		legal,
 		reason: legal ? '' : `needs ${total} HP and one to spare, you have ${free}`,
 		damage,
 		locks,
 		need,
-		fatal: short > 0,
-		wounds: legal ? woundCardIds(state, afterItem, itemCell, afterWounds.wounded) : [],
+		fatal: !revive && short > 0,
+		wounds: legal
+			? revive
+				? woundCardIds(state, afterItem, itemCell, wipeTrack(afterItem))
+				: woundCardIds(state, afterItem, itemCell, afterWounds.wounded)
+			: [],
 	};
 }
 
@@ -910,6 +916,11 @@ function closeColumns(cards: Card[]): Card[] {
 		const to = reseated.get(cardId(card));
 		return to ? { ...card, location: to } : card;
 	});
+}
+
+/** Every face-up card on the track turned face down: what a Revive's kill costs instead of hearts. */
+function wipeTrack(state: TombState): number[] {
+	return state.game.cells.map((_, cell) => cellCards(state, cell).length);
 }
 
 /**
@@ -1138,7 +1149,7 @@ function closeFreeCast(state: TombState): TombState {
 	return state.freeCast ? cloneWith(state, { freeCast: false }) : state;
 }
 
-/** A Remedy is spent by the action it covers: the arm clears and the item exhausts. */
+/** A Remedy or a Revive is spent by the action it covers: the arm clears and the item exhausts. */
 function spendArmedItem(state: TombState): TombState {
 	const armed = state.armed;
 	if (armed?.kind !== 'remedy' && armed?.kind !== 'revive') return state;
@@ -1370,6 +1381,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	next = bossAura(next, card);
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
+	const revive = state.armed?.kind === 'revive';
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
 
 	if (hasPassive(next, 'Wizard') && card.suit === 'clubs') {
@@ -1380,7 +1392,11 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}
 
-	const settled = spendArmedItem(settle(next, levelBefore));
+	let settled = settle(next, levelBefore);
+	// A Revive lands the delver on zero however big the bill was, and a level up on the same card does
+	// not lift them off it: the wipe comes after the heal, not before.
+	if (revive) settled = cloneWith(settled, { wounded: wipeTrack(settled) });
+	settled = spendArmedItem(settled);
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
 	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
 	// chip steps left and the cell is ordinary from then on.

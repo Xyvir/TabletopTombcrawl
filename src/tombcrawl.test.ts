@@ -489,17 +489,17 @@ describe('burden and mana burn', () => {
 
 describe('the revive', () => {
 	const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TS', suit: 'spades', name: 'Revive', text: '' }];
+	// A nine at level one costs eight hearts, twice what this track can ever hold.
 	const board = () =>
 		makeTomb({
-			columns: [['4C']],
+			columns: [['9C'], ['4C']],
 			cells: ['TS', 'KD', 'QD', '7C'],
-			foundations: ['3C'],
+			foundations: ['8C'],
 			draft,
 			boss: 'KC',
 		});
 
-	test('it buys the one wound the track cannot hold, then it is spent', () => {
-		// four hearts against a four-wound kill: the last heart is exactly what the rule forbids
+	test('it kills whatever it is aimed at, and the bill takes the whole track', () => {
 		const state = board();
 		expect(hp(state)).toBe(4);
 		expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
@@ -508,7 +508,10 @@ describe('the revive', () => {
 		expect(armed.armed).toMatchObject({ kind: 'revive' });
 		// arming it costs nothing: the action it covers is what spends it
 		expect(armed.exhausted[0]).toBe(false);
-		expect(attackPreview(armed, cascade(0, 0)).legal).toBe(true);
+
+		const preview = attackPreview(armed, cascade(0, 0));
+		expect(preview).toMatchObject({ legal: true, fatal: false, damage: 8 });
+		expect(preview.locks.sort()).toEqual([0, 1, 2, 3]);
 
 		const next = attackWith(armed, cascade(0, 0))!;
 		expect(hp(next)).toBe(0);
@@ -521,7 +524,6 @@ describe('the revive', () => {
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 });
-
 describe('the bysseps glyph', () => {
 	test('arms the stack carry from a glyph slot, which level up refreshes', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '5S', suit: 'spades', name: 'BYSSEPS', text: '' }];
