@@ -588,15 +588,19 @@ export function leadingFoundation(state: TombState, suit: Suit): boolean {
  * rank of that suit may be built even though the drafted card never touched the foundation.
  */
 export function phantomCard(state: TombState, suit: Suit, ignore?: string): Card | null {
-	// Two drafted cards can share a suit, and the higher of them is the one the foundations build on:
-	// a drafted nine opens the ten even when a drafted four of the same suit sits in an earlier cell.
-	let best: Card | null = null;
+	// A drafted card never comes home, so the pile has to pass over it. Two drafted cards can share a
+	// suit and the pile meets the lower one first, so that is the card it is waiting for: with a
+	// drafted three and five, the four opens over the three, and the six opens over the five once the
+	// four is home. Taking the higher card here would leave the pile stuck on the two forever.
+	const top = foundationTopRank(state, suit);
+	let next: Card | null = null;
 	for (const entry of state.draft) {
 		if (entry.suit !== suit || entry.id === ignore) continue;
 		const card = state.game.cards.find((candidate) => cardId(candidate) === entry.id);
-		if (card && (!best || rankOf(card.rank) > rankOf(best.rank))) best = card;
+		if (!card || rankOf(card.rank) <= top) continue;
+		if (!next || rankOf(card.rank) < rankOf(next.rank)) next = card;
 	}
-	return best;
+	return next;
 }
 
 export function phantomRank(state: TombState, suit: Suit, ignore?: string): number {

@@ -1170,22 +1170,27 @@ describe('tombcrawl progression rules', () => {
 		expect(canSendHome(without, cascade(0)).legal).toBe(false);
 	});
 
-	test('with two drafted cards of one suit, the higher one is the phantom', () => {
+	test('two drafted cards of one suit pass the pile over both, lowest first', () => {
 		const party: DraftCard[] = [
-			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Elf', text: '' },
-			{ cell: 1, role: 'glyph', id: '8C', suit: 'clubs', name: 'PISORF', text: '' },
+			{ cell: 0, role: 'kin', id: '3C', suit: 'clubs', name: 'Elf', text: '' },
+			{ cell: 1, role: 'glyph', id: '5C', suit: 'clubs', name: 'PISORF', text: '' },
 		];
-		const state = makeTomb({ columns: [['9C'], ['KS']], cells: ['4C', '8C'], foundations: ['7C'], draft: party });
-		expect(canSendHome(state, cascade(0)).legal).toBe(true);
-
-		// the lower card alone opens nothing: the pile is waiting for the nine, not the five
-		const lower = makeTomb({
-			columns: [['9C'], ['KS']],
-			cells: ['4C', '8C'],
-			foundations: ['7C'],
-			draft: [party[0]],
+		// the pile sits on the two and the three is drafted, so the four is the rank it waits for
+		const waiting = makeTomb({
+			columns: [['4C'], ['KS']],
+			cells: ['3C', '5C'],
+			foundations: ['2C'],
+			draft: party,
 		});
-		expect(canSendHome(lower, cascade(0)).legal).toBe(false);
+		expect(canSendHome(waiting, cascade(0)).legal).toBe(true);
+
+		// past the four, the drafted five is now the next one, so the six opens over it
+		const past = makeTomb({ columns: [['6C'], ['KS']], cells: ['3C', '5C'], foundations: ['4C'], draft: party });
+		expect(canSendHome(past, cascade(0)).legal).toBe(true);
+
+		// the two is still out there, so the pile is not waiting for the drafted three yet
+		const short = makeTomb({ columns: [['4C'], ['KS']], cells: ['3C', '5C'], foundations: ['AC'], draft: party });
+		expect(canSendHome(short, cascade(0)).legal).toBe(false);
 	});
 
 	describe('the human', () => {
