@@ -134,7 +134,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 		return steps;
 	});
-	let showRecording = $state(false);
 	/** Cards that just came out of the fog, drawn flipping face-up for one animation. */
 	let flippingIds = $state<string[]>([]);
 	/** Cards that just took a wound, turning face-down for one animation. */
@@ -859,7 +858,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (variant === next) return;
 		clearClickMemory();
 		tombHistory = [];
-		showRecording = false;
 		tombSelected = null;
 		tombLast = null;
 		variant = next;
@@ -1069,7 +1067,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		seedInput = '';
 		if (variant === 'tomb') {
 			tombHistory = [];
-			showRecording = false;
 			tombSelected = null;
 			tombLast = null;
 			tomb = createTombState(valid ? requested : undefined, FREE_CELL_COUNT[difficulty]);
@@ -1083,7 +1080,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		flushPending();
 		if (tomb) {
 			tombHistory = [];
-			showRecording = false;
 			tombSelected = null;
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
 			game = tomb.game;
@@ -1107,7 +1103,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		clearClickMemory();
 		difficulty = next;
 		tombHistory = [];
-		showRecording = false;
 		tombSelected = null;
 		tombLast = null;
 		tombMoved = null;
@@ -1416,8 +1411,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	</div>
 
 	<footer class="controls">
+		<!-- The plain FreeCell switch is parked until an easter egg brings it back: wired, just hidden. -->
 		<button
 			class="btn"
+			hidden
 			aria-pressed={variant === 'tomb'}
 			onclick={() => setVariant(variant === 'tomb' ? 'vanilla' : 'tomb')}
 		>
@@ -1449,7 +1446,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		{/if}
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 		{#if tomb}
-			<button class="btn" aria-pressed={showRecording} onclick={() => (showRecording = !showRecording)}>
+			<button
+				class="btn"
+				title="Copy this session to the clipboard, to paste beside a solver run on the same seed"
+				onclick={copyRecording}
+			>
 				Moves ({recordedSteps.length})
 			</button>
 		{/if}
@@ -1468,20 +1469,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<span class="meta">{seed ? `deal ${seed}` : ''}</span>
 	</footer>
 
-	{#if tomb && showRecording}
-		<section class="log" aria-label="Playtest recording">
-			<header class="log-head">
-				<span>seed {tomb.seed} · {recordedSteps.length} moves · paste this next to a solver run</span>
-				<span class="log-actions">
-					<button class="btn" onclick={copyRecording}>Copy</button>
-					<button class="btn" onclick={() => (showRecording = false)}>Close</button>
-				</span>
-			</header>
-			<pre>{transcript(tombHistory[0] ?? tomb, recordedSteps)}</pre>
-		</section>
-	{/if}
-
-	{#if flash}
+		{#if flash}
 		{#key flash.id}
 			<div class="flash {flash.kind}" aria-hidden="true"></div>
 		{/key}
