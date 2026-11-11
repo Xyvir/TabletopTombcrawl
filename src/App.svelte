@@ -1715,7 +1715,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{corpus ? `${corpus.entries.length} of ${corpus.keys} parties have a seed` : 'reading the seed list…'}
 					</span>
 				</header>
-				<div class="layout-body" onmouseleave={() => (hovered = null)}>
+				<div class="layout-body" role="group" aria-label="The 256 parties" onmouseleave={() => (hovered = null)}>
 					<div class="trellis">
 						<span class="corner"></span>
 						{#each SUITS as suit (suit)}
