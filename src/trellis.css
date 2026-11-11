@@ -1,0 +1,216 @@
+/*
+ * The layout trellis: the title opens a sheet that shows all 256 parties at once. The outer grid is
+ * the kin's suit across one axis and the class's across the other; inside each square, the glyph runs
+ * down and the item runs across. One square per loadout, coloured by what has been done with it.
+ */
+
+/* the title doubles as the way in, so it takes a button's reset rather than a div's box */
+button.titlecard {
+	display: grid;
+	border: 0;
+	padding: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+	transition: filter 140ms ease;
+}
+
+button.titlecard:hover .titlemark,
+button.titlecard:focus-visible .titlemark {
+	filter: drop-shadow(0 0 6px rgba(244, 201, 107, 0.55)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+button.titlecard:focus-visible {
+	outline: 2px solid rgba(244, 201, 107, 0.8);
+	outline-offset: 4px;
+	border-radius: 3px;
+}
+
+.layout-sheet {
+	position: fixed;
+	inset: 0;
+	z-index: 70;
+	display: grid;
+	place-items: center;
+	padding: var(--gap);
+	background: rgba(5, 7, 10, 0.74);
+	backdrop-filter: blur(3px);
+}
+
+.layout-card {
+	--pip: clamp(15px, 4.2vw, 21px);
+	max-height: 92dvh;
+	max-width: 96vw;
+	overflow: auto;
+	padding: 1rem 1.15rem 1.1rem;
+	border: 1px solid rgba(241, 232, 212, 0.16);
+	border-radius: 0.6rem;
+	background: linear-gradient(180deg, rgba(27, 31, 39, 0.985), rgba(15, 18, 24, 0.985));
+	box-shadow: 0 26px 70px rgba(0, 0, 0, 0.6);
+	color: #f1e8d4;
+}
+
+.layout-card header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.25rem 0.8rem;
+	margin-bottom: 0.85rem;
+}
+
+.layout-card h2 {
+	margin: 0;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 1.05rem;
+	font-weight: 400;
+	letter-spacing: 0.03em;
+}
+
+.layout-card .corpusline {
+	font-size: 0.66rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.trellis {
+	display: grid;
+	grid-template-columns: auto repeat(4, auto);
+	gap: 5px;
+	align-items: center;
+	justify-content: start;
+}
+
+.trellis .tick {
+	font-size: calc(var(--pip) * 0.78);
+	line-height: 1;
+	text-align: center;
+	color: rgba(255, 255, 255, 0.52);
+	user-select: none;
+}
+
+.trellis .tick.red {
+	color: #ff8c9c;
+}
+
+.trellis .corner {
+	width: calc(var(--pip) * 0.9);
+}
+
+.block {
+	display: grid;
+	grid-template-columns: repeat(4, var(--pip));
+	grid-auto-rows: var(--pip);
+	gap: 2px;
+	padding: 2px;
+	border-radius: 3px;
+	background: rgba(255, 255, 255, 0.045);
+}
+
+.pip {
+	width: var(--pip);
+	height: var(--pip);
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 2px;
+	background: rgba(255, 255, 255, 0.07);
+	cursor: pointer;
+	transition: transform 90ms ease, filter 120ms ease;
+}
+
+.pip:not(:disabled):hover {
+	transform: scale(1.12);
+	filter: brightness(1.18);
+}
+
+.pip:focus-visible {
+	outline: 2px solid #f1e8d4;
+	outline-offset: 1px;
+}
+
+/* no seed found for this party yet */
+.pip.missing {
+	background: rgba(255, 255, 255, 0.025);
+	border: 1px dashed rgba(255, 255, 255, 0.13);
+	cursor: not-allowed;
+}
+
+/* a seed is known but the boss is still alive */
+.pip.playable {
+	background: rgba(126, 170, 255, 0.32);
+	border-color: rgba(126, 170, 255, 0.5);
+}
+
+/* the boss on this party has been killed */
+.pip.boss {
+	background: rgba(127, 211, 181, 0.55);
+	border-color: rgba(127, 211, 181, 0.8);
+}
+
+/* the whole tomb came home on this party */
+.pip.cleared {
+	background: #f4c96b;
+	border-color: #ffe6a3;
+	box-shadow: 0 0 7px rgba(244, 201, 107, 0.45);
+}
+
+/* the party being played right now */
+.pip.mine {
+	outline: 2px solid rgba(255, 255, 255, 0.85);
+	outline-offset: 1px;
+}
+
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem 0.95rem;
+	margin-top: 0.9rem;
+	font-size: 0.63rem;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.58);
+}
+
+.legend span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.legend i {
+	display: inline-block;
+	width: 0.7rem;
+	height: 0.7rem;
+	border: 1px solid transparent;
+	border-radius: 2px;
+}
+
+.legend i.cleared {
+	background: #f4c96b;
+	border-color: #ffe6a3;
+}
+
+.legend i.boss {
+	background: rgba(127, 211, 181, 0.55);
+	border-color: rgba(127, 211, 181, 0.8);
+}
+
+.legend i.playable {
+	background: rgba(126, 170, 255, 0.32);
+	border-color: rgba(126, 170, 255, 0.5);
+}
+
+.legend i.missing {
+	background: rgba(255, 255, 255, 0.025);
+	border-color: rgba(255, 255, 255, 0.13);
+	border-style: dashed;
+}
+
+.sheetnote {
+	margin: 0.55rem 0 0;
+	max-width: 34rem;
+	font-size: 0.66rem;
+	line-height: 1.45;
+	color: rgba(255, 255, 255, 0.42);
+}

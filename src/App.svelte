@@ -25,6 +25,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		type TapResult,
 	} from './interaction';
 	import { describeStep, transcript } from './notation';
+	import { markLayout, readLayouts, type LayoutRecord } from './progress';
+	import './trellis.css';
 	import titleMark from './assets/title.svg?raw';
 	import {
 		MONSTERS,
@@ -163,6 +165,115 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Difficulty sizes the tomb track's free cells; the classic board always keeps its four. */
 	let difficulty = $state<Difficulty>('med');
 	let board = $state<HTMLElement>();
+
+	/* ---------- the layout trellis ---------- */
+	type CorpusEntry = {
+		loadout: string;
+		boss: string | null;
+		seed: number;
+		moves: number;
+		difficulty: string;
+		goal: string;
+		party: { role: string; name: string; suit: string }[];
+	};
+	type CorpusFile = {
+		difficulty: string;
+		goal: string;
+		rules: string;
+		keys: number;
+		entries: CorpusEntry[];
+		missing: string[];
+	};
+	/** Draw order: the corpus keys a party the same way, one letter per role. */
+	const SUITS = ['hearts', 'clubs', 'diamonds', 'spades'] as const;
+	const SUIT_GLYPH: Record<string, string> = { hearts: '♥', clubs: '♣', diamonds: '♦', spades: '♠' };
+	let layoutOpen = $state(false);
+	let sheetEl = $state<HTMLElement>();
+	let corpus = $state<CorpusFile | null>(null);
+	// Opening the sheet moves the focus onto it, so Escape and the arrow-free grid work from the keyboard.
+	$effect(() => {
+		if (!layoutOpen) return;
+		void tick().then(() => sheetEl?.focus());
+	});
+	let progress = $state<Map<string, LayoutRecord>>(new Map());
+	const entriesByLayout = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.loadout, entry])));
+	const currentLayout = $derived(loadoutOf(tomb));
+
+	/** A party's four drafted suits in role order, letters only, e.g. `hcds`. */
+	function loadoutOf(state: TombState | null): string {
+		if (!state) return '';
+		return [...state.draft]
+			.sort((a, b) => a.cell - b.cell)
+			.map((entry) => entry.suit[0])
+			.join('');
+	}
+
+	function layoutStatus(key: string): 'cleared' | 'boss' | 'playable' | 'missing' {
+		const held = progress.get(key)?.status;
+		if (held === 'clear') return 'cleared';
+		if (held === 'boss') return 'boss';
+		return entriesByLayout.has(key) ? 'playable' : 'missing';
+	}
+
+	function openLayout() {
+		layoutOpen = true;
+	}
+
+	function closeLayout() {
+		layoutOpen = false;
+	}
+
+	/** Start the corpus deal for a party: the same rules the corpus was solved under. */
+	function startLayout(entry: CorpusEntry) {
+		layoutOpen = false;
+		seedInput = '';
+		clearClickMemory();
+		const level = (entry.difficulty as Difficulty) ?? 'med';
+		difficulty = level;
+		tombHistory = [];
+		tombSelected = null;
+		tombLast = null;
+		tomb = createTombState(entry.seed, FREE_CELL_COUNT[level]);
+		game = tomb.game;
+	}
+
+	/**
+	 * Remember what this run has achieved for its party. Only two moments count: the boss going home,
+	 * and the tomb coming bare. A layout keeps its best mark, so a replay that does worse changes
+	 * nothing.
+	 */
+	async function recordRun(state: TombState) {
+		const key = loadoutOf(state);
+		const status: LayoutRecord['status'] | null = tombPar(state) === 0 ? 'clear' : bossSlain(state) ? 'boss' : null;
+		if (!status) return;
+		const held = progress.get(key)?.status;
+		if (held === 'clear' || (held === 'boss' && status === 'boss')) return;
+		const record: LayoutRecord = { loadout: key, status, seed: state.seed, at: Date.now() };
+		progress = new Map(progress).set(key, record);
+		await markLayout(record);
+	}
+
+	onMount(() => {
+		let alive = true;
+		void (async () => {
+			try {
+				const response = await fetch(`${BASE}corpus.json`);
+				if (response.ok && alive) corpus = (await response.json()) as CorpusFile;
+			} catch {
+				// no corpus file simply leaves every square without a seed to play
+			}
+			const saved = await readLayouts();
+			if (alive) progress = saved;
+		})();
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') layoutOpen = false;
+		};
+		window.addEventListener('keydown', onKey);
+		return () => {
+			alive = false;
+			window.removeEventListener('keydown', onKey);
+		};
+	});
 
 	type PendingTap = {
 		id: string;
@@ -672,6 +783,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (killedBoss) bossNoted = false;
 		if (emptiedTomb) startFanfare('tomb', killedBoss);
 		else if (killedBoss) startFanfare('boss');
+		void recordRun(next);
 		tombHistory = [...tombHistory, tomb];
 		tomb = next;
 		game = next.game;
@@ -1254,9 +1366,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	<header class="top" class:tomb={!!tomb}>
 		{#if tomb}
-			<div class="titlecard" role="img" aria-label="Tabletop Tombcrawl">
+			<button
+				type="button"
+				class="titlecard"
+				onclick={openLayout}
+				title="Choose a layout: every party the four roles can make, and how far you have got with it"
+				aria-label="Tabletop Tombcrawl — choose a layout"
+			>
 				<span class="titlemark">{@html titleMark}</span>
-			</div>
+			</button>
 		{/if}
 
 		<div class="foundations" class:tomb={!!tomb}>
@@ -1547,6 +1665,73 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<span>{fanfare.kind === 'boss' ? 'Boss Killed!' : 'Tomb Cleared!'}</span>
 			</div>
 		{/key}
+	{/if}
+
+	{#if layoutOpen}
+		<!-- Suppressed here; a click on the felt around the sheet closes it. -->
+		<div
+			class="layout-sheet"
+			role="dialog"
+			aria-modal="true"
+			aria-label="Choose a layout"
+			tabindex="-1"
+			bind:this={sheetEl}
+			onkeydown={(event) => {
+				if (event.key === 'Escape') closeLayout();
+			}}
+			onclick={(event) => {
+				if (event.target === event.currentTarget) closeLayout();
+			}}
+		>
+			<div class="layout-card">
+				<header>
+					<h2>Choose a layout</h2>
+					<span class="corpusline">
+						{corpus ? `${corpus.entries.length} of ${corpus.keys} parties have a seed` : 'reading the seed list…'}
+					</span>
+				</header>
+				<div class="trellis">
+					<span class="corner"></span>
+					{#each SUITS as suit (suit)}
+						<span class="tick" class:red={suit === 'hearts' || suit === 'diamonds'}>{SUIT_GLYPH[suit]}</span>
+					{/each}
+					{#each SUITS as kin (kin)}
+						<span class="tick" class:red={kin === 'hearts' || kin === 'diamonds'}>{SUIT_GLYPH[kin]}</span>
+						{#each SUITS as cls (cls)}
+							<div class="block" aria-label={`kin ${kin}, class ${cls}`}>
+								{#each SUITS as glyph (glyph)}
+									{#each SUITS as item (item)}
+										{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}
+										{@const entry = entriesByLayout.get(key)}
+										<button
+											type="button"
+											class="pip {layoutStatus(key)}"
+											class:mine={key === currentLayout}
+											disabled={!entry}
+											onclick={() => entry && startLayout(entry)}
+											title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
+												entry ? `seed ${entry.seed}, boss slain in ${entry.moves} moves` : 'no seed found yet'
+											}`}
+											aria-label={`${key} ${layoutStatus(key)}`}
+										></button>
+									{/each}
+								{/each}
+							</div>
+						{/each}
+					{/each}
+				</div>
+				<div class="legend">
+					<span><i class="cleared"></i>tomb cleared</span>
+					<span><i class="boss"></i>boss killed</span>
+					<span><i class="playable"></i>playable</span>
+					<span><i class="missing"></i>no seed yet</span>
+				</div>
+				<p class="sheetnote">
+					Rows are the kin's suit and columns the class's; inside every square the glyph runs down and the item
+					across. A square with a seed starts that deal.
+				</p>
+			</div>
+		</div>
 	{/if}
 
 	{#if (tomb && tomb.won) || (!tomb && game.win)}
