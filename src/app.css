@@ -81,6 +81,16 @@ img {
 	touch-action: manipulation;
 }
 
+/*
+ * A cell holding a card is dragged exactly like a card is: if the browser is allowed to pan here it
+ * claims the finger as a scroll the instant it moves and cancels the gesture, so a card could never
+ * be lifted out of a free cell on touch. The empty cells keep manipulation, since they are only ever
+ * dropped on, never dragged from.
+ */
+.slot[data-card] {
+	touch-action: none;
+}
+
 .slot img {
 	position: absolute;
 	inset: 0;

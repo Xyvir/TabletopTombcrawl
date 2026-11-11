@@ -792,7 +792,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (double) {
 				const home = attackWith(state, card.location);
 				if (home) return void commit(home);
-			} else if (abilityUsable(state, index)) {
+				// The mirror of a tableau card falling back to a free cell: a plain cell's card goes to the
+				// first column that will take it, so the double click can always answer on the way out.
+				const column = tombDragTargets(state, card.location).find((key) => key.startsWith('cascade:'));
+				const landed = column
+					? tombMove(state, card.location, { fixture: 'cascade', data: [Number(column.split(':')[1])] })
+					: null;
+				if (landed) return void commit(landed);
+				shake(el);
+				return;
+			}
+			if (abilityUsable(state, index)) {
 				const used = useAbility(state, index);
 				if (used) return void commit(used);
 			}
