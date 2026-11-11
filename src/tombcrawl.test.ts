@@ -32,6 +32,7 @@ import {	MONSTERS,
 	woundedCards,
 	isFaceDown,
 	revealFaceDown,
+	unpick,
 	kingsHome,
 	playerLevel,
 	tombExit,
@@ -1947,6 +1948,27 @@ describe('tombcrawl the class powers and the hearts they pay', () => {
 		const cast = useAbility(state, 1)!;
 		expect(cast.armed).toMatchObject({ kind: 'weytwut' });
 		expect(wounds(cast)).toBe(0);
+	});
+});
+
+describe('putting a two-click spell’s pick down', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'glyph', id: '2D', suit: 'diamonds', name: 'WEYTWUT', text: '' },
+	];
+	const board = () => makeTomb({ columns: [['5H'], ['9D']], cells: ['2D'], draft });
+
+	test('clears the pick and leaves the spell armed and exhausted for a fresh aim', () => {
+		const armed = armedClick(useAbility(board(), 0)!, cascade(0, 0))!;
+		expect(armed.armed).toMatchObject({ kind: 'weytwut', first: '5H' });
+
+		const put = unpick(armed)!;
+		expect(put.armed).toMatchObject({ kind: 'weytwut' });
+		expect(put.armed?.first).toBeUndefined();
+		expect(put.exhausted[0]).toBe(true);
+	});
+
+	test('does nothing when nothing has been picked yet', () => {
+		expect(unpick(useAbility(board(), 0)!)).toBe(null);
 	});
 });
 

@@ -167,6 +167,13 @@ img {
 	outline: 3px solid #ffd95e;
 	outline-offset: -3px;
 }
+/* The first card of a two-click spell keeps the selection ring while its partner is picked. */
+.card.aimed img,
+.slot.aimed img {
+	outline: 3px solid #ffd95e;
+	outline-offset: -3px;
+}
+
 
 /*
  * A card that can be slain wears crossed swords, so the kill reads as a kill before you swing. The

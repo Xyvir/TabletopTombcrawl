@@ -1535,6 +1535,16 @@ export function disarm(state: TombState): TombState {
 }
 
 /**
+ * Put the first card of a two-click spell down without spending it: the spell stays armed, so a click
+ * that cannot use the pick costs a click rather than the cast.
+ */
+export function unpick(state: TombState): TombState | null {
+	const armed = state.armed;
+	if (!armed?.first) return null;
+	return cloneWith(state, { armed: { ...armed, first: undefined } });
+}
+
+/**
  * Resolve a click while an ability is armed. BURNDAYRAZ burns a card it can see however deeply it
  * lies, IMAWAL lays a card on the fog, PISORF moves an exposed card anywhere, WEYTWUT swaps two.
  */

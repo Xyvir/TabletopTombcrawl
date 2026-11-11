@@ -54,6 +54,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		emptyCells,
 		flipFaceDown,
 		freeCastReady,
+		unpick,
 		hasPassive,
 		isBoss,
 		isBossMinion,
@@ -585,7 +586,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		flushPending();
 		if (tomb) {
 			tombSelected = null;
-			if (tomb.armed) commit(disarm(tomb));
+			// Clicking the empty felt puts a two-click spell's first pick down before it puts the spell away.
+			const dropped = unpick(tomb);
+			if (dropped) commit(dropped);
+			else if (tomb.armed) commit(disarm(tomb));
 			return;
 		}
 		apply(game.setCursor(location).touch());
@@ -734,8 +738,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (!state || !state.armed) return tap(location);
 		event.stopPropagation();
 		const next = armedClick(state, location);
-		if (next) commit(next);
-		else shake(event.currentTarget as HTMLElement);
+		if (next) return void commit(next);
+		// An empty cell cannot partner a swap: the click puts the first card down and keeps the spell armed.
+		const dropped = unpick(state);
+		if (dropped) return void commit(dropped);
+		shake(event.currentTarget as HTMLElement);
 	}
 
 	function tombClick(event: MouseEvent, card: Card) {
@@ -762,6 +769,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const armed = armedClick(state, card.location);
 			if (armed) {
 				commit(armed);
+				return;
+			}
+			// A card that cannot partner the pick is a click off: put the first one down, spell still armed.
+			const dropped = unpick(state);
+			if (dropped) {
+				commit(dropped);
 				return;
 			}
 			// A Remedy, Revive or BYSSEPS holds no target: it waits for the action it covers, so the
@@ -1240,6 +1253,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<button
 					class="slot"
 					class:selected={!!card && selected.has(key(location))}
+					class:aimed={!!card && !!tomb?.armed?.first && tomb.armed.first === shorthandCard(card)}
 					class:draft={!!entry}
 					class:pending={!!pending}
 					class:exhausted={!!tomb && tomb.exhausted[i]}
@@ -1368,6 +1382,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<button
 						class="card"
 						class:selected={selected.has(key(card.location))}
+						class:aimed={!!tomb?.armed?.first && tomb.armed.first === shorthandCard(card)}
 						class:dragging={dragIds.has(shorthandCard(card))}
 						class:boss
 						class:aura={minion && !down}
