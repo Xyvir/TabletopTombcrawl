@@ -1,7 +1,7 @@
 /**
- * A status board for a running corpus search: what is covered, what each worker is doing, and which
- * parties it has just won. It reads only the files the workers already write, so it can be started
- * or stopped at any time without disturbing a search.
+ * A status board for a running corpus search: what is covered, how far each worker has walked its
+ * seed range, and which parties it has just won. It reads only the files the workers already write,
+ * so it can be started or stopped at any time without disturbing a search.
  *
  *   node scripts/run.mjs scripts/status.ts          draw every two seconds
  *   ONCE=1 node scripts/run.mjs scripts/status.ts    print one frame and exit
@@ -24,12 +24,20 @@ interface Corpus {
 	entries: Entry[];
 	found?: Record<string, { boss?: Found; clear?: Found }>;
 }
+/** What a worker leaves behind between deals, so a long grind is not mistaken for a dead process. */
+interface Beat {
+	from: number;
+	to: number;
+	seed: number;
+	finds: number;
+	at: number;
+}
 
 const DIR = process.env.DIR ?? 'corpus';
 const CORPUS = process.env.CORPUS ?? 'public/corpus.json';
 const REFRESH_MS = Number(process.env.REFRESH_MS ?? 2000);
-/** A worker that has written nothing for this long is shown as quiet rather than running. */
-const QUIET_MS = 5 * 60_000;
+/** A worker beats every five seeds; a deal can take minutes, so this leaves room for a slow one. */
+const QUIET_MS = 10 * 60_000;
 const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
 const readJson = <T>(path: string, fallback: T): T => {
@@ -70,6 +78,7 @@ const lastWin = (path: string): string => {
 interface Worker {
 	from: number;
 	keys: number;
+	progress: string;
 	updated: number;
 	live: boolean;
 	win: string;
@@ -83,14 +92,26 @@ const workers = (): Worker[] => {
 		if (!match) continue;
 		const from = Number(match[1]);
 		const path = `${DIR}/scan-${from}.json`;
-		let updated = 0;
+		let written = 0;
 		try {
-			updated = statSync(path).mtimeMs;
+			written = statSync(path).mtimeMs;
 		} catch {
 			continue;
 		}
+		const beat = readJson<Beat | null>(`${DIR}/heartbeat-${from}.json`, null);
+		const updated = Math.max(written, beat?.at ?? 0);
+		const span = beat ? beat.to - beat.from + 1 : 0;
+		const walked = beat ? beat.seed - beat.from : 0;
+		const progress = beat ? `${walked}/${span}` : '—';
 		const win = lastWin(`${DIR}/bosslog-${from}.txt`) || lastWin(`${DIR}/log-${from}.txt`);
-		rows.push({ from, keys: readJson<Entry[]>(path, []).length, updated, live: Date.now() - updated < QUIET_MS, win });
+		rows.push({
+			from,
+			keys: readJson<Entry[]>(path, []).length,
+			progress,
+			updated,
+			live: Date.now() - updated < QUIET_MS,
+			win,
+		});
 	}
 	return rows.sort((a, b) => a.from - b.from);
 };
@@ -118,14 +139,14 @@ function frame(): string {
 		` ${SPINNER[Math.floor(Date.now() / 200) % SPINNER.length]}  CORPUS SEARCH   ${new Date().toLocaleTimeString()}   ${DIR}/`,
 		'',
 		`  coverage   ${bar(corpus.entries.length, corpus.keys)}  ${corpus.entries.length}/${corpus.keys}  ${pct}%`,
-		`  workers    ${rows.length} shards · ${live} writing within 5m · ${finds} finds on disk · ${pending} waiting to merge`,
+		`  workers    ${rows.length} shards · ${live} live · ${finds} finds on disk · ${pending} waiting to merge`,
 		'',
-		'  start   keys   state        updated   last win',
+		'  start   seed range   finds   beat    last win',
 		...rows.map(
 			(row) =>
-				`  ${String(row.from).padEnd(6)}  ${String(row.keys).padEnd(5)}  ${
-					row.live ? 'live      ' : 'quiet     '
-				}  ${since(row.updated).padStart(6)}    ${row.win || '—'}`
+				`  ${String(row.from).padEnd(6)}  ${row.progress.padEnd(10)}  ${String(row.keys).padEnd(5)}   ${
+					row.live ? since(row.updated).padStart(5) : since(row.updated).padStart(5)
+				}   ${row.win || '—'}`
 		),
 		'',
 		'  latest in the corpus',

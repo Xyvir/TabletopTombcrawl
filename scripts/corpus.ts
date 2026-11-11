@@ -171,14 +171,19 @@ if (mode === 'scan') {
 	// No clock by default: the corpus has to read the same on any machine, and across rule variants.
 	const seconds = Number(process.env.TIME ?? 0);
 	const out = process.env.OUT ?? `${shardDir}/scan-${from}.json`;
+	const heartbeat = `${shardDir}/heartbeat-${from}.json`;
 	const entries = readEntries(out);
 	// Parallel workers share no shard file, so each also skips whatever the published corpus has
 	// already found: without this, six workers chase the same parties and six times the seeds.
 	const done = new Set([...entries.map((entry) => entry.loadout), ...publishedLoadouts()]);
 	for (let seed = from; seed <= to; seed++) {
-		// Workers win parties while this one is still running, so the skip list is refreshed as it
-		// goes: without this, each worker only skips what was already covered when it started.
-		if ((seed - from) % 10 === 0) for (const loadout of foundAnywhere()) done.add(loadout);
+		if ((seed - from) % 5 === 0) {
+			// Workers win parties while this one is running, so the skip list is refreshed as it goes:
+			// without this, each worker only skips what was covered when it started. A long deal writes
+			// nothing either, so this same beat is what tells the status board a worker is still alive.
+			for (const loadout of foundAnywhere()) done.add(loadout);
+			writeFileSync(heartbeat, JSON.stringify({ from, to, seed, finds: entries.length, at: Date.now() }));
+		}
 		const state = createTombState(seed, FREE_CELL_COUNT[difficulty]);
 		const key = keyOf(state);
 		if (done.has(key)) continue;
