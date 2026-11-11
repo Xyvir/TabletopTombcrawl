@@ -3,7 +3,98 @@
 	"goal": "boss",
 	"rules": "draft-any-suit",
 	"keys": 256,
-	"entries": [],
+	"entries": [
+		{
+			"loadout": "hhcs",
+			"boss": "diamonds",
+			"seed": 2,
+			"moves": 87,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hsds",
+			"boss": "diamonds",
+			"seed": 4,
+			"moves": 62,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			]
+		},
+		{
+			"loadout": "hssh",
+			"boss": "diamonds",
+			"seed": 12,
+			"moves": 95,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			]
+		}
+	],
 	"missing": [
 		"hhhh",
 		"hhhc",
@@ -12,7 +103,6 @@
 		"hhch",
 		"hhcc",
 		"hhcd",
-		"hhcs",
 		"hhdh",
 		"hhdc",
 		"hhdd",
@@ -64,8 +154,6 @@
 		"hsdh",
 		"hsdc",
 		"hsdd",
-		"hsds",
-		"hssh",
 		"hssc",
 		"hssd",
 		"hsss",
