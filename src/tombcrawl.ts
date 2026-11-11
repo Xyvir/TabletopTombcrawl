@@ -403,7 +403,11 @@ export function isBossMinion(state: TombState, card: Card): boolean {
 
 /** Monster types: the flavour behind each boss suit, and the power that suit's cards carry. */
 export const MONSTERS: Record<Suit, { name: string; power: string; text: string }> = {
-	spades: { name: 'Bandit', power: 'Weakness', text: 'killing this costs one extra HP.' },
+	spades: {
+		name: 'Bandit',
+		power: 'Weakness',
+		text: 'killing this costs one extra HP, and so does parking it in a free cell.',
+	},
 	hearts: {
 		name: 'Serpent',
 		power: 'Poison',
@@ -1245,8 +1249,9 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 /**
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
+ * `by` says which of the two it was, because Weakness is the one power already priced into the kill.
  */
-function bossAura(state: TombState, card: Card): TombState {
+function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState {
 	if (!isBossMinion(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
@@ -1264,6 +1269,14 @@ function bossAura(state: TombState, card: Card): TombState {
 			}
 			if (!poison) return state;
 			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(poison)) });
+		}
+		case 'spades': {
+			// Weakness is already priced into the kill — the attack adds the rank back on — so a kill
+			// owes nothing here. A minion parked in a cell has no bill to add to, and used to cost
+			// nothing at all; it now takes the same single heart off the track. It spends no item: a
+			// Bandit takes a heart, not your kit.
+			if (by !== 'park') return state;
+			return dropKnockedArm(cloneWith(state, { wounded: wound(state, 1).wounded }));
 		}
 		case 'clubs':
 		case 'diamonds': {
@@ -1394,7 +1407,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// park exactly as it covers a kill: the arm is checked here, not just inside the aura. A card
 	// fed into a spent item slot becomes that item, so it is no longer a monster either way.
 	if (from.fixture === 'cascade' && to.fixture === 'cell' && !feed && auraActive(next)) {
-		for (const card of cards) next = bossAura(next, card);
+		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
 	// Scavenging: a card played out of its slot is spent, but an Orc's slot is not closed by it. The
@@ -1443,7 +1456,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		});
 	}
 
-	next = bossAura(next, card);
+	next = bossAura(next, card, 'kill');
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	const revive = state.armed?.kind === 'revive';

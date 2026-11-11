@@ -995,6 +995,28 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackWith(state, cascade(0))).toBe(null);
 	});
 
+	test('parking a spade minion in a free cell deals one wound, and spends nothing', () => {
+		const state = makeTomb({
+			columns: [['5S']],
+			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
+			boss: 'KS',
+			exhausted: [0, 1, 2, 3, 4, 5],
+		});
+		expect(hp(state)).toBe(6);
+
+		const parked = tombMove(state, cascade(0, 0), cell(6))!;
+		// the parked card is a fresh heart on the track, and Weakness takes one straight back: the
+		// track reads the same while one of its cards has turned face down
+		expect(hp(parked)).toBe(6);
+		expect(parked.wounded.reduce((total, count) => total + count, 0)).toBe(1);
+
+		// a minion of another suit parks for free, so the track keeps the heart it just gained
+		const other = makeTomb({ columns: [['5H']], cells: ['2C', '3C', '4C', '6C', '7C', '8C', null], boss: 'KS' });
+		expect(hp(tombMove(other, cascade(0, 0), cell(6))!)).toBe(7);
+		// a Bandit takes a heart, not a kit: the powers that drain an item still do, and this one does not
+		 expect(parked.exhausted).toEqual(state.exhausted);
+	});
+
 	test('spades weakness makes boss minions cost one extra', () => {
 		const state = makeTomb({
 			columns: [['5S']],
