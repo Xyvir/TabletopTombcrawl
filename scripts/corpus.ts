@@ -174,7 +174,11 @@ if (mode === 'merge') {
 				const parsed = JSON.parse(readFileSync(`${shardDir}/${name}`, 'utf8'));
 				if (!Array.isArray(parsed)) continue;
 				// the plan sits in here too and its rows are not entries: only entries carry a seed
-				for (const entry of parsed) if (typeof entry?.seed === 'number') all.push(entry);
+				for (const entry of parsed) {
+					if (typeof entry?.seed !== 'number') continue;
+					// rows written before the corpus recorded its goal came from clear-goal runs
+					all.push({ ...entry, goal: entry.goal ?? 'clear' });
+				}
 			} catch {
 				// a half-written shard is skipped, and the next merge picks it up
 			}

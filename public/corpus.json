@@ -31,7 +31,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "dsch",
@@ -60,7 +61,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hdcs",
@@ -89,7 +91,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hdcs",
@@ -118,7 +121,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hdsc",
@@ -147,15 +151,15 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hdsc",
 			"boss": "diamonds",
-			"seed": 123,
-			"moves": 85,
+			"seed": 47,
+			"moves": 87,
 			"difficulty": "med",
-			"goal": "boss",
 			"party": [
 				{
 					"role": "kin",
@@ -177,7 +181,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hdsc",
@@ -206,7 +211,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hscd",
@@ -235,7 +241,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hscd",
@@ -264,7 +271,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hscd",
@@ -293,7 +301,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hscd",
@@ -322,7 +331,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hsdc",
@@ -351,7 +361,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hsdc",
@@ -359,6 +370,37 @@
 			"seed": 12,
 			"moves": 90,
 			"difficulty": "med",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"goal": "clear"
+		},
+		{
+			"loadout": "hsdc",
+			"boss": "hearts",
+			"seed": 70,
+			"moves": 80,
+			"difficulty": "med",
+			"goal": "boss",
 			"party": [
 				{
 					"role": "kin",
@@ -409,7 +451,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"goal": "clear"
 		},
 		{
 			"loadout": "hsdc",
@@ -438,7 +481,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"goal": "clear"
 		}
 	],
 	"missing": [
@@ -458,7 +502,6 @@
 		"hdsc:hearts",
 		"hdsc:hidden",
 		"hscd:spades",
-		"hsdc:hearts",
 		"chds:hearts",
 		"chds:clubs",
 		"chds:diamonds",
