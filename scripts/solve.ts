@@ -155,7 +155,9 @@ function single(options: Options): void {
 		depth: options.depth,
 		beamWidth: options.beamWidth,
 		strategy: options.strategy,
-		timeBudgetMs: options.seconds * 1000,
+		// A zero seconds budget means no clock at all: the state budget is then the only limit, so a
+		// run reads the same on any machine.
+		timeBudgetMs: options.seconds > 0 ? options.seconds * 1000 : Number.POSITIVE_INFINITY,
 		onProgress: (info) => {
 			if (options.quiet) return;
 			process.stdout.write(
@@ -200,7 +202,9 @@ function range(options: Options): void {
 			depth: options.depth,
 			beamWidth: options.beamWidth,
 			strategy: options.strategy,
-			timeBudgetMs: options.seconds * 1000,
+			// A zero seconds budget means no clock at all: the state budget is then the only limit, so a
+		// run reads the same on any machine.
+		timeBudgetMs: options.seconds > 0 ? options.seconds * 1000 : Number.POSITIVE_INFINITY,
 		});
 		const solved = result.solved;
 		const last = result.steps.length ? result.steps[result.steps.length - 1].state : result.best;
@@ -244,7 +248,7 @@ options
   --cap N                      most hearts one kill may cost (default 0, no ceiling)
   --no-glyphboss               keep the boss king immovable, glyphs included
   --depth N                    longest line to follow (default 300)
-  --time S                     seconds before giving up (default 120)
+  --time S                     seconds before giving up (default 120; 0 = no clock, states only)
   --steps N                    print only the first N moves of a line
   --quiet                      no progress line
   --help                       this text
