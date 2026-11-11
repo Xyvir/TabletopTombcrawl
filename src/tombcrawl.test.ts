@@ -262,11 +262,18 @@ describe('conversion order', () => {
 			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
 			{ cell: 3, role: 'consumable', id: '5S', suit: 'spades', name: 'Potion', text: '' },
 		];
-		const state = makeTomb({ columns: [['6H'], ['3S']], cells: ['4C', null, null, '5S'], draft, hidden: ['3S'] });
+		// five hearts on the track, so the five of spades can be paid for on its way home
+		const state = makeTomb({
+			columns: [['6H'], ['3S']],
+			cells: ['4C', '2H', '3C', '5S', '7D', '8D', '9D'],
+			foundations: ['4S'],
+			draft,
+			hidden: ['3S'],
+		});
 		expect(chipBoundary(state)).toBe(4);
 
-		// the potion is played out: its slot is normal for one action, but the chip has not moved yet
-		const played = tombMove(state, cell(3), cascade(0))!;
+		// the potion goes home: its slot waits one action, but the chip has not moved yet
+		const played = attackWith(state, cell(3))!;
 		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades' });
 		expect(chipBoundary(played)).toBe(4);
 
@@ -1203,12 +1210,13 @@ describe('tombcrawl progression rules', () => {
 		expect(next.wounded[1]).toBe(1);
 	});
 
-	test('a draft card can be converted out of its cell', () => {
+	test('a draft card can only be converted home, never out onto the board', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '8C', suit: 'clubs', name: 'PISORF', text: '' }];
 		const state = makeTomb({ columns: [['9H'], ['KS']], cells: ['8C'], draft });
-		const next = tombMove(state, cell(0), cascade(0))!;
-		expect(next.draft).toHaveLength(0);
-		expect(next.game.cells[0]).toBe(null);
+		// the eight could build on the nine, and a spent spell could be cycled back in: both refused
+		expect(tombMove(state, cell(0), cascade(0))).toBe(null);
+		expect(state.draft).toHaveLength(1);
+		expect(state.game.cells[0]).not.toBe(null);
 	});
 
 	test('a plain card in a free cell is scratch space: it builds back onto the board', () => {
@@ -1553,18 +1561,24 @@ describe('tombcrawl the the sack', () => {
 
 describe('tombcrawl item refresh', () => {
 	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
-	const base = (draft: DraftCard[] = glyph, cells: string[] = ['2S']) =>
-		makeTomb({ columns: [['5H'], ['3S'], ['9D', '3H'], ['8S'], ['7C']], cells, draft });
+	// The ace home lets the card beside the chip go home, which is the only exit an item has now.
+	// Four cards on the track, so the single point that kill costs lands on the right edge and leaves
+	// the card the test wants to feed still face up.
+	const base = (draft: DraftCard[] = glyph, cells: string[] = ['2S', '4S', '5S', '6S']) =>
+		makeTomb({ columns: [['5H'], ['3S'], ['9D', '3H'], ['8S'], ['7C']], cells, foundations: ['AS'], draft });
 
-	test('playing an item out to the board leaves its slot open for one action', () => {
-		const next = tombMove(base(), cell(0), cascade(2))!;
+	test('sending the item home is its only exit, and it leaves the slot open for one action', () => {
+		// the board offers a build the spell could take, and it is refused
+		expect(tombMove(base(), cell(0), cascade(2))).toBe(null);
+
+		const next = attackWith(base(), cell(0))!;
 		expect(next.draft).toHaveLength(0);
 		expect(next.game.cells[0]).toBe(null);
 		expect(next.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades' });
 	});
 
 	test('feeding the slot a matching card remakes the very same item', () => {
-		const played = tombMove(base(), cell(0), cascade(2))!;
+		const played = attackWith(base(), cell(0))!;
 		const refilled = tombMove(played, cascade(1), cell(0))!;
 
 		expect(refilled.itemWindow).toBe(null);
@@ -1574,7 +1588,7 @@ describe('tombcrawl item refresh', () => {
 	});
 
 	test('a plain card parked in another free cell can be fed in too', () => {
-		const played = tombMove(base(glyph, ['2S', '4S']), cell(0), cascade(2))!;
+		const played = attackWith(base(glyph, ['2S', '4S', '5S', '6S']), cell(0))!;
 		const refilled = tombMove(played, cell(1), cell(0))!;
 
 		expect(shorthandCard(refilled.game.cells[0]!)).toBe('4S');
@@ -1582,7 +1596,7 @@ describe('tombcrawl item refresh', () => {
 	});
 
 	test('the wrong suit is not a feed: it misses and the slot stays a plain free cell', () => {
-		const played = tombMove(base(), cell(0), cascade(2))!;
+		const played = attackWith(base(), cell(0))!;
 		const missed = tombMove(played, cascade(0), cell(0))!;
 
 		expect(missed.itemWindow).toBe(null);
@@ -1595,12 +1609,14 @@ describe('tombcrawl item refresh', () => {
 			{ cell: 0, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
 			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
-		// the glyph sits beside the chip, so it is the one that may be played out
-		const played = tombMove(base(draft, ['5C', '2S']), cell(1), cascade(2))!;
+		// the glyph sits beside the chip, so it is the one that may go home and open its slot
+		const played = attackWith(base(draft, ['5C', '2S', '5S', '6S']), cell(1))!;
 		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades' });
 
-		const spent = useAbility(played, 0)!;
+		// any other action closes the window: the plain move into the third free cell is not a feed
+		const spent = tombMove(played, cascade(0), cell(4))!;
 		expect(spent.itemWindow).toBe(null);
+		expect(spent.draft).toHaveLength(1);
 	});
 
 	test('an Orc can feed a card of any suit, which makes that suit’s item', () => {
@@ -1608,8 +1624,8 @@ describe('tombcrawl item refresh', () => {
 			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
 			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
-		// the spades glyph is played out, then a heart — the other colour entirely — restocks it
-		const played = tombMove(base(draft, ['4C', '2S']), cell(1), cascade(2))!;
+		// the spades glyph goes home, then a heart — the other colour entirely — restocks it
+		const played = attackWith(base(draft, ['4C', '2S', '5S', '6S']), cell(1))!;
 		const refilled = tombMove(played, cascade(0), cell(1))!;
 
 		expect(refilled.itemWindow).toBe(null);
@@ -1624,7 +1640,7 @@ describe('tombcrawl item refresh', () => {
 
 	test('the same colour is not the same suit: only an Orc takes any card', () => {
 		// a club is the colour of the spades slot, but a plain delver still has to find a spade
-		const played = tombMove(base(), cell(0), cascade(2))!;
+		const played = attackWith(base(), cell(0))!;
 		const missed = tombMove(played, cascade(4), cell(0))!;
 
 		expect(missed.itemWindow).toBe(null);
@@ -1954,3 +1970,5 @@ describe('tombcrawl IMAWAL turning a card back over', () => {
 		expect(flipFaceDown(armed, { fixture: 'cell', data: [1] })).toBe(null);
 	});
 });
+
+

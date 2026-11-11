@@ -1270,6 +1270,10 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const entry = source >= 0 ? draftAt(state, source) : undefined;
 	// An item only leaves its slot when it is the one beside the chip: conversions run in order.
 	if (entry && source !== convertibleCell(state)) return null;
+	// A live ability card leaves its slot for the foundation and nowhere else. Played out to a column
+	// it could be cycled in and out of an open column — spent, fed, and spent again — so its power
+	// would fire without limit. Going home is the one exit, and that is what restocks the slot.
+	if (entry && to.fixture !== 'foundation') return null;
 
 	// A spent item slot claims exactly one card on the very next action, and that card becomes the
 	// new item. It need not be the suit that left: an Orc's Scavenger takes any card at all.
@@ -1322,10 +1326,6 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		armed: sack || bury ? null : state.armed,
 	});
 
-	if (entry && source >= 0) {
-		next = cloneWith(next, { draft: consumeDraft(next, source) });
-	}
-
 	if (feed) {
 		const ability = ABILITY_TABLE[feed.role][cards[0].suit];
 		const exhausted = [...next.exhausted];
@@ -1347,11 +1347,6 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	}
 
 	next = settle(next, currentLevel(state));
-
-	// An item played out to the board (not home) leaves its slot open for exactly one action.
-	if (entry && source >= 0 && to.fixture === 'cascade') {
-		next = cloneWith(next, { itemWindow: { cell: source, role: entry.role, suit: entry.suit } });
-	}
 
 	return spendArmedItem(next);
 }
@@ -1412,7 +1407,8 @@ export function tombTapTargets(state: TombState, from: CardLocation): CardLocati
 	const cards = tombRun(state, from);
 	if (!cards.length) return [];
 	if (from.fixture === 'cascade' && !runReachesBottom(state, from, cards)) return [];
-	if (from.fixture === 'cell' && !cellCardMovable(state, from.data[0])) return [];
+	// A live ability card has no board targets at all: it may only be played home.
+	if (from.fixture === 'cell' && (draftAt(state, from.data[0]) || !cellCardMovable(state, from.data[0]))) return [];
 	// A run the free cells cannot hold is not a single click away, sack or no sack.
 	if (cards.length > moveCapacity(state) && state.armed?.kind !== 'sack') return [];
 	const targets: CardLocation[] = [];

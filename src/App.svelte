@@ -679,7 +679,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const card = state.game.cells[index];
 			if (!card) return null;
 			// An armed IMAWAL can pick up a wounded card that would otherwise be locked.
-			const parked = !cellCardMovable(state, index) && state.armed?.kind !== 'imawal';
+			const parked = (!!draftAt(state, index) || !cellCardMovable(state, index)) && state.armed?.kind !== 'imawal';
 			if (parked && !attackPreview(state, location).legal) return null;
 			return { location, cards: [card], peekOnly: false };
 		}
@@ -713,7 +713,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 		const keys: string[] = [];
 		// A drafted item left of the chip, or a wounded cell, has no board targets.
-		const parked = location.fixture === 'cell' && !cellCardMovable(state, location.data[0]);
+		const parked =
+			location.fixture === 'cell' &&
+			(!!draftAt(state, location.data[0]) || !cellCardMovable(state, location.data[0]));
 		// A run longer than the free cells can hold only moves with the sack open.
 		const overfull = run.cards.length > moveCapacity(state) && arm?.kind !== 'sack';
 		state.game.tableau.forEach((column, index) => {
