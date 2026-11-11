@@ -523,6 +523,23 @@ describe('the revive', () => {
 		const state = board();
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
+
+	test('a warding kill that levels the delver still mends off the wiped track', () => {
+		const warding = makeTomb({
+			columns: [['2C'], ['4C']],
+			cells: ['TS', 'KD', 'QD', '7C'],
+			// clubs is the pile holding the level back, so its two levels the run up
+			foundations: ['2S', '2H', '2D', 'AC'],
+			draft,
+			boss: 'KC',
+		});
+		const armed = useAbility(warding, 0)!;
+		const next = attackWith(armed, cascade(0, 0))!;
+
+		// the wipe takes every card down, then the level up mends one back off the left edge
+		expect(hp(next)).toBe(1);
+		expect(next.exhausted[0]).toBe(true);
+	});
 });
 describe('the bysseps glyph', () => {
 	test('arms the stack carry from a glyph slot, which level up refreshes', () => {

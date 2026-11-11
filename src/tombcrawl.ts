@@ -1392,11 +1392,10 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		next = refillConsumable(next, cellIndex, entry.suit);
 	}
 
-	let settled = settle(next, levelBefore);
-	// A Revive lands the delver on zero however big the bill was, and a level up on the same card does
-	// not lift them off it: the wipe comes after the heal, not before.
-	if (revive) settled = cloneWith(settled, { wounded: wipeTrack(settled) });
-	settled = spendArmedItem(settled);
+	// A Revive pays the whole bill before the level up is settled, so a kill that raises the delver a
+	// level still mends off the wiped track: they come back on one heart rather than none.
+	if (revive) next = cloneWith(next, { wounded: wipeTrack(next) });
+	const settled = spendArmedItem(settle(next, levelBefore));
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
 	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
 	// chip steps left and the cell is ordinary from then on.
