@@ -1733,7 +1733,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								<span class="name">{abilityFor('class', suit).name}</span>
 							</span>
 						{/each}
-						{#each SUITS as kin (kin)}
+						{#each SUITS as kin, kinIndex (kin)}
 							<span
 								class="tick side"
 								class:red={kin === 'hearts' || kin === 'diamonds'}
@@ -1765,6 +1765,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									{/each}
 								</div>
 							{/each}
+							<span class="margin side" style={`grid-column: 6; grid-row: ${2 + kinIndex}`}>
+								{#each SUITS as glyph (glyph)}
+									<span title={abilityFor('glyph', glyph).text}>{abilityFor('glyph', glyph).name}</span>
+								{/each}
+							</span>
+						{/each}
+						{#each SUITS as cls, clsIndex (cls)}
+							<span class="margin bottom" style={`grid-column: ${2 + clsIndex}; grid-row: 6`}>
+								{#each SUITS as item (item)}
+									<span title={abilityFor('consumable', item).text}>{abilityFor('consumable', item).name}</span>
+								{/each}
+							</span>
 						{/each}
 					</div>
 					<aside class="layout-preview" aria-live="polite">

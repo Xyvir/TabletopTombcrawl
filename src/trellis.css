@@ -85,10 +85,46 @@ button.titlecard:focus-visible {
 
 .trellis {
 	display: grid;
-	grid-template-columns: auto repeat(4, auto);
+	/* kin ticks, the four class blocks, then the glyph labels down the right margin */
+	grid-template-columns: auto repeat(4, auto) auto;
 	gap: 5px;
 	align-items: center;
 	justify-content: start;
+}
+
+/*
+ * The margins name what runs down a row and across a column inside a square: the glyph down the right,
+ * the item along the bottom. They repeat the block's own 4 x var(--pip) footing so the names line up
+ * with the pips they describe rather than with the blocks.
+ */
+.trellis .margin {
+	display: grid;
+	font-size: 0.5rem;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	line-height: 1;
+	color: rgba(255, 255, 255, 0.42);
+	user-select: none;
+}
+
+.trellis .margin.side {
+	grid-template-rows: repeat(4, var(--pip));
+	gap: 2px;
+	padding: 2px 0 2px 0.4rem;
+	align-items: center;
+}
+
+.trellis .margin.bottom {
+	grid-template-columns: repeat(4, var(--pip));
+	gap: 2px;
+	padding: 0.3rem 2px 0;
+	justify-items: center;
+}
+
+/* turned on its side so four names fit under the pips without widening them */
+.trellis .margin.bottom span {
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
 }
 
 .trellis .tick {
