@@ -224,14 +224,24 @@ img {
 
 /*
  * The skull answers a different question from the swords: not "can this be slain" but "can you afford
- * it". Same 58% square as the swords, so the two marks occupy the same place and only the meaning
- * changes when the price is what refuses the blow.
+ * it". It takes the swords' place and most of their box, but a picture of a skull reads heavier than
+ * two thin blades at the same size, so it is drawn a little smaller than the square it sits in.
+ * A card picture carries a rounded box-shadow, and a transparent picture wears that across its whole
+ * box: on a skull that is a pale pill. The mark is drawn, not dealt, so it drops both.
  */
 .slay .skull {
 	display: block;
-	width: 100%;
-	height: 100%;
+	width: 74%;
+	height: 74%;
 	object-fit: contain;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* Flat, like the swords and the bolt: the shadow belongs to the cards, not to the marks on them. */
+.card .slay.doomed,
+.slot .slay.doomed {
+	filter: none;
 }
 
 .card .slay.on,

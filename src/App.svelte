@@ -1672,6 +1672,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<span
 						class="slay"
 						class:on={slaying || doomed}
+						class:doomed
 						class:ranged={slaying && shotAt(tomb, location)}
 						aria-hidden="true"
 					>
@@ -1794,6 +1795,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<span
 							class="slay"
 							class:on={slaying || doomed}
+							class:doomed
 							class:ranged={slaying && shotAt(tomb, card.location)}
 							aria-hidden="true"
 						>
