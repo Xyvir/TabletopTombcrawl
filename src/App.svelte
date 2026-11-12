@@ -217,6 +217,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const key = `${deal.seed}:${difficulty}`;
 		if (key === probedKey) return;
 		probedKey = key;
+		// The seed list already holds the proof for its own deals, solved to their par: re-deriving a
+		// published seed would spend a core answering a question the corpus answers already.
+		if (entriesByLayout.get(loadoutOf(deal))?.seed === deal.seed) {
+			probeWorker?.terminate();
+			probeWorker = null;
+			probe = null;
+			return;
+		}
 		startProbe(deal.seed, difficulty);
 	});
 
@@ -1650,18 +1658,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
-			{#if probe}
-				<span
-					class="solve"
-					class:searching={probe.status === 'searching'}
-					title={probe.status === 'searching'
-						? `A solver is looking for a line from this deal in the background, on ${PROBE_NODES.toLocaleString()} states at most. It reports a line or says nothing.`
-						: probe.solved
-							? `The background search found a line of ${probe.moves} moves from this deal in ${(probe.elapsedMs / 1000).toFixed(1)}s. Copy the session to take the line with it.`
-							: `The background search spent ${probe.nodes.toLocaleString()} states and found no line. That is not proof the deal is lost, only that this budget did not crack it.`}
-				>{probeLabel}</span
-				>
-			{/if}
 			<span
 				class="score"
 				title="Score: every card that goes home is worth its own points — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb is 500, so the score divided by 5 is the percentage cleared."
@@ -1672,6 +1668,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class="bossnote"
 					title="The boss king is home, so the exit will let you leave with whatever the tomb still owes."
 					>Boss slain</span
+				>
+			{/if}
+			{#if probe}
+				<span
+					class="solve"
+					class:searching={probe.status === 'searching'}
+					title={probe.status === 'searching'
+						? `A solver is looking for a line from this deal in the background, on ${PROBE_NODES.toLocaleString()} states at most. It reports a line or says nothing.`
+						: probe.solved
+							? `The background search found a line of ${probe.moves} moves from this deal in ${(probe.elapsedMs / 1000).toFixed(1)}s. Copy the session to take the line with it.`
+							: `The background search spent ${probe.nodes.toLocaleString()} states and found no line. That is not proof the deal is lost, only that this budget did not crack it.`}
+				>{probeLabel}</span
 				>
 			{/if}
 		</div>
