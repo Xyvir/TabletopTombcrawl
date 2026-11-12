@@ -372,6 +372,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return `Exhausted item slot — play ${feed} here on your next action to remake the item. Miss it and this is an ordinary free cell.`;
 	}
 
+	/**
+	 * Whether a kill on this card is a shot rather than a swing. The Elf shoots over cover, so an
+	 * exposed card is still a card he can walk up to: it keeps the crossed swords, and the bolt is for
+	 * the card under a lane of number cards that no hand can reach yet.
+	 */
+	function shotAt(state: TombState | null, at: CardLocation | null): boolean {
+		if (!state || !at || at.fixture !== 'cascade') return false;
+		const column = state.game.tableau[at.data[0]] ?? [];
+		if (at.data[1] >= column.length - 1) return false;
+		return elfSight(state, at);
+	}
+
 	function deal(requested?: number): FreeCell {
 		return new FreeCell({ cellCount: CELL_COUNT, cascadeCount: CASCADE_COUNT })
 			.shuffle32(requested)
@@ -1531,10 +1543,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<span
 						class="slay"
 						class:on={slaying}
-						class:ranged={slaying && !!tomb && elfSight(tomb, location)}
+						class:ranged={slaying && shotAt(tomb, location)}
 						aria-hidden="true"
 					>
-						{#if slaying && !!tomb && elfSight(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
+						{#if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
 					</span>
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
@@ -1640,10 +1652,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<span
 							class="slay"
 							class:on={slaying}
-							class:ranged={slaying && !!tomb && elfSight(tomb, card.location)}
+							class:ranged={slaying && shotAt(tomb, card.location)}
 							aria-hidden="true"
 						>
-							{#if slaying && !!tomb && elfSight(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
+							{#if slaying && shotAt(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
 						</span>
 					</button>
 				{/each}
