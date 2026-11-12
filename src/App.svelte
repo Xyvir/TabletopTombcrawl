@@ -55,6 +55,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		hp,
 		maxHp,
 		draftAt,
+		elfSight,
 		emptyCells,
 		flipFaceDown,
 		freeCastReady,
@@ -1365,6 +1366,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	</svg>
 {/snippet}
 
+{#snippet bolt()}
+	<!-- The archer's mark: the same kill, told as a shot down a lane instead of a swing. -->
+	<svg viewBox="0 0 96 34" aria-hidden="true">
+		<g stroke="#232323" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+			<path d="M18 17 7 8.5l5.4 8.5L7 25.5z" fill="#dcb489" />
+			<rect x="16" y="14.7" width="50" height="4.6" rx="2.3" fill="#cbb98c" />
+			<polygon points="92,17 74,8 74,13.6 64,13.6 64,20.4 74,20.4 74,26" fill="#b9c1c9" />
+		</g>
+	</svg>
+{/snippet}
+
 <div
 	class="board"
 	class:tomb={!!tomb}
@@ -1522,7 +1534,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 					{/if}
-					<span class="slay" class:on={slaying} aria-hidden="true">{@render swords()}</span>
+					<span
+						class="slay"
+						class:on={slaying}
+						class:ranged={slaying && !!tomb && elfSight(tomb, location)}
+						aria-hidden="true"
+					>
+						{#if slaying && !!tomb && elfSight(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
+					</span>
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
 						<span class="role">{entry.name}</span>
@@ -1624,7 +1643,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{:else}
 							<img src={down ? `${BASE}images/back.png` : img(card)} alt="" draggable="false" />
 						{/if}
-						<span class="slay" class:on={slaying} aria-hidden="true">{@render swords()}</span>
+						<span
+							class="slay"
+							class:on={slaying}
+							class:ranged={slaying && !!tomb && elfSight(tomb, card.location)}
+							aria-hidden="true"
+						>
+							{#if slaying && !!tomb && elfSight(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
+						</span>
 					</button>
 				{/each}
 			</div>

@@ -218,6 +218,27 @@ img {
 	opacity: 1;
 }
 
+/*
+ * A kill by range is a shot, not a swing: the bolt lies along the strip of card that is still showing,
+ * clear of the rank and suit in the top-left corner, and stays inside the card face rather than
+ * hanging over the column. It turns a little so it reads as drawn by hand.
+ */
+.card .slay.ranged,
+.slot .slay.ranged {
+	top: 11%;
+	left: 57%;
+	width: 84%;
+	height: 24%;
+	aspect-ratio: auto;
+	transform: translate(-50%, -50%) rotate(-6deg);
+}
+
+.card .slay.ranged svg,
+.slot .slay.ranged svg {
+	width: 100%;
+	height: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.card .slay,
 	.slot .slay {
