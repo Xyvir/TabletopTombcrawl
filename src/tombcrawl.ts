@@ -1410,12 +1410,16 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
-	// Scavenging: a card played out of its slot is spent, but an Orc's slot is not closed by it. The
-	// card and its item are gone, and the empty slot waits one action for any card at all — a
-	// different suit turns it into a different spell, class or kin. The chip holds where it is while
-	// that window is open, which is what lets him work through a whole party's worth of items.
+	// Scavenging: a card played out of its slot onto the tableau is spent, but an Orc's slot is not
+	// closed by it. The card and its item are gone, and the empty slot waits one action for any card
+	// at all — a different suit turns it into a different spell, class or kin. The chip holds where it
+	// is while that window is open, which is what lets him work through a whole party's worth of items.
+	//
+	// A free cell is the other thing entirely. Playing the item into one is the conversion the chip
+	// counts: the slot turns plain, the chip steps past it, and nothing waits to be refilled. Only the
+	// tableau path scavenges, because only that path spends a card without spending the party.
 	const scavenged =
-		entry && source >= 0 && !next.game.cells[source] && hasPassive(state, 'Orc')
+		entry && source >= 0 && to.fixture === 'cascade' && !next.game.cells[source] && hasPassive(state, 'Orc')
 			? { cell: source, role: entry.role, suit: entry.suit, any: true }
 			: null;
 

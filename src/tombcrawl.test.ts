@@ -1936,6 +1936,20 @@ describe('tombcrawl item refresh', () => {
 		expect(hasPassive(restocked, 'Orc')).toBe(false);
 	});
 
+	test('an item played into a free cell converts, and nothing waits to restock it', () => {
+		const draft: DraftCard[] = [{ cell: 1, role: 'glyph', id: 'AC', suit: 'clubs', name: 'PISORF', text: '' }];
+		const state = makeTomb({ columns: [['5C']], cells: [null, 'AC', null], draft });
+		expect(convertibleCell(state)).toBe(1);
+		expect(chipBoundary(state)).toBe(2);
+
+		// the tableau is the scavenging path: a free cell is the conversion the chip counts instead
+		const moved = tombMove(state, cell(1), cell(2))!;
+		expect(moved.draft).toHaveLength(0);
+		expect(moved.itemWindow).toBe(null);
+		expect(shorthandCard(moved.game.cells[2]!)).toBe('AC');
+		expect(chipBoundary(moved)).toBe(0);
+	});
+
 	test('feeding the slot a matching card remakes the very same item', () => {
 		const played = attackWith(base(), cell(0))!;
 		const refilled = tombMove(played, cascade(1), cell(0))!;
