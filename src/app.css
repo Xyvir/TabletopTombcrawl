@@ -665,32 +665,60 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 /*
  * What the empty slot is waiting for, in the same gold as the rest of the restock cue: one pip for the
- * suit the item left, four for an Orc's Scavenger, which takes a card of any suit at all. Translucent
- * so it reads as a reminder drawn on the felt rather than a card sitting in the slot.
+ * suit the item left, four for an Orc's Scavenger, which takes a card of any suit at all. It sits in the
+ * top corners rather than the middle, because the middle of an empty slot is the blank's own mark and
+ * the two should not be drawn over each other. Translucent, so it reads as a reminder on the felt.
  */
 .slot .pips {
 	position: absolute;
 	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 3%;
 	color: #ffd95e;
-	font-size: calc(var(--col-w) * 0.44);
-	line-height: 1;
-	opacity: 0.55;
+	font-size: calc(var(--col-w) * 0.3);
+	line-height: 0.9;
+	opacity: 0.6;
 	pointer-events: none;
 	text-shadow: 0 0 8px rgba(255, 196, 32, 0.45);
 }
 
-.slot .pips.any {
-	/* four of them, so each is smaller: 4 x 0.20 plus the gaps still leaves the row inside the slot */
-	font-size: calc(var(--col-w) * 0.2);
-	opacity: 0.45;
+.slot .pips span {
+	position: absolute;
+	top: 4%;
+	left: 7%;
 }
 
-.slot .pips span {
-	display: block;
+/*
+ * Four suits fan out of the two top corners, two a side, staggered and turned away from the centre so
+ * they read as a small hand of cards rather than a list.
+ */
+.slot .pips.any {
+	font-size: calc(var(--col-w) * 0.22);
+	opacity: 0.5;
+}
+
+.slot .pips.any span:nth-child(1) {
+	top: 3%;
+	left: 6%;
+	transform: rotate(-14deg);
+}
+
+.slot .pips.any span:nth-child(2) {
+	top: 20%;
+	left: 17%;
+	transform: rotate(-8deg);
+}
+
+.slot .pips.any span:nth-child(3) {
+	top: 3%;
+	left: auto;
+	right: 6%;
+	transform: rotate(14deg);
+}
+
+.slot .pips.any span:nth-child(4) {
+	top: 20%;
+	left: auto;
+	right: 17%;
+	transform: rotate(8deg);
 }
 
 /*
