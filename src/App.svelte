@@ -442,6 +442,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
 	/** The card an aim would slay outright: it wears crossed swords until the pointer leaves. */
 	const slayAt = $derived(!drag && preview?.legal ? aim : null);
+	/**
+	 * The card an aim would kill only by dying: the blow itself is fine, the bill is not, so the mark is a
+	 * skull rather than swords. `fatal` is exactly "the track cannot pay this", whether or not filling an
+	 * empty cell first would make change.
+	 */
+	const doomedAt = $derived(!drag && preview?.fatal ? aim : null);
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
 	/** Empty free cells: each one is a single card away from being another heart. */
 	const openSlots = $derived(tomb ? emptyCells(tomb).length : 0);
@@ -1484,6 +1490,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	</svg>
 {/snippet}
 
+{#snippet skull()}
+	<!-- The bill, not the blow: this kill costs more hearts than the track holds. -->
+	<img class="skull" src={`${BASE}images/skull.png`} alt="" draggable="false" />
+{/snippet}
+
 {#snippet bolt()}
 	<!-- The archer's mark: the same kill, told as a shot down a lane instead of a swing. -->
 	<img class="bolt" src={`${BASE}images/range-arrow.png`} alt="" draggable="false" />
@@ -1564,7 +1575,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const stack = tomb ? cellCards(tomb, i) : card ? [card] : []}
 				{@const down = tomb ? Math.min(stack.length, tomb.wounded[i]) : 0}
 				{@const wounded = down > 0 ? stack[down - 1] : null}
-				{@const slaying = !!slayAt && key(slayAt) === key(location)}
+										{@const slaying = !!slayAt && key(slayAt) === key(location)}
+						{@const doomed = !!doomedAt && key(doomedAt) === key(location)}
 				<button
 					class="slot"
 					class:selected={!!card && selected.has(key(location))}
@@ -1659,11 +1671,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{/if}
 					<span
 						class="slay"
-						class:on={slaying}
+						class:on={slaying || doomed}
 						class:ranged={slaying && shotAt(tomb, location)}
 						aria-hidden="true"
 					>
-						{#if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
+						{#if doomed}{@render skull()}{:else if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
 					</span>
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
@@ -1739,6 +1751,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{@const minion = !!tomb && isBossMinion(tomb, card)}
 					{@const flipping = flippingIds.includes(shorthandCard(card))}
 					{@const slaying = !!slayAt && key(slayAt) === key(card.location)}
+					{@const doomed = !!doomedAt && key(doomedAt) === key(card.location)}
 					<button
 						class="card"
 						class:selected={selected.has(key(card.location))}
@@ -1780,11 +1793,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/if}
 						<span
 							class="slay"
-							class:on={slaying}
+							class:on={slaying || doomed}
 							class:ranged={slaying && shotAt(tomb, card.location)}
 							aria-hidden="true"
 						>
-							{#if slaying && shotAt(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
+							{#if doomed}{@render skull()}{:else if slaying && shotAt(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
 						</span>
 					</button>
 				{/each}

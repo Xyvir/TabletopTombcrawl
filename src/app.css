@@ -222,6 +222,18 @@ img {
 	height: 100%;
 }
 
+/*
+ * The skull answers a different question from the swords: not "can this be slain" but "can you afford
+ * it". Same 58% square as the swords, so the two marks occupy the same place and only the meaning
+ * changes when the price is what refuses the blow.
+ */
+.slay .skull {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
 .card .slay.on,
 .slot .slay.on {
 	opacity: 1;
