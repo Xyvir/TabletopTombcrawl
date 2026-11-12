@@ -1623,6 +1623,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/each}
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
+						{#if pending}
+							<!-- Which card would make an item here: the suit the slot lost, or every suit for an Orc's
+							     Scavenger, since a card of any suit restocks one of his. -->
+							<span class="pips" class:any={pending.any} aria-hidden="true">
+								{#each pending.any ? SUITS : [pending.suit] as suit (suit)}
+									<span>{SUIT_GLYPH[suit]}</span>
+								{/each}
+							</span>
+						{/if}
 					{/if}
 					<span
 						class="slay"

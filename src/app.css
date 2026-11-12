@@ -664,6 +664,36 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
+ * What the empty slot is waiting for, in the same gold as the rest of the restock cue: one pip for the
+ * suit the item left, four for an Orc's Scavenger, which takes a card of any suit at all. Translucent
+ * so it reads as a reminder drawn on the felt rather than a card sitting in the slot.
+ */
+.slot .pips {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 3%;
+	color: #ffd95e;
+	font-size: calc(var(--col-w) * 0.44);
+	line-height: 1;
+	opacity: 0.55;
+	pointer-events: none;
+	text-shadow: 0 0 8px rgba(255, 196, 32, 0.45);
+}
+
+.slot .pips.any {
+	/* four of them, so each is smaller: 4 x 0.20 plus the gaps still leaves the row inside the slot */
+	font-size: calc(var(--col-w) * 0.2);
+	opacity: 0.45;
+}
+
+.slot .pips span {
+	display: block;
+}
+
+/*
  * The Wizard's window: the Glyph can be cast for free on this move. It borrows the waiting item
  * slot's pulse and timing, in the spell's own blue, so the two offers read as the same kind of
  * courtesy rather than two unrelated lights.
