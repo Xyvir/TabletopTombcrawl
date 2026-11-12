@@ -1,1 +1,1 @@
-{ "clauses": { "wizardWindow": false, "wizardMend": false } }
+{ "clauses": { "wizardWindow": false, "wizardMend": false }, "applies": { "class": "c" } }

@@ -1,1 +1,1 @@
-{ "clauses": { "weaknessRank": false } }
+{ "clauses": { "weaknessRank": false }, "applies": { "boss": "spades" } }
