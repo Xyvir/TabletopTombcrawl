@@ -55,11 +55,16 @@ const corpus = JSON.parse(readFileSync('public/corpus.json', 'utf8')) as { entri
 /** ONLY=<seed,seed,…> re-tests exactly what an earlier run lost, at a bigger budget. */
 const only = (process.env.ONLY ?? '')
 	.split(',')
-	.map((seed) => Number(seed.trim()))
+	.map((seed) => seed.trim())
+	// An unset variable is one empty string, and Number('') is 0, which would then filter out every
+	// seed in the corpus rather than none of them.
+	.filter(Boolean)
+	.map(Number)
 	.filter((seed) => Number.isFinite(seed));
 const shard = Number(process.env.SHARD ?? 0);
 const shards = Number(process.env.SHARDS ?? 1);
 const budget = Number(process.env.BUDGET ?? 300_000);
+const keyFilter = process.env.SKEY ?? '';
 const limit = Number(process.env.LIMIT ?? 0);
 const out = process.env.OUT ?? 'corpus/ab.json';
 
@@ -96,7 +101,10 @@ function play(entry: Entry): Arm {
 }
 
 const scoped = corpus.entries.filter(
-	(entry) => entry.loadout.length === 4 && (!only.length || only.includes(entry.seed))
+	(entry) =>
+		entry.loadout.length === 4 &&
+		(!keyFilter || entry.loadout.startsWith(keyFilter)) &&
+		(!only.length || only.includes(entry.seed))
 );
 const slice = scoped.filter((_, index) => index % shards === shard);
 // A limit takes every k-th seed rather than the first k: the corpus is ordered by party key, so the
