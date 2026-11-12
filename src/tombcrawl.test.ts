@@ -274,7 +274,7 @@ describe("the wizard's affinity", () => {
 		expect(put.exhausted[1]).toBe(false);
 	});
 
-	test('a free cast that is put down gives back the heart it mended', () => {
+	test('a free cast that is put down leaves the wounds where they were', () => {
 		const state = makeTomb({
 			columns: [['5H'], ['9D']],
 			cells: ['KC', '2S', '5C'],
@@ -287,7 +287,8 @@ describe("the wizard's affinity", () => {
 
 		const armed = useAbility(state, 1)!;
 		expect(armed.freeCast).toBe(false);
-		expect(hp(armed)).toBe(3);
+		// Affinity buys the exhaustion, not the heart: the wound is still there after the cast
+		expect(hp(armed)).toBe(2);
 
 		const put = disarm(armed)!;
 		expect(hp(put)).toBe(2);
@@ -2373,7 +2374,7 @@ describe('tombcrawl the class powers and the hearts they pay', () => {
 		expect(wounds(plain) - wounds(holy)).toBe(1);
 	});
 
-	test('a free cast mends a wound the way a level up does', () => {
+	test('a free cast spares the exhaustion and nothing else', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: '2C', suit: 'clubs', name: 'Wizard', text: '' },
 			{ cell: 1, role: 'glyph', id: '3C', suit: 'clubs', name: 'WEYTWUT', text: '' },
@@ -2388,7 +2389,9 @@ describe('tombcrawl the class powers and the hearts they pay', () => {
 		expect(wounds(state)).toBe(1);
 		const cast = useAbility(state, 1)!;
 		expect(cast.armed).toMatchObject({ kind: 'weytwut' });
-		expect(wounds(cast)).toBe(0);
+		// the glyph is spared, the track is not mended
+		expect(cast.exhausted[1]).toBe(false);
+		expect(wounds(cast)).toBe(1);
 	});
 });
 

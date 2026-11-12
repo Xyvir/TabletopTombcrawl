@@ -70,8 +70,6 @@ export const CLAUSES = {
 	 * token, no counter and no note on the sheet to remember it.
 	 */
 	wizardOpening: false,
-	/** Wizard: a free cast mends one wound. */
-	wizardMend: true,
 	/** Orc: a spent slot takes any card at all, not just its own suit. */
 	orcAnySuit: true,
 	/** Orc: playing an item out of its slot onto the tableau leaves the slot waiting for a card. */
@@ -151,7 +149,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: any cast made on the very next turn after the glyph is refreshed is free, and a free cast mends one wound.',
+		text: 'Affinity: any cast made on the very next turn after the glyph is refreshed is free.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -1656,11 +1654,9 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	// back, because arming is not the same as casting.
 	const refund = free ? { freeCast: state.freeCast, wounded: [...state.wounded] } : undefined;
 	state = closeFreeCast(state);
-	// Affinity pays in hearts as well as in exhaustion: a free cast mends one wounded cell.
-	if (free)
-		state = cloneWith(state, {
-			wounded: CLAUSES.wizardMend ? heal(state, 1).wounded : state.wounded,
-		});
+	// Affinity pays in exhaustion alone. It used to mend a wound here as well, and over the 18
+	// Wizard-class corpus seeds the free cast won every deal it could win in exactly the same number of
+	// moves with no mend at all, so the rule was a thing to remember and not a thing that paid.
 	const exhausted = [...state.exhausted];
 	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
 	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;
