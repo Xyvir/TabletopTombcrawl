@@ -37,8 +37,12 @@ export const TOMB_RULES = {
 	/**
 	 * The most hearts one kill may cost, or 0 for no ceiling. Damage is rank minus level, so the
 	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
+	 *
+	 * Two, for everyone, with no class or kin exception: every blow in the game is worth 0, 1 or 2.
+	 * That is the whole of the arithmetic a table has to do, and it is why the Fighter no longer needs
+	 * a cap of his own or the Dwarf a discount on court cards.
 	 */
-	levelDamageCap: 0,
+	levelDamageCap: 2,
 	/**
 	 * Whether a movement glyph may carry the frozen boss king: no hand can shift it, but a spell can
 	 * lift it out of the way, which frees the column it was sitting on. Killing it stays gated.
@@ -56,14 +60,8 @@ export const TOMB_RULES = {
 export const CLAUSES = {
 	/** Dwarf: the boss king carries no protection at all. */
 	dwarfBoss: true,
-	/** Dwarf: every other court card costs a single heart. */
-	dwarfCourt: true,
 	/** Fighter: ignore the lowest pile when reading his level. */
 	fighterLevel: true,
-	/** Fighter: no kill costs him more than two hearts. */
-	fighterCap: true,
-	/** Wizard: the first cast of the run is free. */
-	wizardBank: true,
 	/** Wizard: a cast on the very next turn after a refresh is free. */
 	wizardWindow: true,
 	/** Wizard: a free cast mends one wound. */
@@ -132,14 +130,14 @@ const KIN: Record<Suit, Ability> = {
 	},
 	spades: {
 		name: 'Dwarf',
-		text: 'Grudge: the boss king has no protection — kill it without sending another king home first — and every other court card costs a single heart.',
+		text: 'Grudge: the boss king has no protection — kill it without sending another king home first.',
 	},
 };
 
 const CLASSES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Fighter',
-		text: 'Veteran: ignore the lowest card when calculating your level, and no kill costs him more than two hearts.',
+		text: 'Veteran: ignore the lowest card when calculating your level.',
 	},
 	hearts: {
 		name: 'Priest',
@@ -147,7 +145,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: your first glyph cast is free, and so is any cast made on the very next turn after it is refreshed. A free cast also mends one wound.',
+		text: 'Affinity: any cast made on the very next turn after the glyph is refreshed is free, and a free cast mends one wound.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -225,7 +223,7 @@ export type ArmedAbility = {
 	 * What arming a free cast spent, so putting the spell down unused hands it back: a cast the player
 	 * backs out of must not cost the Wizard his bank, his window, or the heart it mended.
 	 */
-	refund?: { freeCast: boolean; freeCastBank: boolean; wounded: number[] };
+	refund?: { freeCast: boolean; wounded: number[] };
 };
 
 export interface TombState {
@@ -259,11 +257,6 @@ export interface TombState {
 	 * other action closes the window: it never survives a second move.
 	 */
 	freeCast: boolean;
-	/**
-	 * The Wizard's first Glyph cast is free whenever it comes. This is that cast, still unspent: it
-	 * waits through any number of moves, and any free cast spends it along with the refresh window.
-	 */
-	freeCastBank: boolean;
 	/**
 	 * A balance harness pin, set only by `withSyntheticLoadout`: the suits the party is pinned to, for
 	 * whatever roles were named. Null in every real game, and never read by the deal itself.
@@ -390,7 +383,6 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		armed: null,
 		itemWindow: null,
 		freeCast: false,
-		freeCastBank: true,
 		synthetic: null,
 	};
 }
@@ -947,11 +939,6 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	if (TOMB_RULES.levelDamageCap > 0) damage = Math.min(damage, TOMB_RULES.levelDamageCap);
-	// The Fighter wears the hit: whatever the rank, no kill takes more than two hearts off him.
-	if (CLAUSES.fighterCap && hasPassive(state, 'Fighter')) damage = Math.min(damage, 2);
-	// Grudge pays in faces: a Dwarf sends any court card home for a single heart. The boss king alone
-	// still costs what it costs, so the top of the dungeon never comes cheap.
-	if (CLAUSES.dwarfCourt && hasPassive(state, 'Dwarf') && isFaceCard(card) && !isBoss(state, card)) damage = Math.min(damage, 1);
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (CLAUSES.thiefBounty && hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
@@ -1627,7 +1614,7 @@ export function freeCastReady(state: TombState, cell: number): boolean {
 		!!entry &&
 		entry.role === 'glyph' &&
 		hasPassive(state, 'Wizard') &&
-		(state.freeCast || (CLAUSES.wizardBank && state.freeCastBank))
+		state.freeCast
 	);
 }
 
@@ -1652,14 +1639,11 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	const free = freeCastReady(state, cell);
 	// Take note of what the free cast is about to spend, before it is spent: a disarm can hand it all
 	// back, because arming is not the same as casting.
-	const refund = free
-		? { freeCast: state.freeCast, freeCastBank: state.freeCastBank, wounded: [...state.wounded] }
-		: undefined;
+	const refund = free ? { freeCast: state.freeCast, wounded: [...state.wounded] } : undefined;
 	state = closeFreeCast(state);
 	// Affinity pays in hearts as well as in exhaustion: a free cast mends one wounded cell.
 	if (free)
 		state = cloneWith(state, {
-			freeCastBank: false,
 			wounded: CLAUSES.wizardMend ? heal(state, 1).wounded : state.wounded,
 		});
 	const exhausted = [...state.exhausted];
@@ -1774,7 +1758,6 @@ function releaseArm(state: TombState, wounded?: number[]): TombState {
 				armed: null,
 				exhausted,
 				freeCast: refund.freeCast,
-				freeCastBank: refund.freeCastBank,
 				wounded: wounded ?? refund.wounded,
 			})
 		: cloneWith(state, { armed: null, exhausted });

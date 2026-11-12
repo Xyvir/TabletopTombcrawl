@@ -60,7 +60,7 @@ interface Setup {
 	exhausted?: number[];
 	wounded?: number[];
 	boss?: string;
-	freeCastBank?: boolean;
+	freeCast?: boolean;
 	/** Size of the track: 8 is easy, 7 med, 6 hard. Free cells are the whole difficulty difference. */
 	cellCount?: number;
 }
@@ -74,7 +74,7 @@ function makeTomb({
 	exhausted = [],
 	wounded = [],
 	boss,
-	freeCastBank = false,
+	freeCast = false,
 	cellCount = TOMB_CELL_COUNT,
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
@@ -111,8 +111,7 @@ function makeTomb({
 		score: null,
 		armed: null,
 		itemWindow: null,
-		freeCast: false,
-		freeCastBank,
+		freeCast,
 		synthetic: null,
 	};
 }
@@ -212,44 +211,39 @@ describe("the wizard's affinity", () => {
 		expect(useAbility(dug, 1)!.exhausted[1]).toBe(true);
 	});
 
-	test('the first glyph cast of the run is free, whenever it comes', () => {
-		const cast = useAbility(opening({ freeCastBank: true }), 1)!;
+	test('the first cast of a run costs its exhaustion like any other', () => {
+		// No cast is banked from the start any more: aces cause level ups early enough that the refresh
+		// window arrives while it is still worth having.
+		const cast = useAbility(opening(), 1)!;
 
 		expect(cast.armed).toMatchObject({ kind: 'sack' });
-		expect(cast.exhausted[1]).toBe(false);
-		// the one banked cast is spent by the cast it paid for
-		expect(cast.freeCastBank).toBe(false);
-		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
+		expect(cast.exhausted[1]).toBe(true);
+		expect(cast.freeCast).toBe(false);
 	});
 
-	test('a free cast spends the window and the banked cast together', () => {
-		const state = refreshed({ freeCastBank: true });
-		expect(state.freeCast).toBe(true);
-
-		const cast = useAbility(state, 1)!;
+	test('a free cast is spent by the cast it pays for, never two in a row', () => {
+		const cast = useAbility(refreshed(), 1)!;
 		expect(cast.exhausted[1]).toBe(false);
 		expect(cast.freeCast).toBe(false);
-		// one free cast, never two in a row: the window takes the bank down with it
-		expect(cast.freeCastBank).toBe(false);
 		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
 	});
 
 	test('a class that is not the wizard casts at full price', () => {
 		const fighter = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Fighter' } : entry));
-		const state = useAbility(preparing({ draft: fighter, freeCastBank: true }), 2)!;
+		const state = useAbility(preparing({ draft: fighter }), 2)!;
 
 		expect(state.freeCast).toBe(false);
 		expect(useAbility(state, 1)!.exhausted[1]).toBe(true);
 	});
 
 	test('putting the spell down unused gives the free cast back', () => {
-		const armed = useAbility(opening({ freeCastBank: true }), 1)!;
-		// arming a free cast spends the bank, so the blue offer goes out with it
-		expect(armed.freeCastBank).toBe(false);
+		const armed = useAbility(opening({ freeCast: true }), 1)!;
+		// arming a free cast spends the window, so the blue offer goes out with it
+		expect(armed.freeCast).toBe(false);
 		expect(freeCastReady(armed, 1)).toBe(false);
 
 		const put = disarm(armed)!;
-		expect(put.freeCastBank).toBe(true);
+		expect(put.freeCast).toBe(true);
 		expect(freeCastReady(put, 1)).toBe(true);
 		expect(put.exhausted[1]).toBe(false);
 	});
@@ -261,17 +255,17 @@ describe("the wizard's affinity", () => {
 			draft,
 			// wound the item, not the class card: a wounded Wizard has no passive to spend
 			wounded: [2],
-			freeCastBank: true,
+			freeCast: true,
 		});
 		expect(hp(state)).toBe(2);
 
 		const armed = useAbility(state, 1)!;
-		expect(armed.freeCastBank).toBe(false);
+		expect(armed.freeCast).toBe(false);
 		expect(hp(armed)).toBe(3);
 
 		const put = disarm(armed)!;
 		expect(hp(put)).toBe(2);
-		expect(put.freeCastBank).toBe(true);
+		expect(put.freeCast).toBe(true);
 	});
 });
 
@@ -297,14 +291,14 @@ describe('an armed spell', () => {
 		expect(struck.exhausted[2]).toBe(false);
 	});
 
-	test('a free cast knocked out of hand gives the bank back, wound and all', () => {
+	test('a free cast knocked out of hand gives the window back, wound and all', () => {
 		const wizard = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Wizard' } : entry));
-		const armed = useAbility(board({ draft: wizard, freeCastBank: true }), 2)!;
-		expect(armed.freeCastBank).toBe(false);
+		const armed = useAbility(board({ draft: wizard, freeCast: true }), 2)!;
+		expect(armed.freeCast).toBe(false);
 
 		const struck = attackWith(armed, cascade(0, 0))!;
 		expect(struck.armed).toBe(null);
-		expect(struck.freeCastBank).toBe(true);
+		expect(struck.freeCast).toBe(true);
 		expect(freeCastReady(struck, 2)).toBe(true);
 		// the refund's snapshot predates the blow, so the wound that interrupted the cast still stands
 		expect(struck.wounded[2]).toBe(1);
@@ -557,17 +551,16 @@ describe('burden and mana burn', () => {
 	});
 
 	test('a kill that would spend the last heart is refused', () => {
-		const state = board();
+		// one heart left, and the Gorgon wants its item drained on top of the two damage
+		const state = board({ wounded: [1, 2, 3] });
 		expect(currentLevel(state)).toBe(1);
-		expect(hp(state)).toBe(4);
+		expect(hp(state)).toBe(1);
 
 		const preview = attackPreview(state, cascade(0, 0));
-		expect(preview.damage).toBe(3);
+		expect(preview.damage).toBe(2);
 		expect(preview.legal).toBe(false);
-		// the one empty cell that has to take a card first, so the track can absorb the wounds
-		expect(preview.need).toEqual([4]);
-		// the track is the blocker, so every heart slot reads as one, empty ones included
-		expect(preview.fatal).toBe(true);
+		// the empty cell that has to take a card first, so the track can absorb the wounds
+		expect(preview.need).toContain(4);
 		expect(preview.wounds).toEqual([]);
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
@@ -583,14 +576,15 @@ describe('burden and mana burn', () => {
 	test('the aura wound is owed on top, so a kill one HP short is refused', () => {
 		const state = board({
 			cells: ['TC', 'TS', 'KD'],
+			wounded: [2],
 			draft: [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }],
 		});
-		expect(hp(state)).toBe(3);
+		expect(hp(state)).toBe(2);
 
+		// two damage plus the drained item
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.legal).toBe(false);
-		expect(preview.reason).toContain('needs 4 HP');
-		expect(preview.fatal).toBe(true);
+		expect(preview.reason).toContain('needs 3 HP');
 		expect(attackWith(state, cascade(0, 0))).toBeNull();
 	});
 
@@ -709,30 +703,31 @@ describe('burden and mana burn', () => {
 			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
 		});
 		const preview = attackPreview(state, cascade(0, 0));
-		expect(preview.damage).toBe(3);
+		expect(preview.damage).toBe(2);
 		expect(preview.legal).toBe(true);
 
 		const next = attackWith(state, cascade(0, 0))!;
 		expect(next.wounded[0]).toBe(0);
-		expect(hp(next)).toBe(1);
+		expect(hp(next)).toBe(2);
 	});
 });
 
 describe('the revive', () => {
 	const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TS', suit: 'spades', name: 'Revive', text: '' }];
-	// A nine at level one costs eight hearts, twice what this track can ever hold.
+	// One heart left, and even a capped kill costs two: only the Revive can pay for this one.
 	const board = () =>
 		makeTomb({
 			columns: [['9C'], ['4C']],
 			cells: ['TS', 'KD', 'QD', '7C'],
 			foundations: ['8C'],
+			wounded: [1, 2, 3],
 			draft,
 			boss: 'KC',
 		});
 
 	test('it kills whatever it is aimed at, and the bill takes the whole track', () => {
 		const state = board();
-		expect(hp(state)).toBe(4);
+		expect(hp(state)).toBe(1);
 		expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
 
 		const armed = useAbility(state, 0)!;
@@ -741,8 +736,9 @@ describe('the revive', () => {
 		expect(armed.exhausted[0]).toBe(false);
 
 		const preview = attackPreview(armed, cascade(0, 0));
-		expect(preview).toMatchObject({ legal: true, fatal: false, damage: 8 });
-		expect(preview.locks.sort()).toEqual([0, 1, 2, 3]);
+		expect(preview).toMatchObject({ legal: true, fatal: false, damage: 2 });
+		// the revive pays the bill, so only the card the kill lands on is spent
+		expect(preview.locks.sort()).toEqual([0]);
 
 		const next = attackWith(armed, cascade(0, 0))!;
 		expect(hp(next)).toBe(0);
@@ -1035,7 +1031,7 @@ describe('tombcrawl deal and draft', () => {
 });
 
 describe('tombcrawl damage and free-cell HP', () => {
-	test('a kill costs enemy rank minus level, paid from the right edge', () => {
+	test('a kill costs enemy rank minus level, paid from the right edge, capped at two', () => {
 		const state = makeTomb({
 			columns: [['4H'], [], [], [], [], [], [], []],
 			cells: ['2C', '3C', '4C', '6C', null, null, null],
@@ -1043,20 +1039,23 @@ describe('tombcrawl damage and free-cell HP', () => {
 		});
 		expect(currentLevel(state)).toBe(1);
 
+		// rank four against a level one delver would be three, and the global ceiling is two
 		const preview = attackPreview(state, cascade(0));
-		expect(preview.damage).toBe(3);
-		expect(preview.locks).toEqual([3, 2, 1]);
+		expect(preview.damage).toBe(2);
+		expect(preview.locks).toEqual([3, 2]);
 
 		const next = attackWith(state, cascade(0))!;
 		expect(next.game.foundations.some((card) => card && shorthandCard(card) === '4H')).toBe(true);
-		expect(hp(next)).toBe(1);
+		expect(hp(next)).toBe(2);
 	});
 
 	test('a kill you cannot pay for is refused and names the empty cells', () => {
-		const state = makeTomb({ columns: [['5H']], cells: ['2C', '3C'], foundations: ['4H', 'AS'] });
+		// one heart on the track, and the cheapest kill is two
+		const state = makeTomb({ columns: [['4H']], cells: ['2C'], foundations: ['3H', 'AS'] });
+		expect(hp(state)).toBe(1);
 		const preview = attackPreview(state, cascade(0));
 		expect(preview.legal).toBe(false);
-		expect(preview.need).toEqual([2, 3, 4]);
+		expect(preview.need).toContain(1);
 		expect(attackWith(state, cascade(0))).toBe(null);
 	});
 
@@ -1082,14 +1081,18 @@ describe('tombcrawl damage and free-cell HP', () => {
 		 expect(parked.exhausted).toEqual(state.exhausted);
 	});
 
-	test('spades weakness makes boss minions cost one extra', () => {
+	test('spades weakness charges a rank more than the card is worth', () => {
+		// level four, so a four of spades is free and Weakness makes it cost one
 		const state = makeTomb({
-			columns: [['5S']],
+			columns: [['4S'], ['4H']],
 			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
-			foundations: ['4S', 'AH'],
+			foundations: ['3S', '3H', '3D', '3C'],
 			boss: 'KS',
 		});
-		expect(attackPreview(state, cascade(0)).damage).toBe(5);
+		expect(currentLevel(state)).toBe(4);
+		expect(attackPreview(state, cascade(0)).damage).toBe(1);
+		// the same rank in another suit costs nothing at all
+		expect(attackPreview(state, cascade(1)).damage).toBe(0);
 	});
 
 	test('a kill preview names the cards it would turn face-down', () => {
@@ -1111,23 +1114,23 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(preview.wounds).toEqual([]);
 	});
 
-	test('grudge sends any court card home for a single heart, the boss king excepted', () => {
+	test('grudge is the boss king having no protection, and nothing more', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 
-		// a jack at level one would cost ten; the Dwarf pays one
+		// the boss can be taken before any other king is home
+		const early = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], draft, boss: 'KH' });
+		expect(kingsHome(early)).toBe(0);
+		expect(canSendHome(early, cascade(0)).legal).toBe(true);
+		// and it costs what the ceiling says, not the twelve the rank would ask for
+		expect(attackPreview(early, cascade(0)).damage).toBe(2);
+
+		// without the Dwarf the very same king is frozen
+		const plain = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], boss: 'KH' });
+		expect(canSendHome(plain, cascade(0)).legal).toBe(false);
+
+		// court cards are no cheaper for him: a jack costs the capped two, like anyone's
 		const face = makeTomb({ columns: [['JC']], cells: ['2D'], foundations: ['TC', 'AD'], draft });
-		expect(currentLevel(face)).toBe(1);
-		expect(attackPreview(face, cascade(0)).damage).toBe(1);
-		// and without him the same kill reads its full price
-		const plain = makeTomb({ columns: [['JC']], cells: ['2D'], foundations: ['TC', 'AD'] });
-		expect(attackPreview(plain, cascade(0)).damage).toBe(10);
-
-		// the boss's own suit is no exception: only the boss king is
-		const queen = makeTomb({ columns: [['QH']], cells: ['2D'], foundations: ['JH', 'AD'], draft, boss: 'KH' });
-		expect(attackPreview(queen, cascade(0)).damage).toBe(1);
-
-		const king = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH', 'AD', 'KS'], draft, boss: 'KH' });
-		expect(attackPreview(king, cascade(0)).damage).toBe(12);
+		expect(attackPreview(face, cascade(0)).damage).toBe(2);
 	});
 
 	test('bounty pays only for a kill into the leading foundation', () => {
@@ -1136,17 +1139,17 @@ describe('tombcrawl damage and free-cell HP', () => {
 		const leading = makeTomb({ columns: [['5H']], foundations: ['4H', '3S'], draft });
 		expect(attackPreview(leading, cascade(0)).damage).toBe(0);
 
-		// spades is further along, so the same kill pays its full four damage again
+		// spades is further along, so the same kill pays the full ceiling
 		const behind = makeTomb({ columns: [['5H']], foundations: ['4H', '8S'], draft });
-		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
+		expect(attackPreview(behind, cascade(0)).damage).toBe(2);
 	});
 
 	test('bounty needs the outright lead, and a finished pile is not in the running', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
 
-		// level with spades is not a lead: the tie pays full price
+		// level with spades is not a lead: the tie pays the ceiling
 		const tied = makeTomb({ columns: [['5H']], foundations: ['4H', '4S'], draft });
-		expect(attackPreview(tied, cascade(0)).damage).toBe(4);
+		expect(attackPreview(tied, cascade(0)).damage).toBe(2);
 
 		// a king on top takes that pile out of the comparison, so hearts still leads
 		const finished = makeTomb({ columns: [['5H']], foundations: ['4H', 'KS'], draft });
@@ -2319,13 +2322,13 @@ describe('tombcrawl a kill that costs nothing', () => {
 describe('tombcrawl the class powers and the hearts they pay', () => {
 	const wounds = (state: TombState) => state.wounded.reduce((sum, count) => sum + count, 0);
 
-	test('the Fighter wears the hit: no kill costs him more than two hearts', () => {
+	test('the ceiling holds for everyone, Fighter or not', () => {
 		const fighter: DraftCard[] = [{ cell: 0, role: 'class', id: '2S', suit: 'spades', name: 'Fighter', text: '' }];
+		// a nine at level one asks for eight, and no party pays more than two for it
 		const board = (draft: DraftCard[] = []) =>
 			makeTomb({ columns: [['9S'], []], foundations: ['8S'], cells: ['2H', '3H', '4H'], draft });
 		expect(attackPreview(board(fighter), cascade(0))).toMatchObject({ legal: true, damage: 2 });
-		// the same kill without the passive costs eight hearts, which is more than the track can hold
-		expect(attackPreview(board(), cascade(0)).legal).toBe(false);
+		expect(attackPreview(board(), cascade(0))).toMatchObject({ legal: true, damage: 2 });
 	});
 
 	test('the Priest mends two on a level up', () => {
@@ -2354,7 +2357,7 @@ describe('tombcrawl the class powers and the hearts they pay', () => {
 			cells: ['5S', '6S', '7S'],
 			wounded: [2],
 			draft,
-			freeCastBank: true,
+			freeCast: true,
 		});
 		expect(wounds(state)).toBe(1);
 		const cast = useAbility(state, 1)!;
