@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test } from 'vitest';
 import { initializeDeckOfCards, shorthandCard, type Card } from './game/card/card';
 import { FreeCell } from './game/game';
 import {
@@ -2212,11 +2212,65 @@ describe('tombcrawl boss protection', () => {
 	});
 });
 
+	describe('unburden', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
+	];
+	const board = (overrides: Partial<Setup> = {}) =>
+		makeTomb({
+			columns: [['2C']],
+			cells: ['TD', '2S', '3S', null],
+			foundations: ['AC'],
+			draft,
+			boss: 'KC',
+			...overrides,
+		});
+	const shipped = CLAUSES.gorgonEvict;
+	afterEach(() => {
+		CLAUSES.gorgonEvict = shipped;
+	});
+
+	test('the item is carried into the leftmost open cell and lies face-down there', () => {
+		CLAUSES.gorgonEvict = true;
+		const next = attackWith(board(), cascade(0, 0))!;
+
+		// the slot it left is empty, and waits a card, so the item can be restocked
+		expect(next.game.cells[0]).toBe(null);
+		expect(next.itemWindow).toMatchObject({ cell: 0, role: 'consumable', suit: 'diamonds' });
+		// nothing is spent: the item is not exhausted, it is somewhere else
+		expect(next.exhausted[0]).toBeFalsy();
+		// the cell is taken and unusable, which is what the move costs
+		const carried = next.game.cells[3]!;
+		expect(shorthandCard(carried)).toBe('TD');
+		expect(next.wounded[3]).toBe(1);
+		expect(cellTopWounded(next, 3)).toBe(true);
+	});
+
+	test('with no open cell the item is only wounded where it lies', () => {
+		CLAUSES.gorgonEvict = true;
+		const next = attackWith(board({ cells: ['TD', '2S', '3S', '4S', '5S', '6S', '7S'] }), cascade(0, 0))!;
+
+		expect(shorthandCard(next.game.cells[0]!)).toBe('TD');
+		expect(next.wounded[0]).toBe(1);
+		expect(next.exhausted[0]).toBeFalsy();
+		expect(next.itemWindow).toBe(null);
+	});
+
+	test('as shipped it is still spent in its own slot', () => {
+		const next = attackWith(board(), cascade(0, 0))!;
+
+		expect(shorthandCard(next.game.cells[0]!)).toBe('TD');
+		expect(next.exhausted[0]).toBe(true);
+		expect(next.wounded[0]).toBe(1);
+		expect(next.itemWindow).toBe(null);
+	});
+});
+
 describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster and power', () => {
 		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', power: 'Weakness' });
 		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', power: 'Poison' });
-		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: 'Burden' });
+		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: 'Unburden' });
 		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', power: 'Mana Burn' });
 	});
 });

@@ -1,0 +1,4 @@
+{
+	"clauses": { "gorgonEvict": true },
+	"applies": { "boss": "clubs" }
+}
