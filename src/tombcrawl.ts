@@ -70,6 +70,10 @@ export const CLAUSES = {
 	wizardMend: true,
 	/** Orc: a spent slot takes any card at all, not just its own suit. */
 	orcAnySuit: true,
+	/** Orc: playing an item out of its slot onto the tableau leaves the slot waiting for a card. */
+	orcScavenge: true,
+	/** Orc: a level up refreshes every spent item, the way it refreshes the glyph. */
+	orcLevelRefresh: false,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
 	/** Weakness: a boss-suit minion costs one rank more than its card says. */
@@ -1114,12 +1118,22 @@ function healGlyph(state: TombState): TombState {
 
 function refreshGlyphs(state: TombState): TombState {
 	const glyphs = state.draft.filter((entry) => entry.role === 'glyph');
-	if (!glyphs.length) return state;
+	// An Orc who refreshes on the level keeps his kit instead of scavenging it back, and only a glyph
+	// refresh opens the Wizard's window: an item coming back is not a spell coming back.
+	const items =
+		CLAUSES.orcLevelRefresh && hasPassive(state, 'Orc')
+			? state.draft.filter((entry) => entry.role === 'consumable')
+			: [];
+	if (!glyphs.length && !items.length) return state;
 	const exhausted = [...state.exhausted];
 	let refreshed = false;
 	glyphs.forEach((entry) => {
 		if (!state.game.cells[entry.cell]) return;
 		refreshed = refreshed || state.exhausted[entry.cell];
+		exhausted[entry.cell] = false;
+	});
+	items.forEach((entry) => {
+		if (!state.game.cells[entry.cell]) return;
 		exhausted[entry.cell] = false;
 	});
 	// A Wizard's window opens on a real refresh: tidying a glyph that was already fresh hands nothing
@@ -1510,7 +1524,12 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// counts: the slot turns plain, the chip steps past it, and nothing waits to be refilled. Only the
 	// tableau path scavenges, because only that path spends a card without spending the party.
 	const scavenged =
-		entry && source >= 0 && to.fixture === 'cascade' && !next.game.cells[source] && hasPassive(state, 'Orc')
+		entry &&
+		source >= 0 &&
+		to.fixture === 'cascade' &&
+		!next.game.cells[source] &&
+		CLAUSES.orcScavenge &&
+		hasPassive(state, 'Orc')
 			? { cell: source, role: entry.role, suit: entry.suit, any: true }
 			: null;
 
