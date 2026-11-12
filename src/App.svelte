@@ -1722,12 +1722,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</header>
 				<div class="layout-body" role="group" aria-label="The 256 parties" onmouseleave={() => (hovered = null)}>
 					<div class="trellis">
-						<span class="corner"></span>
-						{#each SUITS as suit (suit)}
+						<span class="corner" style="grid-area: 1 / 1"></span>
+						{#each SUITS as suit, suitIndex (suit)}
 							<span
 								class="tick top"
 								class:red={suit === 'hearts' || suit === 'diamonds'}
 								title={abilityFor('class', suit).text}
+								style={`grid-area: 1 / ${2 + suitIndex}`}
 							>
 								<span class="glyph">{SUIT_GLYPH[suit]}</span>
 								<span class="name">{abilityFor('class', suit).name}</span>
@@ -1738,12 +1739,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								class="tick side"
 								class:red={kin === 'hearts' || kin === 'diamonds'}
 								title={abilityFor('kin', kin).text}
+								style={`grid-area: ${2 + kinIndex} / 1`}
 							>
 								<span class="name">{abilityFor('kin', kin).name}</span>
 								<span class="glyph">{SUIT_GLYPH[kin]}</span>
 							</span>
-							{#each SUITS as cls (cls)}
-								<div class="block" aria-label={`kin ${kin}, class ${cls}`}>
+							{#each SUITS as cls, clsIndex (cls)}
+								<div
+									class="block"
+									aria-label={`kin ${kin}, class ${cls}`}
+									style={`grid-area: ${2 + kinIndex} / ${2 + clsIndex}`}
+								>
 									{#each SUITS as glyph (glyph)}
 										{#each SUITS as item (item)}
 											{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}
