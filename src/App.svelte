@@ -25,6 +25,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		type TapResult,
 	} from './interaction';
 	import { describeStep, transcript } from './notation';
+	import type { SolverReply } from './solver.worker';
 	import { markLayout, readLayouts, type LayoutRecord } from './progress';
 	import './trellis.css';
 	import titleMark from './assets/title.svg?raw';
@@ -169,6 +170,62 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Difficulty sizes the tomb track's free cells; the classic board always keeps its four. */
 	let difficulty = $state<Difficulty>('med');
 	let board = $state<HTMLElement>();
+
+	/**
+	 * The background solvability check for the deal on the table. It runs in a worker once the player has
+	 * made a move, so a fresh page is not quietly burning a core, and the answer is only ever a lower
+	 * bound: a line proves the deal is winnable, no line proves nothing.
+	 */
+	type Probe = { seed: number; difficulty: Difficulty; status: 'searching' } | ({ status: 'done' } & SolverReply);
+	const PROBE_NODES = 300_000;
+	const PROBE_MS = 20_000;
+	let probe = $state<Probe | null>(null);
+	let probeWorker: Worker | null = null;
+	/** The deal already being looked at, so a move does not restart the search. */
+	let probedKey = '';
+
+	/** A phone's core is worth more than this answer: the search runs on a pointer with a mouse. */
+	function probesAtAll() {
+		return typeof Worker !== 'undefined' && !window.matchMedia('(pointer: coarse)').matches;
+	}
+
+	function startProbe(seed: number, level: Difficulty) {
+		probeWorker?.terminate();
+		probeWorker = null;
+		if (!probesAtAll()) {
+			probe = null;
+			return;
+		}
+		probe = { seed, difficulty: level, status: 'searching' };
+		const worker = new Worker(new URL('./solver.worker.ts', import.meta.url), { type: 'module' });
+		worker.onmessage = (event: MessageEvent<SolverReply>) => {
+			worker.terminate();
+			if (probeWorker === worker) probeWorker = null;
+			const reply = event.data;
+			// The deal may have changed while the search ran: a late answer for another seed is dropped.
+			if (probe && probe.seed === reply.seed && probe.difficulty === reply.difficulty) probe = { ...reply, status: 'done' };
+		};
+		worker.postMessage({ seed, difficulty: level, nodes: PROBE_NODES, timeBudgetMs: PROBE_MS });
+		probeWorker = worker;
+	}
+
+	$effect(() => {
+		const deal = tomb;
+		if (!deal || variant !== 'tomb') return;
+		// Only a run that has started: the opening deal is a seed nobody chose to play yet.
+		if (!recordedSteps.length) return;
+		const key = `${deal.seed}:${difficulty}`;
+		if (key === probedKey) return;
+		probedKey = key;
+		startProbe(deal.seed, difficulty);
+	});
+
+	const probeLabel = $derived.by(() => {
+		if (!probe) return '';
+		if (probe.status === 'searching') return 'Solver: looking';
+		if (!probe.solved) return `Solver: no line in ${Math.round(probe.nodes / 1000)}k`;
+		return `Solver: winnable in ${probe.moves}`;
+	});
 
 	/* ---------- the layout trellis ---------- */
 	type CorpusEntry = {
@@ -1050,8 +1107,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Copy the session, so it can be pasted beside a solver run on the same seed. */
 	async function copyRecording() {
 		if (!tomb) return;
+		const text = transcript(tombHistory[0] ?? tomb, recordedSteps);
+		// The background search's line rides along when it has one for this very deal, so the copy is
+		// the session and the answer to it rather than the session alone.
+		const found =
+			probe && probe.status === 'done' && probe.solved && probe.seed === tomb.seed && probe.difficulty === difficulty
+				? probe
+				: null;
+		const answer = found
+			? [
+					'',
+					`solver  winnable in ${found.moves} moves  ·  ${found.nodes.toLocaleString()} states  ·  ${(found.elapsedMs / 1000).toFixed(1)}s`,
+					...found.line.map((label: string, index: number) => `${String(index + 1).padStart(3)}  ${label}`),
+				]
+			: [];
 		try {
-			await navigator.clipboard.writeText(transcript(tombHistory[0] ?? tomb, recordedSteps));
+			await navigator.clipboard.writeText([text, ...answer].join('\n'));
 		} catch {
 			// Clipboard needs a secure context: the panel text stays selectable by hand.
 		}
@@ -1579,6 +1650,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
+			{#if probe}
+				<span
+					class="solve"
+					class:searching={probe.status === 'searching'}
+					title={probe.status === 'searching'
+						? `A solver is looking for a line from this deal in the background, on ${PROBE_NODES.toLocaleString()} states at most. It reports a line or says nothing.`
+						: probe.solved
+							? `The background search found a line of ${probe.moves} moves from this deal in ${(probe.elapsedMs / 1000).toFixed(1)}s. Copy the session to take the line with it.`
+							: `The background search spent ${probe.nodes.toLocaleString()} states and found no line. That is not proof the deal is lost, only that this budget did not crack it.`}
+				>{probeLabel}</span
+				>
+			{/if}
 			<span
 				class="score"
 				title="Score: every card that goes home is worth its own points — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb is 500, so the score divided by 5 is the percentage cleared."

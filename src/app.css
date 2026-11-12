@@ -1064,6 +1064,16 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #c79bff;
 }
 
+/* The background check: a lower bound on the deal, said quietly until it has one to give. */
+.tombhud .solve {
+	color: #9fd2b0;
+	opacity: 0.85;
+}
+.tombhud .solve.searching {
+	font-style: italic;
+	opacity: 0.5;
+}
+
 /* Score: what the dungeon has yielded so far, so it should only ever climb. */
 .tombhud .score {
 	color: #ffd95e;
