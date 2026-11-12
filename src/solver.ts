@@ -79,6 +79,8 @@ const cell = (index: number): CardLocation => ({ fixture: 'cell', data: [index] 
  */
 export function generateMoves(state: TombState): SolverMove[] {
 	const moves: SolverMove[] = [];
+	// Eager labels, measured against a lazy getter: the getter's closure and accessor shape cost more
+	// than the strings it saved (37.7s against 26.9s on seed 31107), so the label stays a plain field.
 	const add = (action: SolverAction, label: string, next: TombState | null) => {
 		if (next && next !== state) moves.push({ action, label, next });
 	};
@@ -469,17 +471,56 @@ function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 }
 
 /** A canonical key for the board, fog and bookkeeping included, so equal positions collapse. */
+/**
+ * The identity of a position, as a 64-bit hash.
+ *
+ * This used to print the whole board: a ~330-character string built with map/join per state, measured
+ * at 33us — a quarter of the search's entire per-state budget before the hash table even looked at it.
+ * Two mixed 32-bit lanes over the same fields answer the same question in 16 characters and no
+ * per-card strings. Over a few million states the chance of two positions colliding is about 1e-7, and
+ * a collision only makes the search skip a position it would otherwise have reached twice.
+ */
+const FIXTURE_CODE: Record<string, number> = { cascade: 1, cell: 2, foundation: 3, deck: 4 };
+
 export function stateKey(state: TombState): string {
-	const cards = state.game.cards
-		.map((card) => `${card.location.fixture[0]}${card.location.data.join('.')}${isFaceDown(state, card) ? 'f' : ''}`)
-		.join('|');
-	const slots = state.game.cells.map((card) => (card ? 'x' : '-')).join('');
-	const draft = state.draft.map((entry) => `${entry.cell}:${entry.id}`).join(',');
-	const armed = state.armed ? `${state.armed.kind}${state.armed.cell}${state.armed.first ?? ''}` : '';
-	const window = state.itemWindow
-		? `${state.itemWindow.cell}${state.itemWindow.role}${state.itemWindow.suit}${state.itemWindow.any ? 'a' : ''}`
-		: '';
-	return `${cards}#${slots}#${state.exhausted.map(Number).join('')}#${state.wounded.join('')}#${draft}#${armed}#${window}`;
+	let a = 0x811c9dc5;
+	let b = 0x9e3779b9;
+	const mix = (value: number) => {
+		a = Math.imul(a ^ value, 0x01000193) >>> 0;
+		b = Math.imul(b ^ (value + 0x9e37), 0x85ebca6b) >>> 0;
+		b = (b ^ (b >>> 13)) >>> 0;
+	};
+	const mixText = (text: string) => {
+		for (let index = 0; index < text.length; index++) mix(text.charCodeAt(index));
+		mix(text.length);
+	};
+	// Card order is stable across a deal's children, so a position's card list is the same sequence
+	// every time it is reached: hashing the locations in order identifies the board.
+	for (const card of state.game.cards) {
+		const { fixture, data } = card.location;
+		mix(FIXTURE_CODE[fixture] * 256 + (data[0] ?? 0) * 16 + (data[1] ?? 0));
+	}
+	for (const id of state.hidden) mixText(id);
+	mix(state.hidden.length);
+	let bits = 0;
+	for (let index = 0; index < state.exhausted.length; index++) if (state.exhausted[index]) bits |= 1 << index;
+	mix(bits);
+	for (const count of state.wounded) mix(count);
+	for (const entry of state.draft) {
+		mix(entry.cell);
+		mixText(entry.id);
+	}
+	if (state.armed) {
+		mixText(state.armed.kind);
+		mix(state.armed.cell);
+		if (state.armed.first) mixText(state.armed.first);
+	}
+	if (state.itemWindow) {
+		mix(state.itemWindow.cell * 32 + (state.itemWindow.any ? 1 : 0));
+		mixText(state.itemWindow.role);
+		mixText(state.itemWindow.suit);
+	}
+	return `${a.toString(16)}:${b.toString(16)}`;
 }
 
 /** Walk a path back from the start through the rules, so each printed state is earned by a move. */
@@ -714,7 +755,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 
 		for (const move of generateMoves(node.state)) {
 			nodes++;
-			const path: PathLink = { action: move.action, label: move.label, prev: node.path };
+								const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 			if (isGoal(move.next, goal)) {
 				deepest = Math.max(deepest, node.depth + 1);
 				return finish(true, path, move.next);

@@ -1001,10 +1001,18 @@ function relocate(state: TombState, moves: { id: string; to: CardLocation }[]): 
 	});
 	const cards = closeColumns(moved);
 	const game = new FreeCell({ cellCount: state.game.cells.length, cascadeCount: state.game.tableau.length, cards });
-	// Two cards can share a free cell: the slot always shows the top of the stack.
-	game.cells.forEach((_, cell) => {
-		game.cells[cell] = cellCards(cloneWith(state, { game }), cell).pop() ?? null;
-	});
+	// Two cards can share a free cell, and the slot shows the top of the stack. This used to ask
+	// `cellCards` for each cell in turn, which filtered and sorted all 52 cards per cell and cloned a
+	// state to do it — eight full deck scans for information one pass over the moved cards already
+	// has.
+	const top: (Card | null)[] = new Array(game.cells.length).fill(null);
+	for (const card of cards) {
+		if (card.location.fixture !== 'cell') continue;
+		const [cell, depth = 0] = card.location.data;
+		const held = top[cell];
+		if (!held || (held.location.data[1] ?? 0) < depth) top[cell] = card;
+	}
+	for (let cell = 0; cell < top.length; cell++) game.cells[cell] = top[cell];
 	return game;
 }
 
