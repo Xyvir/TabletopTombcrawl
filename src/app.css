@@ -227,16 +227,17 @@ img {
 .slot .slay.ranged {
 	top: 11%;
 	left: 57%;
-	width: 84%;
-	height: 24%;
+	width: 88%;
+	height: 22%;
 	aspect-ratio: auto;
 	transform: translate(-50%, -50%) rotate(-6deg);
 }
 
-.card .slay.ranged svg,
-.slot .slay.ranged svg {
+.card .slay.ranged img,
+.slot .slay.ranged img {
 	width: 100%;
 	height: 100%;
+	object-fit: contain;
 }
 
 @media (prefers-reduced-motion: reduce) {

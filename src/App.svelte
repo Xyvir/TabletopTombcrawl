@@ -1368,13 +1368,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 {#snippet bolt()}
 	<!-- The archer's mark: the same kill, told as a shot down a lane instead of a swing. -->
-	<svg viewBox="0 0 96 34" aria-hidden="true">
-		<g stroke="#232323" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
-			<path d="M18 17 7 8.5l5.4 8.5L7 25.5z" fill="#dcb489" />
-			<rect x="16" y="14.7" width="50" height="4.6" rx="2.3" fill="#cbb98c" />
-			<polygon points="92,17 74,8 74,13.6 64,13.6 64,20.4 74,20.4 74,26" fill="#b9c1c9" />
-		</g>
-	</svg>
+	<img class="bolt" src={`${BASE}images/range-arrow.png`} alt="" draggable="false" />
 {/snippet}
 
 <div
