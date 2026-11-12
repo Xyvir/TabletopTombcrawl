@@ -64,6 +64,12 @@ export const CLAUSES = {
 	fighterLevel: true,
 	/** Wizard: a cast on the very next turn after a refresh is free. */
 	wizardWindow: true,
+	/**
+	 * Wizard: the run opens with the window already open, so a cast as the very first action is free.
+	 * It is a window and not a bank: any other first move spends it, which is why the party needs no
+	 * token, no counter and no note on the sheet to remember it.
+	 */
+	wizardOpening: false,
 	/** Wizard: a free cast mends one wound. */
 	wizardMend: true,
 	/** Orc: a spent slot takes any card at all, not just its own suit. */
@@ -254,7 +260,8 @@ export interface TombState {
 	itemWindow: { cell: number; role: DraftRole; suit: Suit; any: boolean } | null;
 	/**
 	 * The Glyph was refreshed by this action, so a Wizard's very next move may be a free cast. Any
-	 * other action closes the window: it never survives a second move.
+	 * other action closes the window: it never survives a second move. A run may also open with the
+	 * window already open (see `CLAUSES.wizardOpening`), which is the same one-move grant on move zero.
 	 */
 	freeCast: boolean;
 	/**
@@ -382,7 +389,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		score: null,
 		armed: null,
 		itemWindow: null,
-		freeCast: false,
+		freeCast: CLAUSES.wizardOpening,
 		synthetic: null,
 	};
 }

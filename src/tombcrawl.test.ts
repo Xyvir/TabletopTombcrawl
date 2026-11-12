@@ -205,6 +205,32 @@ describe("the wizard's affinity", () => {
 		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
 	});
 
+	test('a cast as the very first action is free, where the party opens with the window open', () => {
+		CLAUSES.wizardOpening = true;
+		try {
+			// the deal opens the window itself under this clause
+			expect(createTombState(2024).freeCast).toBe(true);
+			const cast = useAbility(opening({ freeCast: true }), 1)!;
+			expect(cast.exhausted[1]).toBe(false);
+			// it is a window, not a bank: the cast that took it spends it
+			expect(cast.freeCast).toBe(false);
+			expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
+		} finally {
+			CLAUSES.wizardOpening = false;
+		}
+	});
+
+	test('a first move that is not the cast spends the opening window for good', () => {
+		CLAUSES.wizardOpening = true;
+		try {
+			const dug = revealFaceDown(opening(), cascade(0, 0))!;
+			expect(dug.freeCast).toBe(false);
+			expect(useAbility(dug, 1)!.exhausted[1]).toBe(true);
+		} finally {
+			CLAUSES.wizardOpening = false;
+		}
+	});
+
 	test('any other move closes the window', () => {
 		const dug = revealFaceDown(refreshed(), cascade(0, 0))!;
 		expect(dug.freeCast).toBe(false);
