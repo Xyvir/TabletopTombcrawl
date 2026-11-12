@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { initializeDeckOfCards, shorthandCard, type Card } from './game/card/card';
 import { FreeCell } from './game/game';
-import {	MONSTERS,
+import {
+	CLAUSES,
+	MONSTERS,
 	TOMB_RULES,
 	TOMB_CELL_COUNT,
 	FREE_CELL_COUNT,
@@ -2411,6 +2413,66 @@ describe('tombcrawl IMAWAL turning a card back over', () => {
 		const armed = useAbility(state, 0)!;
 		expect(flipFaceDown(armed, cascade(2, 0))).toBe(null);
 		expect(flipFaceDown(armed, { fixture: 'cell', data: [1] })).toBe(null);
+	});
+});
+
+describe('the two ways an Orc gets an item back', () => {
+	// A level up is the third suit reaching two: the clubs two goes home onto a pile of aces while the
+	// other three piles already stand at two.
+	const levelling = () =>
+		makeTomb({
+			columns: [['2C']],
+			cells: ['KC', '5H'],
+			foundations: ['2S', '2H', '2D', 'AC'],
+			draft: [
+				{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Orc', text: '' },
+				{ cell: 1, role: 'consumable', id: '5H', suit: 'hearts', name: 'Potion', text: '' },
+			],
+			exhausted: [1],
+		});
+	const clubsHome = { fixture: 'foundation' as const, data: [3] };
+
+	/** Flip clauses for one test, then put them back: the shipped game never runs with any of them off. */
+	const withClauses = (patch: Partial<typeof CLAUSES>, run: () => void) => {
+		const before = { ...CLAUSES };
+		Object.assign(CLAUSES, patch);
+		try {
+			run();
+		} finally {
+			Object.assign(CLAUSES, before);
+		}
+	};
+
+	test('the shipped Orc keeps his spent item through a level up', () => {
+		const state = levelling();
+		expect(currentLevel(state)).toBe(2);
+		const next = tombMove(state, cascade(0), clubsHome)!;
+		expect(currentLevel(next)).toBe(3);
+		// a level up refreshes the glyph, and an Orc's kit only comes back by scavenging
+		expect(next.exhausted[1]).toBe(true);
+	});
+
+	test('the level-up clause brings every spent item back instead', () => {
+		withClauses({ orcLevelRefresh: true }, () => {
+			const next = tombMove(levelling(), cascade(0), clubsHome)!;
+			expect(currentLevel(next)).toBe(3);
+			expect(next.exhausted[1]).toBe(false);
+		});
+	});
+
+	test('with scavenging off, playing an item out to the tableau opens no window', () => {
+		withClauses({ orcScavenge: false }, () => {
+			const state = makeTomb({
+				columns: [['5D']],
+				cells: ['KC', '2S', '4C'],
+				draft: [
+					{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Orc', text: '' },
+					{ cell: 2, role: 'consumable', id: '4C', suit: 'clubs', name: 'Elixir', text: '' },
+				],
+			});
+			const played = tombMove(state, cell(2), cascade(0))!;
+			expect(played.itemWindow).toBe(null);
+		});
 	});
 });
 
