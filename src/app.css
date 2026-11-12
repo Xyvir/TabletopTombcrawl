@@ -1064,10 +1064,10 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #c79bff;
 }
 
-/* The background check: a lower bound on the deal, said quietly until it has one to give, and sat
-   against the right edge because it answers a different question from the rest of the bar. */
+/* The background check: a lower bound on the deal, said quietly until it has one to give. It follows
+   the score in the bar's own flow, so it reads as one more reading off the same line rather than a
+   label stranded at the far edge of a wide screen. */
 .tombhud .solve {
-	margin-left: auto;
 	color: #9fd2b0;
 	opacity: 0.85;
 }
