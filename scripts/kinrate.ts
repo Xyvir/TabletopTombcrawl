@@ -6,8 +6,9 @@
  * only way to ask "is the Orc stronger than the Elf" — a scan stops searching a party the moment the
  * corpus has it, which is exactly the party a strong kin has most of.
  *
- * PIN=<four suit letters> pins the party instead of taking the deal's, so one seed can be measured
- * under all four kin (or any class, glyph and item) on an identical board. See `withSyntheticLoadout`.
+ * PIN=<four letters> pins the party instead of taking the deal's, so one seed can be measured under
+ * all four kin (or any class, glyph and item) on an identical board. A `*` keeps the deal's card for
+ * that role, so `h***` compares the Human alone against `c***` and the rest. See `withSyntheticLoadout`.
  *
  * FROM=<first seed> TO=<last seed> SHARD=<i> SHARDS=<n> BUDGET=<states> PIN=<letters> OUT=<path>
  */
@@ -40,7 +41,7 @@ for (let seed = from; seed <= to; seed++) {
 	if ((seed - from) % shards !== shard || done.has(seed)) continue;
 	const dealt = createTombState(seed, FREE_CELL_COUNT.med);
 	const state = pin ? withSyntheticLoadout(dealt, pin) : dealt;
-	const kin = pin ? pin[0] : [...dealt.draft].sort((a, b) => a.cell - b.cell)[0].suit[0];
+	const kin = pin ? (pin[0] === '*' || pin[0] === '-' ? 'mixed' : pin[0]) : [...dealt.draft].sort((a, b) => a.cell - b.cell)[0].suit[0];
 	// No clock: the state budget is the only limit, so every kin is measured by the same effort.
 	const result = solveTomb({
 		state,

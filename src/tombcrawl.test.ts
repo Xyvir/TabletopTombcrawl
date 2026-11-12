@@ -143,6 +143,20 @@ describe('synthetic loadouts', () => {
 		expect(hasPassive(pinned, 'Fighter')).toBe(true);
 	});
 
+	test('a wildcard leaves that role exactly as the deal drafted it', () => {
+		const dealt = createTombState(4242, FREE_CELL_COUNT.med);
+		const pinned = withSyntheticLoadout(dealt, 'h***');
+
+		// the kin is the pin, and the class, glyph and item are the deal's own
+		expect(pinned.draft[0]).toMatchObject({ role: 'kin', suit: 'hearts', name: 'Human' });
+		pinned.draft.slice(1).forEach((entry, index) => expect(entry).toEqual(dealt.draft[index + 1]));
+		expect(pinned.synthetic).toEqual({ kin: 'hearts' });
+
+		// and the board is still the deal's
+		expect(pinned.bossId).toBe(dealt.bossId);
+		expect(pinned.hidden).toEqual(dealt.hidden);
+	});
+
 	test('a restocked slot keeps the pinned suit rather than the fed card’s', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '3H', suit: 'hearts', name: 'Human', text: '' },
