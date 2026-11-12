@@ -229,6 +229,12 @@ export interface SolveOptions {
 	 * default policy of a beam followed by best-first on what is left of the budget.
 	 */
 	strategy?: 'best' | 'beam' | 'dfs' | 'hybrid';
+	/**
+	 * How long a board stays "already seen". A beam forgets between plies by default, which lets a
+	 * winning line walk back onto a board it has stood on and spend moves that buy nothing; `all`
+	 * remembers the whole search, so a line can never repeat a position, at the cost of some breadth.
+	 */
+	dedupe?: 'ply' | 'all';
 	/** Longest line the search will follow. */
 	depth?: number;
 	timeBudgetMs?: number;
@@ -463,7 +469,7 @@ function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 }
 
 /** A canonical key for the board, fog and bookkeeping included, so equal positions collapse. */
-function stateKey(state: TombState): string {
+export function stateKey(state: TombState): string {
 	const cards = state.game.cards
 		.map((card) => `${card.location.fixture[0]}${card.location.data.join('.')}${isFaceDown(state, card) ? 'f' : ''}`)
 		.join('|');
@@ -648,6 +654,8 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	const width = options.beamWidth ?? 0;
 	if (width > 0) {
 		let frontier: Node[] = [first];
+		// Across the whole search, a repeated board is dropped: the line that wins cannot loop.
+		const seenAll = options.dedupe === 'all' ? new Set<string>([stateKey(start)]) : null;
 		for (let ply = 0; ply < depth; ply++) {
 			if (nodes >= budget) break;
 			if (Date.now() - began > deadline) {
@@ -667,6 +675,10 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 					const key = stateKey(move.next);
 					if (seen.has(key)) continue;
 					seen.add(key);
+					if (seenAll) {
+						if (seenAll.has(key)) continue;
+						seenAll.add(key);
+					}
 					const value = scoreOf(move.next, goal);
 					const child: Node = { state: move.next, path, value, score: value, depth: ply + 1 };
 					children.push(child);
