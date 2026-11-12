@@ -176,6 +176,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		difficulty: string;
 		goal: string;
 		party: { role: string; name: string; suit: string }[];
+		/** When the solver proved this deal; entries older than the column itself carry null. */
+		at?: string | null;
 	};
 	type CorpusFile = {
 		difficulty: string;
@@ -223,6 +225,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const clear = known?.clear ?? (entry?.goal === 'clear' ? { seed: entry.seed, moves: entry.moves } : undefined);
 		return { boss, clear };
 	});
+	/** The entry behind the readout, so the panel can date the seed it shows. */
+	const inspectedEntry = $derived(entriesByLayout.get(inspectedKey));
 
 	/** A party's four drafted suits in role order, letters only, e.g. `hcds`. */
 	function loadoutOf(state: TombState | null): string {
@@ -1745,7 +1749,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 												onfocus={() => (hovered = key)}
 												onclick={() => entry && startLayout(entry)}
 												title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
-													entry ? `seed ${entry.seed}, boss slain in ${entry.moves} moves` : 'no seed found yet'
+													entry ? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}` : 'no seed found yet'
 												}`}
 												aria-label={`${key} ${layoutStatus(key)}`}
 											></button>
@@ -1769,6 +1773,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								{/each}
 							</ul>
 							<p class="preview-goals">
+								<span class="goal">
+									<span class="label">seed found</span>
+									{#if inspectedEntry?.at}
+										{inspectedEntry.at.slice(0, 10)}
+									{:else if inspectedEntry}
+										<span class="none">before dates were kept</span>
+									{:else}
+										<span class="none">no seed yet</span>
+									{/if}
+								</span>
 								<span class="goal">
 									<span class="label">boss killed</span>
 									{#if inspectedProof.boss}

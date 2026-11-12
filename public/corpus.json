@@ -32,7 +32,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdcc",
@@ -62,7 +63,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdcd",
@@ -92,7 +94,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdcs",
@@ -122,7 +125,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cddc",
@@ -152,7 +156,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cddd",
@@ -182,7 +187,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cddh",
@@ -212,7 +218,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdds",
@@ -242,7 +249,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdhc",
@@ -272,7 +280,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdhh",
@@ -302,7 +311,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdhs",
@@ -332,7 +342,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdsc",
@@ -362,7 +373,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdsd",
@@ -392,7 +404,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdsh",
@@ -422,7 +435,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cdss",
@@ -452,7 +466,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "chhs",
@@ -482,7 +497,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cscc",
@@ -512,7 +528,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "csch",
@@ -542,7 +559,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cscs",
@@ -572,7 +590,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "csdc",
@@ -602,7 +621,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "csdd",
@@ -632,7 +652,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "csdh",
@@ -662,7 +683,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "csds",
@@ -692,7 +714,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cshd",
@@ -722,7 +745,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cshh",
@@ -752,7 +776,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cshs",
@@ -782,7 +807,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cssd",
@@ -812,7 +838,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "cssh",
@@ -842,7 +869,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "csss",
@@ -872,7 +900,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ddcc",
@@ -902,7 +931,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dddc",
@@ -932,7 +962,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ddsc",
@@ -962,7 +993,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dscd",
@@ -992,7 +1024,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dscs",
@@ -1022,7 +1055,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dsdc",
@@ -1052,7 +1086,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dsdd",
@@ -1082,7 +1117,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dsdh",
@@ -1112,7 +1148,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "dssc",
@@ -1142,7 +1179,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hccc",
@@ -1172,7 +1210,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hccd",
@@ -1202,7 +1241,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hcsh",
@@ -1232,7 +1272,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hdcc",
@@ -1262,7 +1303,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hdds",
@@ -1292,7 +1334,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hdsh",
@@ -1322,7 +1365,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hdss",
@@ -1352,7 +1396,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hhcd",
@@ -1382,7 +1427,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hhcs",
@@ -1412,7 +1458,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hhds",
@@ -1442,7 +1489,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hscc",
@@ -1472,7 +1520,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hscd",
@@ -1502,7 +1551,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hsch",
@@ -1532,7 +1582,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hsds",
@@ -1562,7 +1613,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hshc",
@@ -1592,7 +1644,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hshh",
@@ -1622,7 +1675,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hshs",
@@ -1652,7 +1706,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hssc",
@@ -1682,7 +1737,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hssh",
@@ -1712,7 +1768,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "hsss",
@@ -1742,7 +1799,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sccd",
@@ -1772,7 +1830,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "scdc",
@@ -1802,7 +1861,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "schd",
@@ -1832,7 +1892,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "schh",
@@ -1862,7 +1923,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "schs",
@@ -1892,7 +1954,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "scsd",
@@ -1922,7 +1985,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "scsh",
@@ -1952,7 +2016,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdcc",
@@ -1982,7 +2047,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdcd",
@@ -2012,7 +2078,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdch",
@@ -2042,7 +2109,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sddc",
@@ -2072,7 +2140,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sddd",
@@ -2102,7 +2171,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sddh",
@@ -2132,7 +2202,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdds",
@@ -2162,7 +2233,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdhc",
@@ -2192,7 +2264,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdhd",
@@ -2222,7 +2295,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdhh",
@@ -2252,7 +2326,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdhs",
@@ -2282,7 +2357,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdsc",
@@ -2312,7 +2388,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdsd",
@@ -2342,7 +2419,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdsh",
@@ -2372,7 +2450,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sdss",
@@ -2402,7 +2481,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shcd",
@@ -2432,7 +2512,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shdd",
@@ -2462,7 +2543,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shds",
@@ -2492,7 +2574,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shhc",
@@ -2522,7 +2605,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shhd",
@@ -2552,7 +2636,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shhs",
@@ -2582,7 +2667,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shsc",
@@ -2612,7 +2698,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shsd",
@@ -2642,7 +2729,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "shss",
@@ -2672,7 +2760,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sscc",
@@ -2702,7 +2791,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sscd",
@@ -2732,7 +2822,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sscs",
@@ -2762,7 +2853,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ssdc",
@@ -2792,7 +2884,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ssdd",
@@ -2822,7 +2915,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ssdh",
@@ -2852,7 +2946,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ssds",
@@ -2882,7 +2977,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sshc",
@@ -2912,7 +3008,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sshd",
@@ -2942,7 +3039,8 @@
 					"name": "Remedy",
 					"suit": "diamonds"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sshh",
@@ -2972,7 +3070,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sshs",
@@ -3002,7 +3101,8 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sssc",
@@ -3032,7 +3132,8 @@
 					"name": "Elixir",
 					"suit": "clubs"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "sssh",
@@ -3062,7 +3163,8 @@
 					"name": "Potion",
 					"suit": "hearts"
 				}
-			]
+			],
+			"at": null
 		},
 		{
 			"loadout": "ssss",
@@ -3092,16 +3194,11 @@
 					"name": "Revive",
 					"suit": "spades"
 				}
-			]
+			],
+			"at": null
 		}
 	],
 	"found": {
-		"sssh": {
-			"boss": {
-				"seed": 3,
-				"moves": 103
-			}
-		},
 		"hhcs": {
 			"boss": {
 				"seed": 2,
@@ -3712,6 +3809,12 @@
 			"boss": {
 				"seed": 545,
 				"moves": 159
+			}
+		},
+		"sssh": {
+			"boss": {
+				"seed": 3,
+				"moves": 103
 			}
 		}
 	},

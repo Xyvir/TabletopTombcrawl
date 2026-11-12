@@ -24,6 +24,11 @@ interface Entry {
 	difficulty: string;
 	goal: string;
 	party: { role: string; name: string; suit: string }[];
+	/**
+	 * When the solver proved this deal, so a rule change can be told apart from an old result. Entries
+	 * recorded before the corpus kept dates carry null rather than a guess.
+	 */
+	at: string | null;
 }
 
 const mode = process.env.MODE ?? 'plan';
@@ -156,6 +161,7 @@ if (mode === 'solve') {
 				party: [...state.draft]
 					.sort((a, b) => a.cell - b.cell)
 					.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit })),
+				at: new Date().toISOString(),
 			});
 			done.add(candidate.key);
 			writeFileSync(out, JSON.stringify(entries, null, '\t'));
@@ -227,6 +233,7 @@ if (mode === 'scan') {
 			party: [...state.draft]
 				.sort((a, b) => a.cell - b.cell)
 				.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit })),
+			at: new Date().toISOString(),
 		});
 		done.add(key);
 		writeFileSync(out, JSON.stringify(entries, null, '\t'));
@@ -242,14 +249,20 @@ if (mode === 'merge') {
 	if (existsSync(shardDir)) {
 		for (const name of readdirSync(shardDir)) {
 			if (!name.endsWith('.json')) continue;
+			// Only real shards, for the same reason the skip list reads only real shards: the plan and
+			// the verification rows sit in this directory too, and a row with a seed but no move count
+			// would be published as an entry — and as a `clear` one, which outbids the real entry for
+			// the key it landed on.
+			if (!name.startsWith('scan-') && !name.startsWith('shard-')) continue;
 			try {
 				const parsed = JSON.parse(readFileSync(`${shardDir}/${name}`, 'utf8'));
 				if (!Array.isArray(parsed)) continue;
 				// the plan sits in here too and its rows are not entries: only entries carry a seed
 				for (const entry of parsed) {
 					if (typeof entry?.seed !== 'number') continue;
-					// rows written before the corpus recorded its goal came from clear-goal runs
-					all.push({ ...entry, goal: entry.goal ?? 'clear' });
+					// rows written before the corpus recorded its goal came from clear-goal runs, and rows
+					// written before it kept a date stay undated rather than being given a guessed one
+					all.push({ ...entry, goal: entry.goal ?? 'clear', at: entry.at ?? null });
 				}
 			} catch {
 				// a half-written shard is skipped, and the next merge picks it up
@@ -264,7 +277,10 @@ if (mode === 'merge') {
 	if (existsSync('public/corpus.json')) {
 		try {
 			const parsed = JSON.parse(readFileSync('public/corpus.json', 'utf8'));
-			if (Array.isArray(parsed?.entries)) all.push(...parsed.entries);
+			// Same normalising as the shards: an artifact written before a column existed has to gain
+			// it here, or the published entries stay the odd ones out in their own file.
+			if (Array.isArray(parsed?.entries))
+				all.push(...parsed.entries.map((entry: Entry) => ({ ...entry, goal: entry.goal ?? 'clear', at: entry.at ?? null })));
 		} catch {
 			// an unreadable artifact simply contributes nothing
 		}
