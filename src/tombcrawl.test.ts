@@ -1108,6 +1108,25 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(preview.wounds).toEqual([]);
 	});
 
+	test('grudge sends any court card home for a single heart, the boss king excepted', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Dwarf', text: '' }];
+
+		// a jack at level one would cost ten; the Dwarf pays one
+		const face = makeTomb({ columns: [['JC']], cells: ['2D'], foundations: ['TC', 'AD'], draft });
+		expect(currentLevel(face)).toBe(1);
+		expect(attackPreview(face, cascade(0)).damage).toBe(1);
+		// and without him the same kill reads its full price
+		const plain = makeTomb({ columns: [['JC']], cells: ['2D'], foundations: ['TC', 'AD'] });
+		expect(attackPreview(plain, cascade(0)).damage).toBe(10);
+
+		// the boss's own suit is no exception: only the boss king is
+		const queen = makeTomb({ columns: [['QH']], cells: ['2D'], foundations: ['JH', 'AD'], draft, boss: 'KH' });
+		expect(attackPreview(queen, cascade(0)).damage).toBe(1);
+
+		const king = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH', 'AD', 'KS'], draft, boss: 'KH' });
+		expect(attackPreview(king, cascade(0)).damage).toBe(12);
+	});
+
 	test('bounty pays only for a kill into the leading foundation', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
 		// hearts leads, so the 5 of hearts is worth the bounty

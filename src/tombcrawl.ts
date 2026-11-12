@@ -86,7 +86,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Dwarf',
-		text: 'Grudge: the boss king has no protection — kill it without sending another king home first.',
+		text: 'Grudge: the boss king has no protection — kill it without sending another king home first — and every other court card costs a single heart.',
 	},
 };
 
@@ -901,6 +901,9 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	if (TOMB_RULES.levelDamageCap > 0) damage = Math.min(damage, TOMB_RULES.levelDamageCap);
 	// The Fighter wears the hit: whatever the rank, no kill takes more than two hearts off him.
 	if (hasPassive(state, 'Fighter')) damage = Math.min(damage, 2);
+	// Grudge pays in faces: a Dwarf sends any court card home for a single heart. The boss king alone
+	// still costs what it costs, so the top of the dungeon never comes cheap.
+	if (hasPassive(state, 'Dwarf') && isFaceCard(card) && !isBoss(state, card)) damage = Math.min(damage, 1);
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
