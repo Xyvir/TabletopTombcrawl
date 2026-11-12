@@ -1400,8 +1400,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				type="button"
 				class="titlecard"
 				onclick={openLayout}
-				title="Choose a layout: every party the four roles can make, and how far you have got with it"
-				aria-label="Tabletop Tombcrawl — choose a layout"
+				title="Choose a loadout: every party the four roles can make, and how far you have got with it"
+				aria-label="Tabletop Tombcrawl — choose a loadout"
 			>
 				<span class="titlemark">{@html titleMark}</span>
 			</button>
@@ -1703,7 +1703,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			class="layout-sheet"
 			role="dialog"
 			aria-modal="true"
-			aria-label="Choose a layout"
+			aria-label="Choose a loadout"
 			tabindex="-1"
 			bind:this={sheetEl}
 			onkeydown={(event) => {
@@ -1715,7 +1715,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		>
 			<div class="layout-card">
 				<header>
-					<h2>Choose a layout</h2>
+					<h2>Choose a loadout</h2>
 					<span class="corpusline">
 						{corpus ? `${corpus.entries.length} of ${corpus.keys} parties have a seed` : 'reading the seed list…'}
 					</span>
@@ -1724,13 +1724,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<div class="trellis">
 						<span class="corner"></span>
 						{#each SUITS as suit (suit)}
-							<span class="tick top" class:red={suit === 'hearts' || suit === 'diamonds'}>
+							<span
+								class="tick top"
+								class:red={suit === 'hearts' || suit === 'diamonds'}
+								title={abilityFor('class', suit).text}
+							>
 								<span class="glyph">{SUIT_GLYPH[suit]}</span>
 								<span class="name">{abilityFor('class', suit).name}</span>
 							</span>
 						{/each}
 						{#each SUITS as kin (kin)}
-							<span class="tick side" class:red={kin === 'hearts' || kin === 'diamonds'}>
+							<span
+								class="tick side"
+								class:red={kin === 'hearts' || kin === 'diamonds'}
+								title={abilityFor('kin', kin).text}
+							>
 								<span class="name">{abilityFor('kin', kin).name}</span>
 								<span class="glyph">{SUIT_GLYPH[kin]}</span>
 							</span>

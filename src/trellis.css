@@ -116,6 +116,11 @@ button.titlecard:focus-visible {
 	text-align: center;
 }
 
+/* The column and row headers carry their ability text on hover, so they read as hoverable. */
+.trellis .tick {
+	cursor: help;
+}
+
 .trellis .tick.side {
 	justify-items: end;
 	text-align: right;
