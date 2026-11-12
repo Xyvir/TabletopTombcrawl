@@ -505,7 +505,14 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 		power: 'Poison',
 		text: 'killing this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
 	},
-	clubs: { name: 'Gorgon', power: 'Unburden', text: 'killing this carries your item into an open cell, face-down.' },
+	clubs: {
+		name: 'Gorgon',
+		// The label follows the clause: the sheet describes the power the run is actually playing with.
+		power: CLAUSES.gorgonEvict ? 'Unburden' : 'Burden',
+		text: CLAUSES.gorgonEvict
+			? 'killing this carries your item into an open cell, face-down, and leaves its slot waiting for a card.'
+			: 'killing this exhausts and wounds your item.',
+	},
 	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts and wounds your Glyph.' },
 };
 

@@ -2270,7 +2270,8 @@ describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster and power', () => {
 		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', power: 'Weakness' });
 		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', power: 'Poison' });
-		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: 'Unburden' });
+		// the sheet names the power the run is playing with, so the label cannot drift from the clause
+		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: CLAUSES.gorgonEvict ? 'Unburden' : 'Burden' });
 		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', power: 'Mana Burn' });
 	});
 });
