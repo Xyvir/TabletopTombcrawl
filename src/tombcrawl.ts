@@ -1134,7 +1134,8 @@ function refreshGlyphs(state: TombState): TombState {
  * whether or not the fog has lifted off him yet. It is a round five hundred so the run reads as a
  * percentage: (500 - par) / 5 is how much of the tomb is clear.
  */
-const PAR_TOTAL = 500;
+/** The whole of a tomb: par counts down from it, so the score the board shows counts up to it. */
+export const PAR_TOTAL = 500;
 
 /** What one card is worth in par: ace one, numbers at face, court fifteen, king twenty. */
 function parValue(card: Card): number {

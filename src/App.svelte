@@ -51,6 +51,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		createTombState,
 		currentLevel,
 		FREE_CELL_COUNT,
+		PAR_TOTAL,
 		disarm,
 		hp,
 		maxHp,
@@ -361,6 +362,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
+	/** Par counted the other way round: what the dungeon has yielded, out of the whole tomb. */
+	const tombScoreNow = $derived(tomb ? PAR_TOTAL - tombPar(tomb) : 0);
 	const dragIds = $derived(new Set(drag?.cards ?? []));
 
 	/**
@@ -1577,9 +1580,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
 			<span
-				class="par"
-				title="Par: a full tomb is worth 500, and every card takes its own value off that as it goes home — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. Lower is better, and (500 - par) / 5 is the percentage cleared."
-			>Par {tombPar(tomb)} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
+				class="score"
+				title="Score: every card that goes home is worth its own points — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb is 500, so the score divided by 5 is the percentage cleared."
+			>Score {tombScoreNow}/{PAR_TOTAL} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
 			>
 			{#if bossNoted && bossSlain(tomb)}
 				<span

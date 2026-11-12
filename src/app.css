@@ -1064,14 +1064,14 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #c79bff;
 }
 
-/* Par is the score: what the dungeon still holds, so it should only ever fall. */
-.tombhud .par {
+/* Score: what the dungeon has yielded so far, so it should only ever climb. */
+.tombhud .score {
 	color: #ffd95e;
 	font-weight: 700;
 }
 
 /* the parenthetical is a reading of the same number, not a second score */
-.tombhud .par .pct {
+.tombhud .score .pct {
 	color: rgba(255, 255, 255, 0.6);
 	font-weight: 600;
 }
