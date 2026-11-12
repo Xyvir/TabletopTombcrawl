@@ -71,20 +71,26 @@ interface Ability {
 	text: string;
 }
 
+/**
+ * Who the four kin are, by the suit of the kin card. The pairing is thematic before it is mechanical:
+ * orcs swing clubs, elves have the pointed diamonds on their ears, and dwarves go to work with a
+ * spade. Behaviour is keyed on the kin's name, not on the suit, so a kin and its card can be re-paired
+ * without touching a single rule.
+ */
 const KIN: Record<Suit, Ability> = {
-	spades: {
-		name: 'Orc',
-		text: 'Scavenger: any card can restock a spent item slot, becoming the item of its suit.',
-	},
 	hearts: {
 		name: 'Human',
 		text: 'Courageous: send a card home skipping one missing rank.',
 	},
 	clubs: {
+		name: 'Orc',
+		text: 'Scavenger: any card can restock a spent item slot, becoming the item of its suit.',
+	},
+	diamonds: {
 		name: 'Elf',
 		text: 'Ranged: kill or reveal any card in a column whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
 	},
-	diamonds: {
+	spades: {
 		name: 'Dwarf',
 		text: 'Grudge: the boss king has no protection — kill it without sending another king home first — and every other court card costs a single heart.',
 	},

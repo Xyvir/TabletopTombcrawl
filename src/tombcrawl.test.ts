@@ -138,8 +138,8 @@ describe('synthetic loadouts', () => {
 
 		// and those cells now confer the pinned abilities
 		expect(pinned.draft.map((entry) => entry.suit)).toEqual(['spades', 'spades', 'spades', 'spades']);
-		expect(pinned.draft.map((entry) => entry.name)).toEqual(['Orc', 'Fighter', 'BYSSEPS', 'Revive']);
-		expect(hasPassive(pinned, 'Orc')).toBe(true);
+		expect(pinned.draft.map((entry) => entry.name)).toEqual(['Dwarf', 'Fighter', 'BYSSEPS', 'Revive']);
+		expect(hasPassive(pinned, 'Dwarf')).toBe(true);
 		expect(hasPassive(pinned, 'Fighter')).toBe(true);
 	});
 
@@ -165,16 +165,17 @@ describe('synthetic loadouts', () => {
 		// a plain diamond waits in the last cell: feeding takes a card off the board, not another item
 		const state = withSyntheticLoadout(
 			makeTomb({ columns: [['5D']], cells: ['3H', null, '4C', '9D'], draft }),
-			'ssss'
+			// clubs for the kin, so the party is an Orc, and clubs for the glyph, so the pin is testable
+			'c*c*'
 		);
 
 		// the glyph beside the chip is played out onto the tableau, which scavenges for the pinned Orc
 		const played = tombMove(state, cell(2), cascade(0))!;
-		expect(played.itemWindow).toEqual({ cell: 2, role: 'glyph', suit: 'spades', any: true });
+		expect(played.itemWindow).toEqual({ cell: 2, role: 'glyph', suit: 'clubs', any: true });
 
-		// a diamond fills the slot, and it becomes the pinned spades spell, not its own suit's glyph
+		// a diamond fills the slot, and it becomes the pinned clubs spell, not its own suit's glyph
 		const fed = tombMove(played, cell(3), cell(2))!;
-		expect(fed.draft.find((entry) => entry.cell === 2)).toMatchObject({ suit: 'spades', name: 'BYSSEPS' });
+		expect(fed.draft.find((entry) => entry.cell === 2)).toMatchObject({ suit: 'clubs', name: 'PISORF' });
 	});
 });
 
@@ -2004,7 +2005,7 @@ describe('tombcrawl item refresh', () => {
 
 	test('an Orc may even trade his own kin card for another kin', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Orc', text: '' }];
-		const state = makeTomb({ columns: [['3H']], cells: ['2S', '7C'], draft });
+		const state = makeTomb({ columns: [['3H']], cells: ['2S', '7D'], draft });
 
 		const played = tombMove(state, cell(0), cascade(0))!;
 		expect(played.draft).toHaveLength(0);
