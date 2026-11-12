@@ -1514,6 +1514,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const stack = foundationStack(i)}
 				<button
 					class="slot"
+					class:empty={!stack.length}
 					data-drop={`foundation:${i}`}
 					aria-label={`foundation ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
 					onclick={() => tap(location)}
@@ -1563,6 +1564,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:locking={!!preview?.locks.includes(i)}
 					class:need={!!preview?.need.includes(i) || !!preview?.fatal}
 					class:affinity={!!tomb && freeCastReady(tomb, i) && abilityUsable(tomb, i)}
+					class:empty={!card}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
 					data-role={entry ? entry.role : undefined}						title={wounded

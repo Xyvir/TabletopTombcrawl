@@ -91,6 +91,15 @@ img {
 	touch-action: none;
 }
 
+/*
+ * An empty slot is only ever somewhere to drop a card: clicking it offers nothing, so it keeps the
+ * arrow rather than promising a hand. A filled slot keeps the pointer, because a card in one can be
+ * picked up, aimed with, or sent home.
+ */
+.slot.empty {
+	cursor: default;
+}
+
 .slot img {
 	position: absolute;
 	inset: 0;
