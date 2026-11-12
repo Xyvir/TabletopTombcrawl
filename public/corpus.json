@@ -3105,6 +3105,37 @@
 			"at": null
 		},
 		{
+			"loadout": "hhhc",
+			"boss": "diamonds",
+			"seed": 14007,
+			"moves": 120,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-12T12:36:35.681Z"
+		},
+		{
 			"loadout": "hhhd",
 			"boss": "spades",
 			"seed": 2008,
@@ -3849,6 +3880,37 @@
 			"at": null
 		},
 		{
+			"loadout": "scch",
+			"boss": "clubs",
+			"seed": 14020,
+			"moves": 141,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-12T12:38:38.835Z"
+		},
+		{
 			"loadout": "scdc",
 			"boss": "clubs",
 			"seed": 2116,
@@ -4033,6 +4095,37 @@
 				}
 			],
 			"at": null
+		},
+		{
+			"loadout": "scsc",
+			"boss": "clubs",
+			"seed": 11004,
+			"moves": 146,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-12T12:36:39.420Z"
 		},
 		{
 			"loadout": "scsd",
@@ -5808,6 +5901,24 @@
 				"moves": 95
 			}
 		},
+		"scsc": {
+			"boss": {
+				"seed": 11004,
+				"moves": 146
+			}
+		},
+		"hhhc": {
+			"boss": {
+				"seed": 14007,
+				"moves": 120
+			}
+		},
+		"scch": {
+			"boss": {
+				"seed": 14020,
+				"moves": 141
+			}
+		},
 		"chhs": {
 			"boss": {
 				"seed": 2013,
@@ -6446,7 +6557,6 @@
 		}
 	},
 	"missing": [
-		"hhhc",
 		"hcch",
 		"hcdd",
 		"chhd",
@@ -6519,12 +6629,10 @@
 		"shcs",
 		"shdh",
 		"shsh",
-		"scch",
 		"sccc",
 		"sccs",
 		"scdh",
 		"scdd",
-		"scsc",
 		"scss",
 		"ssch",
 		"sssd"
