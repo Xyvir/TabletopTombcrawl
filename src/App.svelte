@@ -45,6 +45,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		cellCardMovable,
 		cellCards,
 		chipBoundary,
+		convertibleCell,
 		newlyHealed,
 		newlyWounded,
 		createTombState,
@@ -1450,7 +1451,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:wounded={!!wounded}
 					// the stain follows a boss-suit card into a free cell as well as down its column
 					class:boss={!!card && !!tomb && isBoss(tomb, card)}
-					class:aura={!!card && !!tomb && isBossMinion(tomb, card) && !down}
+					// A drafted card is not on the board to be slain, so it only wears the stain while it is
+					// the one item the chip has reached: the rest of the party is a promise, not a monster.
+					class:aura={!!card &&
+						!!tomb &&
+						isBossMinion(tomb, card) &&
+						!down &&
+						(!entry || convertibleCell(tomb) === i)}
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:locking={!!preview?.locks.includes(i)}
