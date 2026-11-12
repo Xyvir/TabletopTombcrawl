@@ -218,6 +218,11 @@ export interface TombState {
 	 * waits through any number of moves, and any free cast spends it along with the refresh window.
 	 */
 	freeCastBank: boolean;
+	/**
+	 * A balance harness pin, set only by `withSyntheticLoadout`: the suit each role confers, whatever
+	 * card happens to sit in the cell. Null in every real game, and never read by the deal itself.
+	 */
+	synthetic: Record<DraftRole, Suit> | null;
 }
 
 const rankOf = (rank: Rank) => getRankForCompare(rank) + 1;
@@ -340,7 +345,38 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		itemWindow: null,
 		freeCast: false,
 		freeCastBank: true,
+		synthetic: null,
 	};
+}
+
+const SUIT_BY_LETTER: Record<string, Suit> = { h: 'hearts', c: 'clubs', d: 'diamonds', s: 'spades' };
+
+/**
+ * A balance harness, never used by the game: pin the party's four suits so one deal can be played by
+ * different parties.
+ *
+ * The cards do not move. The same four sit in the same cells with the same ranks, and the tableau, the
+ * fog and the boss are the deal's — only the abilities those cells confer change. Two runs over one
+ * seed therefore differ in the party and nothing else, which is the only way to compare kin, class,
+ * glyph or item without the deal flattering one of them. A slot restocked later keeps its pinned
+ * suit rather than taking the fed card's, so a long line does not drift off the party mid-run.
+ */
+export function withSyntheticLoadout(state: TombState, loadout: string): TombState {
+	const letters = loadout.trim().toLowerCase();
+	if (letters.length !== DRAFT_CELL_COUNT)
+		throw new Error(`a loadout is ${DRAFT_CELL_COUNT} letters, got "${loadout}"`);
+	const synthetic = {} as Record<DraftRole, Suit>;
+	[...letters].forEach((letter, index) => {
+		const suit = SUIT_BY_LETTER[letter];
+		if (!suit) throw new Error(`unknown suit "${letter}" in loadout "${loadout}"`);
+		synthetic[ROLES_BY_DRAW_ORDER[index]] = suit;
+	});
+	const draft = state.draft.map((entry) => {
+		const suit = synthetic[entry.role];
+		const ability = ABILITY_TABLE[entry.role][suit];
+		return { ...entry, suit, name: ability.name, text: ability.text };
+	});
+	return cloneWith(state, { synthetic, draft });
 }
 
 /* --------------------------------------------------------------- reading */
@@ -1391,15 +1427,14 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	}
 
 	if (feed) {
-		const ability = ABILITY_TABLE[feed.role][cards[0].suit];
+		// A pinned party keeps its suit even when a card of another one fills the slot.
+		const suit = state.synthetic?.[feed.role] ?? cards[0].suit;
+		const ability = ABILITY_TABLE[feed.role][suit];
 		const exhausted = [...next.exhausted];
 		exhausted[feed.cell] = false;
 		next = cloneWith(next, {
 			exhausted,
-			draft: [
-				...next.draft,
-				{ cell: feed.cell, role: feed.role, id: cardId(cards[0]), suit: cards[0].suit, name: ability.name, text: ability.text },
-			],
+			draft: [...next.draft, { cell: feed.cell, role: feed.role, id: cardId(cards[0]), suit, name: ability.name, text: ability.text }],
 		});
 	}
 

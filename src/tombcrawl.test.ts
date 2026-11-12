@@ -20,6 +20,7 @@ import {	MONSTERS,
 
 	chipBoundary,
 	convertibleCell,
+	withSyntheticLoadout,
 	hasPassive,
 	newlyHealed,
 	newlyWounded,
@@ -110,11 +111,58 @@ function makeTomb({
 		itemWindow: null,
 		freeCast: false,
 		freeCastBank,
+		synthetic: null,
 	};
 }
 
 const cascade = (column: number, card = 0) => ({ fixture: 'cascade' as const, data: [column, card] });
 const cell = (index: number) => ({ fixture: 'cell' as const, data: [index] });
+
+describe('synthetic loadouts', () => {
+	const deal = (state: TombState) =>
+		state.game.cards
+			.map((card) => `${shorthandCard(card)}@${card.location.fixture}${card.location.data.join('.')}`)
+			.sort()
+			.join(' ');
+	const cellsHeld = (state: TombState) => state.draft.map((entry) => `${entry.cell}:${entry.id}`).join(' ');
+
+	test('pins the party without moving a single card of the deal', () => {
+		const state = createTombState(4242, FREE_CELL_COUNT.med);
+		const pinned = withSyntheticLoadout(state, 'ssss');
+
+		// the deal is the deal: same positions, same fog, same boss, and the same four cards in the cells
+		expect(deal(pinned)).toBe(deal(state));
+		expect(pinned.hidden).toEqual(state.hidden);
+		expect(pinned.bossId).toBe(state.bossId);
+		expect(cellsHeld(pinned)).toBe(cellsHeld(state));
+
+		// and those cells now confer the pinned abilities
+		expect(pinned.draft.map((entry) => entry.suit)).toEqual(['spades', 'spades', 'spades', 'spades']);
+		expect(pinned.draft.map((entry) => entry.name)).toEqual(['Orc', 'Fighter', 'BYSSEPS', 'Revive']);
+		expect(hasPassive(pinned, 'Orc')).toBe(true);
+		expect(hasPassive(pinned, 'Fighter')).toBe(true);
+	});
+
+	test('a restocked slot keeps the pinned suit rather than the fed card’s', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '3H', suit: 'hearts', name: 'Human', text: '' },
+			{ cell: 2, role: 'glyph', id: '4C', suit: 'clubs', name: 'PISORF', text: '' },
+		];
+		// a plain diamond waits in the last cell: feeding takes a card off the board, not another item
+		const state = withSyntheticLoadout(
+			makeTomb({ columns: [['5D']], cells: ['3H', null, '4C', '9D'], draft }),
+			'ssss'
+		);
+
+		// the glyph beside the chip is played out onto the tableau, which scavenges for the pinned Orc
+		const played = tombMove(state, cell(2), cascade(0))!;
+		expect(played.itemWindow).toEqual({ cell: 2, role: 'glyph', suit: 'spades', any: true });
+
+		// a diamond fills the slot, and it becomes the pinned spades spell, not its own suit's glyph
+		const fed = tombMove(played, cell(3), cell(2))!;
+		expect(fed.draft.find((entry) => entry.cell === 2)).toMatchObject({ suit: 'spades', name: 'BYSSEPS' });
+	});
+});
 
 describe("the wizard's affinity", () => {
 	const draft: DraftCard[] = [
