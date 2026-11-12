@@ -183,6 +183,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let probeWorker: Worker | null = null;
 	/** The deal already being looked at, so a move does not restart the search. */
 	let probedKey = '';
+	/** The deal whose last answer has already been retired from the bar. */
+	let clearedKey = '';
+
+	/** Retire the last answer: its deal is gone, so its line or its silence says nothing about this one. */
+	function clearProbe() {
+		probeWorker?.terminate();
+		probeWorker = null;
+		probe = null;
+		probedKey = '';
+		clearedKey = '';
+	}
 
 	/** A phone's core is worth more than this answer: the search runs on a pointer with a mouse. */
 	function probesAtAll() {
@@ -211,17 +222,27 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	$effect(() => {
 		const deal = tomb;
-		if (!deal || variant !== 'tomb') return;
+		if (!deal || variant !== 'tomb') {
+			clearProbe();
+			return;
+		}
+		const key = `${deal.seed}:${difficulty}`;
+		if (key !== clearedKey) {
+			// A new deal retires the old answer straight away, before anyone has moved: the board that
+			// answer described is gone, so leaving it up would be a reading of a different game.
+			clearedKey = key;
+			probedKey = '';
+			probeWorker?.terminate();
+			probeWorker = null;
+			probe = null;
+		}
 		// Only a run that has started: the opening deal is a seed nobody chose to play yet.
 		if (!recordedSteps.length) return;
-		const key = `${deal.seed}:${difficulty}`;
 		if (key === probedKey) return;
 		probedKey = key;
 		// The seed list already holds the proof for its own deals, solved to their par: re-deriving a
 		// published seed would spend a core answering a question the corpus answers already.
 		if (entriesByLayout.get(loadoutOf(deal))?.seed === deal.seed) {
-			probeWorker?.terminate();
-			probeWorker = null;
 			probe = null;
 			return;
 		}
@@ -1358,6 +1379,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
 		seedInput = '';
 		if (variant === 'tomb') {
+			// New game clears the solver reading even when the same deal comes back: the player has
+			// started again, and the bar should start again with them.
+			clearProbe();
 			tombHistory = [];
 			tombSelected = null;
 			tombLast = null;
