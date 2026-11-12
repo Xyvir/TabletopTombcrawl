@@ -1,0 +1,4 @@
+{
+	"clauses": { "fighterCap": false, "dwarfCourt": false },
+	"rules": { "levelDamageCap": 3 }
+}

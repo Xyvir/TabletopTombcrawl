@@ -52,6 +52,11 @@ interface Arm {
 }
 
 const corpus = JSON.parse(readFileSync('public/corpus.json', 'utf8')) as { entries: Entry[] };
+/** ONLY=<seed,seed,…> re-tests exactly what an earlier run lost, at a bigger budget. */
+const only = (process.env.ONLY ?? '')
+	.split(',')
+	.map((seed) => Number(seed.trim()))
+	.filter((seed) => Number.isFinite(seed));
 const shard = Number(process.env.SHARD ?? 0);
 const shards = Number(process.env.SHARDS ?? 1);
 const budget = Number(process.env.BUDGET ?? 300_000);
@@ -90,9 +95,14 @@ function play(entry: Entry): Arm {
 	return { solved: result.solved, moves: result.solved ? result.steps.length : null };
 }
 
-const scoped = corpus.entries.filter((entry) => entry.loadout.length === 4);
+const scoped = corpus.entries.filter(
+	(entry) => entry.loadout.length === 4 && (!only.length || only.includes(entry.seed))
+);
 const slice = scoped.filter((_, index) => index % shards === shard);
-const mine = limit > 0 ? slice.slice(0, limit) : slice;
+// A limit takes every k-th seed rather than the first k: the corpus is ordered by party key, so the
+// first N are all one kin, and a rule that changes everyone has to be read across all four.
+const step = limit > 0 ? Math.max(1, Math.floor(slice.length / limit)) : 1;
+const mine = limit > 0 ? slice.filter((_, index) => index % step === 0).slice(0, limit) : slice;
 
 const rows: { entry: Entry; baseline: Arm; arms: Record<string, Arm> }[] = [];
 
@@ -134,6 +144,19 @@ for (const variant of variants) {
 	console.log(
 		`${variant.name}  in scope ${tested.length}  kept ${kept.length}  priced ${priced.length}  gained ${gained.length}  untested ${untested.length}  moves ${meanBase.toFixed(1)} -> ${meanArm.toFixed(1)}`
 	);
+	// Per kin, because a rule that changes everyone is read kin by kin: the question is whether the
+	// party that was carrying the cap still carries it, and whether the others caught up.
+	const perKin = ['h', 'c', 'd', 's']
+		.map((kin) => {
+			const ofKin = tested.filter((row) => row.entry.loadout.startsWith(kin));
+			if (!ofKin.length) return null;
+			const held = ofKin.filter((row) => row.arms[variant.name].solved).length;
+			const base = ofKin.filter((row) => row.baseline.solved).length;
+			return `${kin} ${held}/${ofKin.length} (shipped ${base})`;
+		})
+		.filter(Boolean)
+		.join('  ');
+	if (perKin) console.log(`  per kin: ${perKin}`);
 	if (priced.length) console.log(`  price: ${priced.map((row) => `${row.entry.loadout}(${row.entry.seed})`).join(' ')}`);
 	if (gained.length) console.log(`  gained: ${gained.map((row) => `${row.entry.loadout}(${row.entry.seed})`).join(' ')}`);
 	if (untested.length) console.log(`  untested: ${untested.map((row) => row.entry.loadout).join(' ')}`);
