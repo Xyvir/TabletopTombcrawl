@@ -46,6 +46,42 @@ export const TOMB_RULES = {
 	glyphMoveBoss: true,
 };
 
+/**
+ * Clause switches: every ability that does more than one thing is split into named clauses here, so a
+ * simplification can be proposed, measured and only then implemented. The shipped game runs with all
+ * of them on and nothing in the app ever turns one off; a harness process flips them for a run, which
+ * is the difference between "this rule is too fiddly" and "this rule is too fiddly *and* we can afford
+ * to lose it" — the answer only ever comes from seeds that were already winnable.
+ */
+export const CLAUSES = {
+	/** Dwarf: the boss king carries no protection at all. */
+	dwarfBoss: true,
+	/** Dwarf: every other court card costs a single heart. */
+	dwarfCourt: true,
+	/** Fighter: ignore the lowest pile when reading his level. */
+	fighterLevel: true,
+	/** Fighter: no kill costs him more than two hearts. */
+	fighterCap: true,
+	/** Wizard: the first cast of the run is free. */
+	wizardBank: true,
+	/** Wizard: a cast on the very next turn after a refresh is free. */
+	wizardWindow: true,
+	/** Wizard: a free cast mends one wound. */
+	wizardMend: true,
+	/** Orc: a spent slot takes any card at all, not just its own suit. */
+	orcAnySuit: true,
+	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
+	bossAuraPark: true,
+	/** Weakness: a boss-suit minion costs one rank more than its card says. */
+	weaknessRank: true,
+	/** Thief: a kill into the leading foundation is free. */
+	thiefBounty: true,
+	/** A free cell holding two cards is worth two hearts rather than one. */
+	pisorfStack: true,
+};
+
+export type ClauseName = keyof typeof CLAUSES;
+
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
 
 export const ROLE_LABEL: Record<DraftRole, string> = {
@@ -428,7 +464,7 @@ export function playerLevel(game: FreeCell): number {
 
 export function currentLevel(state: TombState): number {
 	const level = playerLevel(state.game);
-	if (!hasPassive(state, 'Fighter')) return level;
+	if (!CLAUSES.fighterLevel || !hasPassive(state, 'Fighter')) return level;
 	// A Fighter ignores the lowest pile, so one lagging suit stops holding him back: with three suits
 	// ahead of the slowest one, he is a level higher than anyone else would be.
 	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) => foundationTopRank(state, suit));
@@ -480,7 +516,8 @@ export function cellCards(state: TombState, cell: number): Card[] {
 
 /** Face-up cards in a cell: the heart bar is made of cards, not slots. */
 export function faceUp(state: TombState, cell: number): number {
-	return Math.max(0, cellCards(state, cell).length - state.wounded[cell]);
+	const cards = CLAUSES.pisorfStack ? cellCards(state, cell).length : Math.min(1, cellCards(state, cell).length);
+	return Math.max(0, cards - Math.min(state.wounded[cell], cards));
 }
 
 /** The face-down cards of a cell: wounds fill a stack from the bottom up. */
@@ -542,6 +579,7 @@ export function verticalCells(state: TombState): number[] {
 
 /** A cell holding a stack of two cards is worth two hearts while it lasts. */
 export function stackedCells(state: TombState): number {
+	if (!CLAUSES.pisorfStack) return 0;
 	return state.game.cells.filter((_, index) => cellCards(state, index).length > 1).length;
 }
 
@@ -602,7 +640,7 @@ export function woundedCanGoHome(state: TombState): boolean {
 
 /** Dwarf roots: while that passive is drafted, the boss king carries no protection at all. */
 export function bossProtected(state: TombState): boolean {
-	return !hasPassive(state, 'Dwarf') && !bossUnlocked(state);
+	return !(CLAUSES.dwarfBoss && hasPassive(state, 'Dwarf')) && !bossUnlocked(state);
 }
 
 function frozenBoss(state: TombState, card: Card): boolean {
@@ -900,19 +938,19 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
-	if (isBossMinion(state, card) && state.bossSuit === 'spades' && auraActive(state)) {
+	if (CLAUSES.weaknessRank && isBossMinion(state, card) && state.bossSuit === 'spades' && auraActive(state)) {
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	if (TOMB_RULES.levelDamageCap > 0) damage = Math.min(damage, TOMB_RULES.levelDamageCap);
 	// The Fighter wears the hit: whatever the rank, no kill takes more than two hearts off him.
-	if (hasPassive(state, 'Fighter')) damage = Math.min(damage, 2);
+	if (CLAUSES.fighterCap && hasPassive(state, 'Fighter')) damage = Math.min(damage, 2);
 	// Grudge pays in faces: a Dwarf sends any court card home for a single heart. The boss king alone
 	// still costs what it costs, so the top of the dungeon never comes cheap.
-	if (hasPassive(state, 'Dwarf') && isFaceCard(card) && !isBoss(state, card)) damage = Math.min(damage, 1);
+	if (CLAUSES.dwarfCourt && hasPassive(state, 'Dwarf') && isFaceCard(card) && !isBoss(state, card)) damage = Math.min(damage, 1);
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
-	if (hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
+	if (CLAUSES.thiefBounty && hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
 	const itemCell = auraItemWound(state, card, from);
 	const total = damage + (itemCell === null ? 0 : 1);
@@ -1017,7 +1055,8 @@ function wound(state: TombState, damage: number): { wounded: number[]; locks: nu
 	const locks: number[] = [];
 	let left = damage;
 	for (let cell = wounded.length - 1; cell >= 0 && left > 0; cell--) {
-		const cards = cellCards(state, cell).length;
+		const held = cellCards(state, cell).length;
+		const cards = CLAUSES.pisorfStack ? held : Math.min(1, held);
 		while (left > 0 && wounded[cell] < cards) {
 			wounded[cell] += 1;
 			left -= 1;
@@ -1085,7 +1124,7 @@ function refreshGlyphs(state: TombState): TombState {
 	});
 	// A Wizard's window opens on a real refresh: tidying a glyph that was already fresh hands nothing
 	// out, so there has to have been an exhaustion to spend for the free cast to be worth anything.
-	const window = refreshed && hasPassive(state, 'Wizard');
+	const window = refreshed && CLAUSES.wizardWindow && hasPassive(state, 'Wizard');
 	return cloneWith(state, { exhausted, freeCast: state.freeCast || window });
 }
 
@@ -1242,7 +1281,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
  * any card at all, so he may restock a slot with an item the dungeon never gave him.
  */
 function restockTakes(card: Card, window: { suit: Suit; any: boolean }): boolean {
-	return window.any || card.suit === window.suit;
+	return (window.any && CLAUSES.orcAnySuit) || card.suit === window.suit;
 }
 
 /** Any action other than the feed closes a spent item slot for good. */
@@ -1457,7 +1496,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// A boss-suit minion parked in a free cell still sets off its power, and a Remedy covers that
 	// park exactly as it covers a kill: the arm is checked here, not just inside the aura. A card
 	// fed into a spent item slot becomes that item, so it is no longer a monster either way.
-	if (from.fixture === 'cascade' && to.fixture === 'cell' && !feed && auraActive(next)) {
+	if (CLAUSES.bossAuraPark && from.fixture === 'cascade' && to.fixture === 'cell' && !feed && auraActive(next)) {
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
@@ -1568,7 +1607,7 @@ export function freeCastReady(state: TombState, cell: number): boolean {
 		!!entry &&
 		entry.role === 'glyph' &&
 		hasPassive(state, 'Wizard') &&
-		(state.freeCast || state.freeCastBank)
+		(state.freeCast || (CLAUSES.wizardBank && state.freeCastBank))
 	);
 }
 
@@ -1598,7 +1637,11 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		: undefined;
 	state = closeFreeCast(state);
 	// Affinity pays in hearts as well as in exhaustion: a free cast mends one wounded cell.
-	if (free) state = cloneWith(state, { freeCastBank: false, wounded: heal(state, 1).wounded });
+	if (free)
+		state = cloneWith(state, {
+			freeCastBank: false,
+			wounded: CLAUSES.wizardMend ? heal(state, 1).wounded : state.wounded,
+		});
 	const exhausted = [...state.exhausted];
 	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
 	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;
