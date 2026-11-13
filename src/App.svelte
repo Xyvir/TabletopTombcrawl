@@ -933,6 +933,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
+	 * Every card that carries no power is the tomb's ordinary filler, and all of it answers to one word.
+	 * Deliberately not named after the deal's monster: a Rat is a Rat in every tomb.
+	 */
+	const FODDER = 'Rat';
+
+	/**
 	 * Who a carrier answers to, and how far up the monster's own ranks it sits. Rank colours the flavour
 	 * only — ace to five is a lesser monster, ten to queen a greater one, and a king of any other suit is
 	 * the boss's General. None of it changes a rule.
@@ -1854,7 +1860,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								}\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
 								? auraTitle(tomb, card)
-								: undefined}
+								: tomb && !down
+									? `${FODDER} — no power: only the boss suit's court and the kings bite.`
+									: undefined}
 						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
 						onpointerenter={() => {
