@@ -28,7 +28,7 @@ Two rules for this file:
 | **General** | A king of any other suit. Carries the deal's aura too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. | plain card |
 | **Aura** | The deal's one monster power, worn by the court and the kings. | monster power |
-| **Wound** | One face-down card on the status track. The board marks it with a band-aid. | lost HP |
+| **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
 | **Delver** | The player. Not "you" in rules text, "the delver" where a subject is needed. | player |
@@ -97,7 +97,6 @@ Copy that still uses the standard name, each a one-line change:
 - Elf's Ranged and the Serpent's power still say `column` — become hallway.
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
   shut until another king lies in it".
-- Thief's Bounty: "the single most advanced foundation still in play" — becomes "the deepest grave".
 - Every "send home" and "played home" — becomes slay. Every "free cell" — becomes pocket.
 
 ---
@@ -149,4 +148,6 @@ Not in copy yet. Ranked by how much the current word hurts.
 3. Never name a rank, suit or role the card face does not show.
 4. Fantasy words carry the mechanic; mechanical words (HP, level, score) stay mechanical because the HUD is
    a scoreboard.
-5. Anything in copy that is not in this file is a bug in this file — add it, or cut it.
+5. Say **wounds**, not HP. HP belongs to the HUD readout alone, because the status track is health, party and
+   storage at once and "HP" flattens all three.
+6. Anything in copy that is not in this file is a bug in this file — add it, or cut it.
