@@ -612,7 +612,7 @@ describe('burden and mana burn', () => {
 		// two damage plus the drained item
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.legal).toBe(false);
-		expect(preview.reason).toContain('needs 3 HP');
+		expect(preview.reason).toContain('needs 3 wounds');
 		expect(attackWith(state, cascade(0, 0))).toBeNull();
 	});
 

@@ -164,7 +164,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Bounty: a slay into the single most advanced foundation still in play costs no HP.',
+		text: 'Bounty: slaying into the deepest grave inflicts no wounds.',
 	},
 };
 
@@ -513,7 +513,7 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 	spades: {
 		name: 'Bandit',
 		power: 'Weakness',
-		text: 'slaying this costs one extra HP, and so does stashing it in a pocket.',
+		text: 'slaying this inflicts one extra wound, and so does stashing it in a pocket.',
 	},
 	hearts: {
 		name: 'Serpent',
@@ -993,7 +993,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 			: Array.from(new Set([...(itemCell === null ? [] : [itemCell]), ...afterWounds.locks]));
 	return {
 		legal,
-		reason: legal ? '' : `needs ${total} HP and one to spare, you have ${free}`,
+		reason: legal ? '' : `needs ${total} wounds and one to spare, you have ${free}`,
 		damage,
 		locks,
 		need,

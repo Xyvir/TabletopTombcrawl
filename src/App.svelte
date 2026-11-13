@@ -1923,7 +1923,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			/>
 		</label>
 		<button class="btn primary" onclick={newDeal}>New game</button>
-		<div class="difficulty" role="group" aria-label={`Free cells ${FREE_CELL_COUNT[difficulty]}`}>
+		<div class="difficulty" role="group" aria-label={`Pockets ${FREE_CELL_COUNT[difficulty]}`}>
 			{#each DIFFICULTIES as level (level)}
 				<button
 					class="btn"
@@ -1932,7 +1932,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					title={!tomb
 						? 'Difficulty only sizes the tomb track: the classic board always keeps four free cells.'
 						: atStart
-							? `${FREE_CELL_COUNT[level]} free cells, ${FREE_CELL_COUNT[level] + 4} cells of HP`
+							? `${FREE_CELL_COUNT[level]} pockets — ${FREE_CELL_COUNT[level] + 4} wounds before the delver falls`
 							: 'Undo all the way back to the start to change difficulty.'}
 					onclick={() => setDifficulty(level)}
 				>
@@ -1953,7 +1953,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	{#if fanfare}
 		{#key fanfare.id}
 			<div class="fanfare {fanfare.kind}" role="status">
-				<span>{fanfare.kind === 'boss' ? 'Boss Killed!' : 'Tomb Cleared!'}</span>
+				<span>{fanfare.kind === 'boss' ? 'Boss Slain!' : 'Tomb Cleared!'}</span>
 			</div>
 		{/key}
 	{/if}
