@@ -290,8 +290,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		void tick().then(() => sheetEl?.focus());
 	});
 	let progress = $state<Map<string, LayoutRecord>>(new Map());
+	/**
+	 * The party the deal was dealt, kept for the whole run. It cannot be read off `tomb` when it is
+	 * needed: a cleared tomb has sent every drafted card home, and a converted card leaves the draft
+	 * for good, so a 100% clear would record itself under an empty loadout and never reach the trellis.
+	 */
+	let dealLayout = $state('');
 	const entriesByLayout = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.loadout, entry])));
-	const currentLayout = $derived(loadoutOf(tomb));
+	const currentLayout = $derived(dealLayout);
 	const ROLE_ORDER = ['kin', 'class', 'glyph', 'consumable'] as const;
 	type SuitName = (typeof SUITS)[number];
 	const SUIT_BY_LETTER: Record<string, SuitName> = { h: 'hearts', c: 'clubs', d: 'diamonds', s: 'spades' };
@@ -352,6 +358,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombSelected = null;
 		tombLast = null;
 		tomb = createTombState(entry.seed, FREE_CELL_COUNT[level]);
+		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
 	}
 
@@ -361,7 +368,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * nothing.
 	 */
 	async function recordRun(state: TombState) {
-		const key = loadoutOf(state);
+		const key = dealLayout || loadoutOf(state);
 		const status: LayoutRecord['status'] | null = tombPar(state) === 0 ? 'clear' : bossSlain(state) ? 'boss' : null;
 		if (!status) return;
 		const held = progress.get(key)?.status;
@@ -1182,6 +1189,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		variant = next;
 		if (next === 'tomb') {
 			tomb = createTombState(undefined, FREE_CELL_COUNT[difficulty]);
+			dealLayout = loadoutOf(tomb);
 			game = tomb.game;
 		} else {
 			tomb = null;
@@ -1392,6 +1400,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			tombSelected = null;
 			tombLast = null;
 			tomb = createTombState(valid ? requested : undefined, FREE_CELL_COUNT[difficulty]);
+			dealLayout = loadoutOf(tomb);
 			game = tomb.game;
 			return;
 		}
@@ -1404,6 +1413,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			tombHistory = [];
 			tombSelected = null;
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
+			dealLayout = loadoutOf(tomb);
 			game = tomb.game;
 			return;
 		}
@@ -1431,6 +1441,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		drag = null;
 		flippingIds = [];
 		tomb = createTombState(tomb.seed, FREE_CELL_COUNT[next]);
+		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
 	}
 
