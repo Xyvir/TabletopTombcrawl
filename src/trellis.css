@@ -73,6 +73,27 @@ button.titlecard:focus-visible {
 	color: rgba(255, 255, 255, 0.5);
 }
 
+/* the track switch: small pills under the title, above the trellis */
+.layout-card .tiers {
+	display: flex;
+	gap: 0.3rem;
+	margin: -0.35rem 0 0.7rem;
+}
+
+.layout-card .tiers .btn {
+	font-size: 0.62rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	padding: 0.25em 0.7em;
+	color: rgba(255, 255, 255, 0.62);
+}
+
+.layout-card .tiers .btn[aria-pressed='true'] {
+	background: #1a8f45;
+	border-color: #2bb35c;
+	color: #fff;
+}
+
 /* the trellis and the panel that reads out the square under the pointer */
 .layout-body {
 	display: grid;

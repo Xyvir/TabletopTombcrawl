@@ -3108,6 +3108,37 @@
 			"loadout": "dscd",
 			"boss": "diamonds",
 			"seed": 35274,
+			"moves": 102,
+			"difficulty": "hard",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T15:52:06.372Z"
+		},
+		{
+			"loadout": "dscd",
+			"boss": "diamonds",
+			"seed": 35274,
 			"moves": 99,
 			"difficulty": "med",
 			"goal": "boss",
@@ -3413,6 +3444,37 @@
 				}
 			],
 			"at": "2026-11-12T14:43:58.372Z"
+		},
+		{
+			"loadout": "dshs",
+			"boss": "diamonds",
+			"seed": 40211,
+			"moves": 105,
+			"difficulty": "hard",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T15:52:12.375Z"
 		},
 		{
 			"loadout": "dshs",
@@ -4348,6 +4410,37 @@
 			"loadout": "hdhd",
 			"boss": "diamonds",
 			"seed": 846,
+			"moves": 103,
+			"difficulty": "hard",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T15:52:31.703Z"
+		},
+		{
+			"loadout": "hdhd",
+			"boss": "diamonds",
+			"seed": 846,
 			"moves": 98,
 			"difficulty": "med",
 			"goal": "clear",
@@ -4653,6 +4746,37 @@
 				}
 			],
 			"at": "2026-11-12T13:59:42.162Z"
+		},
+		{
+			"loadout": "hhcs",
+			"boss": "diamonds",
+			"seed": 34032,
+			"moves": 93,
+			"difficulty": "hard",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T15:52:37.702Z"
 		},
 		{
 			"loadout": "hhcs",
@@ -4968,6 +5092,37 @@
 			"loadout": "hhsd",
 			"boss": "clubs",
 			"seed": 1563,
+			"moves": 78,
+			"difficulty": "hard",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T15:52:31.879Z"
+		},
+		{
+			"loadout": "hhsd",
+			"boss": "clubs",
+			"seed": 1563,
 			"moves": 95,
 			"difficulty": "med",
 			"goal": "clear",
@@ -5273,6 +5428,37 @@
 				}
 			],
 			"at": "2026-11-12T14:01:30.197Z"
+		},
+		{
+			"loadout": "hsds",
+			"boss": "diamonds",
+			"seed": 4,
+			"moves": 69,
+			"difficulty": "hard",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T15:52:37.902Z"
 		},
 		{
 			"loadout": "hsds",
@@ -7354,1589 +7540,2099 @@
 	],
 	"found": {
 		"cscs": {
-			"boss": {
-				"seed": 33003,
-				"moves": 159
+			"med": {
+				"boss": {
+					"seed": 33003,
+					"moves": 159
+				}
 			}
 		},
 		"dccd": {
-			"boss": {
-				"seed": 120774,
-				"moves": 82
+			"med": {
+				"boss": {
+					"seed": 120774,
+					"moves": 82
+				}
 			}
 		},
 		"dchs": {
-			"boss": {
-				"seed": 140098,
-				"moves": 78
+			"med": {
+				"boss": {
+					"seed": 140098,
+					"moves": 78
+				}
 			}
 		},
 		"dcss": {
-			"boss": {
-				"seed": 140210,
-				"moves": 83
+			"med": {
+				"boss": {
+					"seed": 140210,
+					"moves": 83
+				}
 			}
 		},
 		"scdc": {
-			"boss": {
-				"seed": 140220,
-				"moves": 100
+			"med": {
+				"boss": {
+					"seed": 140220,
+					"moves": 100
+				}
 			}
 		},
 		"dsdc": {
-			"clear": {
-				"seed": 35191,
-				"moves": 134
-			},
-			"boss": {
-				"seed": 35191,
-				"moves": 86
-			}
-		},
-		"dchh": {
-			"boss": {
-				"seed": 201345,
-				"moves": 111
-			}
-		},
-		"ddsh": {
-			"boss": {
-				"seed": 36020,
-				"moves": 86
-			},
-			"clear": {
-				"seed": 36020,
-				"moves": 90
-			}
-		},
-		"chdh": {
-			"boss": {
-				"seed": 36036,
-				"moves": 154
-			}
-		},
-		"sdhd": {
-			"boss": {
-				"seed": 36053,
-				"moves": 114
-			}
-		},
-		"sdhs": {
-			"boss": {
-				"seed": 36145,
-				"moves": 53
-			},
-			"clear": {
-				"seed": 36145,
-				"moves": 128
-			}
-		},
-		"ccdc": {
-			"boss": {
-				"seed": 36235,
-				"moves": 158
-			}
-		},
-		"csch": {
-			"boss": {
-				"seed": 36322,
-				"moves": 156
-			}
-		},
-		"cchs": {
-			"boss": {
-				"seed": 36465,
-				"moves": 127
-			},
-			"clear": {
-				"seed": 36465,
-				"moves": 134
-			}
-		},
-		"ssch": {
-			"boss": {
-				"seed": 36752,
-				"moves": 121
-			}
-		},
-		"shcd": {
-			"boss": {
-				"seed": 36807,
-				"moves": 110
-			}
-		},
-		"cccd": {
-			"boss": {
-				"seed": 36952,
-				"moves": 137
-			}
-		},
-		"shch": {
-			"boss": {
-				"seed": 37004,
-				"moves": 39
-			}
-		},
-		"cdsh": {
-			"boss": {
-				"seed": 38025,
-				"moves": 147
-			}
-		},
-		"chsd": {
-			"boss": {
-				"seed": 38037,
-				"moves": 126
-			},
-			"clear": {
-				"seed": 38037,
-				"moves": 133
-			}
-		},
-		"dhch": {
-			"boss": {
-				"seed": 38080,
-				"moves": 105
-			}
-		},
-		"dhhc": {
-			"boss": {
-				"seed": 38147,
-				"moves": 104
-			}
-		},
-		"shhc": {
-			"boss": {
-				"seed": 38288,
-				"moves": 111
-			}
-		},
-		"shsc": {
-			"boss": {
-				"seed": 38384,
-				"moves": 61
-			}
-		},
-		"sdss": {
-			"boss": {
-				"seed": 38411,
-				"moves": 63
-			}
-		},
-		"dssd": {
-			"boss": {
-				"seed": 38503,
-				"moves": 54
-			}
-		},
-		"shhs": {
-			"boss": {
-				"seed": 38544,
-				"moves": 136
-			},
-			"clear": {
-				"seed": 38544,
-				"moves": 138
-			}
-		},
-		"dhdd": {
-			"boss": {
-				"seed": 38576,
-				"moves": 60
-			}
-		},
-		"sdch": {
-			"boss": {
-				"seed": 38595,
-				"moves": 105
-			}
-		},
-		"ccsd": {
-			"boss": {
-				"seed": 38778,
-				"moves": 84
-			}
-		},
-		"dhcs": {
-			"boss": {
-				"seed": 38963,
-				"moves": 72
-			}
-		},
-		"cdsc": {
-			"boss": {
-				"seed": 39217,
-				"moves": 110
-			}
-		},
-		"sddh": {
-			"boss": {
-				"seed": 40201,
-				"moves": 52
-			},
-			"clear": {
-				"seed": 40201,
-				"moves": 122
-			}
-		},
-		"dshs": {
-			"boss": {
-				"seed": 40211,
-				"moves": 87
-			},
-			"clear": {
-				"seed": 40211,
-				"moves": 107
-			}
-		},
-		"shhd": {
-			"boss": {
-				"seed": 40768,
-				"moves": 144
-			},
-			"clear": {
-				"seed": 40768,
-				"moves": 147
-			}
-		},
-		"chcs": {
-			"boss": {
-				"seed": 40775,
-				"moves": 142
-			}
-		},
-		"dhsh": {
-			"boss": {
-				"seed": 40829,
-				"moves": 79
-			},
-			"clear": {
-				"seed": 40829,
-				"moves": 90
-			}
-		},
-		"sscd": {
-			"boss": {
-				"seed": 40879,
-				"moves": 94
-			}
-		},
-		"shdc": {
-			"boss": {
-				"seed": 40917,
-				"moves": 100
-			}
-		},
-		"hcdd": {
-			"boss": {
-				"seed": 42012,
-				"moves": 79
-			}
-		},
-		"sshs": {
-			"boss": {
-				"seed": 42055,
-				"moves": 90
-			},
-			"clear": {
-				"seed": 42055,
-				"moves": 158
-			}
-		},
-		"dhcc": {
-			"boss": {
-				"seed": 42182,
-				"moves": 128
-			}
-		},
-		"csdc": {
-			"boss": {
-				"seed": 42188,
-				"moves": 117
-			}
-		},
-		"shdd": {
-			"boss": {
-				"seed": 42250,
-				"moves": 138
-			}
-		},
-		"cdcc": {
-			"boss": {
-				"seed": 42424,
-				"moves": 144
-			}
-		},
-		"shsd": {
-			"boss": {
-				"seed": 42436,
-				"moves": 74
-			}
-		},
-		"shcc": {
-			"boss": {
-				"seed": 42540,
-				"moves": 74
-			}
-		},
-		"ccch": {
-			"boss": {
-				"seed": 42675,
-				"moves": 120
-			}
-		},
-		"chhd": {
-			"boss": {
-				"seed": 42691,
-				"moves": 173
-			}
-		},
-		"scsh": {
-			"boss": {
-				"seed": 42951,
-				"moves": 161
-			}
-		},
-		"ccdh": {
-			"boss": {
-				"seed": 43126,
-				"moves": 60
-			}
-		},
-		"dsds": {
-			"boss": {
-				"seed": 44275,
-				"moves": 93
-			}
-		},
-		"ccsc": {
-			"boss": {
-				"seed": 44299,
-				"moves": 137
-			}
-		},
-		"sccd": {
-			"boss": {
-				"seed": 44307,
-				"moves": 78
-			}
-		},
-		"dscc": {
-			"boss": {
-				"seed": 44339,
-				"moves": 54
-			}
-		},
-		"sddc": {
-			"boss": {
-				"seed": 44756,
-				"moves": 38
-			}
-		},
-		"dsdh": {
-			"boss": {
-				"seed": 44793,
-				"moves": 77
-			}
-		},
-		"cdhc": {
-			"boss": {
-				"seed": 44818,
-				"moves": 133
-			}
-		},
-		"chhh": {
-			"boss": {
-				"seed": 45014,
-				"moves": 126
-			}
-		},
-		"ddhs": {
-			"boss": {
-				"seed": 46210,
-				"moves": 89
-			}
-		},
-		"chhs": {
-			"boss": {
-				"seed": 46256,
-				"moves": 152
-			}
-		},
-		"ddhh": {
-			"boss": {
-				"seed": 46292,
-				"moves": 117
-			}
-		},
-		"shss": {
-			"boss": {
-				"seed": 46457,
-				"moves": 110
-			}
-		},
-		"cdcd": {
-			"boss": {
-				"seed": 46694,
-				"moves": 141
-			}
-		},
-		"chdd": {
-			"boss": {
-				"seed": 46889,
-				"moves": 93
-			}
-		},
-		"cdch": {
-			"boss": {
-				"seed": 47010,
-				"moves": 128
-			}
-		},
-		"dhhd": {
-			"boss": {
-				"seed": 47013,
-				"moves": 101
-			}
-		},
-		"ssds": {
-			"boss": {
-				"seed": 48143,
-				"moves": 79
-			}
-		},
-		"chdc": {
-			"boss": {
-				"seed": 48299,
-				"moves": 144
-			}
-		},
-		"dhhs": {
-			"boss": {
-				"seed": 49356,
-				"moves": 82
-			},
-			"clear": {
-				"seed": 49356,
-				"moves": 89
-			}
-		},
-		"scdh": {
-			"boss": {
-				"seed": 49792,
-				"moves": 59
-			}
-		},
-		"ccsh": {
-			"boss": {
-				"seed": 50013,
-				"moves": 153
-			}
-		},
-		"schd": {
-			"boss": {
-				"seed": 50678,
-				"moves": 84
-			}
-		},
-		"schs": {
-			"boss": {
-				"seed": 51495,
-				"moves": 117
-			},
-			"clear": {
-				"seed": 51495,
-				"moves": 118
-			}
-		},
-		"shhh": {
-			"boss": {
-				"seed": 51601,
-				"moves": 72
-			}
-		},
-		"dhsd": {
-			"boss": {
-				"seed": 52015,
-				"moves": 84
-			}
-		},
-		"shds": {
-			"boss": {
-				"seed": 52207,
-				"moves": 92
-			}
-		},
-		"ddss": {
-			"boss": {
-				"seed": 53008,
-				"moves": 90
-			},
-			"clear": {
-				"seed": 53008,
-				"moves": 91
-			}
-		},
-		"sccc": {
-			"boss": {
-				"seed": 53950,
-				"moves": 76
-			}
-		},
-		"cccs": {
-			"boss": {
-				"seed": 54031,
-				"moves": 135
-			}
-		},
-		"dhhh": {
-			"boss": {
-				"seed": 54118,
-				"moves": 90
-			}
-		},
-		"chch": {
-			"boss": {
-				"seed": 54348,
-				"moves": 146
-			}
-		},
-		"ssdd": {
-			"boss": {
-				"seed": 54981,
-				"moves": 129
-			}
-		},
-		"shsh": {
-			"boss": {
-				"seed": 55465,
-				"moves": 61
-			}
-		},
-		"sdsd": {
-			"boss": {
-				"seed": 56152,
-				"moves": 48
-			}
-		},
-		"dhdc": {
-			"boss": {
-				"seed": 56433,
-				"moves": 108
-			}
-		},
-		"shdh": {
-			"boss": {
-				"seed": 57836,
-				"moves": 166
-			}
-		},
-		"scch": {
-			"boss": {
-				"seed": 58040,
-				"moves": 56
-			}
-		},
-		"scds": {
-			"boss": {
-				"seed": 58608,
-				"moves": 144
-			}
-		},
-		"dhdh": {
-			"boss": {
-				"seed": 59206,
-				"moves": 90
-			}
-		},
-		"ccdd": {
-			"boss": {
-				"seed": 59970,
-				"moves": 154
-			}
-		},
-		"csdd": {
-			"boss": {
-				"seed": 3023,
-				"moves": 113
-			}
-		},
-		"hcdh": {
-			"boss": {
-				"seed": 3324,
-				"moves": 82
-			}
-		},
-		"hcsc": {
-			"boss": {
-				"seed": 3124,
-				"moves": 70
-			}
-		},
-		"hdch": {
-			"boss": {
-				"seed": 1373,
-				"moves": 55
-			}
-		},
-		"hdhc": {
-			"boss": {
-				"seed": 285,
-				"moves": 58
-			},
-			"clear": {
-				"seed": 285,
-				"moves": 101
-			}
-		},
-		"hdsh": {
-			"boss": {
-				"seed": 243,
-				"moves": 74
-			},
-			"clear": {
-				"seed": 243,
-				"moves": 103
-			}
-		},
-		"hhdc": {
-			"boss": {
-				"seed": 3587,
-				"moves": 66
-			}
-		},
-		"hhhh": {
-			"boss": {
-				"seed": 2769,
-				"moves": 91
-			}
-		},
-		"hscc": {
-			"boss": {
-				"seed": 40,
-				"moves": 60
-			}
-		},
-		"hsdh": {
-			"boss": {
-				"seed": 90,
-				"moves": 72
-			}
-		},
-		"hssc": {
-			"boss": {
-				"seed": 332,
-				"moves": 53
-			}
-		},
-		"sssc": {
-			"boss": {
-				"seed": 4007,
-				"moves": 70
-			}
-		},
-		"csdh": {
-			"boss": {
-				"seed": 71,
-				"moves": 136
-			}
-		},
-		"cssc": {
-			"boss": {
-				"seed": 6210,
-				"moves": 114
-			}
-		},
-		"hcds": {
-			"boss": {
-				"seed": 1116,
-				"moves": 72
-			}
-		},
-		"hcsd": {
-			"boss": {
-				"seed": 836,
-				"moves": 71
-			}
-		},
-		"hdcs": {
-			"boss": {
-				"seed": 1205,
-				"moves": 102
-			}
-		},
-		"hdhd": {
-			"boss": {
-				"seed": 846,
-				"moves": 52
-			},
-			"clear": {
-				"seed": 846,
-				"moves": 98
-			}
-		},
-		"hdss": {
-			"boss": {
-				"seed": 47,
-				"moves": 71
-			}
-		},
-		"hhdd": {
-			"boss": {
-				"seed": 3164,
-				"moves": 111
-			}
-		},
-		"hhhs": {
-			"boss": {
-				"seed": 1038,
-				"moves": 84
-			}
-		},
-		"hscd": {
-			"boss": {
-				"seed": 34,
-				"moves": 54
-			}
-		},
-		"hsds": {
-			"boss": {
-				"seed": 4,
-				"moves": 62
-			},
-			"clear": {
-				"seed": 4,
-				"moves": 98
-			}
-		},
-		"hssd": {
-			"boss": {
-				"seed": 3054,
-				"moves": 47
-			}
-		},
-		"sscc": {
-			"boss": {
-				"seed": 4178,
-				"moves": 136
-			}
-		},
-		"cscc": {
-			"boss": {
-				"seed": 5125,
-				"moves": 131
-			}
-		},
-		"hccc": {
-			"boss": {
-				"seed": 33,
-				"moves": 68
-			}
-		},
-		"hchc": {
-			"boss": {
-				"seed": 3181,
-				"moves": 113
-			}
-		},
-		"hcsh": {
-			"boss": {
-				"seed": 219,
-				"moves": 65
-			}
-		},
-		"hddc": {
-			"boss": {
-				"seed": 2139,
-				"moves": 54
-			}
-		},
-		"hdhh": {
-			"boss": {
-				"seed": 3096,
-				"moves": 129
-			}
-		},
-		"hhcc": {
-			"boss": {
-				"seed": 395,
-				"moves": 72
-			}
-		},
-		"hhdh": {
-			"boss": {
-				"seed": 1001,
-				"moves": 84
-			}
-		},
-		"hhsc": {
-			"boss": {
-				"seed": 992,
-				"moves": 52
-			},
-			"clear": {
-				"seed": 992,
-				"moves": 93
-			}
-		},
-		"hsch": {
-			"boss": {
-				"seed": 506,
-				"moves": 78
-			}
-		},
-		"hshc": {
-			"boss": {
-				"seed": 24,
-				"moves": 47
-			}
-		},
-		"hssh": {
-			"boss": {
-				"seed": 12,
-				"moves": 91
-			},
-			"clear": {
-				"seed": 12,
-				"moves": 97
-			}
-		},
-		"cshc": {
-			"boss": {
-				"seed": 7341,
-				"moves": 117
-			}
-		},
-		"dddc": {
-			"boss": {
-				"seed": 542,
-				"moves": 89
-			},
-			"clear": {
-				"seed": 542,
-				"moves": 91
-			}
-		},
-		"hccd": {
-			"boss": {
-				"seed": 337,
-				"moves": 72
-			}
-		},
-		"hchd": {
-			"boss": {
-				"seed": 2261,
-				"moves": 93
-			}
-		},
-		"hcss": {
-			"boss": {
-				"seed": 2110,
-				"moves": 97
-			}
-		},
-		"hddd": {
-			"boss": {
-				"seed": 3191,
-				"moves": 101
-			}
-		},
-		"hdhs": {
-			"boss": {
-				"seed": 1005,
-				"moves": 87
-			}
-		},
-		"hhcd": {
-			"boss": {
-				"seed": 224,
-				"moves": 103
-			}
-		},
-		"hhds": {
-			"boss": {
-				"seed": 452,
-				"moves": 64
-			}
-		},
-		"hhsd": {
-			"boss": {
-				"seed": 1563,
-				"moves": 57
-			},
-			"clear": {
-				"seed": 1563,
-				"moves": 95
-			}
-		},
-		"hscs": {
-			"boss": {
-				"seed": 239,
-				"moves": 69
-			},
-			"clear": {
-				"seed": 239,
-				"moves": 84
-			}
-		},
-		"hshd": {
-			"boss": {
-				"seed": 3040,
-				"moves": 50
-			}
-		},
-		"hsss": {
-			"boss": {
-				"seed": 237,
-				"moves": 48
-			},
-			"clear": {
-				"seed": 237,
-				"moves": 86
-			}
-		},
-		"sscs": {
-			"boss": {
-				"seed": 789,
-				"moves": 77
-			}
-		},
-		"cdhh": {
-			"boss": {
-				"seed": 3595,
-				"moves": 134
-			}
-		},
-		"dssc": {
-			"boss": {
-				"seed": 505,
-				"moves": 60
-			}
-		},
-		"hccs": {
-			"boss": {
-				"seed": 3440,
-				"moves": 91
-			}
-		},
-		"hchh": {
-			"boss": {
-				"seed": 710,
-				"moves": 90
-			}
-		},
-		"hddh": {
-			"boss": {
-				"seed": 1030,
-				"moves": 61
-			}
-		},
-		"hdsc": {
-			"boss": {
-				"seed": 3069,
-				"moves": 57
-			}
-		},
-		"hhch": {
-			"boss": {
-				"seed": 1516,
-				"moves": 110
-			}
-		},
-		"hhhc": {
-			"boss": {
-				"seed": 14007,
-				"moves": 120
-			},
-			"clear": {
-				"seed": 14007,
-				"moves": 126
-			}
-		},
-		"hhsh": {
-			"boss": {
-				"seed": 2712,
-				"moves": 130
-			}
-		},
-		"hsdc": {
-			"boss": {
-				"seed": 1343,
-				"moves": 66
-			}
-		},
-		"hshh": {
-			"boss": {
-				"seed": 518,
-				"moves": 90
-			},
-			"clear": {
-				"seed": 518,
-				"moves": 108
-			}
-		},
-		"hcdc": {
-			"boss": {
-				"seed": 1616,
-				"moves": 62
-			}
-		},
-		"hchs": {
-			"boss": {
-				"seed": 663,
-				"moves": 113
-			}
-		},
-		"hdcd": {
-			"boss": {
-				"seed": 1098,
-				"moves": 57
-			},
-			"clear": {
-				"seed": 1098,
-				"moves": 100
-			}
-		},
-		"hdds": {
-			"boss": {
-				"seed": 327,
-				"moves": 86
-			}
-		},
-		"hdsd": {
-			"boss": {
-				"seed": 3404,
-				"moves": 104
-			}
-		},
-		"hhhd": {
-			"boss": {
-				"seed": 2008,
-				"moves": 60
-			}
-		},
-		"hhss": {
-			"boss": {
-				"seed": 3027,
-				"moves": 61
-			}
-		},
-		"hsdd": {
-			"boss": {
-				"seed": 86,
-				"moves": 60
-			}
-		},
-		"hshs": {
-			"boss": {
-				"seed": 137,
-				"moves": 45
-			}
-		},
-		"chsc": {
-			"clear": {
-				"seed": 33295,
-				"moves": 108
-			},
-			"boss": {
-				"seed": 33295,
-				"moves": 130
-			}
-		},
-		"cssh": {
-			"clear": {
-				"seed": 32543,
-				"moves": 125
-			},
-			"boss": {
-				"seed": 32543,
-				"moves": 120
-			}
-		},
-		"chds": {
-			"clear": {
-				"seed": 31147,
-				"moves": 127
-			},
-			"boss": {
-				"seed": 31147,
-				"moves": 165
-			}
-		},
-		"csss": {
-			"clear": {
-				"seed": 34215,
-				"moves": 138
-			},
-			"boss": {
-				"seed": 34215,
-				"moves": 129
-			}
-		},
-		"dssh": {
-			"clear": {
-				"seed": 30055,
-				"moves": 84
-			},
-			"boss": {
-				"seed": 30055,
-				"moves": 81
-			}
-		},
-		"hhcs": {
-			"clear": {
-				"seed": 34032,
-				"moves": 105
-			},
-			"boss": {
-				"seed": 34032,
-				"moves": 97
-			}
-		},
-		"cshh": {
-			"clear": {
-				"seed": 34043,
-				"moves": 120
-			},
-			"boss": {
-				"seed": 34043,
-				"moves": 110
-			}
-		},
-		"dshd": {
-			"clear": {
-				"seed": 34426,
-				"moves": 106
-			},
-			"boss": {
-				"seed": 34426,
-				"moves": 90
-			}
-		},
-		"cdsd": {
-			"clear": {
-				"seed": 31102,
-				"moves": 132
-			},
-			"boss": {
-				"seed": 31102,
-				"moves": 126
-			}
-		},
-		"cshs": {
-			"clear": {
-				"seed": 33015,
-				"moves": 209
-			},
-			"boss": {
-				"seed": 33015,
-				"moves": 115
-			}
-		},
-		"ddch": {
-			"clear": {
-				"seed": 31255,
-				"moves": 98
-			},
-			"boss": {
-				"seed": 31255,
-				"moves": 80
-			}
-		},
-		"cscd": {
-			"clear": {
-				"seed": 33162,
-				"moves": 151
-			},
-			"boss": {
-				"seed": 33162,
-				"moves": 141
-			}
-		},
-		"cchc": {
-			"boss": {
-				"seed": 30029,
-				"moves": 156
-			}
-		},
-		"cshd": {
-			"boss": {
-				"seed": 30051,
-				"moves": 83
-			}
-		},
-		"sdds": {
-			"boss": {
-				"seed": 30083,
-				"moves": 71
-			}
-		},
-		"ssdh": {
-			"boss": {
-				"seed": 30453,
-				"moves": 70
-			}
-		},
-		"cddc": {
-			"boss": {
-				"seed": 30490,
-				"moves": 138
-			}
-		},
-		"sssh": {
-			"boss": {
-				"seed": 30516,
-				"moves": 136
-			}
-		},
-		"chss": {
-			"boss": {
-				"seed": 30593,
-				"moves": 166
-			}
-		},
-		"cchh": {
-			"boss": {
-				"seed": 30752,
-				"moves": 131
-			}
-		},
-		"ddcc": {
-			"boss": {
-				"seed": 30768,
-				"moves": 61
-			}
-		},
-		"ssss": {
-			"boss": {
-				"seed": 30817,
-				"moves": 82
-			}
-		},
-		"sdsc": {
-			"boss": {
-				"seed": 31017,
-				"moves": 55
-			}
-		},
-		"hcch": {
-			"boss": {
-				"seed": 31020,
-				"moves": 110
-			}
-		},
-		"cdcs": {
-			"boss": {
-				"seed": 31063,
-				"moves": 136
-			}
-		},
-		"sshc": {
-			"boss": {
-				"seed": 31107,
-				"moves": 78
-			}
-		},
-		"cdhs": {
-			"boss": {
-				"seed": 31137,
-				"moves": 137
-			}
-		},
-		"chcc": {
-			"boss": {
-				"seed": 31161,
-				"moves": 98
-			}
-		},
-		"sdcs": {
-			"boss": {
-				"seed": 32350,
-				"moves": 120
-			}
-		},
-		"ddsc": {
-			"boss": {
-				"seed": 32470,
-				"moves": 90
-			}
-		},
-		"dddd": {
-			"boss": {
-				"seed": 32540,
-				"moves": 57
-			}
-		},
-		"ddhc": {
-			"boss": {
-				"seed": 32567,
-				"moves": 58
-			}
-		},
-		"cdss": {
-			"boss": {
-				"seed": 32630,
-				"moves": 170
-			}
-		},
-		"dhsc": {
-			"boss": {
-				"seed": 32713,
-				"moves": 107
-			}
-		},
-		"ssdc": {
-			"boss": {
-				"seed": 32796,
-				"moves": 122
-			}
-		},
-		"sdhh": {
-			"boss": {
-				"seed": 32809,
-				"moves": 88
-			}
-		},
-		"dshh": {
-			"boss": {
-				"seed": 32031,
-				"moves": 84
-			}
-		},
-		"ddcd": {
-			"boss": {
-				"seed": 32054,
-				"moves": 60
-			}
-		},
-		"hdcc": {
-			"boss": {
-				"seed": 32061,
-				"moves": 97
-			}
-		},
-		"cdhd": {
-			"boss": {
-				"seed": 32086,
-				"moves": 116
-			}
-		},
-		"dscs": {
-			"boss": {
-				"seed": 32239,
-				"moves": 104
-			}
-		},
-		"dsdd": {
-			"boss": {
-				"seed": 34430,
-				"moves": 82
-			}
-		},
-		"dsch": {
-			"boss": {
-				"seed": 34450,
-				"moves": 70
-			},
-			"clear": {
-				"seed": 34450,
-				"moves": 91
-			}
-		},
-		"sssd": {
-			"boss": {
-				"seed": 34494,
-				"moves": 72
-			}
-		},
-		"sshh": {
-			"boss": {
-				"seed": 34664,
-				"moves": 106
-			}
-		},
-		"dshc": {
-			"boss": {
-				"seed": 34755,
-				"moves": 85
-			}
-		},
-		"chsh": {
-			"boss": {
-				"seed": 34805,
-				"moves": 145
-			}
-		},
-		"sddd": {
-			"boss": {
-				"seed": 34846,
-				"moves": 37
-			}
-		},
-		"cchd": {
-			"boss": {
-				"seed": 33098,
-				"moves": 157
-			}
-		},
-		"ddhd": {
-			"boss": {
-				"seed": 33137,
-				"moves": 91
-			}
-		},
-		"sdcc": {
-			"boss": {
-				"seed": 33168,
-				"moves": 76
-			}
-		},
-		"dddh": {
-			"boss": {
-				"seed": 33192,
-				"moves": 88
-			}
-		},
-		"sdhc": {
-			"boss": {
-				"seed": 33237,
-				"moves": 42
-			}
-		},
-		"cdds": {
-			"boss": {
-				"seed": 33285,
-				"moves": 83
-			}
-		},
-		"chcd": {
-			"boss": {
-				"seed": 33293,
-				"moves": 135
-			}
-		},
-		"cddh": {
-			"boss": {
-				"seed": 33305,
-				"moves": 119
-			}
-		},
-		"cddd": {
-			"boss": {
-				"seed": 34089,
-				"moves": 138
-			},
-			"clear": {
-				"seed": 34089,
-				"moves": 125
-			}
-		},
-		"sdsh": {
-			"boss": {
-				"seed": 34099,
-				"moves": 60
-			}
-		},
-		"dsss": {
-			"boss": {
-				"seed": 34118,
-				"moves": 74
-			}
-		},
-		"ccds": {
-			"boss": {
-				"seed": 34138,
-				"moves": 136
-			}
-		},
-		"csds": {
-			"boss": {
-				"seed": 34217,
-				"moves": 137
-			}
-		},
-		"ddcs": {
-			"boss": {
-				"seed": 34293,
-				"moves": 89
-			}
-		},
-		"cssd": {
-			"boss": {
-				"seed": 35036,
-				"moves": 154
-			}
-		},
-		"sshd": {
-			"boss": {
-				"seed": 35099,
-				"moves": 92
-			}
-		},
-		"ddsd": {
-			"boss": {
-				"seed": 35110,
-				"moves": 62
-			}
-		},
-		"ddds": {
-			"boss": {
-				"seed": 35182,
-				"moves": 63
-			}
-		},
-		"chhc": {
-			"boss": {
-				"seed": 35199,
-				"moves": 111
+			"med": {
+				"clear": {
+					"seed": 35191,
+					"moves": 134
+				},
+				"boss": {
+					"seed": 35191,
+					"moves": 86
+				}
 			}
 		},
 		"dscd": {
-			"boss": {
-				"seed": 35274,
-				"moves": 99
+			"hard": {
+				"boss": {
+					"seed": 35274,
+					"moves": 102
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 35274,
+					"moves": 99
+				}
+			}
+		},
+		"hdhd": {
+			"hard": {
+				"boss": {
+					"seed": 846,
+					"moves": 103
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 846,
+					"moves": 52
+				},
+				"clear": {
+					"seed": 846,
+					"moves": 98
+				}
+			}
+		},
+		"hhsd": {
+			"hard": {
+				"boss": {
+					"seed": 1563,
+					"moves": 78
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 1563,
+					"moves": 57
+				},
+				"clear": {
+					"seed": 1563,
+					"moves": 95
+				}
+			}
+		},
+		"dshs": {
+			"hard": {
+				"boss": {
+					"seed": 40211,
+					"moves": 105
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 40211,
+					"moves": 87
+				},
+				"clear": {
+					"seed": 40211,
+					"moves": 107
+				}
+			}
+		},
+		"hhcs": {
+			"hard": {
+				"boss": {
+					"seed": 34032,
+					"moves": 93
+				}
+			},
+			"med": {
+				"clear": {
+					"seed": 34032,
+					"moves": 105
+				},
+				"boss": {
+					"seed": 34032,
+					"moves": 97
+				}
+			}
+		},
+		"hsds": {
+			"hard": {
+				"boss": {
+					"seed": 4,
+					"moves": 69
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 4,
+					"moves": 62
+				},
+				"clear": {
+					"seed": 4,
+					"moves": 98
+				}
+			}
+		},
+		"dchh": {
+			"med": {
+				"boss": {
+					"seed": 201345,
+					"moves": 111
+				}
+			}
+		},
+		"ddsh": {
+			"med": {
+				"boss": {
+					"seed": 36020,
+					"moves": 86
+				},
+				"clear": {
+					"seed": 36020,
+					"moves": 90
+				}
+			}
+		},
+		"chdh": {
+			"med": {
+				"boss": {
+					"seed": 36036,
+					"moves": 154
+				}
+			}
+		},
+		"sdhd": {
+			"med": {
+				"boss": {
+					"seed": 36053,
+					"moves": 114
+				}
+			}
+		},
+		"sdhs": {
+			"med": {
+				"boss": {
+					"seed": 36145,
+					"moves": 53
+				},
+				"clear": {
+					"seed": 36145,
+					"moves": 128
+				}
+			}
+		},
+		"ccdc": {
+			"med": {
+				"boss": {
+					"seed": 36235,
+					"moves": 158
+				}
+			}
+		},
+		"csch": {
+			"med": {
+				"boss": {
+					"seed": 36322,
+					"moves": 156
+				}
+			}
+		},
+		"cchs": {
+			"med": {
+				"boss": {
+					"seed": 36465,
+					"moves": 127
+				},
+				"clear": {
+					"seed": 36465,
+					"moves": 134
+				}
+			}
+		},
+		"ssch": {
+			"med": {
+				"boss": {
+					"seed": 36752,
+					"moves": 121
+				}
+			}
+		},
+		"shcd": {
+			"med": {
+				"boss": {
+					"seed": 36807,
+					"moves": 110
+				}
+			}
+		},
+		"cccd": {
+			"med": {
+				"boss": {
+					"seed": 36952,
+					"moves": 137
+				}
+			}
+		},
+		"shch": {
+			"med": {
+				"boss": {
+					"seed": 37004,
+					"moves": 39
+				}
+			}
+		},
+		"cdsh": {
+			"med": {
+				"boss": {
+					"seed": 38025,
+					"moves": 147
+				}
+			}
+		},
+		"chsd": {
+			"med": {
+				"boss": {
+					"seed": 38037,
+					"moves": 126
+				},
+				"clear": {
+					"seed": 38037,
+					"moves": 133
+				}
+			}
+		},
+		"dhch": {
+			"med": {
+				"boss": {
+					"seed": 38080,
+					"moves": 105
+				}
+			}
+		},
+		"dhhc": {
+			"med": {
+				"boss": {
+					"seed": 38147,
+					"moves": 104
+				}
+			}
+		},
+		"shhc": {
+			"med": {
+				"boss": {
+					"seed": 38288,
+					"moves": 111
+				}
+			}
+		},
+		"shsc": {
+			"med": {
+				"boss": {
+					"seed": 38384,
+					"moves": 61
+				}
+			}
+		},
+		"sdss": {
+			"med": {
+				"boss": {
+					"seed": 38411,
+					"moves": 63
+				}
+			}
+		},
+		"dssd": {
+			"med": {
+				"boss": {
+					"seed": 38503,
+					"moves": 54
+				}
+			}
+		},
+		"shhs": {
+			"med": {
+				"boss": {
+					"seed": 38544,
+					"moves": 136
+				},
+				"clear": {
+					"seed": 38544,
+					"moves": 138
+				}
+			}
+		},
+		"dhdd": {
+			"med": {
+				"boss": {
+					"seed": 38576,
+					"moves": 60
+				}
+			}
+		},
+		"sdch": {
+			"med": {
+				"boss": {
+					"seed": 38595,
+					"moves": 105
+				}
+			}
+		},
+		"ccsd": {
+			"med": {
+				"boss": {
+					"seed": 38778,
+					"moves": 84
+				}
+			}
+		},
+		"dhcs": {
+			"med": {
+				"boss": {
+					"seed": 38963,
+					"moves": 72
+				}
+			}
+		},
+		"cdsc": {
+			"med": {
+				"boss": {
+					"seed": 39217,
+					"moves": 110
+				}
+			}
+		},
+		"sddh": {
+			"med": {
+				"boss": {
+					"seed": 40201,
+					"moves": 52
+				},
+				"clear": {
+					"seed": 40201,
+					"moves": 122
+				}
+			}
+		},
+		"shhd": {
+			"med": {
+				"boss": {
+					"seed": 40768,
+					"moves": 144
+				},
+				"clear": {
+					"seed": 40768,
+					"moves": 147
+				}
+			}
+		},
+		"chcs": {
+			"med": {
+				"boss": {
+					"seed": 40775,
+					"moves": 142
+				}
+			}
+		},
+		"dhsh": {
+			"med": {
+				"boss": {
+					"seed": 40829,
+					"moves": 79
+				},
+				"clear": {
+					"seed": 40829,
+					"moves": 90
+				}
+			}
+		},
+		"sscd": {
+			"med": {
+				"boss": {
+					"seed": 40879,
+					"moves": 94
+				}
+			}
+		},
+		"shdc": {
+			"med": {
+				"boss": {
+					"seed": 40917,
+					"moves": 100
+				}
+			}
+		},
+		"hcdd": {
+			"med": {
+				"boss": {
+					"seed": 42012,
+					"moves": 79
+				}
+			}
+		},
+		"sshs": {
+			"med": {
+				"boss": {
+					"seed": 42055,
+					"moves": 90
+				},
+				"clear": {
+					"seed": 42055,
+					"moves": 158
+				}
+			}
+		},
+		"dhcc": {
+			"med": {
+				"boss": {
+					"seed": 42182,
+					"moves": 128
+				}
+			}
+		},
+		"csdc": {
+			"med": {
+				"boss": {
+					"seed": 42188,
+					"moves": 117
+				}
+			}
+		},
+		"shdd": {
+			"med": {
+				"boss": {
+					"seed": 42250,
+					"moves": 138
+				}
+			}
+		},
+		"cdcc": {
+			"med": {
+				"boss": {
+					"seed": 42424,
+					"moves": 144
+				}
+			}
+		},
+		"shsd": {
+			"med": {
+				"boss": {
+					"seed": 42436,
+					"moves": 74
+				}
+			}
+		},
+		"shcc": {
+			"med": {
+				"boss": {
+					"seed": 42540,
+					"moves": 74
+				}
+			}
+		},
+		"ccch": {
+			"med": {
+				"boss": {
+					"seed": 42675,
+					"moves": 120
+				}
+			}
+		},
+		"chhd": {
+			"med": {
+				"boss": {
+					"seed": 42691,
+					"moves": 173
+				}
+			}
+		},
+		"scsh": {
+			"med": {
+				"boss": {
+					"seed": 42951,
+					"moves": 161
+				}
+			}
+		},
+		"ccdh": {
+			"med": {
+				"boss": {
+					"seed": 43126,
+					"moves": 60
+				}
+			}
+		},
+		"dsds": {
+			"med": {
+				"boss": {
+					"seed": 44275,
+					"moves": 93
+				}
+			}
+		},
+		"ccsc": {
+			"med": {
+				"boss": {
+					"seed": 44299,
+					"moves": 137
+				}
+			}
+		},
+		"sccd": {
+			"med": {
+				"boss": {
+					"seed": 44307,
+					"moves": 78
+				}
+			}
+		},
+		"dscc": {
+			"med": {
+				"boss": {
+					"seed": 44339,
+					"moves": 54
+				}
+			}
+		},
+		"sddc": {
+			"med": {
+				"boss": {
+					"seed": 44756,
+					"moves": 38
+				}
+			}
+		},
+		"dsdh": {
+			"med": {
+				"boss": {
+					"seed": 44793,
+					"moves": 77
+				}
+			}
+		},
+		"cdhc": {
+			"med": {
+				"boss": {
+					"seed": 44818,
+					"moves": 133
+				}
+			}
+		},
+		"chhh": {
+			"med": {
+				"boss": {
+					"seed": 45014,
+					"moves": 126
+				}
+			}
+		},
+		"ddhs": {
+			"med": {
+				"boss": {
+					"seed": 46210,
+					"moves": 89
+				}
+			}
+		},
+		"chhs": {
+			"med": {
+				"boss": {
+					"seed": 46256,
+					"moves": 152
+				}
+			}
+		},
+		"ddhh": {
+			"med": {
+				"boss": {
+					"seed": 46292,
+					"moves": 117
+				}
+			}
+		},
+		"shss": {
+			"med": {
+				"boss": {
+					"seed": 46457,
+					"moves": 110
+				}
+			}
+		},
+		"cdcd": {
+			"med": {
+				"boss": {
+					"seed": 46694,
+					"moves": 141
+				}
+			}
+		},
+		"chdd": {
+			"med": {
+				"boss": {
+					"seed": 46889,
+					"moves": 93
+				}
+			}
+		},
+		"cdch": {
+			"med": {
+				"boss": {
+					"seed": 47010,
+					"moves": 128
+				}
+			}
+		},
+		"dhhd": {
+			"med": {
+				"boss": {
+					"seed": 47013,
+					"moves": 101
+				}
+			}
+		},
+		"ssds": {
+			"med": {
+				"boss": {
+					"seed": 48143,
+					"moves": 79
+				}
+			}
+		},
+		"chdc": {
+			"med": {
+				"boss": {
+					"seed": 48299,
+					"moves": 144
+				}
+			}
+		},
+		"dhhs": {
+			"med": {
+				"boss": {
+					"seed": 49356,
+					"moves": 82
+				},
+				"clear": {
+					"seed": 49356,
+					"moves": 89
+				}
+			}
+		},
+		"scdh": {
+			"med": {
+				"boss": {
+					"seed": 49792,
+					"moves": 59
+				}
+			}
+		},
+		"ccsh": {
+			"med": {
+				"boss": {
+					"seed": 50013,
+					"moves": 153
+				}
+			}
+		},
+		"schd": {
+			"med": {
+				"boss": {
+					"seed": 50678,
+					"moves": 84
+				}
+			}
+		},
+		"schs": {
+			"med": {
+				"boss": {
+					"seed": 51495,
+					"moves": 117
+				},
+				"clear": {
+					"seed": 51495,
+					"moves": 118
+				}
+			}
+		},
+		"shhh": {
+			"med": {
+				"boss": {
+					"seed": 51601,
+					"moves": 72
+				}
+			}
+		},
+		"dhsd": {
+			"med": {
+				"boss": {
+					"seed": 52015,
+					"moves": 84
+				}
+			}
+		},
+		"shds": {
+			"med": {
+				"boss": {
+					"seed": 52207,
+					"moves": 92
+				}
+			}
+		},
+		"ddss": {
+			"med": {
+				"boss": {
+					"seed": 53008,
+					"moves": 90
+				},
+				"clear": {
+					"seed": 53008,
+					"moves": 91
+				}
+			}
+		},
+		"sccc": {
+			"med": {
+				"boss": {
+					"seed": 53950,
+					"moves": 76
+				}
+			}
+		},
+		"cccs": {
+			"med": {
+				"boss": {
+					"seed": 54031,
+					"moves": 135
+				}
+			}
+		},
+		"dhhh": {
+			"med": {
+				"boss": {
+					"seed": 54118,
+					"moves": 90
+				}
+			}
+		},
+		"chch": {
+			"med": {
+				"boss": {
+					"seed": 54348,
+					"moves": 146
+				}
+			}
+		},
+		"ssdd": {
+			"med": {
+				"boss": {
+					"seed": 54981,
+					"moves": 129
+				}
+			}
+		},
+		"shsh": {
+			"med": {
+				"boss": {
+					"seed": 55465,
+					"moves": 61
+				}
+			}
+		},
+		"sdsd": {
+			"med": {
+				"boss": {
+					"seed": 56152,
+					"moves": 48
+				}
+			}
+		},
+		"dhdc": {
+			"med": {
+				"boss": {
+					"seed": 56433,
+					"moves": 108
+				}
+			}
+		},
+		"shdh": {
+			"med": {
+				"boss": {
+					"seed": 57836,
+					"moves": 166
+				}
+			}
+		},
+		"scch": {
+			"med": {
+				"boss": {
+					"seed": 58040,
+					"moves": 56
+				}
+			}
+		},
+		"scds": {
+			"med": {
+				"boss": {
+					"seed": 58608,
+					"moves": 144
+				}
+			}
+		},
+		"dhdh": {
+			"med": {
+				"boss": {
+					"seed": 59206,
+					"moves": 90
+				}
+			}
+		},
+		"ccdd": {
+			"med": {
+				"boss": {
+					"seed": 59970,
+					"moves": 154
+				}
+			}
+		},
+		"csdd": {
+			"med": {
+				"boss": {
+					"seed": 3023,
+					"moves": 113
+				}
+			}
+		},
+		"hcdh": {
+			"med": {
+				"boss": {
+					"seed": 3324,
+					"moves": 82
+				}
+			}
+		},
+		"hcsc": {
+			"med": {
+				"boss": {
+					"seed": 3124,
+					"moves": 70
+				}
+			}
+		},
+		"hdch": {
+			"med": {
+				"boss": {
+					"seed": 1373,
+					"moves": 55
+				}
+			}
+		},
+		"hdhc": {
+			"med": {
+				"boss": {
+					"seed": 285,
+					"moves": 58
+				},
+				"clear": {
+					"seed": 285,
+					"moves": 101
+				}
+			}
+		},
+		"hdsh": {
+			"med": {
+				"boss": {
+					"seed": 243,
+					"moves": 74
+				},
+				"clear": {
+					"seed": 243,
+					"moves": 103
+				}
+			}
+		},
+		"hhdc": {
+			"med": {
+				"boss": {
+					"seed": 3587,
+					"moves": 66
+				}
+			}
+		},
+		"hhhh": {
+			"med": {
+				"boss": {
+					"seed": 2769,
+					"moves": 91
+				}
+			}
+		},
+		"hscc": {
+			"med": {
+				"boss": {
+					"seed": 40,
+					"moves": 60
+				}
+			}
+		},
+		"hsdh": {
+			"med": {
+				"boss": {
+					"seed": 90,
+					"moves": 72
+				}
+			}
+		},
+		"hssc": {
+			"med": {
+				"boss": {
+					"seed": 332,
+					"moves": 53
+				}
+			}
+		},
+		"sssc": {
+			"med": {
+				"boss": {
+					"seed": 4007,
+					"moves": 70
+				}
+			}
+		},
+		"csdh": {
+			"med": {
+				"boss": {
+					"seed": 71,
+					"moves": 136
+				}
+			}
+		},
+		"cssc": {
+			"med": {
+				"boss": {
+					"seed": 6210,
+					"moves": 114
+				}
+			}
+		},
+		"hcds": {
+			"med": {
+				"boss": {
+					"seed": 1116,
+					"moves": 72
+				}
+			}
+		},
+		"hcsd": {
+			"med": {
+				"boss": {
+					"seed": 836,
+					"moves": 71
+				}
+			}
+		},
+		"hdcs": {
+			"med": {
+				"boss": {
+					"seed": 1205,
+					"moves": 102
+				}
+			}
+		},
+		"hdss": {
+			"med": {
+				"boss": {
+					"seed": 47,
+					"moves": 71
+				}
+			}
+		},
+		"hhdd": {
+			"med": {
+				"boss": {
+					"seed": 3164,
+					"moves": 111
+				}
+			}
+		},
+		"hhhs": {
+			"med": {
+				"boss": {
+					"seed": 1038,
+					"moves": 84
+				}
+			}
+		},
+		"hscd": {
+			"med": {
+				"boss": {
+					"seed": 34,
+					"moves": 54
+				}
+			}
+		},
+		"hssd": {
+			"med": {
+				"boss": {
+					"seed": 3054,
+					"moves": 47
+				}
+			}
+		},
+		"sscc": {
+			"med": {
+				"boss": {
+					"seed": 4178,
+					"moves": 136
+				}
+			}
+		},
+		"cscc": {
+			"med": {
+				"boss": {
+					"seed": 5125,
+					"moves": 131
+				}
+			}
+		},
+		"hccc": {
+			"med": {
+				"boss": {
+					"seed": 33,
+					"moves": 68
+				}
+			}
+		},
+		"hchc": {
+			"med": {
+				"boss": {
+					"seed": 3181,
+					"moves": 113
+				}
+			}
+		},
+		"hcsh": {
+			"med": {
+				"boss": {
+					"seed": 219,
+					"moves": 65
+				}
+			}
+		},
+		"hddc": {
+			"med": {
+				"boss": {
+					"seed": 2139,
+					"moves": 54
+				}
+			}
+		},
+		"hdhh": {
+			"med": {
+				"boss": {
+					"seed": 3096,
+					"moves": 129
+				}
+			}
+		},
+		"hhcc": {
+			"med": {
+				"boss": {
+					"seed": 395,
+					"moves": 72
+				}
+			}
+		},
+		"hhdh": {
+			"med": {
+				"boss": {
+					"seed": 1001,
+					"moves": 84
+				}
+			}
+		},
+		"hhsc": {
+			"med": {
+				"boss": {
+					"seed": 992,
+					"moves": 52
+				},
+				"clear": {
+					"seed": 992,
+					"moves": 93
+				}
+			}
+		},
+		"hsch": {
+			"med": {
+				"boss": {
+					"seed": 506,
+					"moves": 78
+				}
+			}
+		},
+		"hshc": {
+			"med": {
+				"boss": {
+					"seed": 24,
+					"moves": 47
+				}
+			}
+		},
+		"hssh": {
+			"med": {
+				"boss": {
+					"seed": 12,
+					"moves": 91
+				},
+				"clear": {
+					"seed": 12,
+					"moves": 97
+				}
+			}
+		},
+		"cshc": {
+			"med": {
+				"boss": {
+					"seed": 7341,
+					"moves": 117
+				}
+			}
+		},
+		"dddc": {
+			"med": {
+				"boss": {
+					"seed": 542,
+					"moves": 89
+				},
+				"clear": {
+					"seed": 542,
+					"moves": 91
+				}
+			}
+		},
+		"hccd": {
+			"med": {
+				"boss": {
+					"seed": 337,
+					"moves": 72
+				}
+			}
+		},
+		"hchd": {
+			"med": {
+				"boss": {
+					"seed": 2261,
+					"moves": 93
+				}
+			}
+		},
+		"hcss": {
+			"med": {
+				"boss": {
+					"seed": 2110,
+					"moves": 97
+				}
+			}
+		},
+		"hddd": {
+			"med": {
+				"boss": {
+					"seed": 3191,
+					"moves": 101
+				}
+			}
+		},
+		"hdhs": {
+			"med": {
+				"boss": {
+					"seed": 1005,
+					"moves": 87
+				}
+			}
+		},
+		"hhcd": {
+			"med": {
+				"boss": {
+					"seed": 224,
+					"moves": 103
+				}
+			}
+		},
+		"hhds": {
+			"med": {
+				"boss": {
+					"seed": 452,
+					"moves": 64
+				}
+			}
+		},
+		"hscs": {
+			"med": {
+				"boss": {
+					"seed": 239,
+					"moves": 69
+				},
+				"clear": {
+					"seed": 239,
+					"moves": 84
+				}
+			}
+		},
+		"hshd": {
+			"med": {
+				"boss": {
+					"seed": 3040,
+					"moves": 50
+				}
+			}
+		},
+		"hsss": {
+			"med": {
+				"boss": {
+					"seed": 237,
+					"moves": 48
+				},
+				"clear": {
+					"seed": 237,
+					"moves": 86
+				}
+			}
+		},
+		"sscs": {
+			"med": {
+				"boss": {
+					"seed": 789,
+					"moves": 77
+				}
+			}
+		},
+		"cdhh": {
+			"med": {
+				"boss": {
+					"seed": 3595,
+					"moves": 134
+				}
+			}
+		},
+		"dssc": {
+			"med": {
+				"boss": {
+					"seed": 505,
+					"moves": 60
+				}
+			}
+		},
+		"hccs": {
+			"med": {
+				"boss": {
+					"seed": 3440,
+					"moves": 91
+				}
+			}
+		},
+		"hchh": {
+			"med": {
+				"boss": {
+					"seed": 710,
+					"moves": 90
+				}
+			}
+		},
+		"hddh": {
+			"med": {
+				"boss": {
+					"seed": 1030,
+					"moves": 61
+				}
+			}
+		},
+		"hdsc": {
+			"med": {
+				"boss": {
+					"seed": 3069,
+					"moves": 57
+				}
+			}
+		},
+		"hhch": {
+			"med": {
+				"boss": {
+					"seed": 1516,
+					"moves": 110
+				}
+			}
+		},
+		"hhhc": {
+			"med": {
+				"boss": {
+					"seed": 14007,
+					"moves": 120
+				},
+				"clear": {
+					"seed": 14007,
+					"moves": 126
+				}
+			}
+		},
+		"hhsh": {
+			"med": {
+				"boss": {
+					"seed": 2712,
+					"moves": 130
+				}
+			}
+		},
+		"hsdc": {
+			"med": {
+				"boss": {
+					"seed": 1343,
+					"moves": 66
+				}
+			}
+		},
+		"hshh": {
+			"med": {
+				"boss": {
+					"seed": 518,
+					"moves": 90
+				},
+				"clear": {
+					"seed": 518,
+					"moves": 108
+				}
+			}
+		},
+		"hcdc": {
+			"med": {
+				"boss": {
+					"seed": 1616,
+					"moves": 62
+				}
+			}
+		},
+		"hchs": {
+			"med": {
+				"boss": {
+					"seed": 663,
+					"moves": 113
+				}
+			}
+		},
+		"hdcd": {
+			"med": {
+				"boss": {
+					"seed": 1098,
+					"moves": 57
+				},
+				"clear": {
+					"seed": 1098,
+					"moves": 100
+				}
+			}
+		},
+		"hdds": {
+			"med": {
+				"boss": {
+					"seed": 327,
+					"moves": 86
+				}
+			}
+		},
+		"hdsd": {
+			"med": {
+				"boss": {
+					"seed": 3404,
+					"moves": 104
+				}
+			}
+		},
+		"hhhd": {
+			"med": {
+				"boss": {
+					"seed": 2008,
+					"moves": 60
+				}
+			}
+		},
+		"hhss": {
+			"med": {
+				"boss": {
+					"seed": 3027,
+					"moves": 61
+				}
+			}
+		},
+		"hsdd": {
+			"med": {
+				"boss": {
+					"seed": 86,
+					"moves": 60
+				}
+			}
+		},
+		"hshs": {
+			"med": {
+				"boss": {
+					"seed": 137,
+					"moves": 45
+				}
+			}
+		},
+		"chsc": {
+			"med": {
+				"clear": {
+					"seed": 33295,
+					"moves": 108
+				},
+				"boss": {
+					"seed": 33295,
+					"moves": 130
+				}
+			}
+		},
+		"cssh": {
+			"med": {
+				"clear": {
+					"seed": 32543,
+					"moves": 125
+				},
+				"boss": {
+					"seed": 32543,
+					"moves": 120
+				}
+			}
+		},
+		"chds": {
+			"med": {
+				"clear": {
+					"seed": 31147,
+					"moves": 127
+				},
+				"boss": {
+					"seed": 31147,
+					"moves": 165
+				}
+			}
+		},
+		"csss": {
+			"med": {
+				"clear": {
+					"seed": 34215,
+					"moves": 138
+				},
+				"boss": {
+					"seed": 34215,
+					"moves": 129
+				}
+			}
+		},
+		"dssh": {
+			"med": {
+				"clear": {
+					"seed": 30055,
+					"moves": 84
+				},
+				"boss": {
+					"seed": 30055,
+					"moves": 81
+				}
+			}
+		},
+		"cshh": {
+			"med": {
+				"clear": {
+					"seed": 34043,
+					"moves": 120
+				},
+				"boss": {
+					"seed": 34043,
+					"moves": 110
+				}
+			}
+		},
+		"dshd": {
+			"med": {
+				"clear": {
+					"seed": 34426,
+					"moves": 106
+				},
+				"boss": {
+					"seed": 34426,
+					"moves": 90
+				}
+			}
+		},
+		"cdsd": {
+			"med": {
+				"clear": {
+					"seed": 31102,
+					"moves": 132
+				},
+				"boss": {
+					"seed": 31102,
+					"moves": 126
+				}
+			}
+		},
+		"cshs": {
+			"med": {
+				"clear": {
+					"seed": 33015,
+					"moves": 209
+				},
+				"boss": {
+					"seed": 33015,
+					"moves": 115
+				}
+			}
+		},
+		"ddch": {
+			"med": {
+				"clear": {
+					"seed": 31255,
+					"moves": 98
+				},
+				"boss": {
+					"seed": 31255,
+					"moves": 80
+				}
+			}
+		},
+		"cscd": {
+			"med": {
+				"clear": {
+					"seed": 33162,
+					"moves": 151
+				},
+				"boss": {
+					"seed": 33162,
+					"moves": 141
+				}
+			}
+		},
+		"cchc": {
+			"med": {
+				"boss": {
+					"seed": 30029,
+					"moves": 156
+				}
+			}
+		},
+		"cshd": {
+			"med": {
+				"boss": {
+					"seed": 30051,
+					"moves": 83
+				}
+			}
+		},
+		"sdds": {
+			"med": {
+				"boss": {
+					"seed": 30083,
+					"moves": 71
+				}
+			}
+		},
+		"ssdh": {
+			"med": {
+				"boss": {
+					"seed": 30453,
+					"moves": 70
+				}
+			}
+		},
+		"cddc": {
+			"med": {
+				"boss": {
+					"seed": 30490,
+					"moves": 138
+				}
+			}
+		},
+		"sssh": {
+			"med": {
+				"boss": {
+					"seed": 30516,
+					"moves": 136
+				}
+			}
+		},
+		"chss": {
+			"med": {
+				"boss": {
+					"seed": 30593,
+					"moves": 166
+				}
+			}
+		},
+		"cchh": {
+			"med": {
+				"boss": {
+					"seed": 30752,
+					"moves": 131
+				}
+			}
+		},
+		"ddcc": {
+			"med": {
+				"boss": {
+					"seed": 30768,
+					"moves": 61
+				}
+			}
+		},
+		"ssss": {
+			"med": {
+				"boss": {
+					"seed": 30817,
+					"moves": 82
+				}
+			}
+		},
+		"sdsc": {
+			"med": {
+				"boss": {
+					"seed": 31017,
+					"moves": 55
+				}
+			}
+		},
+		"hcch": {
+			"med": {
+				"boss": {
+					"seed": 31020,
+					"moves": 110
+				}
+			}
+		},
+		"cdcs": {
+			"med": {
+				"boss": {
+					"seed": 31063,
+					"moves": 136
+				}
+			}
+		},
+		"sshc": {
+			"med": {
+				"boss": {
+					"seed": 31107,
+					"moves": 78
+				}
+			}
+		},
+		"cdhs": {
+			"med": {
+				"boss": {
+					"seed": 31137,
+					"moves": 137
+				}
+			}
+		},
+		"chcc": {
+			"med": {
+				"boss": {
+					"seed": 31161,
+					"moves": 98
+				}
+			}
+		},
+		"sdcs": {
+			"med": {
+				"boss": {
+					"seed": 32350,
+					"moves": 120
+				}
+			}
+		},
+		"ddsc": {
+			"med": {
+				"boss": {
+					"seed": 32470,
+					"moves": 90
+				}
+			}
+		},
+		"dddd": {
+			"med": {
+				"boss": {
+					"seed": 32540,
+					"moves": 57
+				}
+			}
+		},
+		"ddhc": {
+			"med": {
+				"boss": {
+					"seed": 32567,
+					"moves": 58
+				}
+			}
+		},
+		"cdss": {
+			"med": {
+				"boss": {
+					"seed": 32630,
+					"moves": 170
+				}
+			}
+		},
+		"dhsc": {
+			"med": {
+				"boss": {
+					"seed": 32713,
+					"moves": 107
+				}
+			}
+		},
+		"ssdc": {
+			"med": {
+				"boss": {
+					"seed": 32796,
+					"moves": 122
+				}
+			}
+		},
+		"sdhh": {
+			"med": {
+				"boss": {
+					"seed": 32809,
+					"moves": 88
+				}
+			}
+		},
+		"dshh": {
+			"med": {
+				"boss": {
+					"seed": 32031,
+					"moves": 84
+				}
+			}
+		},
+		"ddcd": {
+			"med": {
+				"boss": {
+					"seed": 32054,
+					"moves": 60
+				}
+			}
+		},
+		"hdcc": {
+			"med": {
+				"boss": {
+					"seed": 32061,
+					"moves": 97
+				}
+			}
+		},
+		"cdhd": {
+			"med": {
+				"boss": {
+					"seed": 32086,
+					"moves": 116
+				}
+			}
+		},
+		"dscs": {
+			"med": {
+				"boss": {
+					"seed": 32239,
+					"moves": 104
+				}
+			}
+		},
+		"dsdd": {
+			"med": {
+				"boss": {
+					"seed": 34430,
+					"moves": 82
+				}
+			}
+		},
+		"dsch": {
+			"med": {
+				"boss": {
+					"seed": 34450,
+					"moves": 70
+				},
+				"clear": {
+					"seed": 34450,
+					"moves": 91
+				}
+			}
+		},
+		"sssd": {
+			"med": {
+				"boss": {
+					"seed": 34494,
+					"moves": 72
+				}
+			}
+		},
+		"sshh": {
+			"med": {
+				"boss": {
+					"seed": 34664,
+					"moves": 106
+				}
+			}
+		},
+		"dshc": {
+			"med": {
+				"boss": {
+					"seed": 34755,
+					"moves": 85
+				}
+			}
+		},
+		"chsh": {
+			"med": {
+				"boss": {
+					"seed": 34805,
+					"moves": 145
+				}
+			}
+		},
+		"sddd": {
+			"med": {
+				"boss": {
+					"seed": 34846,
+					"moves": 37
+				}
+			}
+		},
+		"cchd": {
+			"med": {
+				"boss": {
+					"seed": 33098,
+					"moves": 157
+				}
+			}
+		},
+		"ddhd": {
+			"med": {
+				"boss": {
+					"seed": 33137,
+					"moves": 91
+				}
+			}
+		},
+		"sdcc": {
+			"med": {
+				"boss": {
+					"seed": 33168,
+					"moves": 76
+				}
+			}
+		},
+		"dddh": {
+			"med": {
+				"boss": {
+					"seed": 33192,
+					"moves": 88
+				}
+			}
+		},
+		"sdhc": {
+			"med": {
+				"boss": {
+					"seed": 33237,
+					"moves": 42
+				}
+			}
+		},
+		"cdds": {
+			"med": {
+				"boss": {
+					"seed": 33285,
+					"moves": 83
+				}
+			}
+		},
+		"chcd": {
+			"med": {
+				"boss": {
+					"seed": 33293,
+					"moves": 135
+				}
+			}
+		},
+		"cddh": {
+			"med": {
+				"boss": {
+					"seed": 33305,
+					"moves": 119
+				}
+			}
+		},
+		"cddd": {
+			"med": {
+				"boss": {
+					"seed": 34089,
+					"moves": 138
+				},
+				"clear": {
+					"seed": 34089,
+					"moves": 125
+				}
+			}
+		},
+		"sdsh": {
+			"med": {
+				"boss": {
+					"seed": 34099,
+					"moves": 60
+				}
+			}
+		},
+		"dsss": {
+			"med": {
+				"boss": {
+					"seed": 34118,
+					"moves": 74
+				}
+			}
+		},
+		"ccds": {
+			"med": {
+				"boss": {
+					"seed": 34138,
+					"moves": 136
+				}
+			}
+		},
+		"csds": {
+			"med": {
+				"boss": {
+					"seed": 34217,
+					"moves": 137
+				}
+			}
+		},
+		"ddcs": {
+			"med": {
+				"boss": {
+					"seed": 34293,
+					"moves": 89
+				}
+			}
+		},
+		"cssd": {
+			"med": {
+				"boss": {
+					"seed": 35036,
+					"moves": 154
+				}
+			}
+		},
+		"sshd": {
+			"med": {
+				"boss": {
+					"seed": 35099,
+					"moves": 92
+				}
+			}
+		},
+		"ddsd": {
+			"med": {
+				"boss": {
+					"seed": 35110,
+					"moves": 62
+				}
+			}
+		},
+		"ddds": {
+			"med": {
+				"boss": {
+					"seed": 35182,
+					"moves": 63
+				}
+			}
+		},
+		"chhc": {
+			"med": {
+				"boss": {
+					"seed": 35199,
+					"moves": 111
+				}
 			}
 		},
 		"dcch": {
-			"boss": {
-				"seed": 294,
-				"moves": 79
+			"med": {
+				"boss": {
+					"seed": 294,
+					"moves": 79
+				}
 			}
 		},
 		"dcsh": {
-			"boss": {
-				"seed": 69,
-				"moves": 82
+			"med": {
+				"boss": {
+					"seed": 69,
+					"moves": 82
+				}
 			}
 		},
 		"cccc": {
-			"boss": {
-				"seed": 60199,
-				"moves": 92
+			"med": {
+				"boss": {
+					"seed": 60199,
+					"moves": 92
+				}
 			}
 		},
 		"scsc": {
-			"boss": {
-				"seed": 60042,
-				"moves": 102
+			"med": {
+				"boss": {
+					"seed": 60042,
+					"moves": 102
+				}
 			}
 		},
 		"scsd": {
-			"boss": {
-				"seed": 80649,
-				"moves": 97
+			"med": {
+				"boss": {
+					"seed": 80649,
+					"moves": 97
+				}
 			}
 		},
 		"dcdd": {
-			"boss": {
-				"seed": 100142,
-				"moves": 77
+			"med": {
+				"boss": {
+					"seed": 100142,
+					"moves": 77
+				}
 			}
 		},
 		"schc": {
-			"boss": {
-				"seed": 100094,
-				"moves": 96
+			"med": {
+				"boss": {
+					"seed": 100094,
+					"moves": 96
+				}
 			}
 		}
 	},

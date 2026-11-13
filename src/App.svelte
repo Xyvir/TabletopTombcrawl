@@ -51,6 +51,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		newlyWounded,
 		createTombState,
 		currentLevel,
+		DRAFT_CELL_COUNT,
 		FREE_CELL_COUNT,
 		PAR_TOTAL,
 		disarm,
@@ -273,8 +274,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		rules: string;
 		keys: number;
 		entries: CorpusEntry[];
-		/** The shortest line the solver found for each goal a party has been solved for. */
-		found?: Record<string, { boss?: { seed: number; moves: number }; clear?: { seed: number; moves: number } }>;
+		/**
+		 * The shortest line the solver found for each goal a party has been solved for, kept per track:
+		 * `found[key].hard.clear` is a hard clear, which a med one says nothing about. Artifacts written
+		 * before tracks were kept hold one flat record per party, read as med.
+		 */
+		found?: Record<
+			string,
+			Partial<Record<Difficulty, { boss?: { seed: number; moves: number }; clear?: { seed: number; moves: number } }>> & {
+				boss?: { seed: number; moves: number };
+				clear?: { seed: number; moves: number };
+			}
+		>;
 		missing: string[];
 	};
 	/** Draw order: the corpus keys a party the same way, one letter per role. */
@@ -295,8 +306,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * for good, so a 100% clear would record itself under an empty loadout and never reach the trellis.
 	 */
 	let dealLayout = $state('');
-	const entriesByLayout = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.loadout, entry])));
-	const entriesBySeed = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.seed, entry])));
+	/**
+	 * Which track the trellis is showing. Med and hard are different claims about the same party — a
+	 * two-cell track is a much harder board — so the sheet reads one tier at a time rather than
+	 * pretending a party's med seed says anything about its hard one.
+	 */
+	let layoutDifficulty = $state<Difficulty>('med');
+	const difficultyOfEntry = (entry: CorpusEntry) => (entry.difficulty as Difficulty) ?? 'med';
+	const entriesByLayout = $derived(
+		new Map(
+			(corpus?.entries ?? [])
+				.filter((entry) => difficultyOfEntry(entry) === layoutDifficulty)
+				.map((entry) => [entry.loadout, entry])
+		)
+	);
+	const coveredHere = $derived((corpus?.entries ?? []).filter((entry) => difficultyOfEntry(entry) === layoutDifficulty).length);
+	// A typed seed belongs to a square only at the track it was solved on, which is the track on screen.
+	const entriesBySeed = $derived(
+		new Map(
+			(corpus?.entries ?? [])
+				.filter((entry) => difficultyOfEntry(entry) === difficulty)
+				.map((entry) => [entry.seed, entry])
+		)
+	);
 	/**
 	 * The trellis square this deal belongs to, if any. A layout is not enough: a random deal of the same
 	 * party is not the corpus deal, so selecting it would leave the sheet pointing at a run it cannot
@@ -321,7 +353,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** What the solver has proved for the square being read out, per goal, with its shortest line. */
 	const inspectedProof = $derived.by(() => {
 		const entry = entriesByLayout.get(inspectedKey);
-		const known = corpus?.found?.[inspectedKey];
+		// Proofs are kept per track. Artifacts written before that was true hold the med ones flat, so a
+		// flat record is read as med rather than as a party with no proofs at all.
+		const proofs = corpus?.found?.[inspectedKey] as
+			| (Partial<Record<'boss' | 'clear', { seed: number; moves: number }>> & Record<string, unknown>)
+			| undefined;
+		const known = (proofs?.[layoutDifficulty] ?? (layoutDifficulty === 'med' ? proofs : undefined)) as
+			| Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>
+			| undefined;
 		const boss = known?.boss ?? (entry?.goal === 'boss' ? { seed: entry.seed, moves: entry.moves } : undefined);
 		const clear = known?.clear ?? (entry?.goal === 'clear' ? { seed: entry.seed, moves: entry.moves } : undefined);
 		return { boss, clear };
@@ -339,7 +378,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	function layoutStatus(key: string): 'cleared' | 'boss' | 'playable' | 'missing' {
-		const held = progress.get(key)?.status;
+		const held = progress.get(`${layoutDifficulty}:${key}`)?.status;
 		if (held === 'clear') return 'cleared';
 		if (held === 'boss') return 'boss';
 		return entriesByLayout.has(key) ? 'playable' : 'missing';
@@ -364,6 +403,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombSelected = null;
 		tombLast = null;
 		tomb = createTombState(entry.seed, FREE_CELL_COUNT[level]);
+		layoutDifficulty = level;
 		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
 	}
@@ -377,10 +417,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const key = dealLayout || loadoutOf(state);
 		const status: LayoutRecord['status'] | null = tombPar(state) === 0 ? 'clear' : bossSlain(state) ? 'boss' : null;
 		if (!status) return;
-		const held = progress.get(key)?.status;
+		// The track is read off the board rather than off the control: a run keeps the size it was dealt at,
+		// even if the player has since changed the control for the next deal.
+		const level = DIFFICULTIES.find((entry) => FREE_CELL_COUNT[entry] === state.game.cells.length - DRAFT_CELL_COUNT) ?? 'med';
+		const id = `${level}:${key}`;
+		const held = progress.get(id)?.status;
 		if (held === 'clear' || (held === 'boss' && status === 'boss')) return;
-		const record: LayoutRecord = { loadout: key, status, seed: state.seed, at: Date.now() };
-		progress = new Map(progress).set(key, record);
+		const record: LayoutRecord = { id, loadout: key, difficulty: level, status, seed: state.seed, at: Date.now() };
+		progress = new Map(progress).set(id, record);
 		await markLayout(record);
 	}
 
@@ -1901,9 +1945,19 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<header>
 					<h2>Choose a loadout</h2>
 					<span class="corpusline">
-						{corpus ? `${corpus.entries.length} of ${corpus.keys} parties have a seed` : 'reading the seed list…'}
+						{corpus
+							? `${coveredHere} of ${corpus.keys} parties have a ${DIFFICULTY_LABEL[layoutDifficulty].toLowerCase()} seed`
+							: 'reading the seed list…'}
 					</span>
 				</header>
+				<!-- A hard clear is a different claim from a med one, so the sheet reads one track at a time. -->
+				<div class="tiers" role="group" aria-label="Which track to show">
+					{#each DIFFICULTIES as level (level)}
+						<button class="btn" aria-pressed={layoutDifficulty === level} onclick={() => (layoutDifficulty = level)}>
+							{DIFFICULTY_LABEL[level]}
+						</button>
+					{/each}
+				</div>
 				<div class="layout-body" role="group" aria-label="The 256 parties" onmouseleave={() => (hovered = null)}>
 					<div class="trellis">
 						<span class="corner" style="grid-area: 1 / 1"></span>

@@ -288,9 +288,11 @@ if (mode === 'merge') {
 	// One entry per key, and the stronger result wins: a 100% clear is also a boss kill, so it beats a
 	// boss-only entry for the same key, and a shorter line beats a longer one.
 	const rank = (entry: Entry) => (entry.goal === 'clear' ? 0 : 1);
+	// A party is one key per track: its med seed says nothing about its hard one, so the two sit side by side.
+	const keyOf = (entry: Entry) => `${entry.difficulty ?? 'med'}|${entry.loadout}`;
 	const unique = new Map<string, Entry>();
 	for (const entry of all) {
-		const key = entry.loadout;
+		const key = keyOf(entry);
 		const held = unique.get(key);
 		if (!held || rank(entry) < rank(held) || (rank(entry) === rank(held) && entry.moves < held.moves)) {
 			unique.set(key, entry);
@@ -298,15 +300,23 @@ if (mode === 'merge') {
 	}
 	// What the solver has proved for each party, and the shortest line it found for each goal. A boss
 	// kill and a bare tomb are different claims, so the trellis keeps both rather than one per party.
-	const found: Record<string, Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>> = {};
+	type Proofs = Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>;
+	const found: Record<string, Partial<Record<string, Proofs>>> = {};
 	for (const entry of all) {
+		const level = entry.difficulty ?? 'med';
 		const achieved = entry.goal === 'clear' ? 'clear' : 'boss';
-		const held = found[entry.loadout]?.[achieved];
+		const held = found[entry.loadout]?.[level]?.[achieved];
 		if (held && held.moves <= entry.moves) continue;
-		found[entry.loadout] = { ...found[entry.loadout], [achieved]: { seed: entry.seed, moves: entry.moves } };
+		found[entry.loadout] = {
+			...found[entry.loadout],
+			[level]: { ...found[entry.loadout]?.[level], [achieved]: { seed: entry.seed, moves: entry.moves } },
+		};
 	}
-	const entries = [...unique.values()].sort((a, b) => (a.loadout < b.loadout ? -1 : 1));
-	const missing = ALL_KEYS.filter((key) => !unique.has(key));
+	const entries = [...unique.values()].sort((a, b) =>
+		`${a.loadout}${a.difficulty ?? 'med'}` < `${b.loadout}${b.difficulty ?? 'med'}` ? -1 : 1
+	);
+	// The headline count stays the med one: that is the corpus the status board and the first sweep built.
+	const missing = ALL_KEYS.filter((key) => !unique.has(`med|${key}`));
 	const target = existsSync('public') ? 'public/corpus.json' : `${shardDir}/corpus.json`;
 	writeFileSync(
 		target,
@@ -316,5 +326,9 @@ if (mode === 'merge') {
 			'\t'
 		)
 	);
-	console.log(`${entries.length}/${ALL_KEYS.length} keys covered · ${missing.length} still to find → ${target}`);
+	const medCount = entries.filter((entry) => (entry.difficulty ?? 'med') === 'med').length;
+	const hardCount = entries.length - medCount;
+	console.log(
+		`${medCount}/${ALL_KEYS.length} keys covered at med · ${hardCount} hard rows · ${missing.length} still to find → ${target}`
+	);
 }

@@ -6,8 +6,12 @@
 export type LayoutStatus = 'boss' | 'clear';
 
 export interface LayoutRecord {
+	/** `difficulty:loadout`, because one party has a different result at each track size. */
+	id: string;
 	/** The four drafted suits in role order, e.g. `hcds` — the same key the corpus uses. */
 	loadout: string;
+	/** The track the result was earned on: a hard clear is a different claim from a med one. */
+	difficulty: string;
 	status: LayoutStatus;
 	seed: number;
 	at: number;
@@ -15,7 +19,7 @@ export interface LayoutRecord {
 
 const DB_NAME = 'tombcrawl';
 const STORE = 'layouts';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const openDb = (): Promise<IDBDatabase> =>
 	new Promise((resolve, reject) => {
@@ -26,7 +30,25 @@ const openDb = (): Promise<IDBDatabase> =>
 		const request = indexedDB.open(DB_NAME, DB_VERSION);
 		request.onupgradeneeded = () => {
 			const db = request.result;
-			if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'loadout' });
+			if (!db.objectStoreNames.contains(STORE)) {
+				db.createObjectStore(STORE, { keyPath: 'id' });
+				return;
+			}
+			// Version 1 keyed a result by its party alone, which cannot tell a med win from a hard one.
+			// The store is rebuilt around `id` and every old row is carried over as a med result, since
+			// that is the track the app played before this existed.
+			const old = (request.transaction as IDBTransaction).objectStore(STORE);
+			db.deleteObjectStore(STORE);
+			const next = db.createObjectStore(STORE, { keyPath: 'id' });
+			const cursor = old.openCursor();
+			cursor.onsuccess = () => {
+				const row = cursor.result;
+				if (!row) return;
+				const value = row.value as Partial<LayoutRecord>;
+				const difficulty = value.difficulty ?? 'med';
+				if (value.loadout) next.put({ ...value, difficulty, id: `${difficulty}:${value.loadout}` });
+				row.continue();
+			};
 		};
 		request.onsuccess = () => resolve(request.result);
 		request.onerror = () => reject(request.error ?? new Error('could not open the progress store'));
@@ -65,7 +87,7 @@ const withStore = async <T>(mode: IDBTransactionMode, run: (store: IDBObjectStor
 export async function readLayouts(): Promise<Map<string, LayoutRecord>> {
 	try {
 		const rows = await withStore<LayoutRecord[]>('readonly', (store) => store.getAll());
-		return new Map(rows.map((row) => [row.loadout, row]));
+		return new Map(rows.map((row) => [row.id, row]));
 	} catch {
 		return new Map();
 	}
