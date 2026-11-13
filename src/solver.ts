@@ -381,6 +381,14 @@ export const SCORE_WEIGHTS: ScoreWeights = {
 	buried: 6,
 	hearts: 4,
 	fog: 3,
+	// Zero on purpose, and measured rather than assumed. A free cell is storage, and the search already
+	// pays for one whenever a card waiting in it is a card the foundations want (`reach`); a term of its
+	// own buys nothing else. Pricing storage was tried on 2026-11-13 to see whether PISORF would then be
+	// chosen: empty columns at 20 and a cell holding a pair at 6 turned 27 of 27 cast offers into an
+	// improvement over the board before them, and the search spent its budget hoarding space instead —
+	// 1 win against the old weights' 6 across 40 corpus deals at 250k, and still 1 win with the column
+	// worth only 5. A cast is not worth more because the board it leaves is emptier; it is worth more
+	// only when that emptiness is what the next few moves can use.
 	room: 0,
 	// No penalty at all: a tight deal's winning endgame runs on the last heart, and charging for it
 	// cost seeds 2 and 5 their clears — both are one card from home at a two-heart board, and both
