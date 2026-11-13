@@ -60,7 +60,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		elfSight,
 		emptyCells,
 		flipFaceDown,
-		freeCastReady,
 		unpick,
 		hasPassive,
 		isBoss,
@@ -1610,7 +1609,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:locking={!!preview?.locks.includes(i)}
 					class:need={!!preview?.need.includes(i) || !!preview?.fatal}
-					class:affinity={!!tomb && freeCastReady(tomb, i) && abilityUsable(tomb, i)}
 					class:empty={!card}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
