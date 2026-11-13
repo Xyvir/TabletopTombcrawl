@@ -925,13 +925,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	/* ---------- tabletop tombcrawl ---------- */
 
-	const monsterName = (state: TombState) => (state.bossSuit ? MONSTERS[state.bossSuit].name : '');
-
-	/** The boss reads as its monster and the suit it lives in: "Serpent of Hearts". */
+	/** The boss reads as a king, its monster and the suit it lives in: "Serpent King of Hearts". */
 	function bossTitle(state: TombState): string {
 		const suit = state.bossSuit;
 		if (!suit) return 'not revealed';
-		return `${MONSTERS[suit].name} of ${suit[0].toUpperCase()}${suit.slice(1)}`;
+		return `${MONSTERS[suit].name} King of ${suit[0].toUpperCase()}${suit.slice(1)}`;
 	}
 
 	/**
@@ -941,7 +939,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function carrierName(state: TombState, card: Card) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit];
-		return card.rank === 'king' && card.suit !== state.bossSuit ? `${monster.name}'s General` : monster.name;
+		return card.rank === 'king' && card.suit !== state.bossSuit ? `Boss ${monster.name}'s General` : monster.name;
 	}
 
 	/**
@@ -1845,7 +1843,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						style={cardStyle(card, i)}
 						data-card={shorthandCard(card)}
 						title={tomb && boss
-							? `${monsterName(tomb)} King${
+							? `Boss ${bossTitle(tomb)}${
 									bossProtected(tomb)
 										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
 										: ''
