@@ -17,7 +17,12 @@ TOTAL_MB=$(powershell -NoProfile -Command '(Get-CimInstance Win32_ComputerSystem
 WORKERS=${WORKERS:-3}
 SPAN=${SPAN:-2000}
 FROM=${FROM:-30001}
-HEAP_MB=$(( TOTAL_MB / 2 / WORKERS ))
+# MEM_MB is the most the batch may take together; it defaults to half the machine. Raise it for an
+# overnight run nobody is sitting in front of, lower it when you are working beside the sweep.
+MEM_MB=${MEM_MB:-$(( TOTAL_MB / 2 ))}
+HEAP_MB=$(( MEM_MB / WORKERS ))
+# TAG keeps a second sweep's files beside the first one's instead of overwriting them.
+TAG=${TAG:-}
 
 mkdir -p corpus
 for i in $(seq 0 $(( WORKERS - 1 ))); do
@@ -25,9 +30,9 @@ for i in $(seq 0 $(( WORKERS - 1 ))); do
 	end=$(( start + SPAN - 1 ))
 	VITE_HMR_PORT=$(( 24700 + i )) NODE_OPTIONS="--max-old-space-size=${HEAP_MB}" \
 		MODE=scan FROM="$start" TO="$end" GOAL=boss STRATEGY=hybrid BUDGET=300000 \
-		OUT="corpus/scan-w${i}.json" node scripts/run.mjs scripts/corpus.ts > "corpus/newlog-${i}.txt" 2>&1 &
+		OUT="corpus/scan-${TAG}w${i}.json" node scripts/run.mjs scripts/corpus.ts > "corpus/newlog-${TAG}${i}.txt" 2>&1 &
 done
 
-echo "sweep: ${WORKERS} workers, ${HEAP_MB}MB heap each (half of ${TOTAL_MB}MB in total), seeds ${FROM}..$(( FROM + WORKERS * SPAN - 1 ))"
+echo "sweep: ${WORKERS} workers, ${HEAP_MB}MB heap each (${MEM_MB}MB of ${TOTAL_MB}MB in total), seeds ${FROM}..$(( FROM + WORKERS * SPAN - 1 ))"
 wait
 echo SWEEPDONE
