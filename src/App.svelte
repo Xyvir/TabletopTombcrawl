@@ -44,6 +44,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		auraItemOf,
 		carriesPower,
 		canBuildOn,
+		canRevealFaceDown,
 		cellCardMovable,
 		cellCards,
 		chipBoundary,
@@ -1860,9 +1861,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								}\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
 								? auraTitle(tomb, card)
-								: tomb && !down
-									? `${FODDER} — no power: only the boss suit's court and the kings bite.`
-									: undefined}
+								: down && tomb
+									? canRevealFaceDown(tomb, card.location)
+										? "Unexplored Room — explore it: the dig mends one face-down card (two with a Priest's Vigil)."
+										: 'Unexplored Room — buried. Dig the cards above it off first; the dig mends a face-down card.'
+									: tomb
+										? `${FODDER} — no power: only the boss suit's court and the kings bite.`
+										: undefined}
 						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
 						onpointerenter={() => {
