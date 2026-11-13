@@ -323,22 +323,30 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	let layoutDifficulty = $state<Difficulty>('med');
 	const difficultyOfEntry = (entry: CorpusEntry) => (entry.difficulty as Difficulty) ?? 'med';
+	/**
+	 * Where a track's rows are kept. Easy is never solved on its own: the deal is the same board with a
+	 * cell more to store in and a wound more to spare, so every med line is already an easy line and the
+	 * sheet mirrors the med corpus rather than chasing a claim one track easier.
+	 */
+	const tierShown = (level: Difficulty): Difficulty => (level === 'easy' ? 'med' : level);
 	const entriesByLayout = $derived(
 		new Map(
 			(corpus?.entries ?? [])
-				.filter((entry) => difficultyOfEntry(entry) === layoutDifficulty)
+				.filter((entry) => difficultyOfEntry(entry) === tierShown(layoutDifficulty))
 				.map((entry) => [entry.loadout, entry])
 		)
 	);
-	const coveredHere = $derived((corpus?.entries ?? []).filter((entry) => difficultyOfEntry(entry) === layoutDifficulty).length);
+	const coveredHere = $derived(
+		(corpus?.entries ?? []).filter((entry) => difficultyOfEntry(entry) === tierShown(layoutDifficulty)).length
+	);
 	/** The square's best no-win crawl, on the track the sheet is showing. */
-	const placeholderFor = (key: string) => corpus?.placeholders?.[key]?.[layoutDifficulty];
+	const placeholderFor = (key: string) => corpus?.placeholders?.[key]?.[tierShown(layoutDifficulty)];
 	const placeholderHere = $derived(Object.keys(corpus?.placeholders ?? {}).filter((key) => placeholderFor(key)).length);
 	// A typed seed belongs to a square only at the track it was solved on, which is the track on screen.
 	const entriesBySeed = $derived(
 		new Map(
 			(corpus?.entries ?? [])
-				.filter((entry) => difficultyOfEntry(entry) === difficulty)
+				.filter((entry) => difficultyOfEntry(entry) === tierShown(difficulty))
 				.map((entry) => [entry.seed, entry])
 		)
 	);
@@ -371,7 +379,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const proofs = corpus?.found?.[inspectedKey] as
 			| (Partial<Record<'boss' | 'clear', { seed: number; moves: number }>> & Record<string, unknown>)
 			| undefined;
-		const known = (proofs?.[layoutDifficulty] ?? (layoutDifficulty === 'med' ? proofs : undefined)) as
+		const tier = tierShown(layoutDifficulty);
+		const known = (proofs?.[tier] ?? (tier === 'med' ? proofs : undefined)) as
 			| Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>
 			| undefined;
 		const boss = known?.boss ?? (entry?.goal === 'boss' ? { seed: entry.seed, moves: entry.moves } : undefined);
@@ -443,7 +452,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		layoutOpen = false;
 		seedInput = '';
 		clearClickMemory();
-		const level = (entry.difficulty as Difficulty) ?? 'med';
+		// Play the square on the track the sheet is showing: an easy square is a med seed dealt again.
+		const level = layoutDifficulty;
 		difficulty = level;
 		tombHistory = [];
 		tombSelected = null;
@@ -2023,7 +2033,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<h2>Choose a loadout</h2>
 					<span class="corpusline">
 						{corpus
-							? `${coveredHere} of ${corpus.keys} parties have a ${DIFFICULTY_LABEL[layoutDifficulty].toLowerCase()} win${
+							? `${coveredHere} of ${corpus.keys} parties have a${layoutDifficulty === 'easy' ? 'n' : ''} ${DIFFICULTY_LABEL[layoutDifficulty].toLowerCase()} win${
 									placeholderHere ? ` · ${placeholderHere} more with a seed and no win yet` : ''
 								}`
 							: 'reading the seed list…'}
