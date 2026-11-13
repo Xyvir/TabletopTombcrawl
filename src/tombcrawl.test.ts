@@ -6,6 +6,7 @@ import {
 	MONSTERS,
 	TOMB_RULES,
 	TOMB_CELL_COUNT,
+	DRAFT_CELL_COUNT,
 	FREE_CELL_COUNT,
 	abilityUsable,
 	armedClick,
@@ -29,6 +30,7 @@ import {
 	newlyWounded,
 	createTombState,
 	currentLevel,
+	difficultyOf,
 	emptyCells,
 	hp,
 	cellCards,
@@ -1573,6 +1575,24 @@ describe('tombcrawl progression rules', () => {
 
 		const next = attackWith(state, cascade(1, 0))!;
 		expect(next.hidden).not.toContain('2C');
+	});
+
+	test('the hard track has no ceiling on a blow: an overshooting card costs its whole rank', () => {
+		// Spades are away at nine while the other three sit on their aces, so the level lags at two and
+		// the ten of spades is worth eight: capped at two on med, its whole rank on hard.
+		const board = (cellCount: number) =>
+			makeTomb({
+				columns: [['TS']],
+				cells: ['2C', '3C', '4C', '6C', '7C', '8C'],
+				foundations: ['9S', 'AH', 'AD', 'AC'],
+				cellCount,
+			});
+		const med = board(TOMB_CELL_COUNT);
+		const hard = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.hard);
+		expect(difficultyOf(hard)).toBe('hard');
+		expect(currentLevel(hard)).toBe(2);
+		expect(attackPreview(hard, cascade(0)).damage).toBe(8);
+		expect(attackPreview(med, cascade(0)).damage).toBe(2);
 	});
 
 	test('an off-suit king is weak in a spade tomb, where the boss suit costs a rank more', () => {

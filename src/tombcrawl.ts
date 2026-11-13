@@ -38,9 +38,9 @@ export const TOMB_RULES = {
 	 * The most hearts one kill may cost, or 0 for no ceiling. Damage is rank minus level, so the
 	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
 	 *
-	 * Two, for everyone, with no class or kin exception: every blow in the game is worth 0, 1 or 2.
-	 * That is the whole of the arithmetic a table has to do, and it is why the Fighter no longer needs
-	 * a cap of his own or the Dwarf a discount on court cards.
+	 * Two, for everyone on the easy and med tracks: every blow there is worth 0, 1 or 2, which is the whole
+	 * of the arithmetic a table has to do. The hard track has no ceiling at all — a king you cannot afford
+	 * is a wall rather than a bill, and some hard crawls may simply be unsolvable.
 	 */
 	levelDamageCap: 2,
 	/**
@@ -644,6 +644,15 @@ export function bossSlain(state: TombState): boolean {
  * The difficulty a state was dealt at. The track is the whole difference between the three — four
  * free cells, three or two — so its size is the rule, rather than something every state has to carry.
  */
+/**
+ * The ceiling on one blow at this state's track: two on easy and med, none at all on hard. The hard track
+ * is where a blow costs its whole rank, so a king early in a crawl can be untouchable — and a crawl built
+ * around reaching it later. Bounty still zeroes a blow after the cap, so a free kill stays free.
+ */
+export function damageCapOf(state: TombState): number {
+	return difficultyOf(state) === 'hard' ? 0 : TOMB_RULES.levelDamageCap;
+}
+
 export function difficultyOf(state: TombState): Difficulty {
 	const cells = state.game.cells.length;
 	return (
@@ -964,7 +973,8 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
-	if (TOMB_RULES.levelDamageCap > 0) damage = Math.min(damage, TOMB_RULES.levelDamageCap);
+	const ceiling = damageCapOf(state);
+	if (ceiling > 0) damage = Math.min(damage, ceiling);
 	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (CLAUSES.thiefBounty && hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
