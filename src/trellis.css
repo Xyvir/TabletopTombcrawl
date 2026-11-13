@@ -66,13 +66,6 @@ button.titlecard:focus-visible {
 	letter-spacing: 0.03em;
 }
 
-.layout-card .corpusline {
-	font-size: 0.66rem;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: rgba(255, 255, 255, 0.5);
-}
-
 /* the track switch: small pills under the title, above the trellis */
 .layout-card .tiers {
 	display: flex;
@@ -419,10 +412,4 @@ button.titlecard:focus-visible {
 	border-style: dashed;
 }
 
-.sheetnote {
-	margin: 0.55rem 0 0;
-	max-width: 34rem;
-	font-size: 0.66rem;
-	line-height: 1.45;
-	color: rgba(255, 255, 255, 0.42);
-}
+

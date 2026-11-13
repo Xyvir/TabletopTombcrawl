@@ -336,12 +336,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				.map((entry) => [entry.loadout, entry])
 		)
 	);
-	const coveredHere = $derived(
-		(corpus?.entries ?? []).filter((entry) => difficultyOfEntry(entry) === tierShown(layoutDifficulty)).length
-	);
 	/** The square's best no-win crawl, on the track the sheet is showing. */
 	const placeholderFor = (key: string) => corpus?.placeholders?.[key]?.[tierShown(layoutDifficulty)];
-	const placeholderHere = $derived(Object.keys(corpus?.placeholders ?? {}).filter((key) => placeholderFor(key)).length);
 	// A typed seed belongs to a square only at the track it was solved on, which is the track on screen.
 	const entriesBySeed = $derived(
 		new Map(
@@ -2031,13 +2027,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<div class="layout-card">
 				<header>
 					<h2>Choose a loadout</h2>
-					<span class="corpusline">
-						{corpus
-							? `${coveredHere} of ${corpus.keys} parties have a${layoutDifficulty === 'easy' ? 'n' : ''} ${DIFFICULTY_LABEL[layoutDifficulty].toLowerCase()} win${
-									placeholderHere ? ` · ${placeholderHere} more with a seed and no win yet` : ''
-								}`
-							: 'reading the seed list…'}
-					</span>
 				</header>
 				<!-- A hard clear is a different claim from a med one, so the sheet reads one track at a time. -->
 				<div class="tiers" role="group" aria-label="Which difficulty to show">
@@ -2182,10 +2171,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<span><i class="placeholder"></i>seed, no win yet</span>
 					<span><i class="missing"></i>no seed yet</span>
 				</div>
-				<p class="sheetnote">
-					Rows are the kin's suit and columns the class's; inside every square the glyph runs down and the item
-					across. A square with a seed starts that deal.
-				</p>
 			</div>
 		</div>
 	{/if}
