@@ -349,9 +349,9 @@
 			"loadout": "cchs",
 			"boss": "clubs",
 			"seed": 36465,
-			"moves": 127,
+			"moves": 134,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -374,7 +374,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-13T03:20:02.885Z"
+			"at": "2026-11-13T15:02:57.737Z"
 		},
 		{
 			"loadout": "ccsc",
@@ -876,9 +876,9 @@
 			"loadout": "cdsd",
 			"boss": null,
 			"seed": 31102,
-			"moves": 126,
+			"moves": 132,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -901,7 +901,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-12T15:20:07.097Z"
+			"at": "2026-11-13T15:04:23.803Z"
 		},
 		{
 			"loadout": "cdsh",
@@ -1186,9 +1186,9 @@
 			"loadout": "chds",
 			"boss": null,
 			"seed": 31147,
-			"moves": 165,
+			"moves": 127,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1211,7 +1211,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T15:48:17.354Z"
+			"at": "2026-11-13T15:05:02.285Z"
 		},
 		{
 			"loadout": "chhc",
@@ -1341,9 +1341,9 @@
 			"loadout": "chsc",
 			"boss": "diamonds",
 			"seed": 33295,
-			"moves": 130,
+			"moves": 108,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1366,15 +1366,15 @@
 					"suit": "clubs"
 				}
 			],
-			"at": "2026-11-12T17:13:51.028Z"
+			"at": "2026-11-13T15:05:22.678Z"
 		},
 		{
 			"loadout": "chsd",
 			"boss": "spades",
 			"seed": 38037,
-			"moves": 126,
+			"moves": 133,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1397,7 +1397,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-13T01:47:28.032Z"
+			"at": "2026-11-13T15:05:04.612Z"
 		},
 		{
 			"loadout": "chsh",
@@ -1496,9 +1496,9 @@
 			"loadout": "cscd",
 			"boss": "diamonds",
 			"seed": 33162,
-			"moves": 141,
+			"moves": 151,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1521,7 +1521,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-12T15:57:47.876Z"
+			"at": "2026-11-13T15:05:06.383Z"
 		},
 		{
 			"loadout": "csch",
@@ -1775,9 +1775,9 @@
 			"loadout": "cshh",
 			"boss": "spades",
 			"seed": 34043,
-			"moves": 110,
+			"moves": 120,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1800,15 +1800,15 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-12T14:49:12.149Z"
+			"at": "2026-11-13T15:06:12.819Z"
 		},
 		{
 			"loadout": "cshs",
 			"boss": "diamonds",
 			"seed": 33015,
-			"moves": 115,
+			"moves": 209,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1831,7 +1831,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T14:30:42.777Z"
+			"at": "2026-11-13T15:06:01.305Z"
 		},
 		{
 			"loadout": "cssc",
@@ -1899,9 +1899,9 @@
 			"loadout": "cssh",
 			"boss": "diamonds",
 			"seed": 32543,
-			"moves": 120,
+			"moves": 125,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1924,15 +1924,15 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-12T20:15:47.087Z"
+			"at": "2026-11-13T15:06:03.810Z"
 		},
 		{
 			"loadout": "csss",
 			"boss": "clubs",
 			"seed": 34215,
-			"moves": 129,
+			"moves": 138,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -1955,7 +1955,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T16:26:05.462Z"
+			"at": "2026-11-13T15:05:46.440Z"
 		},
 		{
 			"loadout": "dccd",
@@ -2209,9 +2209,9 @@
 			"loadout": "ddch",
 			"boss": "clubs",
 			"seed": 31255,
-			"moves": 80,
+			"moves": 98,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -2234,7 +2234,7 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-12T16:35:21.654Z"
+			"at": "2026-11-13T15:06:49.792Z"
 		},
 		{
 			"loadout": "ddcs",
@@ -2271,9 +2271,9 @@
 			"loadout": "dddc",
 			"boss": "spades",
 			"seed": 542,
-			"moves": 89,
+			"moves": 91,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -2296,7 +2296,7 @@
 					"suit": "clubs"
 				}
 			],
-			"at": "2026-11-12T13:53:54.413Z"
+			"at": "2026-11-13T15:06:29.166Z"
 		},
 		{
 			"loadout": "dddd",
@@ -2581,9 +2581,9 @@
 			"loadout": "ddsh",
 			"boss": "hearts",
 			"seed": 36020,
-			"moves": 86,
+			"moves": 90,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -2606,15 +2606,15 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-13T01:44:42.211Z"
+			"at": "2026-11-13T15:07:02.091Z"
 		},
 		{
 			"loadout": "ddss",
 			"boss": "clubs",
 			"seed": 53008,
-			"moves": 90,
+			"moves": 91,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -2637,7 +2637,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-13T07:04:13.345Z"
+			"at": "2026-11-13T15:06:36.610Z"
 		},
 		{
 			"loadout": "dhcc",
@@ -2922,9 +2922,9 @@
 			"loadout": "dhhs",
 			"boss": "hearts",
 			"seed": 49356,
-			"moves": 82,
+			"moves": 89,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -2947,7 +2947,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-13T07:21:30.372Z"
+			"at": "2026-11-13T15:07:40.732Z"
 		},
 		{
 			"loadout": "dhsc",
@@ -3015,9 +3015,9 @@
 			"loadout": "dhsh",
 			"boss": "diamonds",
 			"seed": 40829,
-			"moves": 79,
+			"moves": 90,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -3040,7 +3040,7 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-13T04:22:10.528Z"
+			"at": "2026-11-13T15:06:49.394Z"
 		},
 		{
 			"loadout": "dscc",
@@ -3325,9 +3325,9 @@
 			"loadout": "dshd",
 			"boss": "clubs",
 			"seed": 34426,
-			"moves": 90,
+			"moves": 106,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -3350,7 +3350,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-12T19:53:29.367Z"
+			"at": "2026-11-13T15:07:56.845Z"
 		},
 		{
 			"loadout": "dshh",
@@ -3387,9 +3387,9 @@
 			"loadout": "dshs",
 			"boss": "diamonds",
 			"seed": 40211,
-			"moves": 87,
+			"moves": 107,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -3412,7 +3412,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-13T02:33:05.661Z"
+			"at": "2026-11-13T15:08:09.336Z"
 		},
 		{
 			"loadout": "dssc",
@@ -3480,9 +3480,9 @@
 			"loadout": "dssh",
 			"boss": "spades",
 			"seed": 30055,
-			"moves": 81,
+			"moves": 84,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -3505,7 +3505,7 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-12T14:56:29.471Z"
+			"at": "2026-11-13T15:07:24.005Z"
 		},
 		{
 			"loadout": "dsss",
@@ -4286,9 +4286,9 @@
 			"loadout": "hdhc",
 			"boss": "clubs",
 			"seed": 285,
-			"moves": 58,
+			"moves": 101,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4311,15 +4311,15 @@
 					"suit": "clubs"
 				}
 			],
-			"at": "2026-11-12T13:59:42.146Z"
+			"at": "2026-11-13T15:09:24.673Z"
 		},
 		{
 			"loadout": "hdhd",
 			"boss": "diamonds",
 			"seed": 846,
-			"moves": 52,
+			"moves": 98,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4342,7 +4342,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-12T13:59:25.857Z"
+			"at": "2026-11-13T15:09:49.548Z"
 		},
 		{
 			"loadout": "hdhh",
@@ -4472,9 +4472,9 @@
 			"loadout": "hdsh",
 			"boss": "diamonds",
 			"seed": 243,
-			"moves": 74,
+			"moves": 103,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4497,7 +4497,7 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-12T14:00:00.250Z"
+			"at": "2026-11-13T15:09:25.147Z"
 		},
 		{
 			"loadout": "hdss",
@@ -4627,9 +4627,9 @@
 			"loadout": "hhcs",
 			"boss": "diamonds",
 			"seed": 34032,
-			"moves": 97,
+			"moves": 105,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4652,7 +4652,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T14:42:22.551Z"
+			"at": "2026-11-13T15:08:27.095Z"
 		},
 		{
 			"loadout": "hhdc",
@@ -4782,9 +4782,9 @@
 			"loadout": "hhhc",
 			"boss": "diamonds",
 			"seed": 14007,
-			"moves": 120,
+			"moves": 126,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4807,7 +4807,7 @@
 					"suit": "clubs"
 				}
 			],
-			"at": "2026-11-12T14:00:06.655Z"
+			"at": "2026-11-13T15:09:12.543Z"
 		},
 		{
 			"loadout": "hhhd",
@@ -4906,9 +4906,9 @@
 			"loadout": "hhsc",
 			"boss": "clubs",
 			"seed": 992,
-			"moves": 52,
+			"moves": 93,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4931,15 +4931,15 @@
 					"suit": "clubs"
 				}
 			],
-			"at": "2026-11-12T15:50:44.300Z"
+			"at": "2026-11-13T15:10:29.362Z"
 		},
 		{
 			"loadout": "hhsd",
 			"boss": "clubs",
 			"seed": 1563,
-			"moves": 57,
+			"moves": 95,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -4962,7 +4962,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-12T14:00:13.280Z"
+			"at": "2026-11-13T15:09:48.784Z"
 		},
 		{
 			"loadout": "hhsh",
@@ -5123,9 +5123,9 @@
 			"loadout": "hscs",
 			"boss": "clubs",
 			"seed": 239,
-			"moves": 69,
+			"moves": 84,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -5148,7 +5148,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T14:00:35.485Z"
+			"at": "2026-11-13T15:09:49.016Z"
 		},
 		{
 			"loadout": "hsdc",
@@ -5247,9 +5247,9 @@
 			"loadout": "hsds",
 			"boss": "diamonds",
 			"seed": 4,
-			"moves": 62,
+			"moves": 98,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -5272,7 +5272,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T14:00:47.729Z"
+			"at": "2026-11-13T15:11:16.955Z"
 		},
 		{
 			"loadout": "hshc",
@@ -5340,9 +5340,9 @@
 			"loadout": "hshh",
 			"boss": "diamonds",
 			"seed": 518,
-			"moves": 90,
+			"moves": 108,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -5365,7 +5365,7 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-12T14:01:33.183Z"
+			"at": "2026-11-13T15:09:54.924Z"
 		},
 		{
 			"loadout": "hshs",
@@ -5495,9 +5495,9 @@
 			"loadout": "hsss",
 			"boss": "clubs",
 			"seed": 237,
-			"moves": 48,
+			"moves": 86,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -5520,7 +5520,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-12T15:52:25.385Z"
+			"at": "2026-11-13T15:11:11.677Z"
 		},
 		{
 			"loadout": "sccc",
@@ -6053,9 +6053,9 @@
 			"loadout": "sddh",
 			"boss": "diamonds",
 			"seed": 40201,
-			"moves": 52,
+			"moves": 122,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -6078,7 +6078,7 @@
 					"suit": "hearts"
 				}
 			],
-			"at": "2026-11-13T02:31:28.219Z"
+			"at": "2026-11-13T15:12:12.786Z"
 		},
 		{
 			"loadout": "sdds",
@@ -6208,9 +6208,9 @@
 			"loadout": "sdhs",
 			"boss": null,
 			"seed": 36145,
-			"moves": 53,
+			"moves": 128,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -6233,7 +6233,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-13T02:09:55.164Z"
+			"at": "2026-11-13T15:12:19.666Z"
 		},
 		{
 			"loadout": "sdsc",
@@ -6611,9 +6611,9 @@
 			"loadout": "shhd",
 			"boss": "clubs",
 			"seed": 40768,
-			"moves": 144,
+			"moves": 147,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -6636,7 +6636,7 @@
 					"suit": "diamonds"
 				}
 			],
-			"at": "2026-11-13T04:15:45.969Z"
+			"at": "2026-11-13T15:12:56.835Z"
 		},
 		{
 			"loadout": "shhh",
@@ -6673,9 +6673,9 @@
 			"loadout": "shhs",
 			"boss": "clubs",
 			"seed": 38544,
-			"moves": 136,
+			"moves": 138,
 			"difficulty": "med",
-			"goal": "boss",
+			"goal": "clear",
 			"party": [
 				{
 					"role": "kin",
@@ -6698,7 +6698,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-13T03:33:07.068Z"
+			"at": "2026-11-13T15:12:41.291Z"
 		},
 		{
 			"loadout": "shsc",
@@ -7366,6 +7366,10 @@
 			"boss": {
 				"seed": 36020,
 				"moves": 86
+			},
+			"clear": {
+				"seed": 36020,
+				"moves": 90
 			}
 		},
 		"chdh": {
@@ -7384,6 +7388,10 @@
 			"boss": {
 				"seed": 36145,
 				"moves": 53
+			},
+			"clear": {
+				"seed": 36145,
+				"moves": 128
 			}
 		},
 		"ccdc": {
@@ -7402,6 +7410,10 @@
 			"boss": {
 				"seed": 36465,
 				"moves": 127
+			},
+			"clear": {
+				"seed": 36465,
+				"moves": 134
 			}
 		},
 		"ssch": {
@@ -7438,6 +7450,10 @@
 			"boss": {
 				"seed": 38037,
 				"moves": 126
+			},
+			"clear": {
+				"seed": 38037,
+				"moves": 133
 			}
 		},
 		"dhch": {
@@ -7480,6 +7496,10 @@
 			"boss": {
 				"seed": 38544,
 				"moves": 136
+			},
+			"clear": {
+				"seed": 38544,
+				"moves": 138
 			}
 		},
 		"dhdd": {
@@ -7516,18 +7536,30 @@
 			"boss": {
 				"seed": 40201,
 				"moves": 52
+			},
+			"clear": {
+				"seed": 40201,
+				"moves": 122
 			}
 		},
 		"dshs": {
 			"boss": {
 				"seed": 40211,
 				"moves": 87
+			},
+			"clear": {
+				"seed": 40211,
+				"moves": 107
 			}
 		},
 		"shhd": {
 			"boss": {
 				"seed": 40768,
 				"moves": 144
+			},
+			"clear": {
+				"seed": 40768,
+				"moves": 147
 			}
 		},
 		"chcs": {
@@ -7540,6 +7572,10 @@
 			"boss": {
 				"seed": 40829,
 				"moves": 79
+			},
+			"clear": {
+				"seed": 40829,
+				"moves": 90
 			}
 		},
 		"sscd": {
@@ -7742,6 +7778,10 @@
 			"boss": {
 				"seed": 49356,
 				"moves": 82
+			},
+			"clear": {
+				"seed": 49356,
+				"moves": 89
 			}
 		},
 		"scdh": {
@@ -7794,6 +7834,10 @@
 			"boss": {
 				"seed": 53008,
 				"moves": 90
+			},
+			"clear": {
+				"seed": 53008,
+				"moves": 91
 			}
 		},
 		"sccc": {
@@ -7902,12 +7946,20 @@
 			"boss": {
 				"seed": 285,
 				"moves": 58
+			},
+			"clear": {
+				"seed": 285,
+				"moves": 101
 			}
 		},
 		"hdsh": {
 			"boss": {
 				"seed": 243,
 				"moves": 74
+			},
+			"clear": {
+				"seed": 243,
+				"moves": 103
 			}
 		},
 		"hhdc": {
@@ -7980,6 +8032,10 @@
 			"boss": {
 				"seed": 846,
 				"moves": 52
+			},
+			"clear": {
+				"seed": 846,
+				"moves": 98
 			}
 		},
 		"hdss": {
@@ -8010,6 +8066,10 @@
 			"boss": {
 				"seed": 4,
 				"moves": 62
+			},
+			"clear": {
+				"seed": 4,
+				"moves": 98
 			}
 		},
 		"hssd": {
@@ -8076,6 +8136,10 @@
 			"boss": {
 				"seed": 992,
 				"moves": 52
+			},
+			"clear": {
+				"seed": 992,
+				"moves": 93
 			}
 		},
 		"hsch": {
@@ -8110,6 +8174,10 @@
 			"boss": {
 				"seed": 542,
 				"moves": 89
+			},
+			"clear": {
+				"seed": 542,
+				"moves": 91
 			}
 		},
 		"hccd": {
@@ -8158,12 +8226,20 @@
 			"boss": {
 				"seed": 1563,
 				"moves": 57
+			},
+			"clear": {
+				"seed": 1563,
+				"moves": 95
 			}
 		},
 		"hscs": {
 			"boss": {
 				"seed": 239,
 				"moves": 69
+			},
+			"clear": {
+				"seed": 239,
+				"moves": 84
 			}
 		},
 		"hshd": {
@@ -8176,6 +8252,10 @@
 			"boss": {
 				"seed": 237,
 				"moves": 48
+			},
+			"clear": {
+				"seed": 237,
+				"moves": 86
 			}
 		},
 		"sscs": {
@@ -8230,6 +8310,10 @@
 			"boss": {
 				"seed": 14007,
 				"moves": 120
+			},
+			"clear": {
+				"seed": 14007,
+				"moves": 126
 			}
 		},
 		"hhsh": {
@@ -8248,6 +8332,10 @@
 			"boss": {
 				"seed": 518,
 				"moves": 90
+			},
+			"clear": {
+				"seed": 518,
+				"moves": 108
 			}
 		},
 		"hcdc": {
@@ -8308,24 +8396,124 @@
 				"moves": 45
 			}
 		},
-		"cddd": {
+		"chsc": {
 			"clear": {
-				"seed": 34089,
+				"seed": 33295,
+				"moves": 108
+			},
+			"boss": {
+				"seed": 33295,
+				"moves": 130
+			}
+		},
+		"cssh": {
+			"clear": {
+				"seed": 32543,
 				"moves": 125
 			},
 			"boss": {
-				"seed": 34089,
-				"moves": 138
+				"seed": 32543,
+				"moves": 120
 			}
 		},
-		"dsch": {
+		"chds": {
 			"clear": {
-				"seed": 34450,
-				"moves": 91
+				"seed": 31147,
+				"moves": 127
 			},
 			"boss": {
-				"seed": 34450,
-				"moves": 70
+				"seed": 31147,
+				"moves": 165
+			}
+		},
+		"csss": {
+			"clear": {
+				"seed": 34215,
+				"moves": 138
+			},
+			"boss": {
+				"seed": 34215,
+				"moves": 129
+			}
+		},
+		"dssh": {
+			"clear": {
+				"seed": 30055,
+				"moves": 84
+			},
+			"boss": {
+				"seed": 30055,
+				"moves": 81
+			}
+		},
+		"hhcs": {
+			"clear": {
+				"seed": 34032,
+				"moves": 105
+			},
+			"boss": {
+				"seed": 34032,
+				"moves": 97
+			}
+		},
+		"cshh": {
+			"clear": {
+				"seed": 34043,
+				"moves": 120
+			},
+			"boss": {
+				"seed": 34043,
+				"moves": 110
+			}
+		},
+		"dshd": {
+			"clear": {
+				"seed": 34426,
+				"moves": 106
+			},
+			"boss": {
+				"seed": 34426,
+				"moves": 90
+			}
+		},
+		"cdsd": {
+			"clear": {
+				"seed": 31102,
+				"moves": 132
+			},
+			"boss": {
+				"seed": 31102,
+				"moves": 126
+			}
+		},
+		"cshs": {
+			"clear": {
+				"seed": 33015,
+				"moves": 209
+			},
+			"boss": {
+				"seed": 33015,
+				"moves": 115
+			}
+		},
+		"ddch": {
+			"clear": {
+				"seed": 31255,
+				"moves": 98
+			},
+			"boss": {
+				"seed": 31255,
+				"moves": 80
+			}
+		},
+		"cscd": {
+			"clear": {
+				"seed": 33162,
+				"moves": 151
+			},
+			"boss": {
+				"seed": 33162,
+				"moves": 141
 			}
 		},
 		"cchc": {
@@ -8338,12 +8526,6 @@
 			"boss": {
 				"seed": 30051,
 				"moves": 83
-			}
-		},
-		"dssh": {
-			"boss": {
-				"seed": 30055,
-				"moves": 81
 			}
 		},
 		"sdds": {
@@ -8412,12 +8594,6 @@
 				"moves": 136
 			}
 		},
-		"cdsd": {
-			"boss": {
-				"seed": 31102,
-				"moves": 126
-			}
-		},
 		"sshc": {
 			"boss": {
 				"seed": 31107,
@@ -8430,22 +8606,10 @@
 				"moves": 137
 			}
 		},
-		"chds": {
-			"boss": {
-				"seed": 31147,
-				"moves": 165
-			}
-		},
 		"chcc": {
 			"boss": {
 				"seed": 31161,
 				"moves": 98
-			}
-		},
-		"ddch": {
-			"boss": {
-				"seed": 31255,
-				"moves": 80
 			}
 		},
 		"sdcs": {
@@ -8464,12 +8628,6 @@
 			"boss": {
 				"seed": 32540,
 				"moves": 57
-			}
-		},
-		"cssh": {
-			"boss": {
-				"seed": 32543,
-				"moves": 120
 			}
 		},
 		"ddhc": {
@@ -8532,16 +8690,20 @@
 				"moves": 104
 			}
 		},
-		"dshd": {
-			"boss": {
-				"seed": 34426,
-				"moves": 90
-			}
-		},
 		"dsdd": {
 			"boss": {
 				"seed": 34430,
 				"moves": 82
+			}
+		},
+		"dsch": {
+			"boss": {
+				"seed": 34450,
+				"moves": 70
+			},
+			"clear": {
+				"seed": 34450,
+				"moves": 91
 			}
 		},
 		"sssd": {
@@ -8574,12 +8736,6 @@
 				"moves": 37
 			}
 		},
-		"cshs": {
-			"boss": {
-				"seed": 33015,
-				"moves": 115
-			}
-		},
 		"cchd": {
 			"boss": {
 				"seed": 33098,
@@ -8590,12 +8746,6 @@
 			"boss": {
 				"seed": 33137,
 				"moves": 91
-			}
-		},
-		"cscd": {
-			"boss": {
-				"seed": 33162,
-				"moves": 141
 			}
 		},
 		"sdcc": {
@@ -8628,28 +8778,20 @@
 				"moves": 135
 			}
 		},
-		"chsc": {
-			"boss": {
-				"seed": 33295,
-				"moves": 130
-			}
-		},
 		"cddh": {
 			"boss": {
 				"seed": 33305,
 				"moves": 119
 			}
 		},
-		"hhcs": {
+		"cddd": {
 			"boss": {
-				"seed": 34032,
-				"moves": 97
-			}
-		},
-		"cshh": {
-			"boss": {
-				"seed": 34043,
-				"moves": 110
+				"seed": 34089,
+				"moves": 138
+			},
+			"clear": {
+				"seed": 34089,
+				"moves": 125
 			}
 		},
 		"sdsh": {
@@ -8668,12 +8810,6 @@
 			"boss": {
 				"seed": 34138,
 				"moves": 136
-			}
-		},
-		"csss": {
-			"boss": {
-				"seed": 34215,
-				"moves": 129
 			}
 		},
 		"csds": {
