@@ -672,6 +672,59 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
+/*
+ * A phone held upright is the one shape this board was not drawn for: eight columns of cards decide the
+ * width, and the seven free cells and four foundations cannot share a row with them. So the top block
+ * takes the shape the hand expects — foundations across the top, the seven status cells in a row under
+ * them, the tableau below — with both rows spread edge to edge, which is the space a thumb already
+ * reaches. The loadout mark shrinks to a tile in the foundations row rather than costing a card's worth
+ * of height above the field.
+ */
+@media (max-width: 700px) and (orientation: portrait) {
+	:root {
+		--gap: min(1.5vw, 8px);
+		/* eight columns and the seven gaps between them decide the card, so none is clipped at the edge */
+		--col-w: min(calc((100vw - 9 * var(--gap)) / 8), 104px, max(40px, calc((100dvh - 190px) / 6.9)));
+	}
+
+	.board {
+		/* the wordmark's own glyphs sit above their box, so the felt starts a little below the top edge */
+		padding: calc(var(--gap) * 2) var(--gap) calc(var(--gap) * 1.4);
+	}
+
+	/* the wordmark keeps its own line rather than costing a card's worth of width beside the graves */
+	.titlecard {
+		flex: 1 1 100%;
+		font-size: clamp(12px, calc(var(--col-w) * 0.4), 22px);
+	}
+
+	.top {
+		row-gap: calc(var(--gap) * 1.1);
+	}
+
+	.top.tomb .foundations {
+		flex: 1 1 100%;
+		justify-content: space-between;
+		margin-left: 0;
+	}
+
+	.gravesplit {
+		display: none;
+	}
+
+	/* the seven status cells are the width of the screen here, not the width of seven cards */
+	.top.tomb .cells.tomb {
+		flex: 1 1 100%;
+		max-width: none;
+		justify-content: space-between;
+	}
+
+	/* the field keeps its cards at the top of the felt, within reach of the thumb that deals them */
+	.board.tomb .tableau {
+		justify-content: space-between;
+	}
+}
+
 /* a spent item slot: one action to feed it a card and remake the item */
 .slot.pending {
 	border-color: rgba(255, 214, 92, 0.9);
