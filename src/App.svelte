@@ -1776,7 +1776,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					: `${tombHp} of ${maxHp(tomb)} held`}
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
-			<span class="bosstag">Boss {bossTitle(tomb)}</span>
+			<span class="bosstag">{bossTitle(tomb)}</span>
 			<!-- Status in dress, a button in fact: the move count is still the copy shortcut. -->
 			<button
 				class="moves"
@@ -1847,7 +1847,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						style={cardStyle(card, i)}
 						data-card={shorthandCard(card)}
 						title={tomb && boss
-							? `Boss ${bossTitle(tomb)}${
+							? `${bossTitle(tomb)}${
 									bossProtected(tomb)
 										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
 										: ''
