@@ -296,6 +296,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	let dealLayout = $state('');
 	const entriesByLayout = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.loadout, entry])));
+	const entriesBySeed = $derived(new Map((corpus?.entries ?? []).map((entry) => [entry.seed, entry])));
+	/**
+	 * The trellis square this deal belongs to, if any. A layout is not enough: a random deal of the same
+	 * party is not the corpus deal, so selecting it would leave the sheet pointing at a run it cannot
+	 * describe. Only the seed says which square a board belongs to, and a fresh deal has none.
+	 */
+	const layoutForSeed = (seed: number | undefined) => (seed === undefined ? '' : (entriesBySeed.get(seed)?.loadout ?? ''));
 	const currentLayout = $derived(dealLayout);
 	const ROLE_ORDER = ['kin', 'class', 'glyph', 'consumable'] as const;
 	type SuitName = (typeof SUITS)[number];
@@ -1178,10 +1185,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		variant = next;
 		if (next === 'tomb') {
 			tomb = createTombState(undefined, FREE_CELL_COUNT[difficulty]);
-			dealLayout = loadoutOf(tomb);
+			dealLayout = layoutForSeed(tomb.seed);
 			game = tomb.game;
 		} else {
 			tomb = null;
+			dealLayout = '';
 			game = deal();
 		}
 	}
@@ -1391,7 +1399,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			tombSelected = null;
 			tombLast = null;
 			tomb = createTombState(valid ? requested : undefined, FREE_CELL_COUNT[difficulty]);
-			dealLayout = loadoutOf(tomb);
+			// A new deal leaves the sheet alone: a random seed is nobody's corpus square, and a typed one is
+			// only a square if the corpus actually holds that deal.
+			dealLayout = layoutForSeed(tomb.seed);
 			game = tomb.game;
 			return;
 		}
@@ -1403,8 +1413,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (tomb) {
 			tombHistory = [];
 			tombSelected = null;
+			// The same deal again, so the square it belongs to is unchanged.
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
-			dealLayout = loadoutOf(tomb);
 			game = tomb.game;
 			return;
 		}
@@ -1426,8 +1436,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombMoved = null;
 		drag = null;
 		flippingIds = [];
+		// The same deal at another difficulty: same seed, so the same square.
 		tomb = createTombState(tomb.seed, FREE_CELL_COUNT[next]);
-		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
 	}
 
