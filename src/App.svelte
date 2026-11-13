@@ -1364,7 +1364,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	function cellImageStyle(card: Card) {
 		if (!drag || !dragIds.has(shorthandCard(card))) return '';
-		return `transform:translate(${drag.dx}px,${drag.dy}px) rotate(${drag.angle}deg);z-index:40;pointer-events:none;`;
+		// `animation:none` because a dragged card must follow the pointer: a float animation outranks an
+		// inline transform in the cascade, so the card would drift where it stands instead.
+		return `transform:translate(${drag.dx}px,${drag.dy}px) rotate(${drag.angle}deg);animation:none;z-index:40;pointer-events:none;`;
 	}
 
 	/* ---------- controls ---------- */

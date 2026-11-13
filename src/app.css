@@ -828,9 +828,31 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
+/*
+ * The free cast is something the card *does*, not just a ring around it: the card drifts and leans a
+ * little, dimmed just enough to read as "not spent, waiting" rather than as an ordinary card. The
+ * movement is what carries at a glance — the blue ring alone is easy to miss mid-play.
+ */
+.slot.affinity img:not(.peek) {
+	opacity: 0.85;
+	animation: tomb-float 2.2s ease-in-out infinite;
+}
+
+@keyframes tomb-float {
+	0%,
+	100% {
+		transform: scale(1) rotate(-6deg);
+	}
+
+	50% {
+		transform: scale(1.05) rotate(6deg);
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.slot.pending,
 	.slot.affinity,
+	.slot.affinity img:not(.peek),
 	.slot.need::after {
 		animation: none;
 	}
