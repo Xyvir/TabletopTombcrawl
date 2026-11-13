@@ -1987,7 +1987,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							</ul>
 							<p class="preview-goals">
 								<span class="goal">
-									<span class="label">seed found</span>
+									<span class="label">seed number</span>
+									{#if inspectedEntry}
+										{inspectedEntry.seed}
+									{:else}
+										<span class="none">no seed yet</span>
+									{/if}
+								</span>
+								<span class="goal">
+									<span class="label">date found</span>
 									{#if inspectedEntry?.at}
 										{inspectedEntry.at.slice(0, 10)}
 									{:else if inspectedEntry}
@@ -1997,17 +2005,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									{/if}
 								</span>
 								<span class="goal">
-									<span class="label">boss killed</span>
+									<span class="label">boss kill</span>
 									{#if inspectedProof.boss}
-										seed {inspectedProof.boss.seed} · {inspectedProof.boss.moves} moves
+										{inspectedProof.boss.moves} turns{#if inspectedEntry && inspectedProof.boss.seed !== inspectedEntry.seed}<span class="aside">seed {inspectedProof.boss.seed}</span>{/if}
 									{:else}
 										<span class="none">not found</span>
 									{/if}
 								</span>
 								<span class="goal">
-									<span class="label">tomb cleared</span>
+									<span class="label">tomb clear</span>
 									{#if inspectedProof.clear}
-										seed {inspectedProof.clear.seed} · {inspectedProof.clear.moves} moves
+										{inspectedProof.clear.moves} turns{#if inspectedEntry && inspectedProof.clear.seed !== inspectedEntry.seed}<span class="aside">seed {inspectedProof.clear.seed}</span>{/if}
 									{:else}
 										<span class="none">not found</span>
 									{/if}
