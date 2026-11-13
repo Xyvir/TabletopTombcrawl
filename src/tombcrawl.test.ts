@@ -2135,7 +2135,7 @@ describe('tombcrawl item refresh', () => {
 		expect(missed.draft).toHaveLength(0);
 	});
 
-	test('a spent item sent home hands its slot to another card of its suit', () => {
+	test('a spent item sent home leaves its slot waiting rather than grabbing one of its suit', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'consumable', id: '2D', suit: 'diamonds', name: 'Potion', text: '' },
 		];
@@ -2146,12 +2146,15 @@ describe('tombcrawl item refresh', () => {
 			draft,
 			exhausted: [0],
 		});
-		const home = attackWith(state, cell(0))!;		expect(home.draft.find((entry) => entry.cell === 0)).toMatchObject({
-			role: 'consumable',
-			suit: 'diamonds',
-			id: '6D',
-		});
-		expect(home.itemWindow).toBe(null);
+		const home = attackWith(state, cell(0))!;
+
+		// nothing is pulled off the board: the six stays where it was
+		expect(home.game.cells[0]).toBe(null);
+		expect(home.draft.find((entry) => entry.cell === 0)).toBeUndefined();
+		expect(home.game.cards.some((card) => shorthandCard(card) === '6D' && card.location.fixture === 'cascade')).toBe(true);
+		// the slot waits for the card the player picks, and the exhausted mark goes with the item
+		expect(home.itemWindow).toEqual({ cell: 0, role: 'consumable', suit: 'diamonds', any: false });
+		expect(home.exhausted[0]).toBe(false);
 	});
 
 	test('an Orc is not handed another suit when a spent item goes home', () => {
@@ -2236,6 +2239,27 @@ describe('restocking a spent slot', () => {
 	test('a slot that still holds a card refuses the feed instead of burying it', () => {
 		// a window that opened over an occupied slot is not a licence to stack two items in one cell
 		expect(tombMove(open(['2C', 'QH', '6H', 'TD']), cascade(0, 0), cell(3))).toBe(null);
+	});
+
+	test('sending a spent item home waits for the player, and pulls nothing off the board', () => {
+		const spent = {
+			...makeTomb({
+				columns: [['9D']],
+				cells: ['2C', 'QH', '6H', '3D'],
+				foundations: ['2D'],
+				draft,
+				exhausted: [3],
+				boss: 'KC',
+			}),
+		};
+		const next = attackWith(spent, cell(3))!;
+
+		// the slot is empty and waiting, rather than already holding the first diamond it found
+		expect(next.game.cells[3]).toBe(null);
+		expect(next.itemWindow).toMatchObject({ cell: 3, role: 'consumable', suit: 'diamonds' });
+		expect(
+			next.game.cards.some((card) => shorthandCard(card) === '9D' && card.location.fixture === 'cascade')
+		).toBe(true);
 	});
 });
 

@@ -1411,29 +1411,6 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 	}
 }
 
-/** Fill the cell a spent consumable's own card just vacated with another card of the same suit. */
-function refillConsumable(state: TombState, cell: number, suit: Suit): TombState {
-	const candidates = state.game.cards.filter((card) => {
-		if (card.location.fixture !== 'cascade') return false;
-		const column = state.game.tableau[card.location.data[0]] ?? [];
-		if (column[column.length - 1] !== card) return false; // only cards already exposed on the board
-		if (isFaceDown(state, card)) return false;
-		return card.suit === suit;
-	});
-	const pick = candidates[0];
-	if (!pick) {
-		return state;
-	}
-	const game = relocate(state, [{ id: cardId(pick), to: { fixture: 'cell', data: [cell] } }]);
-	return cloneWith(state, {
-		game,
-		draft: [
-			...state.draft.filter((entry) => entry.cell !== cell),
-			{ cell, role: 'consumable', id: cardId(pick), suit: pick.suit, name: CONSUMABLES[pick.suit].name, text: CONSUMABLES[pick.suit].text },
-		],
-	});
-}
-
 /* --------------------------------------------------------------- actions */
 
 export function tombMove(state: TombState, from: CardLocation, to: CardLocation): TombState | null {
@@ -1574,7 +1551,6 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// and sending that one home leaves the item, its exhaustion and its restock window untouched.
 	const wasOrc = hasPassive(state, 'Orc');
 	const itemCard = !!entry && entry.id === cardId(card);
-	const spentConsumable = !!entry && itemCard && entry.role === 'consumable' && state.exhausted[cellIndex];
 
 	let next = state;
 
@@ -1583,9 +1559,13 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		game: relocate(next, [{ id: cardId(card), to: { fixture: 'foundation', data: [foundation] } }]),
 	});
 
-	// Cell conversion: a draft card sent home is gone for good and the cell becomes plain.
+	// Cell conversion: a draft card sent home is gone for good and the cell becomes plain, so any
+	// exhaustion it was carrying goes with it — an empty slot has no item left to be spent.
 	if (itemCard) {
+		const exhausted = [...next.exhausted];
+		exhausted[cellIndex] = false;
 		next = cloneWith(next, {
+			exhausted,
 			draft: consumeDraft(next, cellIndex),
 		});
 	}
@@ -1596,9 +1576,9 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	const revive = state.armed?.kind === 'revive';
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
 
-	if (spentConsumable && entry) {
-		next = refillConsumable(next, cellIndex, entry.suit);
-	}
+	// A spent item going home leaves its slot empty and waiting: the restock is the player's pick on the
+	// very next action, and nothing is pulled off the board for them. Miss that action and the window
+	// closes — the slot is plain from then on, which is what the chip counting it as converted means.
 
 	// A Revive pays the whole bill before the level up is settled, so a kill that raises the delver a
 	// level still mends off the wiped track: they come back on one heart rather than none.
