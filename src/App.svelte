@@ -1902,6 +1902,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	</div>
 
 	<footer class="controls">
+		<!-- Undo leads the whole row: playtesting puts it far ahead of every other pill in clicks. -->
+		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
 		<!-- The plain FreeCell switch is parked until an easter egg brings it back: wired, just hidden. -->
 		<button
 			class="btn"
@@ -1938,8 +1940,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</button>
 			{/each}
 		</div>
-		<!-- Undo leads: playtesting puts it far ahead of the other two in clicks. -->
-		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
 		<button class="btn" onclick={replay}>Restart deal</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 	</footer>
