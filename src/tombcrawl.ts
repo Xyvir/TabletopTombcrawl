@@ -1457,11 +1457,14 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// A spent item slot claims exactly one card on the very next action, and that card becomes the
 	// new item. It need not be the suit that left: an Orc's Scavenger takes any card at all.
 	const window = state.itemWindow;
+	// The slot must stand empty for a restock: a window opens where an item was played out, so a card
+	// landing on a slot that still holds one would bury it and leave two items claiming the same cell.
 	const feed =
 		window &&
 		!entry &&
 		to.fixture === 'cell' &&
 		to.data[0] === window.cell &&
+		!state.game.cells[window.cell] &&
 		cards.length === 1 &&			restockTakes(cards[0], window)
 			? window
 			: null;
@@ -1517,7 +1520,11 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		exhausted[feed.cell] = false;
 		next = cloneWith(next, {
 			exhausted,
-			draft: [...next.draft, { cell: feed.cell, role: feed.role, id: cardId(cards[0]), suit, name: ability.name, text: ability.text }],
+			// One item per slot: whatever the cell claimed before is replaced, never added to.
+			draft: [
+				...next.draft.filter((existing) => existing.cell !== feed.cell),
+				{ cell: feed.cell, role: feed.role, id: cardId(cards[0]), suit, name: ability.name, text: ability.text },
+			],
 		});
 	}
 

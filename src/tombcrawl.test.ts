@@ -2212,6 +2212,33 @@ describe('tombcrawl boss protection', () => {
 	});
 });
 
+describe('restocking a spent slot', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+		{ cell: 3, role: 'consumable', id: '3D', suit: 'diamonds', name: 'Remedy', text: '' },
+	];
+	const window = { cell: 3, role: 'consumable' as const, suit: 'diamonds' as const, any: false };
+	const open = (cells: (string | null)[]) => ({
+		...makeTomb({ columns: [['9D']], cells: cells as string[], draft, boss: 'KC' }),
+		itemWindow: window,
+	});
+
+	test('a card fed into an empty slot becomes the item, and there is only ever one', () => {
+		const next = tombMove(open(['2C', 'QH', '6H', null]), cascade(0, 0), cell(3))!;
+
+		expect(cellCards(next, 3).map(shorthandCard)).toEqual(['9D']);
+		const items = next.draft.filter((entry) => entry.cell === 3);
+		expect(items).toHaveLength(1);
+		expect(items[0]).toMatchObject({ role: 'consumable', id: '9D' });
+		expect(next.exhausted[3]).toBe(false);
+	});
+
+	test('a slot that still holds a card refuses the feed instead of burying it', () => {
+		// a window that opened over an occupied slot is not a licence to stack two items in one cell
+		expect(tombMove(open(['2C', 'QH', '6H', 'TD']), cascade(0, 0), cell(3))).toBe(null);
+	});
+});
+
 describe('mana burn on the slot', () => {
 	// The glyph is the third card drafted, so its slot is 2 whatever the chip is doing.
 	const board = (draft: DraftCard[]) =>
