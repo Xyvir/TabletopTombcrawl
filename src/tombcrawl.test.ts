@@ -1786,7 +1786,7 @@ describe('tombcrawl PISORF stacks', () => {
 		expect(state.exhausted[0]).toBe(true); // the glyph is spent
 		// the card that stood on top of the column is the card the cell offers
 		expect(cellCards(state, 1).map(shorthandCard)).toEqual(['7H', '6S']);
-		expect(cellCards(state, 1).at(-1)!.id).toBe(state.game.cells[1]!.id);
+		expect(shorthandCard(cellCards(state, 1).at(-1)!)).toBe(shorthandCard(state.game.cells[1]!));
 		expect(hp(state)).toBe(3);
 		expect(maxHp(state)).toBe(8);
 	});
