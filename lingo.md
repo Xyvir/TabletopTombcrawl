@@ -20,7 +20,7 @@ Two rules for this file:
 | **Pocket** | One spot on the status track. Holds one card in every mode: storage, party claim, or a wound. | one free cell |
 | **Tomb** | The eight hallways where the cards lie, face-up and under fog. The play area. | the tableau |
 | **Hallway** | One column of the tomb, dug from its mouth downwards. Eight per deal. | one column / cascade |
-| **Deal** | One whole board: the tomb, the status track and the graveyard. "Restart deal". | the deal / the game |
+| **Crawl** | One whole board: the tomb, the status track and the graveyard. The run, start to finish. "Restart crawl", "Crawl #12345". | the deal / the game |
 | **Graveyard** | The four piles a card goes to when it is slain. Where the dead lie. | foundations |
 | **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
 | **Boss** | The king that ends the run when slain. | the protected king |
@@ -33,8 +33,12 @@ Two rules for this file:
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
 | **Delver** | The player. Not "you" in rules text, "the delver" where a subject is needed. | player |
 
-A **deal** is the whole board; the **tomb** is only the part you play in. Copy that means everything on the
-table says deal, and copy that means the eight hallways says tomb — "a card in the tomb", "the tomb empties".
+A **crawl** is the whole board; the **tomb** is only the part you play in. Copy that means everything on the
+table says crawl, and copy that means the eight hallways says tomb — "a card in the tomb", "the tomb empties".
+
+One crawl *is* the whole game, the way one floor is the whole of a Desktop Dungeons run, which is why the
+word works as both the sit-down and the board. "New game" stays as it is: it drafts a fresh party and a
+fresh seed, where "Restart crawl" replays the one you have.
 
 A pocket is the same word in all three of its jobs — that is the point of choosing it over `slot` or
 `cell`. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of pocket it is when that matters:
@@ -115,6 +119,11 @@ Not in copy yet. Ranked by how much the current word hurts.
 
 ## Rejected
 
+- **Expedition / excursion / scenario / campaign** for a crawl — expedition and excursion are a mouthful for
+  something restarted forty times an hour, scenario promises authored content, and campaign promises a
+  sequence of boards the game does not have.
+- **Delve** for a crawl — collides with **delver**, the player: "the delve's delver" is clumsy, and the two
+  words would be one root doing two jobs.
 - **Kill** for a card — reserved for the delver's death. Cards are slain; the skull marks a slay refused for
   being a kill.
 - **Shaft** for a hallway — a shaft is only the hole; a hallway is the corridor you dig along, and it matches

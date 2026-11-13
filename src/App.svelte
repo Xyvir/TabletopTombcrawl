@@ -1810,10 +1810,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class="solve"
 					class:searching={probe.status === 'searching'}
 					title={probe.status === 'searching'
-						? `A solver is looking for a line from this deal in the background, on ${PROBE_NODES.toLocaleString()} states at most. It reports a line or says nothing.`
+						? `A solver is looking for a line from this crawl in the background, on ${PROBE_NODES.toLocaleString()} states at most. It reports a line or says nothing.`
 						: probe.solved
-							? `The background search found a line of ${probe.moves} moves from this deal in ${(probe.elapsedMs / 1000).toFixed(1)}s. Copy the session to take the line with it.`
-							: `The background search spent ${probe.nodes.toLocaleString()} states and found no line. That is not proof the deal is lost, only that this budget did not crack it.`}
+							? `The background search found a line of ${probe.moves} moves from this crawl in ${(probe.elapsedMs / 1000).toFixed(1)}s. Copy the session to take the line with it.`
+							: `The background search spent ${probe.nodes.toLocaleString()} states and found no line. That is not proof this crawl is lost, only that this budget did not crack it.`}
 				>{probeLabel}</span
 				>
 			{/if}
@@ -1914,7 +1914,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			TT Variant: {variant === 'tomb' ? 'on' : 'off'}
 		</button>
 		<label class="seed">
-			<span>Deal #</span>
+			<span>Crawl #</span>
 			<input
 				type="text"
 				inputmode="numeric"
@@ -1940,7 +1940,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</button>
 			{/each}
 		</div>
-		<button class="btn" onclick={replay}>Restart deal</button>
+		<button class="btn" onclick={replay}>Restart crawl</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 	</footer>
 
