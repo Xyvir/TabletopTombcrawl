@@ -1335,8 +1335,19 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 	return state.draft.filter((entry) => entry.cell !== cell);
 }
 
-/** The item a monster power drains: the Consumable under a Gorgon, the Glyph under a Wraith. */
+/**
+ * The item a monster power drains: the Consumable under a Gorgon, the Glyph under a Wraith.
+ *
+ * Unburden is about a place on the board rather than about an item: the party's item slot is where the
+ * Consumable was drafted, and it is still that slot after the item has been played out and the chip has
+ * stepped past it. Looking the Consumable up by role instead would let the power go quiet the moment the
+ * slot converted, which is the whole difference from a Wraith draining a glyph that never leaves.
+ */
 export function auraItem(state: TombState): number | null {
+	if (state.bossSuit === 'clubs' && CLAUSES.gorgonEvict) {
+		const slot = ROLES_BY_DRAW_ORDER.indexOf('consumable');
+		if (slot >= 0 && slot < state.game.cells.length) return slot;
+	}
 	const role: DraftRole | null = state.bossSuit === 'clubs' ? 'consumable' : state.bossSuit === 'diamonds' ? 'glyph' : null;
 	if (!role) return null;
 	const entry = state.draft.find((candidate) => candidate.role === role);
@@ -1380,17 +1391,21 @@ function unburden(state: TombState): TombState {
 	const entry = state.draft.find((candidate) => candidate.cell === cell);
 	const item = stack[stack.length - 1];
 	const open = emptyCells(state)[0];
-	if (!entry || !item || open === undefined) return dropKnockedArm(woundCell(state, cell));
+	if (!item || open === undefined) return dropKnockedArm(woundCell(state, cell));
 	const moved = cloneWith(state, {
 		game: relocate(state, [{ id: cardId(item), to: { fixture: 'cell', data: [open] } }]),
 	});
 	const wounded = [...moved.wounded];
 	wounded[open] = (wounded[open] ?? 0) + 1;
+	// Only an item can be restocked: a slot the chip has already stepped past has turned plain, and
+	// carrying its card off leaves an ordinary free cell behind rather than a window to remake anything.
 	return dropKnockedArm(
-		cloneWith(moved, {
-			wounded,
-			itemWindow: { cell, role: entry.role, suit: entry.suit, any: hasPassive(state, 'Orc') },
-		})
+		entry
+			? cloneWith(moved, {
+					wounded,
+					itemWindow: { cell, role: entry.role, suit: entry.suit, any: hasPassive(state, 'Orc') },
+				})
+			: cloneWith(moved, { wounded })
 	);
 }
 

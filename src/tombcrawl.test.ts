@@ -2212,14 +2212,15 @@ describe('tombcrawl boss protection', () => {
 	});
 });
 
-	describe('unburden', () => {
+describe('unburden', () => {
+	// The item is the fourth card drafted, so its slot is 3 whatever the chip is doing.
 	const draft: DraftCard[] = [
-		{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
+		{ cell: 3, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
 	];
 	const board = (overrides: Partial<Setup> = {}) =>
 		makeTomb({
 			columns: [['2C']],
-			cells: ['TD', '2S', '3S', null],
+			cells: ['2S', '3S', '4S', 'TD', null],
 			foundations: ['AC'],
 			draft,
 			boss: 'KC',
@@ -2235,33 +2236,56 @@ describe('tombcrawl boss protection', () => {
 		const next = attackWith(board(), cascade(0, 0))!;
 
 		// the slot it left is empty, and waits a card, so the item can be restocked
-		expect(next.game.cells[0]).toBe(null);
-		expect(next.itemWindow).toMatchObject({ cell: 0, role: 'consumable', suit: 'diamonds' });
+		expect(next.game.cells[3]).toBe(null);
+		expect(next.itemWindow).toMatchObject({ cell: 3, role: 'consumable', suit: 'diamonds' });
 		// nothing is spent: the item is not exhausted, it is somewhere else
-		expect(next.exhausted[0]).toBeFalsy();
+		expect(next.exhausted[3]).toBeFalsy();
 		// the cell is taken and unusable, which is what the move costs
-		const carried = next.game.cells[3]!;
+		const carried = next.game.cells[4]!;
 		expect(shorthandCard(carried)).toBe('TD');
-		expect(next.wounded[3]).toBe(1);
-		expect(cellTopWounded(next, 3)).toBe(true);
+		expect(next.wounded[4]).toBe(1);
+		expect(cellTopWounded(next, 4)).toBe(true);
 	});
 
 	test('with no open cell the item is only wounded where it lies', () => {
 		CLAUSES.gorgonEvict = true;
-		const next = attackWith(board({ cells: ['TD', '2S', '3S', '4S', '5S', '6S', '7S'] }), cascade(0, 0))!;
+		const next = attackWith(
+			board({ cells: ['2S', '3S', '4S', 'TD', '5S', '6S', '7S'] }),
+			cascade(0, 0)
+		)!;
 
-		expect(shorthandCard(next.game.cells[0]!)).toBe('TD');
-		expect(next.wounded[0]).toBe(1);
-		expect(next.exhausted[0]).toBeFalsy();
+		expect(shorthandCard(next.game.cells[3]!)).toBe('TD');
+		expect(next.wounded[3]).toBe(1);
+		expect(next.exhausted[3]).toBeFalsy();
+		expect(next.itemWindow).toBe(null);
+	});
+
+	test('a slot the chip has stepped past still takes the blow, but waits for nothing', () => {
+		CLAUSES.gorgonEvict = true;
+		// no Consumable left: the item was played out, so its slot is an ordinary free cell
+		const converted = makeTomb({
+			columns: [['2C']],
+			cells: ['2S', '3S', '4S', 'TD', null],
+			foundations: ['AC'],
+			draft: [{ cell: 2, role: 'glyph', id: '4S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
+			boss: 'KC',
+		});
+		const next = attackWith(converted, cascade(0, 0))!;
+
+		const carried = next.game.cells[4]!;
+		expect(shorthandCard(carried)).toBe('TD');
+		expect(next.wounded[4]).toBe(1);
+		expect(next.game.cells[3]).toBe(null);
+		// nothing to remake, so no restock window
 		expect(next.itemWindow).toBe(null);
 	});
 
 	test('as shipped it is still spent in its own slot', () => {
 		const next = attackWith(board(), cascade(0, 0))!;
 
-		expect(shorthandCard(next.game.cells[0]!)).toBe('TD');
-		expect(next.exhausted[0]).toBe(true);
-		expect(next.wounded[0]).toBe(1);
+		expect(shorthandCard(next.game.cells[3]!)).toBe('TD');
+		expect(next.exhausted[3]).toBe(true);
+		expect(next.wounded[3]).toBe(1);
 		expect(next.itemWindow).toBe(null);
 	});
 });
