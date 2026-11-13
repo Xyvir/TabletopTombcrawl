@@ -160,6 +160,37 @@
 			"at": "2026-11-13T02:32:47.879Z"
 		},
 		{
+			"loadout": "ccdd",
+			"boss": "clubs",
+			"seed": 59970,
+			"moves": 154,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T07:54:09.408Z"
+		},
+		{
 			"loadout": "ccdh",
 			"boss": "clubs",
 			"seed": 43126,
@@ -997,6 +1028,37 @@
 			"at": "2026-11-12T17:10:34.645Z"
 		},
 		{
+			"loadout": "chch",
+			"boss": "clubs",
+			"seed": 54348,
+			"moves": 146,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T06:17:54.597Z"
+		},
+		{
 			"loadout": "chcs",
 			"boss": "spades",
 			"seed": 40775,
@@ -1026,6 +1088,37 @@
 				}
 			],
 			"at": "2026-11-13T04:16:31.421Z"
+		},
+		{
+			"loadout": "chdc",
+			"boss": "clubs",
+			"seed": 48299,
+			"moves": 144,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-13T06:14:57.634Z"
 		},
 		{
 			"loadout": "chdd",
@@ -1896,6 +1989,37 @@
 			"at": "2026-11-13T05:03:54.471Z"
 		},
 		{
+			"loadout": "dcdd",
+			"boss": "hearts",
+			"seed": 100142,
+			"moves": 77,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T05:54:47.243Z"
+		},
+		{
 			"loadout": "dcsh",
 			"boss": null,
 			"seed": 69,
@@ -2392,6 +2516,37 @@
 			"at": "2026-11-13T01:44:42.211Z"
 		},
 		{
+			"loadout": "ddss",
+			"boss": "clubs",
+			"seed": 53008,
+			"moves": 90,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T07:04:13.345Z"
+		},
+		{
 			"loadout": "dhcc",
 			"boss": "diamonds",
 			"seed": 42182,
@@ -2485,6 +2640,37 @@
 			"at": "2026-11-13T04:50:41.063Z"
 		},
 		{
+			"loadout": "dhdc",
+			"boss": "clubs",
+			"seed": 56433,
+			"moves": 108,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-13T06:28:36.675Z"
+		},
+		{
 			"loadout": "dhdd",
 			"boss": "hearts",
 			"seed": 38576,
@@ -2514,6 +2700,37 @@
 				}
 			],
 			"at": "2026-11-13T03:43:32.179Z"
+		},
+		{
+			"loadout": "dhdh",
+			"boss": "spades",
+			"seed": 59206,
+			"moves": 90,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T07:19:41.849Z"
 		},
 		{
 			"loadout": "dhhc",
@@ -2576,6 +2793,68 @@
 				}
 			],
 			"at": "2026-11-13T04:55:12.866Z"
+		},
+		{
+			"loadout": "dhhh",
+			"boss": null,
+			"seed": 54118,
+			"moves": 90,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T05:53:31.236Z"
+		},
+		{
+			"loadout": "dhhs",
+			"boss": "hearts",
+			"seed": 49356,
+			"moves": 82,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T07:21:30.372Z"
 		},
 		{
 			"loadout": "dhsc",
@@ -5151,6 +5430,37 @@
 			"at": "2026-11-12T15:52:25.385Z"
 		},
 		{
+			"loadout": "sccc",
+			"boss": "clubs",
+			"seed": 53950,
+			"moves": 76,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-13T07:50:41.228Z"
+		},
+		{
 			"loadout": "sccd",
 			"boss": "diamonds",
 			"seed": 44307,
@@ -5211,6 +5521,223 @@
 				}
 			],
 			"at": "2026-11-13T05:43:09.890Z"
+		},
+		{
+			"loadout": "scdh",
+			"boss": "spades",
+			"seed": 49792,
+			"moves": 59,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T07:44:01.025Z"
+		},
+		{
+			"loadout": "scds",
+			"boss": "clubs",
+			"seed": 58608,
+			"moves": 144,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T06:37:20.264Z"
+		},
+		{
+			"loadout": "schc",
+			"boss": "clubs",
+			"seed": 100094,
+			"moves": 96,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-13T05:58:24.014Z"
+		},
+		{
+			"loadout": "schd",
+			"boss": "diamonds",
+			"seed": 50678,
+			"moves": 84,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T06:36:13.940Z"
+		},
+		{
+			"loadout": "schs",
+			"boss": "clubs",
+			"seed": 51495,
+			"moves": 117,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T07:30:46.707Z"
+		},
+		{
+			"loadout": "scsc",
+			"boss": "diamonds",
+			"seed": 60042,
+			"moves": 102,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-13T06:11:13.353Z"
+		},
+		{
+			"loadout": "scsd",
+			"boss": "diamonds",
+			"seed": 80649,
+			"moves": 97,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T06:13:44.268Z"
 		},
 		{
 			"loadout": "scsh",
@@ -5616,6 +6143,37 @@
 			"at": "2026-11-12T14:33:41.569Z"
 		},
 		{
+			"loadout": "sdsd",
+			"boss": "clubs",
+			"seed": 56152,
+			"moves": 48,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T06:00:23.482Z"
+		},
+		{
 			"loadout": "sdsh",
 			"boss": "spades",
 			"seed": 34099,
@@ -5833,6 +6391,68 @@
 			"at": "2026-11-13T02:39:01.177Z"
 		},
 		{
+			"loadout": "shdh",
+			"boss": null,
+			"seed": 57836,
+			"moves": 166,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T07:49:18.762Z"
+		},
+		{
+			"loadout": "shds",
+			"boss": "diamonds",
+			"seed": 52207,
+			"moves": 92,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T06:05:38.456Z"
+		},
+		{
 			"loadout": "shhc",
 			"boss": "clubs",
 			"seed": 38288,
@@ -5893,6 +6513,37 @@
 				}
 			],
 			"at": "2026-11-13T04:15:45.969Z"
+		},
+		{
+			"loadout": "shhh",
+			"boss": "spades",
+			"seed": 51601,
+			"moves": 72,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T07:36:34.917Z"
 		},
 		{
 			"loadout": "shhs",
@@ -5986,6 +6637,37 @@
 				}
 			],
 			"at": "2026-11-13T03:09:41.612Z"
+		},
+		{
+			"loadout": "shsh",
+			"boss": "spades",
+			"seed": 55465,
+			"moves": 61,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T07:31:18.923Z"
 		},
 		{
 			"loadout": "shss",
@@ -6174,6 +6856,37 @@
 			"at": "2026-11-12T21:13:00.941Z"
 		},
 		{
+			"loadout": "ssdd",
+			"boss": "diamonds",
+			"seed": 54981,
+			"moves": 129,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T07:05:15.830Z"
+		},
+		{
 			"loadout": "ssdh",
 			"boss": "spades",
 			"seed": 30453,
@@ -6203,6 +6916,37 @@
 				}
 			],
 			"at": "2026-11-12T20:00:00.397Z"
+		},
+		{
+			"loadout": "ssds",
+			"boss": "spades",
+			"seed": 48143,
+			"moves": 79,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T05:54:55.179Z"
 		},
 		{
 			"loadout": "sshc",
@@ -6830,10 +7574,52 @@
 				"moves": 101
 			}
 		},
+		"ssds": {
+			"boss": {
+				"seed": 48143,
+				"moves": 79
+			}
+		},
+		"chdc": {
+			"boss": {
+				"seed": 48299,
+				"moves": 144
+			}
+		},
+		"dhhs": {
+			"boss": {
+				"seed": 49356,
+				"moves": 82
+			}
+		},
+		"scdh": {
+			"boss": {
+				"seed": 49792,
+				"moves": 59
+			}
+		},
 		"ccsh": {
 			"boss": {
 				"seed": 50013,
 				"moves": 153
+			}
+		},
+		"schd": {
+			"boss": {
+				"seed": 50678,
+				"moves": 84
+			}
+		},
+		"schs": {
+			"boss": {
+				"seed": 51495,
+				"moves": 117
+			}
+		},
+		"shhh": {
+			"boss": {
+				"seed": 51601,
+				"moves": 72
 			}
 		},
 		"dhsd": {
@@ -6842,16 +7628,94 @@
 				"moves": 84
 			}
 		},
+		"shds": {
+			"boss": {
+				"seed": 52207,
+				"moves": 92
+			}
+		},
+		"ddss": {
+			"boss": {
+				"seed": 53008,
+				"moves": 90
+			}
+		},
+		"sccc": {
+			"boss": {
+				"seed": 53950,
+				"moves": 76
+			}
+		},
 		"cccs": {
 			"boss": {
 				"seed": 54031,
 				"moves": 135
 			}
 		},
+		"dhhh": {
+			"boss": {
+				"seed": 54118,
+				"moves": 90
+			}
+		},
+		"chch": {
+			"boss": {
+				"seed": 54348,
+				"moves": 146
+			}
+		},
+		"ssdd": {
+			"boss": {
+				"seed": 54981,
+				"moves": 129
+			}
+		},
+		"shsh": {
+			"boss": {
+				"seed": 55465,
+				"moves": 61
+			}
+		},
+		"sdsd": {
+			"boss": {
+				"seed": 56152,
+				"moves": 48
+			}
+		},
+		"dhdc": {
+			"boss": {
+				"seed": 56433,
+				"moves": 108
+			}
+		},
+		"shdh": {
+			"boss": {
+				"seed": 57836,
+				"moves": 166
+			}
+		},
 		"scch": {
 			"boss": {
 				"seed": 58040,
 				"moves": 56
+			}
+		},
+		"scds": {
+			"boss": {
+				"seed": 58608,
+				"moves": 144
+			}
+		},
+		"dhdh": {
+			"boss": {
+				"seed": 59206,
+				"moves": 90
+			}
+		},
+		"ccdd": {
+			"boss": {
+				"seed": 59970,
+				"moves": 154
 			}
 		},
 		"csdd": {
@@ -7705,18 +8569,35 @@
 				"seed": 60199,
 				"moves": 92
 			}
+		},
+		"scsc": {
+			"boss": {
+				"seed": 60042,
+				"moves": 102
+			}
+		},
+		"scsd": {
+			"boss": {
+				"seed": 80649,
+				"moves": 97
+			}
+		},
+		"dcdd": {
+			"boss": {
+				"seed": 100142,
+				"moves": 77
+			}
+		},
+		"schc": {
+			"boss": {
+				"seed": 100094,
+				"moves": 96
+			}
 		}
 	},
 	"missing": [
-		"chch",
-		"chdc",
-		"ccdd",
 		"ccss",
-		"dhhh",
-		"dhhs",
 		"dhcd",
-		"dhdh",
-		"dhdc",
 		"dhds",
 		"dhss",
 		"dchh",
@@ -7728,33 +8609,16 @@
 		"dccs",
 		"dcdh",
 		"dcdc",
-		"dcdd",
 		"dcds",
 		"dcsc",
 		"dcsd",
 		"dcss",
-		"ddss",
-		"shhh",
 		"shcs",
-		"shdh",
-		"shds",
-		"shsh",
 		"schh",
-		"schc",
-		"schd",
-		"schs",
-		"sccc",
 		"sccs",
-		"scdh",
 		"scdc",
 		"scdd",
-		"scds",
-		"scsc",
-		"scsd",
 		"scss",
-		"sdcd",
-		"sdsd",
-		"ssdd",
-		"ssds"
+		"sdcd"
 	]
 }
