@@ -18,6 +18,8 @@ interface Entry {
 	moves: number;
 	goal: string;
 	boss: string | null;
+	/** an ISO stamp, or null on entries merged in from a corpus written before it kept dates */
+	at?: string | null;
 }
 interface Corpus {
 	keys: number;
@@ -103,6 +105,7 @@ const workers = (): Worker[] => {
 			written = 0;
 		}
 		const beat = readJson<Beat | null>(`${DIR}/heartbeat-${from}.json`, null);
+		const entries = readJson<Entry[]>(path, []);
 		const updated = Math.max(written, beat?.at ?? 0);
 		const span = beat ? beat.to - beat.from + 1 : 0;
 		const walked = beat ? beat.seed - beat.from : 0;
@@ -110,7 +113,9 @@ const workers = (): Worker[] => {
 		const win = lastWin(`${DIR}/bosslog-${from}.txt`) || lastWin(`${DIR}/log-${from}.txt`);
 		rows.push({
 			from,
-			keys: readJson<Entry[]>(path, []).length,
+			// a sweep that writes its shard under a name of its own (scan-night-w0.json) still leaves the
+			// count in its heartbeat, which is the only place the board can read it from
+			keys: entries.length || (beat?.finds ?? 0),
 			progress,
 			updated,
 			live: Date.now() - updated < QUIET_MS,
@@ -127,17 +132,24 @@ function frame(): string {
 	const merged = new Set(corpus.entries.map((entry) => entry.loadout));
 	const onDisk = new Set<string>();
 	let finds = 0;
-	for (const row of rows) {
-		for (const entry of readJson<Entry[]>(`${DIR}/scan-${row.from}.json`, [])) {
-			onDisk.add(entry.loadout);
-			finds++;
+	for (const row of rows) finds += row.keys;
+	// every shard on disk counts as a source, whatever its name: a renamed sweep still has finds waiting
+	if (existsSync(DIR)) {
+		for (const name of readdirSync(DIR)) {
+			if (!name.startsWith('scan-') || !name.endsWith('.json')) continue;
+			for (const entry of readJson<Entry[]>(`${DIR}/${name}`, [])) {
+				if (typeof entry?.loadout === 'string') onDisk.add(entry.loadout);
+			}
 		}
 	}
 	const pending = [...onDisk].filter((loadout) => !merged.has(loadout)).length;
 	const pct = ((corpus.entries.length / Math.max(1, corpus.keys)) * 100).toFixed(1);
+	// by date, not by where they happen to sit in the file: the entries are sorted by loadout, so the
+	// last five rows were the alphabet, not the news
 	const recent = [...corpus.entries]
-		.slice(-5)
-		.reverse()
+		.sort((a, b) => Date.parse(b.at ?? '') - Date.parse(a.at ?? ''))
+		.slice(0, 5)
+		.filter((entry) => Number.isFinite(Date.parse(entry.at ?? '')))
 		.map((entry) => `  ${entry.loadout}  seed ${String(entry.seed).padStart(5)}  ${String(entry.moves).padStart(3)} moves`);
 	const lines = [
 		` ${SPINNER[Math.floor(Date.now() / 200) % SPINNER.length]}  CORPUS SEARCH   ${new Date().toLocaleTimeString()}   ${DIR}/`,
