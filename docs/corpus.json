@@ -2051,6 +2051,37 @@
 			"at": "2026-11-13T05:54:47.243Z"
 		},
 		{
+			"loadout": "dchh",
+			"boss": "clubs",
+			"seed": 201345,
+			"moves": 111,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "IMAWAL",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-13T15:20:36.559Z"
+		},
+		{
 			"loadout": "dchs",
 			"boss": "clubs",
 			"seed": 140098,
@@ -7362,6 +7393,12 @@
 				"moves": 86
 			}
 		},
+		"dchh": {
+			"boss": {
+				"seed": 201345,
+				"moves": 111
+			}
+		},
 		"ddsh": {
 			"boss": {
 				"seed": 36020,
@@ -8908,7 +8945,6 @@
 		"dhcd",
 		"dhds",
 		"dhss",
-		"dchh",
 		"dchc",
 		"dchd",
 		"dccc",
