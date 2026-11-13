@@ -1834,7 +1834,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span
 				class="hearts"
 				title={`${tombHp} hearts left over ${filledPockets} filled pocket${filledPockets === 1 ? '' : 's'}${openSlots ? ` · ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each` : ''}`}
-			>{tombHp}/{filledPockets}{#if openSlots}<sup class="open"> +{openSlots}</sup>{/if}</span
+			>HP {tombHp}/{filledPockets}{#if openSlots}<sup class="open"> +{openSlots}</sup>{/if}</span
 			>
 			<span class="bosstag">{bossTitle(tomb)}</span>
 			<!-- Status in dress, a button in fact: the move count is still the copy shortcut. -->
