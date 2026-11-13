@@ -1863,7 +1863,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								? auraTitle(tomb, card)
 								: down && tomb
 									? canRevealFaceDown(tomb, card.location)
-										? "Unexplored Room — explore it: the dig mends a wound (two with a Priest's Vigil)."
+										? 'Unexplored Room — explore it: the dig mends a wound.'
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig mends a wound.'
 									: tomb
 										? `${FODDER} — no power.`
