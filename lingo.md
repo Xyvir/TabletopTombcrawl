@@ -52,7 +52,7 @@ Four verbs cover every way a card moves, and copy uses only these.
 
 | Verb | Means | Standard / FreeCell name | In code |
 | --- | --- | --- | --- |
-| **Slay** | Send a card to its grave. An attack that survives the HP bill and a plain play straight to the graveyard are both slays; "the kill" is only the attack. | send home / auto-foundation | `attackWith`, `canSendHome` |
+| **Slay** | Send a card to its grave. Every route is a slay: the attack that pays HP, the plain play straight to the graveyard, and a glyph that carries a card there. | send home / auto-foundation | `attackWith`, `canSendHome` |
 | **Stash** | Send a card from the tomb into a pocket, to wait there. | move to a free cell | `tombMove` to a cell, "park" |
 | **Restock** | Claim a waiting party pocket: the card played in becomes the party thing that lives there, or remakes the one that owned the pocket before. | refill the item | `itemWindow` |
 | **Convert** | Give up a party pocket's claim. The restock window lapses, a party card is stashed out to the tomb or slain, and the pocket becomes ordinary storage. | lose the drafted card | `convertibleCell`, consumed draft |
@@ -67,6 +67,17 @@ Notes that follow from those:
 - **Stash is the code's "park".** The aura still fires on it: a stashed carrier sets off its power where it
   lies. Copy says stash; nothing in copy says park.
 
+### Slay vs kill
+
+**Kill** is reserved for one event: a monster ending the delver. No card is ever killed — cards are slain.
+
+- Today a kill cannot happen. A slay whose HP bill would take the delver to zero is refused, and the board
+  says so with the skull instead of the crossed swords: the icon means *this would kill you*, not *this is
+  a kill*.
+- The word stays reserved on purpose. Dying to a monster is the natural end of a run under Dungeon Dice and
+  dungeon ascendance, so kill is the verb those rules will need; spending it on cards now would leave the
+  game with no word for the death that ends a run.
+
 ---
 
 ### Queued for the copy pass
@@ -77,6 +88,14 @@ Copy that still uses the standard name, each a one-line change:
   becomes `hallway 3, 5 cards`.
 - The exhausted pocket: "Exhausted item slot — play a ♣ card here… Miss it and this is an ordinary free
   cell." — becomes restock/convert: "Play a ♣ card here to restock it. Anything else converts this pocket."
+- Every "killing this" in the monster power texts — becomes "slaying this"; the aura fires on the slay,
+  not on a kill.
+- Thief's Bounty: "the kill costs no HP" — becomes "the slay costs no HP".
+- The full-price ability: "Arm to kill whatever you can reach at any price" — becomes slay.
+- Elf's Ranged: "kill or reveal any card" — becomes "slay or reveal any card".
+- Dwarf's Grudge: "kill it without sending another king home first" — becomes "slay it before another king
+  is in a grave".
+- Remedy: "a kill, or a card parked in a free cell" — becomes "a slay, or a card stashed in a pocket".
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
   shut until another king lies in it".
 - Thief's Bounty: "the single most advanced foundation still in play" — becomes "the deepest grave".
@@ -96,6 +115,8 @@ Not in copy yet. Ranked by how much the current word hurts.
 
 ## Rejected
 
+- **Kill** for a card — reserved for the delver's death. Cards are slain; the skull marks a slay refused for
+  being a kill.
 - **Shaft** for a hallway — a shaft is only the hole; a hallway is the corridor you dig along, and it matches
   the tomb's architecture: eight corridors off one burial hall.
 - **Tomb floor** for the tomb — superseded the moment the tomb became the tableau itself.
