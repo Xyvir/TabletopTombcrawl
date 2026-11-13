@@ -85,11 +85,10 @@ export const CLAUSES = {
 	/** A free cell holding two cards is worth two hearts rather than one. */
 	pisorfStack: true,
 	/**
-	 * Gorgon: Unburden carries the item off rather than pinning it. The card is evicted into the
-	 * leftmost open cell and lies face-down there, and the slot it left waits a card, so the item can
-	 * be restocked. With nowhere to carry it, the item is only wounded where it lies.
+	 * Wraith: Mana Burn drains the glyph slot rather than the Glyph item, so a slot the chip has stepped
+	 * past is still bitten instead of going quiet.
 	 */
-	gorgonEvict: false,
+	wraithSlot: false,
 };
 
 export type ClauseName = keyof typeof CLAUSES;
@@ -505,14 +504,7 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 		power: 'Poison',
 		text: 'killing this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
 	},
-	clubs: {
-		name: 'Gorgon',
-		// The label follows the clause: the sheet describes the power the run is actually playing with.
-		power: CLAUSES.gorgonEvict ? 'Unburden' : 'Burden',
-		text: CLAUSES.gorgonEvict
-			? 'killing this carries your item into an open cell, face-down, and leaves its slot waiting for a card.'
-			: 'killing this exhausts and wounds your item.',
-	},
+	clubs: { name: 'Gorgon', power: 'Burden', text: 'killing this exhausts and wounds your item.' },
 	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts and wounds your Glyph.' },
 };
 
@@ -1337,17 +1329,14 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 
 /**
  * The item a monster power drains: the Consumable under a Gorgon, the Glyph under a Wraith.
- *
- * Unburden is about a place on the board rather than about an item: the party's item slot is where the
- * Consumable was drafted, and it is still that slot after the item has been played out and the chip has
- * stepped past it. Looking the Consumable up by role instead would let the power go quiet the moment the
- * slot converted, which is the whole difference from a Wraith draining a glyph that never leaves.
  */
 export function auraItem(state: TombState): number | null {
-	if (state.bossSuit === 'clubs' && CLAUSES.gorgonEvict) {
-		const slot = ROLES_BY_DRAW_ORDER.indexOf('consumable');
-		if (slot >= 0 && slot < state.game.cells.length) return slot;
-	}
+	const slotOf = (role: DraftRole): number | null => {
+		const slot = ROLES_BY_DRAW_ORDER.indexOf(role);
+		return slot >= 0 && slot < state.game.cells.length ? slot : null;
+	};
+	// The Wraith on the slot clause drains the place rather than the item, so a converted one still bites.
+	if (state.bossSuit === 'diamonds' && CLAUSES.wraithSlot) return slotOf('glyph');
 	const role: DraftRole | null = state.bossSuit === 'clubs' ? 'consumable' : state.bossSuit === 'diamonds' ? 'glyph' : null;
 	if (!role) return null;
 	const entry = state.draft.find((candidate) => candidate.role === role);
@@ -1374,39 +1363,6 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 	if (from.fixture === 'cell' && from.data[0] === cell) return null;
 	if ((state.wounded[cell] ?? 0) >= cellCards(state, cell).length) return null;
 	return cell;
-}
-
-/**
- * Unburden: the item is carried off instead of pinned. The card itself is evicted into the leftmost
- * open cell, where it lands face-down — the cell is taken, and the heart it would have been is gone
- * with it — and the slot it left waits one action for a card, so the player may restock the item if
- * they want to. Nothing is exhausted: the item is not spent, it is somewhere else. With no open cell
- * to carry it to there is nowhere to put it, and it is only wounded where it lies.
- */
-function unburden(state: TombState): TombState {
-	const cell = auraItem(state);
-	if (cell === null) return state;
-	const stack = cellCards(state, cell);
-	if ((state.wounded[cell] ?? 0) >= stack.length) return state;
-	const entry = state.draft.find((candidate) => candidate.cell === cell);
-	const item = stack[stack.length - 1];
-	const open = emptyCells(state)[0];
-	if (!item || open === undefined) return dropKnockedArm(woundCell(state, cell));
-	const moved = cloneWith(state, {
-		game: relocate(state, [{ id: cardId(item), to: { fixture: 'cell', data: [open] } }]),
-	});
-	const wounded = [...moved.wounded];
-	wounded[open] = (wounded[open] ?? 0) + 1;
-	// Only an item can be restocked: a slot the chip has already stepped past has turned plain, and
-	// carrying its card off leaves an ordinary free cell behind rather than a window to remake anything.
-	return dropKnockedArm(
-		entry
-			? cloneWith(moved, {
-					wounded,
-					itemWindow: { cell, role: entry.role, suit: entry.suit, any: hasPassive(state, 'Orc') },
-				})
-			: cloneWith(moved, { wounded })
-	);
 }
 
 /**
@@ -1441,17 +1397,9 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 			if (by !== 'park') return state;
 			return dropKnockedArm(cloneWith(state, { wounded: wound(state, 1).wounded }));
 		}
-		case 'clubs': {
-			if (CLAUSES.gorgonEvict) return unburden(state);
-			// Burden: the item itself, spent in place and turned face-down.
-			const cell = auraItem(state);
-			if (cell === null) return state;
-			const exhausted = [...state.exhausted];
-			exhausted[cell] = true;
-			return dropKnockedArm(woundCell(cloneWith(state, { exhausted }), cell));
-		}
+		case 'clubs':
 		case 'diamonds': {
-			// Mana Burn takes the glyph itself: spent, and turned face-down as a wound.
+			// Burden and Mana Burn take the item itself: spent, and turned face-down as a wound.
 			const cell = auraItem(state);
 			if (cell === null) return state;
 			const exhausted = [...state.exhausted];
@@ -1579,9 +1527,6 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	if (CLAUSES.bossAuraPark && from.fixture === 'cascade' && to.fixture === 'cell' && !feed && auraActive(next)) {
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
-	// Unburden empties the slot it carries the item out of, and that slot waits a card. The window is
-	// this action's own, so it is put back after the settle below closes every older one.
-	const restock = next.itemWindow;
 
 	// Scavenging: a card played out of its slot onto the tableau is spent, but an Orc's slot is not
 	// closed by it. The card and its item are gone, and the empty slot waits one action for any card
@@ -1603,7 +1548,6 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 
 	next = settle(next, currentLevel(state));
 	if (scavenged) next = cloneWith(next, { itemWindow: scavenged });
-	if (restock) next = cloneWith(next, { itemWindow: restock });
 
 	return spendArmedItem(next);
 }
@@ -1640,9 +1584,6 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	}
 
 	next = bossAura(next, card, 'kill');
-	// Unburden leaves the item's slot empty and waiting, and that window is the kill's own: it survives
-	// the settle below, which closes every older one.
-	const restock = next.itemWindow;
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	const revive = state.armed?.kind === 'revive';
@@ -1659,7 +1600,6 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
 	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
 	// chip steps left and the cell is ordinary from then on.
-	if (restock) return cloneWith(settled, { itemWindow: restock });
 	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
 	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, any: wasOrc } });
 }

@@ -2212,81 +2212,44 @@ describe('tombcrawl boss protection', () => {
 	});
 });
 
-describe('unburden', () => {
-	// The item is the fourth card drafted, so its slot is 3 whatever the chip is doing.
-	const draft: DraftCard[] = [
-		{ cell: 3, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
-	];
-	const board = (overrides: Partial<Setup> = {}) =>
+describe('mana burn on the slot', () => {
+	// The glyph is the third card drafted, so its slot is 2 whatever the chip is doing.
+	const board = (draft: DraftCard[]) =>
 		makeTomb({
-			columns: [['2C']],
-			cells: ['2S', '3S', '4S', 'TD', null],
-			foundations: ['AC'],
+			columns: [['2D']],
+			cells: ['2S', '3S', 'TS', 'TD'],
+			foundations: ['AD'],
 			draft,
-			boss: 'KC',
-			...overrides,
+			boss: 'KD',
 		});
-	const shipped = CLAUSES.gorgonEvict;
+	const glyph: DraftCard = { cell: 2, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' };
+	const shipped = CLAUSES.wraithSlot;
 	afterEach(() => {
-		CLAUSES.gorgonEvict = shipped;
+		CLAUSES.wraithSlot = shipped;
 	});
 
-	test('the item is carried into the leftmost open cell and lies face-down there', () => {
-		CLAUSES.gorgonEvict = true;
-		const next = attackWith(board(), cascade(0, 0))!;
+	test('a converted glyph slot is still drained', () => {
+		CLAUSES.wraithSlot = true;
+		// no Glyph left: it was played out, and a plain card sits where it was
+		const next = attackWith(board([{ cell: 3, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' }]), cascade(0, 0))!;
 
-		// the slot it left is empty, and waits a card, so the item can be restocked
-		expect(next.game.cells[3]).toBe(null);
-		expect(next.itemWindow).toMatchObject({ cell: 3, role: 'consumable', suit: 'diamonds' });
-		// nothing is spent: the item is not exhausted, it is somewhere else
-		expect(next.exhausted[3]).toBeFalsy();
-		// the cell is taken and unusable, which is what the move costs
-		const carried = next.game.cells[4]!;
-		expect(shorthandCard(carried)).toBe('TD');
-		expect(next.wounded[4]).toBe(1);
-		expect(cellTopWounded(next, 4)).toBe(true);
+		expect(next.exhausted[2]).toBe(true);
+		expect(next.wounded[2]).toBe(1);
 	});
 
-	test('with no open cell the item is only wounded where it lies', () => {
-		CLAUSES.gorgonEvict = true;
-		const next = attackWith(
-			board({ cells: ['2S', '3S', '4S', 'TD', '5S', '6S', '7S'] }),
-			cascade(0, 0)
-		)!;
+	test('as shipped an empty of Glyph board is left alone', () => {
+		const next = attackWith(board([{ cell: 3, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' }]), cascade(0, 0))!;
 
-		expect(shorthandCard(next.game.cells[3]!)).toBe('TD');
-		expect(next.wounded[3]).toBe(1);
-		expect(next.exhausted[3]).toBeFalsy();
-		expect(next.itemWindow).toBe(null);
+		expect(next.exhausted[2]).toBeFalsy();
+		expect(next.wounded[2]).toBe(0);
 	});
 
-	test('a slot the chip has stepped past still takes the blow, but waits for nothing', () => {
-		CLAUSES.gorgonEvict = true;
-		// no Consumable left: the item was played out, so its slot is an ordinary free cell
-		const converted = makeTomb({
-			columns: [['2C']],
-			cells: ['2S', '3S', '4S', 'TD', null],
-			foundations: ['AC'],
-			draft: [{ cell: 2, role: 'glyph', id: '4S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
-			boss: 'KC',
-		});
-		const next = attackWith(converted, cascade(0, 0))!;
+	test('with the Glyph still in its slot both read the same', () => {
+		CLAUSES.wraithSlot = true;
+		const next = attackWith(board([glyph]), cascade(0, 0))!;
 
-		const carried = next.game.cells[4]!;
-		expect(shorthandCard(carried)).toBe('TD');
-		expect(next.wounded[4]).toBe(1);
-		expect(next.game.cells[3]).toBe(null);
-		// nothing to remake, so no restock window
-		expect(next.itemWindow).toBe(null);
-	});
-
-	test('as shipped it is still spent in its own slot', () => {
-		const next = attackWith(board(), cascade(0, 0))!;
-
-		expect(shorthandCard(next.game.cells[3]!)).toBe('TD');
-		expect(next.exhausted[3]).toBe(true);
-		expect(next.wounded[3]).toBe(1);
-		expect(next.itemWindow).toBe(null);
+		expect(next.exhausted[2]).toBe(true);
+		expect(next.wounded[2]).toBe(1);
 	});
 });
 
@@ -2294,8 +2257,7 @@ describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster and power', () => {
 		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', power: 'Weakness' });
 		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', power: 'Poison' });
-		// the sheet names the power the run is playing with, so the label cannot drift from the clause
-		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: CLAUSES.gorgonEvict ? 'Unburden' : 'Burden' });
+		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: 'Burden' });
 		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', power: 'Mana Burn' });
 	});
 });
