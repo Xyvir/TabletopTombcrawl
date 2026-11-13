@@ -18,8 +18,9 @@ Two rules for this file:
 | --- | --- | --- |
 | **Status track** | The whole row of pockets: health, party and storage in one line. Directional — wounds fill from the right, the party sits at the left. | free cells + cells |
 | **Pocket** | One spot on the status track. Holds one card in every mode: storage, party claim, or a wound. | one free cell |
-| **Tomb** | One dealt board. "The tomb" is the tableau and the deal together. | the deal / the game |
-| **Deal** | Starting a tomb, and the tomb itself. "Restart deal". | deal |
+| **Tomb** | The eight hallways where the cards lie, face-up and under fog. The play area. | the tableau |
+| **Hallway** | One column of the tomb, dug from its mouth downwards. Eight per deal. | one column / cascade |
+| **Deal** | One whole board: the tomb, the status track and the graveyard. "Restart deal". | the deal / the game |
 | **Graveyard** | The four piles a card goes to when it is slain. Where the dead lie. | foundations |
 | **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
 | **Boss** | The king that ends the run when slain. | the protected king |
@@ -28,9 +29,12 @@ Two rules for this file:
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. | plain card |
 | **Aura** | The deal's one monster power, worn by the court and the kings. | monster power |
 | **Wound** | One face-down card on the status track. The board marks it with a band-aid. | lost HP |
-| **Dig** | Turning over a face-down tableau card. Heals. | reveal / flip |
-| **Unexplored room** | A face-down tableau card, before it is dug. | fogged card |
+| **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
+| **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
 | **Delver** | The player. Not "you" in rules text, "the delver" where a subject is needed. | player |
+
+A **deal** is the whole board; the **tomb** is only the part you play in. Copy that means everything on the
+table says deal, and copy that means the eight hallways says tomb — "a card in the tomb", "the tomb empties".
 
 A pocket is the same word in all three of its jobs — that is the point of choosing it over `slot` or
 `cell`. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of pocket it is when that matters:
@@ -49,9 +53,9 @@ Four verbs cover every way a card moves, and copy uses only these.
 | Verb | Means | Standard / FreeCell name | In code |
 | --- | --- | --- | --- |
 | **Slay** | Send a card to its grave. An attack that survives the HP bill and a plain play straight to the graveyard are both slays; "the kill" is only the attack. | send home / auto-foundation | `attackWith`, `canSendHome` |
-| **Stash** | Send a card from the tomb floor into a pocket, to wait there. | move to a free cell | `tombMove` to a cell, "park" |
+| **Stash** | Send a card from the tomb into a pocket, to wait there. | move to a free cell | `tombMove` to a cell, "park" |
 | **Restock** | Claim a waiting party pocket: the card played in becomes the party thing that lives there, or remakes the one that owned the pocket before. | refill the item | `itemWindow` |
-| **Convert** | Give up a party pocket's claim. The restock window lapses, a party card is stashed out to the floor or slain, and the pocket becomes ordinary storage. | lose the drafted card | `convertibleCell`, consumed draft |
+| **Convert** | Give up a party pocket's claim. The restock window lapses, a party card is stashed out to the tomb or slain, and the pocket becomes ordinary storage. | lose the drafted card | `convertibleCell`, consumed draft |
 
 Notes that follow from those:
 
@@ -69,7 +73,8 @@ Notes that follow from those:
 
 Copy that still uses the standard name, each a one-line change:
 
-- `aria-label="free cell 2"` — becomes `pocket 2`; `foundation 2` becomes `grave 2`.
+- `aria-label="free cell 2"` — becomes `pocket 2`; `foundation 2` becomes `grave 2`; `column 3, 5 cards`
+  becomes `hallway 3, 5 cards`.
 - The exhausted pocket: "Exhausted item slot — play a ♣ card here… Miss it and this is an ordinary free
   cell." — becomes restock/convert: "Play a ♣ card here to restock it. Anything else converts this pocket."
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
@@ -85,14 +90,16 @@ Not in copy yet. Ranked by how much the current word hurts.
 
 | Now | Proposal | Why |
 | --- | --- | --- |
-| column / cascade | **shaft** | The tomb's columns are vertical digs; "shaft" is directional and physical. "Column" is the FreeCell word and reads as spreadsheet. |
 | moves | **steps** | The track metaphor makes a move a step; "Moves (0)" is the last mechanical word in the HUD. |
-| tableau | **tomb floor** | Only where "the tomb" is too broad: the tomb floor is where cards lie face-up. |
 
 ---
 
 ## Rejected
 
+- **Shaft** for a hallway — a shaft is only the hole; a hallway is the corridor you dig along, and it matches
+  the tomb's architecture: eight corridors off one burial hall.
+- **Tomb floor** for the tomb — superseded the moment the tomb became the tableau itself.
+- **Lane** for a hallway (an Elf's lane) — one more word for the same strip. An Elf digs down a hallway.
 - **Vault / crypt** for the graveyard — a card is *slain* to get there, so the destination sounds like
   burial, not storage. The board's own CSS already called that row the graveyard and counted four graves.
 - **Slot / cell / pouch / socket / station** for a pocket — slot reads as UI furniture, cell is the FreeCell
