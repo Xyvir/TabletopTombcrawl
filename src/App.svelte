@@ -933,17 +933,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * Who a carrier answers to. The boss suit's court bears the monster's own name; a king of any other suit
-	 * is the boss's General, whatever suit it was dealt in.
+	 * Who a carrier answers to, and how far up the monster's own ranks it sits. Rank colours the flavour
+	 * only — ace to five is a lesser monster, ten to queen a greater one, and a king of any other suit is
+	 * the boss's General. None of it changes a rule.
 	 */
 	function carrierName(state: TombState, card: Card) {
 		if (!state.bossSuit) return '';
-		const monster = MONSTERS[state.bossSuit];
-		return card.rank === 'king' && card.suit !== state.bossSuit ? `Boss ${monster.name}'s General` : monster.name;
+		const monster = MONSTERS[state.bossSuit].name;
+		if (card.rank === 'king') return `Boss ${monster}'s General`;
+		const rank = getRankForCompare(card.rank);
+		if (rank <= 4) return `Lesser ${monster}`;
+		return rank >= 9 ? `Greater ${monster}` : monster;
 	}
 
 	/**
-	 * The deal's one monster power, e.g. "Gorgon's General — Burden: killing this exhausts your Consumable."
+	 * The deal's one monster power, e.g. "Greater Gorgon — Burden: killing this exhausts your Consumable."
 	 * The court and every lesser king wear it, so it is always read from the boss suit.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
