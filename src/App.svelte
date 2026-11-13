@@ -58,7 +58,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		PAR_TOTAL,
 		disarm,
 		hp,
-		maxHp,
 		draftAt,
 		elfSight,
 		emptyCells,
@@ -558,6 +557,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	const doomedAt = $derived(!drag && preview?.fatal ? aim : null);
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
+	/**
+	 * The track read as pockets rather than as hearts: every pocket holding a card, wounded or not. A
+	 * wound turns a filled pocket face-down, so `tombHp` over this is the hearts left over the pockets
+	 * they were dealt in — four drafted ones to begin with — and empty cells are counted apart.
+	 */
+	const filledPockets = $derived(tomb ? tomb.game.cells.filter((card) => !!card).length : 0);
 	/** Empty free cells: each one is a single card away from being another heart. */
 	const openSlots = $derived(tomb ? emptyCells(tomb).length : 0);
 	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
@@ -1828,10 +1833,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span>Level {tombLevel}</span>
 			<span
 				class="hearts"
-				title={openSlots
-					? `${tombHp} of ${maxHp(tomb)} held, and ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each`
-					: `${tombHp} of ${maxHp(tomb)} held`}
-			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
+				title={`${tombHp} hearts left over ${filledPockets} filled pocket${filledPockets === 1 ? '' : 's'}${openSlots ? ` · ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each` : ''}`}
+			>{tombHp}/{filledPockets}{#if openSlots}<sup class="open"> +{openSlots}</sup>{/if}</span
 			>
 			<span class="bosstag">{bossTitle(tomb)}</span>
 			<!-- Status in dress, a button in fact: the move count is still the copy shortcut. -->

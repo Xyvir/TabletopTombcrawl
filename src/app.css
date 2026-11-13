@@ -1222,7 +1222,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /* An empty free cell is a heart you have not picked up yet: it rides as a superscript in plain
-   white, so 4+3/7 reads as six possible hearts rather than four. With none it collapses away. */
+   white, so 4/4 +3 reads as four hearts in four filled pockets with three pockets still to fill. With
+   none it collapses away. */
 .tombhud .hearts .open {
 	color: #ffffff;
 	font-weight: 600;
