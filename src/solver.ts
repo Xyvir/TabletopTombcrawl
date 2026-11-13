@@ -461,6 +461,10 @@ function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 		hearts * w.hearts -
 		blocked.buried * w.buried +
 		emptyCells(state).length * w.room +
+		// A banked free cast is worth having before it is spent, and the restock term is the same kind of
+		// promise: one item's worth of a second chance. Priced so the search prefers the twin that still
+		// holds the window, rather than deciding between them on a tie it cannot see.
+		(state.freeCast ? w.restock : 0) +
 		reserve +
 		items.potion * w.potion +
 		items.restock * w.restock +
@@ -520,6 +524,10 @@ export function stateKey(state: TombState): string {
 		mixText(state.itemWindow.role);
 		mixText(state.itemWindow.suit);
 	}
+	// A Wizard's banked free cast is part of the position: the same board with the window open can cast
+	// once more than the board without it, and leaving it out let the search keep whichever twin it met
+	// first. Unhashed, the one move the perk exists for was the one it could throw away.
+	mix(state.freeCast ? 1 : 2);
 	return `${a.toString(16)}:${b.toString(16)}`;
 }
 
