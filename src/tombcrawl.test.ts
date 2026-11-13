@@ -1188,12 +1188,12 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(donePiles, cascade(0)).damage).toBe(0);
 	});
 
-	test('the boss king is frozen until one other king is home', () => {
+	test('the boss king is shielded until a General lies in a grave', () => {
 		const early = makeTomb({ columns: [['KH']], foundations: ['QH'], boss: 'KH' });
 		expect(kingsHome(early)).toBe(0);
 		expect(bossUnlocked(early)).toBe(false);
 		expect(canSendHome(early, cascade(0)).legal).toBe(false);
-		expect(canSendHome(early, cascade(0)).reason).toContain('frozen');
+		expect(canSendHome(early, cascade(0)).reason).toContain('shield him');
 		// frozen means no method at all, not just the foundation
 		expect(tombMove(early, { fixture: 'cascade', data: [0, 0] }, { fixture: 'cascade', data: [1, 0] })).toBe(null);
 
@@ -1222,7 +1222,7 @@ describe('tombcrawl a boss king behind a glyph', () => {
 			expect(shorthandCard(carried!.game.tableau[1][0])).toBe('KH');
 			// The spell lifted it out of the way; the foundation stays shut until a king is home.
 			expect(canSendHome(primed, cascade(0)).legal).toBe(false);
-			expect(canSendHome(primed, cascade(0)).reason).toContain('frozen');
+			expect(canSendHome(primed, cascade(0)).reason).toContain('shield him');
 		} finally {
 			TOMB_RULES.glyphMoveBoss = shipit;
 		}
@@ -2258,7 +2258,7 @@ describe('tombcrawl boss protection', () => {
 			foundations: ['QH', 'QS', 'QD', 'QC'],
 			boss: 'KH',
 		});
-		expect(attackPreview(others, cascade(0, 0)).reason).toBe('boss king: frozen until one other king is home');
+		expect(attackPreview(others, cascade(0, 0)).reason).toBe('boss king: his Generals shield him until one lies in a grave');
 	});
 
 	test('a drafted dwarf no longer silences the boss aura', () => {

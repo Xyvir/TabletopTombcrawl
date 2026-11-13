@@ -1853,12 +1853,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						class:flipping
 						style={cardStyle(card, i)}
 						data-card={shorthandCard(card)}
-						title={tomb && boss
-							? `${bossTitle(tomb)}${
-									bossProtected(tomb)
-										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
-										: ''
-								}\n${auraTitle(tomb, null, false)}`
+													title={tomb && boss
+								? `${bossTitle(tomb)}${
+										bossProtected(tomb)
+											? ' — his Generals shield him: no hand moves him and no blade reaches him until one of them lies in a grave. Only a glyph can still shift him.'
+											: ' — his shield is down: he can be slain.'
+									}\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
 								? auraTitle(tomb, card)
 								: down && tomb

@@ -898,7 +898,7 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	}
 
 	if (frozenBoss(state, card)) {
-		return { legal: false, reason: 'boss king: frozen until one other king is home' };
+		return { legal: false, reason: 'boss king: his Generals shield him until one lies in a grave' };
 	}
 
 	const rank = rankOf(card.rank);
