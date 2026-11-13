@@ -312,6 +312,46 @@ if (mode === 'merge') {
 			[level]: { ...found[entry.loadout]?.[level], [achieved]: { seed: entry.seed, moves: entry.moves } },
 		};
 	}
+	// Placeholders: a square whose crawl matches the loadout but has no win, held by the best score
+	// reached on it. Same rule as a proof — the best result holds the square — and a win on that track
+	// deletes the placeholder outright, since a square with a win is not waiting for one.
+	type Placeholder = { seed: number; score: number; at: string | null };
+	const placeholders: Record<string, Partial<Record<string, Placeholder>>> = {};
+	const hold = (loadout: string, level: string, row: Placeholder) => {
+		if (found[loadout]?.[level]) return;
+		const known = placeholders[loadout]?.[level];
+		if (known && known.score >= row.score) return;
+		placeholders[loadout] = { ...placeholders[loadout], [level]: row };
+	};
+	const artifact = (() => {
+		if (!existsSync('public/corpus.json')) return null;
+		try {
+			return JSON.parse(readFileSync('public/corpus.json', 'utf8'));
+		} catch {
+			return null;
+		}
+	})();
+	for (const [loadout, tracks] of Object.entries<any>(artifact?.placeholders ?? {})) {
+		for (const [level, row] of Object.entries<any>(tracks ?? {})) {
+			if (typeof row?.seed !== 'number' || typeof row?.score !== 'number') continue;
+			hold(loadout, level, { seed: row.seed, score: row.score, at: row.at ?? null });
+		}
+	}
+	if (existsSync(shardDir)) {
+		for (const name of readdirSync(shardDir)) {
+			if (!name.startsWith('fill-') && !name.startsWith('shard-fill-')) continue;
+			try {
+				const rows = JSON.parse(readFileSync(`${shardDir}/${name}`, 'utf8'));
+				if (!Array.isArray(rows)) continue;
+				for (const row of rows) {
+					if (typeof row?.loadout !== 'string' || typeof row?.score !== 'number') continue;
+					hold(row.loadout, row.difficulty ?? 'med', { seed: row.seed, score: row.score, at: row.at ?? null });
+				}
+			} catch {
+				// a half-written fill file is skipped, and the next merge picks it up
+			}
+		}
+	}
 	const entries = [...unique.values()].sort((a, b) =>
 		`${a.loadout}${a.difficulty ?? 'med'}` < `${b.loadout}${b.difficulty ?? 'med'}` ? -1 : 1
 	);
@@ -321,7 +361,7 @@ if (mode === 'merge') {
 	writeFileSync(
 		target,
 		JSON.stringify(
-			{ difficulty, goal, rules: 'draft-any-suit', keys: ALL_KEYS.length, entries, found, missing },
+			{ difficulty, goal, rules: 'draft-any-suit', keys: ALL_KEYS.length, entries, found, placeholders, missing },
 			null,
 			'\t'
 		)
@@ -329,6 +369,6 @@ if (mode === 'merge') {
 	const medCount = entries.filter((entry) => (entry.difficulty ?? 'med') === 'med').length;
 	const hardCount = entries.length - medCount;
 	console.log(
-		`${medCount}/${ALL_KEYS.length} keys covered at med · ${hardCount} hard rows · ${missing.length} still to find → ${target}`
+		`${medCount}/${ALL_KEYS.length} keys covered at med · ${hardCount} hard rows · ${Object.keys(placeholders).length} placeholders · ${missing.length} still to find → ${target}`
 	);
 }

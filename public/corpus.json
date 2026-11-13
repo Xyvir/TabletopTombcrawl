@@ -470,6 +470,37 @@
 			"at": "2026-11-13T05:36:42.435Z"
 		},
 		{
+			"loadout": "ccss",
+			"boss": null,
+			"seed": 1159,
+			"moves": 144,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T18:46:18.039Z"
+		},
+		{
 			"loadout": "cdcc",
 			"boss": "spades",
 			"seed": 42424,
@@ -3196,6 +3227,37 @@
 				}
 			],
 			"at": "2026-11-13T15:06:49.394Z"
+		},
+		{
+			"loadout": "dhss",
+			"boss": "diamonds",
+			"seed": 1576,
+			"moves": 92,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-13T18:46:28.305Z"
 		},
 		{
 			"loadout": "dscc",
@@ -6699,6 +6761,37 @@
 				}
 			],
 			"at": "2026-11-12T16:00:21.246Z"
+		},
+		{
+			"loadout": "sdcd",
+			"boss": "diamonds",
+			"seed": 1970,
+			"moves": 119,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-13T18:46:34.167Z"
 		},
 		{
 			"loadout": "sdch",
@@ -10337,13 +10430,149 @@
 					"moves": 96
 				}
 			}
+		},
+		"ccss": {
+			"med": {
+				"boss": {
+					"seed": 1159,
+					"moves": 144
+				}
+			}
+		},
+		"dhss": {
+			"med": {
+				"boss": {
+					"seed": 1576,
+					"moves": 92
+				}
+			}
+		},
+		"sdcd": {
+			"med": {
+				"boss": {
+					"seed": 1970,
+					"moves": 119
+				}
+			}
+		}
+	},
+	"placeholders": {
+		"dccc": {
+			"med": {
+				"seed": 1900,
+				"score": 81,
+				"at": "2026-11-13T18:45:35.736Z"
+			}
+		},
+		"dccs": {
+			"med": {
+				"seed": 588,
+				"score": 102,
+				"at": "2026-11-13T18:43:13.632Z"
+			}
+		},
+		"dcdc": {
+			"med": {
+				"seed": 1571,
+				"score": 88,
+				"at": "2026-11-13T18:44:16.289Z"
+			}
+		},
+		"dcdh": {
+			"med": {
+				"seed": 990,
+				"score": 163,
+				"at": "2026-11-13T18:43:19.419Z"
+			}
+		},
+		"dcds": {
+			"med": {
+				"seed": 1556,
+				"score": 105,
+				"at": "2026-11-13T18:44:55.558Z"
+			}
+		},
+		"dchc": {
+			"med": {
+				"seed": 117,
+				"score": 127,
+				"at": "2026-11-13T18:41:35.009Z"
+			}
+		},
+		"dchd": {
+			"med": {
+				"seed": 405,
+				"score": 154,
+				"at": "2026-11-13T18:42:12.342Z"
+			}
+		},
+		"dcsc": {
+			"med": {
+				"seed": 702,
+				"score": 78,
+				"at": "2026-11-13T18:42:45.043Z"
+			}
+		},
+		"dcsd": {
+			"med": {
+				"seed": 298,
+				"score": 72,
+				"at": "2026-11-13T18:42:15.979Z"
+			}
+		},
+		"dhcd": {
+			"med": {
+				"seed": 737,
+				"score": 71,
+				"at": "2026-11-13T18:42:56.949Z"
+			}
+		},
+		"dhds": {
+			"med": {
+				"seed": 1984,
+				"score": 137,
+				"at": "2026-11-13T18:45:41.030Z"
+			}
+		},
+		"sccs": {
+			"med": {
+				"seed": 1844,
+				"score": 68,
+				"at": "2026-11-13T18:45:29.119Z"
+			}
+		},
+		"schh": {
+			"med": {
+				"seed": 328,
+				"score": 18,
+				"at": "2026-11-13T18:42:15.658Z"
+			}
+		},
+		"scss": {
+			"med": {
+				"seed": 519,
+				"score": 185,
+				"at": "2026-11-13T18:41:55.914Z"
+			}
+		},
+		"shcs": {
+			"med": {
+				"seed": 1348,
+				"score": 216,
+				"at": "2026-11-13T18:44:43.203Z"
+			}
+		},
+		"scdd": {
+			"med": {
+				"seed": 845,
+				"score": 81,
+				"at": "2026-11-13T18:43:36.318Z"
+			}
 		}
 	},
 	"missing": [
-		"ccss",
 		"dhcd",
 		"dhds",
-		"dhss",
 		"dchc",
 		"dchd",
 		"dccc",
@@ -10357,7 +10586,6 @@
 		"schh",
 		"sccs",
 		"scdd",
-		"scss",
-		"sdcd"
+		"scss"
 	]
 }

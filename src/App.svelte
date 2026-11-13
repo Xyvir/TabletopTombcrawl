@@ -288,6 +288,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				clear?: { seed: number; moves: number };
 			}
 		>;
+		/**
+		 * Parties whose best crawl has no win yet: the best score the solver reached on a seed that does
+		 * match the loadout. Kept per track, and dropped the moment a win lands on that square.
+		 */
+		placeholders?: Record<
+			string,
+			Partial<Record<Difficulty, { seed: number; score: number; at?: string | null }>>
+		>;
 		missing: string[];
 	};
 	/** Draw order: the corpus keys a party the same way, one letter per role. */
@@ -323,6 +331,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		)
 	);
 	const coveredHere = $derived((corpus?.entries ?? []).filter((entry) => difficultyOfEntry(entry) === layoutDifficulty).length);
+	/** The square's best no-win crawl, on the track the sheet is showing. */
+	const placeholderFor = (key: string) => corpus?.placeholders?.[key]?.[layoutDifficulty];
+	const placeholderHere = $derived(Object.keys(corpus?.placeholders ?? {}).filter((key) => placeholderFor(key)).length);
 	// A typed seed belongs to a square only at the track it was solved on, which is the track on screen.
 	const entriesBySeed = $derived(
 		new Map(
@@ -369,6 +380,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	});
 	/** The entry behind the readout, so the panel can date the seed it shows. */
 	const inspectedEntry = $derived(entriesByLayout.get(inspectedKey));
+	/** The best no-win crawl on the square being read out, if it has one. */
+	const inspectedPlaceholder = $derived(placeholderFor(inspectedKey));
 
 	/** A party's four drafted suits in role order, letters only, e.g. `hcds`. */
 	function loadoutOf(state: TombState | null): string {
@@ -379,11 +392,23 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			.join('');
 	}
 
-	function layoutStatus(key: string): 'cleared' | 'boss' | 'playable' | 'missing' {
+	/**
+	 * A square is cleared, boss-killed, playable (a win is known), a placeholder (a seed matches but no
+	 * win yet), or missing entirely. The placeholder is the light grey: the party is dealt, the crawl is
+	 * real, and nobody has beaten it at this track.
+	 */
+	function layoutStatus(key: string): 'cleared' | 'boss' | 'playable' | 'placeholder' | 'missing' {
 		const held = progress.get(`${layoutDifficulty}:${key}`)?.status;
 		if (held === 'clear') return 'cleared';
 		if (held === 'boss') return 'boss';
-		return entriesByLayout.has(key) ? 'playable' : 'missing';
+		if (entriesByLayout.has(key)) return 'playable';
+		return placeholderFor(key) ? 'placeholder' : 'missing';
+	}
+
+	/** The square's state in words, for the screen reader and the readout. */
+	function statusWord(key: string) {
+		const status = layoutStatus(key);
+		return status === 'placeholder' ? 'seed only, no win yet' : status;
 	}
 
 	function openLayout() {
@@ -392,6 +417,25 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	function closeLayout() {
 		layoutOpen = false;
+	}
+
+	/**
+	 * Start a placeholder's crawl: a seed is known and the party matches, so the square is a real board
+	 * even though nobody has beaten it. The trellis reads it as unfilled until a win lands on it.
+	 */
+	function startPlaceholder(key: string) {
+		const filler = placeholderFor(key);
+		if (!filler) return;
+		layoutOpen = false;
+		seedInput = String(filler.seed);
+		clearClickMemory();
+		difficulty = layoutDifficulty;
+		tombHistory = [];
+		tombSelected = null;
+		tombLast = null;
+		tomb = createTombState(filler.seed, FREE_CELL_COUNT[layoutDifficulty]);
+		dealLayout = loadoutOf(tomb);
+		game = tomb.game;
 	}
 
 	/** Start the corpus deal for a party: the same rules the corpus was solved under. */
@@ -1979,7 +2023,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<h2>Choose a loadout</h2>
 					<span class="corpusline">
 						{corpus
-							? `${coveredHere} of ${corpus.keys} parties have a ${DIFFICULTY_LABEL[layoutDifficulty].toLowerCase()} seed`
+							? `${coveredHere} of ${corpus.keys} parties have a ${DIFFICULTY_LABEL[layoutDifficulty].toLowerCase()} win${
+									placeholderHere ? ` · ${placeholderHere} more with a seed and no win yet` : ''
+								}`
 							: 'reading the seed list…'}
 					</span>
 				</header>
@@ -2025,18 +2071,23 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										{#each SUITS as item (item)}
 											{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}
 											{@const entry = entriesByLayout.get(key)}
+											{@const filler = placeholderFor(key)}
 											<button
 												type="button"
 												class="pip {layoutStatus(key)}"
 												class:mine={key === currentLayout}
-												disabled={!entry}
+												disabled={!entry && !filler}
 												onmouseenter={() => (hovered = key)}
 												onfocus={() => (hovered = key)}
-												onclick={() => entry && startLayout(entry)}
-												title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
-													entry ? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}` : 'no seed found yet'
-												}`}
-												aria-label={`${key} ${layoutStatus(key)}`}
+												onclick={() => (entry ? startLayout(entry) : startPlaceholder(key))}
+																									title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
+															entry
+																? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}`
+																: filler
+																	? `seed ${filler.seed}, best score ${filler.score} — no win yet`
+																	: 'no seed found yet'
+														}`}
+													aria-label={`${key} ${statusWord(key)}`}
 											></button>
 										{/each}
 									{/each}
@@ -2104,6 +2155,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										<span class="none">not found</span>
 									{/if}
 								</span>
+								{#if !inspectedEntry && inspectedPlaceholder}
+									<span class="goal placeholder-note">
+										<span class="label">no win yet</span>
+										best {inspectedPlaceholder.score} on seed {inspectedPlaceholder.seed}
+									</span>
+								{/if}
 							</p>
 						{/if}
 					</aside>
@@ -2112,6 +2169,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<span><i class="cleared"></i>tomb cleared</span>
 					<span><i class="boss"></i>boss killed</span>
 					<span><i class="playable"></i>playable</span>
+					<span><i class="placeholder"></i>seed, no win yet</span>
 					<span><i class="missing"></i>no seed yet</span>
 				</div>
 				<p class="sheetnote">

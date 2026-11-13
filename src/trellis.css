@@ -337,6 +337,12 @@ button.titlecard:focus-visible {
 	cursor: not-allowed;
 }
 
+/* a seed matches this party but no win is known: the crawl is real, the square is unfilled */
+.pip.placeholder {
+	background: rgba(255, 255, 255, 0.17);
+	border-color: rgba(255, 255, 255, 0.34);
+}
+
 /* a seed is known but the boss is still alive */
 .pip.playable {
 	background: rgba(126, 170, 255, 0.32);
@@ -400,6 +406,11 @@ button.titlecard:focus-visible {
 .legend i.playable {
 	background: rgba(126, 170, 255, 0.32);
 	border-color: rgba(126, 170, 255, 0.5);
+}
+
+.legend i.placeholder {
+	background: rgba(255, 255, 255, 0.17);
+	border-color: rgba(255, 255, 255, 0.34);
 }
 
 .legend i.missing {
