@@ -935,13 +935,24 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The deal's one monster power, e.g. "Gorgon — Burden: killing this exhausts your Consumable."
+	 * Who a carrier answers to. The boss suit's court bears the monster's own name; a king of any other suit
+	 * is the boss's General, whatever suit it was dealt in.
+	 */
+	function carrierName(state: TombState, card: Card) {
+		if (!state.bossSuit) return '';
+		const monster = MONSTERS[state.bossSuit];
+		return card.rank === 'king' && card.suit !== state.bossSuit ? `${monster.name}'s General` : monster.name;
+	}
+
+	/**
+	 * The deal's one monster power, e.g. "Gorgon's General — Burden: killing this exhausts your Consumable."
 	 * The court and every lesser king wear it, so it is always read from the boss suit.
 	 */
-	function auraTitle(withName = true) {
-		if (!tomb?.bossSuit) return '';
-		const monster = MONSTERS[tomb.bossSuit];
-		return `${withName ? `${monster.name} — ` : ''}${monster.power}: ${monster.text}`;
+	function auraTitle(state: TombState, card: Card | null, withName = true) {
+		if (!state.bossSuit) return '';
+		const monster = MONSTERS[state.bossSuit];
+		const name = card ? carrierName(state, card) : monster.name;
+		return `${withName ? `${name} — ` : ''}${monster.power}: ${monster.text}`;
 	}
 
 	/** The monster power this move set off, if it killed a card that carries one. */
@@ -1838,9 +1849,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									bossProtected(tomb)
 										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
 										: ''
-								}\n${auraTitle(false)}`
+								}\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
-								? auraTitle()
+								? auraTitle(tomb, card)
 								: undefined}
 						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
