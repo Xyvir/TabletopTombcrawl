@@ -1826,9 +1826,12 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 			const upper = state.game.cards.find((candidate) => cardId(candidate) === armed.first);
 			const pair = upper ? pisorfPair(state, upper.location) : null;
 			if (!pair) return null;
+			// The pair lands in the order it stood: the card that was on top of the column stays on top of
+			// the cell. Laid the other way up, the slot offers the card that was *under* it — and if that
+			// card is a frozen boss, the cell is dead to the touch and the card above it can never be taken.
 			const game = relocate(cloneWith(state, { armed: null }), [
-				{ id: cardId(pair[0]), to: { fixture: 'cell', data: [to, 1] } },
-				{ id: cardId(pair[1]), to: { fixture: 'cell', data: [to, 0] } },
+				{ id: cardId(pair[0]), to: { fixture: 'cell', data: [to, 0] } },
+				{ id: cardId(pair[1]), to: { fixture: 'cell', data: [to, 1] } },
 			]);
 			return settle(cloneWith(state, { game, armed: null }), currentLevel(state));
 		}

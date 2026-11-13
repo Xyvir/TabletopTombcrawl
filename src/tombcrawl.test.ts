@@ -1784,30 +1784,46 @@ describe('tombcrawl PISORF stacks', () => {
 		const state = stacked();
 		expect(state.armed).toBe(null);
 		expect(state.exhausted[0]).toBe(true); // the glyph is spent
-		expect(cellCards(state, 1).map(shorthandCard)).toEqual(['6S', '7H']);
+		// the card that stood on top of the column is the card the cell offers
+		expect(cellCards(state, 1).map(shorthandCard)).toEqual(['7H', '6S']);
+		expect(cellCards(state, 1).at(-1)!.id).toBe(state.game.cells[1]!.id);
 		expect(hp(state)).toBe(3);
 		expect(maxHp(state)).toBe(8);
+	});
+
+	test('a boss under the pair does not lock the cell above it', () => {
+		// the king is the boss and is frozen; the queen that was on top of him is what the cell offers
+		const state = makeTomb({ columns: [['KS', 'QH'], ['KC']], cells: ['5C'], boss: 'KS', draft: glyph });
+		const armed = useAbility(state, 0)!;
+		const shot = armedClick(armedClick(armed, cascade(0, 0))!, cell(1))!;
+		expect(cellCards(shot, 1).map(shorthandCard)).toEqual(['KS', 'QH']);
+		expect(shorthandCard(shot.game.cells[1]!)).toBe('QH');
+
+		const freed = tombMove(shot, cell(1), cascade(1))!;
+		expect(freed).not.toBe(null);
+		expect(shorthandCard(freed.game.tableau[1].at(-1)!)).toBe('QH');
+		expect(cellCards(freed, 1).map(shorthandCard)).toEqual(['KS']);
 	});
 
 	test('damage turns over the bottom card of a stack first', () => {
 		const kill = attackWith(stacked(), cascade(2))!; // 3C costs one point at level 2
 		expect(kill.wounded[1]).toBe(1);
 		expect(hp(kill)).toBe(2);
-		expect(woundedCards(kill, 1).map(shorthandCard)).toEqual(['6S']);
+		expect(woundedCards(kill, 1).map(shorthandCard)).toEqual(['7H']);
 	});
 
 	test('the next point of damage turns over the other card', () => {
 		const kill = attackWith(stacked(), cascade(1))!; // 4S costs two points at level 2
 		expect(kill.wounded[1]).toBe(2);
 		expect(hp(kill)).toBe(1);
-		expect(woundedCards(kill, 1).map(shorthandCard)).toEqual(['6S', '7H']);
+		expect(woundedCards(kill, 1).map(shorthandCard)).toEqual(['7H', '6S']);
 	});
 
 	test('each wounded card in a stack needs its own heal', () => {
 		const state = attackWith(stacked(), cascade(1))!;
 		const first = revealFaceDown(state, cascade(3))!; // 4H heals the top card first
 		expect(first.wounded[1]).toBe(1);
-		expect(woundedCards(first, 1).map(shorthandCard)).toEqual(['6S']);
+		expect(woundedCards(first, 1).map(shorthandCard)).toEqual(['7H']);
 		expect(hp(first)).toBe(2);
 
 		const second = revealFaceDown(first, cascade(4))!; // 5D
@@ -1845,8 +1861,9 @@ describe('tombcrawl abilities', () => {
 		const next = armedDrop(armed, cascade(0, 0), cell(1))!;
 		expect(next.armed).toBe(null);
 		const spot = (id: string) => next.game.cards.find((card) => shorthandCard(card) === id)!.location;
-		expect(spot('6S')).toEqual({ fixture: 'cell', data: [1, 0] });
-		expect(spot('7H')).toEqual({ fixture: 'cell', data: [1, 1] });
+		// the pair keeps its order: 6S stood on 7H, so 6S is the card the cell shows
+		expect(spot('7H')).toEqual({ fixture: 'cell', data: [1, 0] });
+		expect(spot('6S')).toEqual({ fixture: 'cell', data: [1, 1] });
 	});
 
 	test('an armed ability never aims at a draft card in its cell', () => {
