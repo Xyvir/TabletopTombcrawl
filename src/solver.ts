@@ -2,6 +2,7 @@ import { shorthandCard, type Card, type CardLocation } from './game/card/card';
 import {
 	FREE_CELL_COUNT,
 	abilityUsable,
+	armedClick,
 	attackWith,
 	bossSlain,
 	canBuildOn,
@@ -20,6 +21,7 @@ import {
 	maxHp,
 	moveCapacity,
 	parCleared,
+	pisorfPair,
 	revealFaceDown,
 	bossProtected,
 	tombMove,
@@ -42,7 +44,14 @@ export type SolverAction =
 	| { kind: 'dig'; at: CardLocation }
 	| { kind: 'home'; at: CardLocation; reach?: boolean }
 	| { kind: 'move'; from: CardLocation; to: CardLocation }
-	| { kind: 'arm'; cell: number };
+	| { kind: 'arm'; cell: number }
+	/**
+	 * PISORF and WEYTWUT are aimed with a second and third click, so the search cannot reach them one
+	 * ply at a time: arming and then moving is not what the rules accept. Each is one action here, and
+	 * `applyAction` plays the clicks through the rules exactly as a hand would.
+	 */
+	| { kind: 'pisorf'; cell: number; from: CardLocation; to: number }
+	| { kind: 'weytwut'; cell: number; a: CardLocation; b: CardLocation };
 
 export interface SolverMove {
 	action: SolverAction;
@@ -62,6 +71,20 @@ export function applyAction(state: TombState, action: SolverAction): TombState |
 			return tombMove(state, action.from, action.to);
 		case 'arm':
 			return useAbility(state, action.cell);
+		case 'pisorf': {
+			const armed = useAbility(state, action.cell);
+			if (!armed) return null;
+			const taken = armedClick(armed, action.from);
+			if (!taken) return null;
+			return armedClick(taken, { fixture: 'cell', data: [action.to] });
+		}
+		case 'weytwut': {
+			const armed = useAbility(state, action.cell);
+			if (!armed) return null;
+			const first = armedClick(armed, action.a);
+			if (!first) return null;
+			return armedClick(first, action.b);
+		}
 	}
 }
 
@@ -181,11 +204,57 @@ export function generateMoves(state: TombState): SolverMove[] {
 		}
 	}
 
-	// Arming: the spell is spent by whichever move uses it.
+	/*
+	 * Casting. BYSSEPS, IMAWAL, BURNDAYRAZ, a Remedy or a Revive arm and then wait for the move that
+	 * spends them, so arming is a move of its own. PISORF and WEYTWUT are aimed at what they act on with
+	 * a second click, and the rules refuse a plain move while they are armed, so their arm and their aim
+	 * are generated as one action; an Elixir mends the glyph and has no target at all.
+	 */
 	for (let slot = 0; slot < state.game.cells.length; slot++) {
 		const entry = draftAt(state, slot);
 		if (!entry || !abilityUsable(state, slot)) continue;
-		if (entry.name === 'PISORF' || entry.name === 'WEYTWUT' || entry.name === 'Elixir') continue;
+		if (entry.name === 'PISORF') {
+			// A proper pair at the bottom of a column, parked whole in a free cell: two cards and two
+			// hearts for one cast, which is the strongest thing the spell does.
+			const open = emptyCells(state);
+			for (let c = 0; c < state.game.tableau.length; c++) {
+				const pile = state.game.tableau[c] ?? [];
+				if (pile.length < 2) continue;
+				const from = column(c, pile.length - 2);
+				const pair = pisorfPair(state, from);
+				if (!pair) continue;
+				for (const to of open) {
+					const action = { kind: 'pisorf' as const, cell: slot, from, to };
+					add(
+						action,
+						`${armLabel(entry.name, slot)} · ${pair.map(cardName).join(' ')} ${where(from)} to cell ${to + 1}`,
+						applyAction(state, action)
+					);
+				}
+			}
+			continue;
+		}
+		if (entry.name === 'WEYTWUT') {
+			// Two exposed cards trade places: the way a high card is put down and a low one brought up,
+			// which is also how a column top is cleared for the Elf's shot.
+			const exposed: CardLocation[] = [];
+			for (let c = 0; c < state.game.tableau.length; c++) {
+				const pile = state.game.tableau[c] ?? [];
+				if (pile.length) exposed.push(column(c, pile.length - 1));
+			}
+			for (let i = 0; i < state.game.cells.length; i++) if (state.game.cells[i]) exposed.push(cell(i));
+			for (let i = 0; i < exposed.length; i++) {
+				for (let j = i + 1; j < exposed.length; j++) {
+					const a = exposed[i];
+					const b = exposed[j];
+					// two cards in free cells trading places is the same board with a ply wasted
+					if (a.fixture === 'cell' && b.fixture === 'cell') continue;
+					const action = { kind: 'weytwut' as const, cell: slot, a, b };
+					add(action, `${armLabel(entry.name, slot)} · ${where(a)} with ${where(b)}`, applyAction(state, action));
+				}
+			}
+			continue;
+		}
 		add({ kind: 'arm', cell: slot }, armLabel(entry.name, slot), useAbility(state, slot));
 	}
 

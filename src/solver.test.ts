@@ -39,6 +39,22 @@ describe('tomb solver', () => {
 		expect(result.bestSteps.every((step) => step.label.length > 0)).toBe(true);
 	});
 
+	// WEYTWUT is aimed at two cards with a second click, so a plain `arm` followed by a `move` is refused
+	// by the rules: the cast has to be offered as one action or the search can never make it at all.
+	test('offers a two-click cast as one action, and it replays through the rules', () => {
+		const state = createTombState(4);
+		const cast = generateMoves(state).find((move) => move.action.kind === 'weytwut');
+
+		expect(cast).toBeDefined();
+		expect(cast!.label).toContain('WEYTWUT');
+		const replayed = applyAction(state, cast!.action);
+		expect(replayed).not.toBeNull();
+		// the glyph is spent by the cast, and the pair it traded has swapped places
+		expect(home(replayed!)).toBe(home(cast!.next));
+		expect(replayed!.hidden.length).toBe(cast!.next.hidden.length);
+		expect(replayed!.armed).toBeNull();
+	});
+
 	// The Wizard's window lasts one move, so it has to be part of a position's identity: collapsed into
 	// the twin without it, the free cast is a state the search can reach and then drop.
 	test('a banked free cast is its own position', () => {
