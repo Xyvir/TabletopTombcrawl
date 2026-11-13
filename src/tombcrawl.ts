@@ -141,11 +141,11 @@ const KIN: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Elf',
-		text: 'Ranged: kill or reveal any card in a column whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
+		text: 'Ranged: slay or reveal any card in a column whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
 	},
 	spades: {
 		name: 'Dwarf',
-		text: 'Grudge: the boss king has no protection — kill it without sending another king home first.',
+		text: 'Grudge: the boss king has no protection — slay it before another king lies in a grave.',
 	},
 };
 
@@ -164,7 +164,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Bounty: slay into the single most advanced foundation still in play and the kill costs no HP.',
+		text: 'Bounty: a slay into the single most advanced foundation still in play costs no HP.',
 	},
 };
 
@@ -190,7 +190,7 @@ const GLYPHS: Record<Suit, Ability> = {
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Revive',
-		text: 'Arm to kill whatever you can reach at any price: the bill takes your whole track to zero instead, and the item is spent with it.',
+		text: 'Arm to slay whatever you can reach at any price: the bill takes your whole track to zero instead, and the item is spent with it.',
 	},
 	hearts: {
 		name: 'Potion',
@@ -202,7 +202,7 @@ const CONSUMABLES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Remedy',
-		text: 'Arm, exhausted after your next action. Ignore the boss-suit power for that action: a kill, or a card parked in a free cell.',
+		text: 'Arm, exhausted after your next action. Ignore the boss-suit power for that action: a slay, or a card stashed in a pocket.',
 	},
 };
 
@@ -513,15 +513,15 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 	spades: {
 		name: 'Bandit',
 		power: 'Weakness',
-		text: 'killing this costs one extra HP, and so does parking it in a free cell.',
+		text: 'slaying this costs one extra HP, and so does stashing it in a pocket.',
 	},
 	hearts: {
 		name: 'Serpent',
 		power: 'Poison',
-		text: 'killing this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
+		text: 'slaying this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
 	},
-	clubs: { name: 'Gorgon', power: 'Burden', text: 'killing this exhausts and wounds your item.' },
-	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'killing this exhausts and wounds your Glyph.' },
+			clubs: { name: 'Gorgon', power: 'Burden', text: 'slaying this exhausts and wounds your item.' },
+	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'slaying this exhausts and wounds your Glyph.' },
 };
 
 /** The aura is off while a Remedy is armed: the action it covers ignores the power, kill or park. */

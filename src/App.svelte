@@ -954,7 +954,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The deal's one monster power, e.g. "Greater Gorgon — Burden: killing this exhausts your Consumable."
+	 * The crawl's one monster power, e.g. "Greater Gorgon — Burden: slaying this exhausts and wounds your item."
 	 * The court and every lesser king wear it, so it is always read from the boss suit.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
