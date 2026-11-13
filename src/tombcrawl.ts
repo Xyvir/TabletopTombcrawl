@@ -105,7 +105,7 @@ export const ROLE_LABEL: Record<DraftRole, string> = {
 	kin: 'Kin · passive',
 	class: 'Class · passive',
 	glyph: 'Glyph · active, refreshes on level up',
-	consumable: 'Item · active, refilled by playing it home',
+	consumable: 'Item · active, restocked after it is slain',
 };
 
 /**
@@ -141,7 +141,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Elf',
-		text: 'Ranged: slay or reveal any card in a column whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
+		text: 'Ranged: slay or reveal any card in a hallway whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
 	},
 	spades: {
 		name: 'Dwarf',
@@ -156,7 +156,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'Priest',
-		text: 'Vigil: exploration and level up healing mends two wounds instead of one.',
+		text: 'Vigil: every dig and every level up heals two wounds instead of one.',
 	},
 	clubs: {
 		name: 'Wizard',
@@ -171,15 +171,15 @@ const CLASSES: Record<Suit, Ability> = {
 const GLYPHS: Record<Suit, Ability> = {
 	spades: {
 		name: 'BYSSEPS',
-		text: 'Arm, then move a valid stack of any size, even one your free cells could not carry. Spent by that move.',
+		text: 'Arm, then move a valid stack of any size, even one your pockets could not carry. Spent by that move.',
 	},
 	hearts: {
 		name: 'IMAWAL',
-		text: 'Arm to play a run your free cells could carry on top of a face-down card, as if it were an empty column — or double-click a face-up card to turn it back over.',
+		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway — or double-click a face-up card to turn it back over.',
 	},
 	clubs: {
 		name: 'PISORF',
-		text: 'Arm, then send a proper stack of two cards into one open free cell: two cards, two hearts.',
+		text: 'Arm, then send a proper stack of two cards into one open pocket: two cards, two hearts.',
 	},
 	diamonds: {
 		name: 'WEYTWUT',
@@ -190,19 +190,19 @@ const GLYPHS: Record<Suit, Ability> = {
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Revive',
-		text: 'Arm to slay whatever you can reach at any price: the bill takes your whole track to zero instead, and the item is spent with it.',
+		text: 'Arm to slay whatever you can reach at any price: the bill takes your whole status track to zero instead, and the item is spent with it.',
 	},
 	hearts: {
 		name: 'Potion',
-		text: 'Drink to heal every wound on the track at once.',
+		text: 'Drink to heal every wound on the status track at once.',
 	},
 	clubs: {
 		name: 'Elixir',
-		text: 'Arm to heal and/or refresh (un-exhaust) your spell glyph.',
+		text: 'Arm to heal and refresh your spell glyph.',
 	},
 	diamonds: {
 		name: 'Remedy',
-		text: 'Arm, exhausted after your next action. Ignore the boss-suit power for that action: a slay, or a card stashed in a pocket.',
+		text: 'Arm, spent after your next action. Ignore the boss-suit power for that action: a slay, or a card stashed in a pocket.',
 	},
 };
 
@@ -518,7 +518,7 @@ export const MONSTERS: Record<Suit, { name: string; power: string; text: string 
 	hearts: {
 		name: 'Serpent',
 		power: 'Poison',
-		text: 'slaying this reveals the bottom face-down card of the rightmost fogged column, buried or not, with no heal.',
+		text: 'slaying this reveals the lowest fogged card of the rightmost fogged hallway, buried or not, with no heal.',
 	},
 			clubs: { name: 'Gorgon', power: 'Burden', text: 'slaying this exhausts and wounds your item.' },
 	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'slaying this exhausts and wounds your Glyph.' },
@@ -878,7 +878,7 @@ export interface FoundationCheck {
 export function canSendHome(state: TombState, from: CardLocation, ignoreCover = false): FoundationCheck {
 	const card = cardAt(state.game, from);
 	if (!card) return { legal: false, reason: 'no card' };
-	if (card.location.fixture === 'foundation') return { legal: false, reason: 'already home' };
+			if (card.location.fixture === 'foundation') return { legal: false, reason: 'already in its grave' };
 
 	if (from.fixture === 'cell') {
 		// A wound locks a card against building, spells and passives. The foundation is the one way out
@@ -909,7 +909,7 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	const human = hasPassive(state, 'Human');
 	const gap = human ? 2 : 1;
 	if (rank === home) {
-		return { legal: false, reason: 'foundation already past this rank' };
+		return { legal: false, reason: 'that grave is past this rank' };
 	}
 
 	// A drafted card counts as already home, but only once it is the card this pile is really waiting
@@ -921,7 +921,7 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	if (rank > home + gap && !skip) {
 		return {
 			legal: false,
-			reason: home ? `foundation needs the ${home + 1 <= 13 ? home + 1 : 'next'} of this suit` : 'needs an ace',
+			reason: home ? `the grave needs the ${home + 1 <= 13 ? home + 1 : 'next'} of this suit` : 'needs an ace',
 		};
 	}
 	return { legal: true, reason: '' };

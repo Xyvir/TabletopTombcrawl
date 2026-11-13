@@ -523,7 +523,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	function itemSlotHint(state: TombState | null, suit: string): string {
 		const feed = state?.itemWindow?.any ? 'any card' : `a ${suit} card`;
-		return `Exhausted item slot — play ${feed} here on your next action to remake the item. Miss it and this is an ordinary free cell.`;
+		return `Spent item pocket — play ${feed} here on your next action to restock it. Anything else converts this pocket.`;
 	}
 
 	/**
@@ -1611,7 +1611,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				type="button"
 				class="titlecard"
 				onclick={openLayout}
-				title="Choose a loadout: every party the four roles can make, and how far you have got with it"
+				title="Choose a loadout: every arrangement the four roles can make, and how far you have got with it"
 				aria-label="Tabletop Tombcrawl — choose a loadout"
 			>
 				<span class="titlemark">{@html titleMark}</span>
@@ -1626,7 +1626,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class="slot"
 					class:empty={!stack.length}
 					data-drop={`foundation:${i}`}
-					aria-label={`foundation ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
+					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
 					onclick={() => tap(location)}
 				>
 					{#if stack.length}
@@ -1684,7 +1684,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					data-role={entry ? entry.role : undefined}						title={wounded
 							? `Wounded ${wounded.rank} of ${wounded.suit} — face down. ${
 									tomb && woundedCanGoHome(tomb)
-										? 'Heal it face up, or slay it straight to its foundation, before you can use it.'
+										? 'Heal it face up, or slay it straight to its grave, before you can use it.'
 										: 'Heal it face up before you can use it.'
 								}`
 						: entry
@@ -1694,7 +1694,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							: pending
 								? itemSlotHint(tomb, pending.suit)
 								: undefined}
-					aria-label={`free cell ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${ROLE_WORD[entry.role]}: ${entry.name}` : ''}`}
+					aria-label={`pocket ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${ROLE_WORD[entry.role]}: ${entry.name}` : ''}`}
 					onclick={(event) => (card ? tapCard(event, card) : emptyCellClick(event, location))}
 					onpointerdown={(event) => card && onCardPointerDown(event, card)}
 					onpointerenter={() => {
@@ -1779,7 +1779,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span
 				class="hearts"
 				title={openSlots
-					? `${tombHp} of ${maxHp(tomb)} held, and ${openSlots} empty free cell${openSlots === 1 ? '' : 's'} worth a heart each`
+					? `${tombHp} of ${maxHp(tomb)} held, and ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each`
 					: `${tombHp} of ${maxHp(tomb)} held`}
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
@@ -1830,7 +1830,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>
 				<button
 					class="cascade-hit"
-					aria-label={`column ${col + 1}, ${cascade.length} cards`}
+					aria-label={`hallway ${col + 1}, ${cascade.length} cards`}
 					onclick={() => tap({ fixture: 'cascade', data: [col, Math.max(0, cascade.length - 1)] })}
 				></button>
 				{#each cascade as card, i}
@@ -1863,12 +1863,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								? auraTitle(tomb, card)
 								: down && tomb
 									? canRevealFaceDown(tomb, card.location)
-										? 'Unexplored Room — explore it: the dig mends a wound.'
-										: 'Unexplored Room — buried. Dig the cards above it off first; the dig mends a wound.'
+										? 'Unexplored Room — dig it to heal a wound.'
+										: 'Unexplored Room — buried. Dig the cards above it off first; the dig heals a wound.'
 									: tomb
 										? `${FODDER} — no power.`
 										: undefined}
-						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
+						aria-label={`${down ? 'fogged card' : `${card.rank} of ${card.suit}`}, hallway ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
 						onpointerenter={() => {
 							if (tomb) tombHover = card.location;
@@ -1930,7 +1930,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					aria-pressed={difficulty === level}
 					disabled={!tomb || !atStart}
 					title={!tomb
-						? 'Difficulty only sizes the tomb track: the classic board always keeps four free cells.'
+						? 'Difficulty only sizes the status track: the classic board always keeps four pockets.'
 						: atStart
 							? `${FREE_CELL_COUNT[level]} pockets — ${FREE_CELL_COUNT[level] + 4} wounds before the delver falls`
 							: 'Undo all the way back to the start to change difficulty.'}
@@ -1984,14 +1984,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					</span>
 				</header>
 				<!-- A hard clear is a different claim from a med one, so the sheet reads one track at a time. -->
-				<div class="tiers" role="group" aria-label="Which track to show">
+				<div class="tiers" role="group" aria-label="Which difficulty to show">
 					{#each DIFFICULTIES as level (level)}
 						<button class="btn" aria-pressed={layoutDifficulty === level} onclick={() => (layoutDifficulty = level)}>
 							{DIFFICULTY_LABEL[level]}
 						</button>
 					{/each}
 				</div>
-				<div class="layout-body" role="group" aria-label="The 256 parties" onmouseleave={() => (hovered = null)}>
+				<div class="layout-body" role="group" aria-label="The 256 loadouts" onmouseleave={() => (hovered = null)}>
 					<div class="trellis">
 						<span class="corner" style="grid-area: 1 / 1"></span>
 						{#each SUITS as suit, suitIndex (suit)}

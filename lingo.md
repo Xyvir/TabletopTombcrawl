@@ -154,43 +154,22 @@ Not in copy yet. Ranked by how much the current word hurts.
 
 ---
 
-## Gaps
+## Settled by argument
 
-The audit of every string a player can read, against the words above.
+- **Dig** is the verb; *unexplored* survives only in the name of the card, "Unexplored Room".
+- **Fog** is a card not yet dug; **buried** is a card under another. "Face-down" is code; copy says fog.
+- **Exhaust** is the verb, **spent** is the status, **refresh** is what a glyph does when it comes back.
+  Three words, three jobs — the Gorgon exhausts your item, the item sits there spent, the glyph refreshes.
+- **Heal**, never mend.
+- **Level** and "level up" stay. Depth was rejected: it is Desktop Dungeons' word, not this tomb's.
+- **Status track**, always, never "the track".
+- **Crawl** for a playthrough, always; "run" is banned in that sense. A *run of cards* stays a run — that is
+  the sequence, not the game.
+- **Loadout** is the configuration: the four party spots plus the crawl seed that proves them. The sheet
+  says "Choose a loadout".
 
-### Copy that contradicts a settled word
+### Kept as is
 
-| Where | Says | Should say |
-| --- | --- | --- |
-| The item's role label | "Item · active, refilled by playing it home" | "…refilled by slaying it" — *home* and *playing* are both retired |
-| aria, a grave | `foundation 2` | `grave 2` |
-| aria, a pocket | `free cell 2` | `pocket 2` |
-| aria, the tomb | `column 3, 5 cards` | `hallway 3, 5 cards` |
-| BYSSEPS, IMAWAL, PISORF | "free cells" | pockets |
-| Elf's Ranged, Serpent's power | "column" | hallway |
-| Refusals | "already home", "foundation already past this rank", "foundation needs the next of this suit" | "already in its grave", "that grave is past this rank", "the grave needs the next of this suit" |
-| Wounded pocket hint | "Heal it face up, or slay it straight to its foundation" | "Mend it face up, or slay it straight to its grave" |
-| The chooser | "Choose a loadout", "the 256 parties", "Which track to show" | three names for one sheet — see 9 |
-| The reference board | aria `FreeCell board` | homage or leak? see 11 |
-
-### Decisions still to make
-
-1. **Dig or explore.** Both are in copy for one act: "Unexplored Room — explore it: the dig mends a
-   wound." Pick **dig**; *unexplored* survives only as the adjective.
-2. **Level.** The HUD says LEVEL and three texts say "level up". Candidates: **depth**, with *descend* as the
-   verb — "the glyph refreshes when you descend" beats "refreshes on level up".
-3. **Exhaust, spent, refresh.** Three words for one state: an item is exhausted, a glyph is refreshed, and
-   the copy says "un-exhaust". Pick **spent** for the item and **ready** for the glyph, or one word for both.
-4. **Heal or mend.** The fog tooltip says mend, the potion says heal, the pocket hint says heal.
-5. **Fog, face-down, buried, covered.** Four words, two states: a card not yet dug (fog / face-down /
-   unexplored room) and a card under another (buried / covered). One word each.
-6. **"The track".** Short for status track after first mention — allowed, or always the full name?
-7. **Run.** Banned from copy in favour of crawl? It appears in comments freely and in a few strings.
-8. **Party roles.** Kin, Class, Glyph, Item are used but undefined here, and their labels say passive and
-   active. Decide the four nouns and the two modes.
-9. **The chooser.** Loadout, party, parties, trellis and track all name the sheet that picks a crawl's
-   four cards. It needs one name — *retinue* is the standing candidate.
-10. **Score, difficulty labels, the solver bar.** No fantasy yet: SCORE 0/500, Easy/Med/Hard, and the
-    background solver's bar are the last mechanical surfaces.
-11. **FreeCell.** The reference board is named after the source game on purpose. Decide whether that is a
-    homage worth keeping or the one leak the glossary should plug.
+- LEVEL, HP and SCORE in the HUD, and Easy / Med / Hard.
+- Kin, Class, Glyph, Item, and their passive / active labels.
+- The reference board's "FreeCell" name. It is an homage to the game this one is built from, not a leak.
