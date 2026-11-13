@@ -164,7 +164,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Bounty: slaying into the deepest grave inflicts no wounds.',
+		text: 'Bounty: slaying into the fullest grave inflicts no wounds.',
 	},
 };
 
