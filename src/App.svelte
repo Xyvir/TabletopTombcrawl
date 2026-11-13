@@ -1510,7 +1510,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
 		seedInput = '';
 		if (variant === 'tomb') {
-			// New game clears the solver reading even when the same deal comes back: the player has
+			// New crawl clears the solver reading even when the same deal comes back: the player has
 			// started again, and the bar should start again with them.
 			clearProbe();
 			tombHistory = [];
@@ -1972,7 +1972,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				bind:value={seedInput}
 			/>
 		</label>
-		<button class="btn primary" onclick={newDeal}>New game</button>
+		<button class="btn primary" onclick={newDeal}>New crawl</button>
 		<div class="difficulty" role="group" aria-label={`Pockets ${FREE_CELL_COUNT[difficulty]}`}>
 			{#each DIFFICULTIES as level (level)}
 				<button
@@ -1991,7 +1991,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{/each}
 		</div>
 		<button class="btn" onclick={replay}>Restart crawl</button>
-		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
+		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>End crawl</button>
 	</footer>
 
 		{#if flash}
@@ -2185,7 +2185,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{:else}
 				<p>You won!</p>
 			{/if}
-			<button class="btn primary" onclick={newDeal}>New game</button>
+			<button class="btn primary" onclick={newDeal}>New crawl</button>
 		</div>
 	{/if}
 </div>

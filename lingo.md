@@ -37,8 +37,8 @@ A **crawl** is the whole board; the **tomb** is only the part you play in. Copy 
 table says crawl, and copy that means the eight hallways says tomb — "a card in the tomb", "the tomb empties".
 
 One crawl *is* the whole game, the way one floor is the whole of a Desktop Dungeons run, which is why the
-word works as both the sit-down and the board. "New game" stays as it is: it drafts a fresh party and a
-fresh seed, where "Restart crawl" replays the one you have.
+word works as both the sit-down and the board. "New crawl" drafts a fresh party and a fresh seed,
+"Restart crawl" replays the one you have, and "End crawl" is how a crawl is left once the boss is down.
 
 A pocket is the same word in all three of its jobs — that is the point of choosing it over `slot` or
 `cell`. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of pocket it is when that matters:
