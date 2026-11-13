@@ -1559,44 +1559,42 @@ describe('tombcrawl progression rules', () => {
 		expect(next.wounded[1]).toBe(0);
 	});
 
-	test('a king carries its own suit power, whatever suit the tomb dealt', () => {
-		// A heart tomb: its boss is a heart king, so its court is hearts. A heart king still poisons —
-		// the king is a boss in his own right — while a heart queen of another tomb would not.
+	test('an off-suit king wears the boss suit power: a spade king poisons in a heart tomb', () => {
 		const state = makeTomb({
-			columns: [['2C', '8H'], ['KH']],
+			columns: [['2C', '8H'], ['KS']],
 			cells: ['6S', '2D'],
-			foundations: ['QH', 'QS', 'QD', 'QC'],
+			foundations: ['QS', 'QH', 'QD', 'QC'],
 			hidden: ['2C'],
-			boss: 'KS',
+			boss: 'KH',
 		});
-		expect(state.bossSuit).toBe('spades');
-		const king = state.game.cards.find((card) => shorthandCard(card) === 'KH')!;
+		expect(state.bossSuit).toBe('hearts');
+		const king = state.game.cards.find((card) => shorthandCard(card) === 'KS')!;
 		expect(carriesPower(state, king)).toBe(true);
 
 		const next = attackWith(state, cascade(1, 0))!;
 		expect(next.hidden).not.toContain('2C');
 	});
 
-	test('a spade king is weak in a heart tomb', () => {
+	test('an off-suit king is weak in a spade tomb, where the boss suit costs a rank more', () => {
 		const state = makeTomb({
-			columns: [['KS']],
+			columns: [['KH']],
 			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
-			foundations: ['QS', 'QH', 'QD', 'QC'],
-			boss: 'KH',
+			foundations: ['QH', 'QS', 'QD', 'QC'],
+			boss: 'KS',
 		});
 		const level = currentLevel(state);
 		// Weakness charges a rank more than the card is worth: 13 + 1 - level, not 13 - level
 		expect(attackPreview(state, cascade(0)).damage).toBe(Math.max(0, 14 - level));
 	});
 
-	test('a club king drains the consumable in a tomb whose boss is a heart', () => {
+	test('an off-suit king drains the consumable in a club tomb', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '7C', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
-			columns: [['KC']],
+			columns: [['KH']],
 			cells: ['7C', '3C', '4C', '6C', '7D', '8C', null],
-			foundations: ['QC', 'QH', 'QD', 'QS'],
+			foundations: ['QH', 'QS', 'QD', 'QC'],
 			draft,
-			boss: 'KH',
+			boss: 'KC',
 		});
 		const bitten = attackWith(state, cascade(0, 0))!;
 		expect(bitten.exhausted[0]).toBe(true);

@@ -935,11 +935,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * A suit's monster and its power, e.g. "Gorgon — Burden: killing this exhausts your Consumable."
-	 * Read from the card's own suit: the court answers to the run's boss, and a king answers to itself.
+	 * The deal's one monster power, e.g. "Gorgon — Burden: killing this exhausts your Consumable."
+	 * The court and every lesser king wear it, so it is always read from the boss suit.
 	 */
-	function auraTitle(suit: keyof typeof MONSTERS, withName = true) {
-		const monster = MONSTERS[suit];
+	function auraTitle(withName = true) {
+		if (!tomb?.bossSuit) return '';
+		const monster = MONSTERS[tomb.bossSuit];
 		return `${withName ? `${monster.name} — ` : ''}${monster.power}: ${monster.text}`;
 	}
 
@@ -1837,9 +1838,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									bossProtected(tomb)
 										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
 										: ''
-								}\n${auraTitle(card.suit, false)}`
+								}\n${auraTitle(false)}`
 							: power && !down && tomb
-								? auraTitle(card.suit)
+								? auraTitle()
 								: undefined}
 						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
