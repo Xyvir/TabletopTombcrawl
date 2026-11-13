@@ -80,6 +80,12 @@ export const CLAUSES = {
 	bossAuraPark: true,
 	/** Weakness: a boss-suit minion costs one rank more than its card says. */
 	weaknessRank: true,
+	/**
+	 * Every king carries its own suit's power, not only the court of the run's boss suit. A king is a
+	 * boss in its own right: the run's suit decides which court answers to the king who ends the run,
+	 * not whether the other three are dangerous.
+	 */
+	kingPowers: true,
 	/** Thief: a kill into the leading foundation is free. */
 	thiefBounty: true,
 	/** A free cell holding two cards is worth two hearts rather than one. */
@@ -490,6 +496,16 @@ export function isBossMinion(state: TombState, card: Card): boolean {
 		!isBoss(state, card) &&
 		getRankForCompare(card.rank) <= getRankForCompare('queen')
 	);
+}
+
+/**
+ * Cards that carry a monster power. The boss suit's court always does, and with `kingPowers` every king
+ * does too, whatever suit the run dealt — a spade king is a Bandit in a heart tomb. The power is the
+ * card's own suit, so the court answers to the boss and the kings answer to themselves.
+ */
+export function carriesPower(state: TombState, card: Card): boolean {
+	if (isBossMinion(state, card)) return true;
+	return CLAUSES.kingPowers && card.rank === 'king';
 }
 
 /** Monster types: the flavour behind each boss suit, and the power that suit's cards carry. */
@@ -944,7 +960,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
-	if (CLAUSES.weaknessRank && isBossMinion(state, card) && state.bossSuit === 'spades' && auraActive(state)) {
+	if (CLAUSES.weaknessRank && carriesPower(state, card) && card.suit === 'spades' && auraActive(state)) {
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
@@ -1330,17 +1346,24 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 /**
  * The item a monster power drains: the Consumable under a Gorgon, the Glyph under a Wraith.
  */
-export function auraItem(state: TombState): number | null {
+function auraItem(state: TombState, card: Card): number | null {
 	const slotOf = (role: DraftRole): number | null => {
 		const slot = ROLES_BY_DRAW_ORDER.indexOf(role);
 		return slot >= 0 && slot < state.game.cells.length ? slot : null;
 	};
+	// The power is the card's own suit, so a king drains by its own nature and a court by its boss's.
+	const suit = card.suit;
 	// The Wraith on the slot clause drains the place rather than the item, so a converted one still bites.
-	if (state.bossSuit === 'diamonds' && CLAUSES.wraithSlot) return slotOf('glyph');
-	const role: DraftRole | null = state.bossSuit === 'clubs' ? 'consumable' : state.bossSuit === 'diamonds' ? 'glyph' : null;
+	if (suit === 'diamonds' && CLAUSES.wraithSlot) return slotOf('glyph');
+	const role: DraftRole | null = suit === 'clubs' ? 'consumable' : suit === 'diamonds' ? 'glyph' : null;
 	if (!role) return null;
 	const entry = state.draft.find((candidate) => candidate.role === role);
 	return entry ? entry.cell : null;
+}
+
+/** The item cell a card's power would drain, for the interface to point at. */
+export function auraItemOf(state: TombState, card: Card): number | null {
+	return carriesPower(state, card) ? auraItem(state, card) : null;
 }
 
 /** Turn one card of an item cell face-down, if it still has a face-up card to give. */
@@ -1356,8 +1379,8 @@ function woundCell(state: TombState, cell: number): TombState {
  * The aura exhausts that item (one already spent simply stays spent) and wounds it.
  */
 export function auraItemWound(state: TombState, card: Card, from: CardLocation): number | null {
-	if (!isBossMinion(state, card) || !auraActive(state)) return null;
-	const cell = auraItem(state);
+	if (!carriesPower(state, card) || !auraActive(state)) return null;
+	const cell = auraItem(state, card);
 	if (cell === null) return null;
 	// a card leaving that very cell takes the item with it: there is nothing left behind to drain
 	if (from.fixture === 'cell' && from.data[0] === cell) return null;
@@ -1371,8 +1394,8 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
  * `by` says which of the two it was, because Weakness is the one power already priced into the kill.
  */
 function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState {
-	if (!isBossMinion(state, card) || !auraActive(state)) return state;
-	switch (state.bossSuit) {
+	if (!carriesPower(state, card) || !auraActive(state)) return state;
+	switch (card.suit) {
 		case 'hearts': {
 			// Poison digs anywhere, buried or not: it finds the deepest face-down card of the
 			// rightmost column that still has fog, with no heal. Columns are scanned right to left,
@@ -1400,7 +1423,7 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 		case 'clubs':
 		case 'diamonds': {
 			// Burden and Mana Burn take the item itself: spent, and turned face-down as a wound.
-			const cell = auraItem(state);
+			const cell = auraItem(state, card);
 			if (cell === null) return state;
 			const exhausted = [...state.exhausted];
 			exhausted[cell] = true;

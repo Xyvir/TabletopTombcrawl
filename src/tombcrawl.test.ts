@@ -17,6 +17,7 @@ import {
 	bossSlain,
 	bossUnlocked,
 	canSendHome,
+	carriesPower,
 	cellCardMovable,		cellTopWounded,
 		flipFaceDown,
 
@@ -1556,6 +1557,50 @@ describe('tombcrawl progression rules', () => {
 		expect(next.hidden).toContain('KS');
 		// a card that costs nothing wounds nothing, and poison healed nothing either
 		expect(next.wounded[1]).toBe(0);
+	});
+
+	test('a king carries its own suit power, whatever suit the tomb dealt', () => {
+		// A heart tomb: its boss is a heart king, so its court is hearts. A heart king still poisons —
+		// the king is a boss in his own right — while a heart queen of another tomb would not.
+		const state = makeTomb({
+			columns: [['2C', '8H'], ['KH']],
+			cells: ['6S', '2D'],
+			foundations: ['QH', 'QS', 'QD', 'QC'],
+			hidden: ['2C'],
+			boss: 'KS',
+		});
+		expect(state.bossSuit).toBe('spades');
+		const king = state.game.cards.find((card) => shorthandCard(card) === 'KH')!;
+		expect(carriesPower(state, king)).toBe(true);
+
+		const next = attackWith(state, cascade(1, 0))!;
+		expect(next.hidden).not.toContain('2C');
+	});
+
+	test('a spade king is weak in a heart tomb', () => {
+		const state = makeTomb({
+			columns: [['KS']],
+			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
+			foundations: ['QS', 'QH', 'QD', 'QC'],
+			boss: 'KH',
+		});
+		const level = currentLevel(state);
+		// Weakness charges a rank more than the card is worth: 13 + 1 - level, not 13 - level
+		expect(attackPreview(state, cascade(0)).damage).toBe(Math.max(0, 14 - level));
+	});
+
+	test('a club king drains the consumable in a tomb whose boss is a heart', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '7C', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({
+			columns: [['KC']],
+			cells: ['7C', '3C', '4C', '6C', '7D', '8C', null],
+			foundations: ['QC', 'QH', 'QD', 'QS'],
+			draft,
+			boss: 'KH',
+		});
+		const bitten = attackWith(state, cascade(0, 0))!;
+		expect(bitten.exhausted[0]).toBe(true);
+		expect(bitten.wounded[0]).toBe(1);
 	});
 
 	test('a drafted card played out to the board is spent for good', () => {

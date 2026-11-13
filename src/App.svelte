@@ -41,7 +41,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		attackWith,
 		healPreview,
 		auraActive,
-		auraItem,
+		auraItemOf,
+		carriesPower,
 		canBuildOn,
 		cellCardMovable,
 		cellCards,
@@ -933,27 +934,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return `${MONSTERS[suit].name} of ${suit[0].toUpperCase()}${suit.slice(1)}`;
 	}
 
-	/** The suit's monster and its power, e.g. "Gorgon — Burden: killing this exhausts your Consumable." */
-	function auraTitle(state: TombState, withName = true) {
-		if (!state.bossSuit) return '';
-		const monster = MONSTERS[state.bossSuit];
+	/**
+	 * A suit's monster and its power, e.g. "Gorgon — Burden: killing this exhausts your Consumable."
+	 * Read from the card's own suit: the court answers to the run's boss, and a king answers to itself.
+	 */
+	function auraTitle(suit: keyof typeof MONSTERS, withName = true) {
+		const monster = MONSTERS[suit];
 		return `${withName ? `${monster.name} — ` : ''}${monster.power}: ${monster.text}`;
 	}
 
-	/** The monster power this move set off, if it killed one of the boss's minions. */
+	/** The monster power this move set off, if it killed a card that carries one. */
 	function powerFlash(before: TombState, after: TombState): FlashKind | null {
 		if (!after.bossSuit || !auraActive(before)) return null;
 		const slain = after.game.cards.find((card) => {
-			if (card.location.fixture !== 'foundation' || !isBossMinion(after, card)) return false;
+			if (card.location.fixture !== 'foundation' || !carriesPower(after, card)) return false;
 			const was = before.game.cards.find((other) => shorthandCard(other) === shorthandCard(card));
 			return !!was && was.location.fixture !== 'foundation';
 		});
 		if (!slain) return null;
 		// Poison only bites when there is fog left to dig into.
-		if (after.bossSuit === 'hearts') return after.hidden.length < before.hidden.length ? 'poison' : null;
+		if (slain.suit === 'hearts') return after.hidden.length < before.hidden.length ? 'poison' : null;
 		// Burden and Mana Burn need an item behind them to drain.
-		if (auraItem(after) === null) return null;
-		return after.bossSuit === 'clubs' ? 'burden' : 'mana';
+		if (auraItemOf(after, slain) === null) return null;
+		return slain.suit === 'clubs' ? 'burden' : 'mana';
 	}
 
 	function commit(next: TombState, before?: Map<string, DOMRect>) {
@@ -1646,7 +1649,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					// the one item the chip has reached: the rest of the party is a promise, not a monster.
 					class:aura={!!card &&
 						!!tomb &&
-						isBossMinion(tomb, card) &&
+						carriesPower(tomb, card) &&
+						!isBoss(tomb, card) &&
 						!down &&
 						(!entry || convertibleCell(tomb) === i)}
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
@@ -1812,6 +1816,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{@const down = !!tomb && isFaceDown(tomb, card)}
 					{@const boss = !!tomb && isBoss(tomb, card)}
 					{@const minion = !!tomb && isBossMinion(tomb, card)}
+					{@const power = !!tomb && carriesPower(tomb, card)}
 					{@const flipping = flippingIds.includes(shorthandCard(card))}
 					{@const slaying = !!slayAt && key(slayAt) === key(card.location)}
 					{@const doomed = !!doomedAt && key(doomedAt) === key(card.location)}
@@ -1821,7 +1826,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						class:aimed={!!tomb?.armed?.first && tomb.armed.first === shorthandCard(card)}
 						class:dragging={dragIds.has(shorthandCard(card))}
 						class:boss
-						class:aura={minion && !down}
+						class:aura={power && !down && !boss}
 						class:locked={!!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 						class:down
 						class:flipping
@@ -1832,9 +1837,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									bossProtected(tomb)
 										? ' — no hand can move it, and the foundation stays shut until one other king is slain. A glyph can still shift it.'
 										: ''
-								}\n${auraTitle(tomb, false)}`
-							: minion && !down && tomb
-								? auraTitle(tomb)
+								}\n${auraTitle(card.suit, false)}`
+							: power && !down && tomb
+								? auraTitle(card.suit)
 								: undefined}
 						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
