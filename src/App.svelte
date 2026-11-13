@@ -1420,11 +1420,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		apply(deal(seed));
 	}
 
-	function toggleMode() {
-		clearClickMemory();
-		mode = mode === 'auto' ? 'pick' : 'auto';
-	}
-
 	/**
 	 * Difficulty only sizes the tomb track's free cells. The seed is reused, so the cards, the fog
 	 * and the boss stay put and only the cell count changes. Locked once a move is made, unlocked
@@ -1830,9 +1825,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		>
 			TT Variant: {variant === 'tomb' ? 'on' : 'off'}
 		</button>
-		<button class="btn" onclick={toggleMode}>
-			Tap: {mode === 'auto' ? 'auto-move' : 'pick target'}
-		</button>
+		<label class="seed">
+			<span>Deal #</span>
+			<input
+				type="text"
+				inputmode="numeric"
+				placeholder={seed ? String(seed) : 'random'}
+				bind:value={seedInput}
+			/>
+		</label>
+		<button class="btn primary" onclick={newDeal}>New game</button>
 		<div class="difficulty" role="group" aria-label={`Free cells ${FREE_CELL_COUNT[difficulty]}`}>
 			{#each DIFFICULTIES as level (level)}
 				<button
@@ -1850,33 +1852,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</button>
 			{/each}
 		</div>
+		<button class="btn" onclick={replay}>Restart deal</button>
 		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
+		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 		{#if !tomb}
 			<button class="btn" onclick={sendHome}>Auto to home</button>
 		{/if}
-		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 		{#if tomb}
+			<!-- The move count is status, not a control, but a click still copies the session's moves. -->
 			<button
-				class="btn"
+				class="movecount"
 				title="Copy this session to the clipboard, to paste beside a solver run on the same seed"
 				onclick={copyRecording}
 			>
 				Moves ({recordedSteps.length})
 			</button>
 		{/if}
-		<button class="btn" onclick={replay}>Restart deal</button>
-
-		<label class="seed">
-			<span>Deal #</span>
-			<input
-				type="text"
-				inputmode="numeric"
-				placeholder={seed ? String(seed) : 'random'}
-				bind:value={seedInput}
-			/>
-		</label>
-		<button class="btn primary" onclick={newDeal}>New game</button>
-		<span class="meta">{seed ? `deal ${seed}` : ''}</span>
 	</footer>
 
 		{#if flash}
