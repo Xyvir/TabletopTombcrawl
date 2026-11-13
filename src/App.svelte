@@ -1863,8 +1863,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								? auraTitle(tomb, card)
 								: down && tomb
 									? canRevealFaceDown(tomb, card.location)
-										? "Unexplored Room — explore it: the dig mends one face-down card (two with a Priest's Vigil)."
-										: 'Unexplored Room — buried. Dig the cards above it off first; the dig mends a face-down card.'
+										? "Unexplored Room — explore it: the dig mends a wound (two with a Priest's Vigil)."
+										: 'Unexplored Room — buried. Dig the cards above it off first; the dig mends a wound.'
 									: tomb
 										? `${FODDER} — no power.`
 										: undefined}
@@ -1938,8 +1938,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</button>
 			{/each}
 		</div>
-		<button class="btn" onclick={replay}>Restart deal</button>
+		<!-- Undo leads: playtesting puts it far ahead of the other two in clicks. -->
 		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
+		<button class="btn" onclick={replay}>Restart deal</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
 	</footer>
 
