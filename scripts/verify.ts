@@ -49,8 +49,15 @@ const loadoutOf = (state: ReturnType<typeof createTombState>) =>
 		.map((entry) => entry.suit[0])
 		.join('');
 
+/** Only one track, e.g. DIFFICULTY=hard to re-prove the hard rows after a hard-only rule change. */
+const only = process.env.DIFFICULTY ?? '';
+/** Only these squares, `track:loadout` — a second, wider pass over what a first run missed. */
+const onlyKeys = (process.env.ONLY ?? '').split(',').filter(Boolean);
 const rows: Row[] = [];
-const mine = corpus.entries.filter((_, index) => index % shards === shard);
+const mine = corpus.entries
+	.filter((entry) => !only || entry.difficulty === only)
+	.filter((entry) => !onlyKeys.length || onlyKeys.includes(`${entry.difficulty}:${entry.loadout}`))
+	.filter((_, index) => index % shards === shard);
 for (const entry of mine) {
 	const difficulty = entry.difficulty as Difficulty;
 	const state = createTombState(entry.seed, FREE_CELL_COUNT[difficulty] ?? FREE_CELL_COUNT.med);
