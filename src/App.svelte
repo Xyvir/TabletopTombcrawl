@@ -17,7 +17,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		draggableRun,
 		foundationSchedule,
 		ghostClick,
-		homeAll,
 		moveRun,
 		rewindTo,
 		tapCell,
@@ -1170,16 +1169,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 	}
 
-	/**
-	 * Vanilla only: the tomb has no auto-to-home at all. A chain of foundation moves would spend the
-	 * item restock window, the free cast and the glyph refresh on cards the player never chose to
-	 * play, so in the tomb every card goes home as a deliberate click.
-	 */
-	function sendHome() {
-		flushPending();
-		apply(homeAll(game));
-	}
-
 	function setVariant(next: 'tomb' | 'vanilla') {
 		if (variant === next) return;
 		clearClickMemory();
@@ -1716,6 +1705,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			>HP {tombHp}{#if openSlots}<sup class="open">+{openSlots}</sup>{/if}/{maxHp(tomb)}</span
 			>
 			<span class="bosstag">Boss {bossTitle(tomb)}</span>
+			<!-- Status in dress, a button in fact: the move count is still the copy shortcut. -->
+			<button
+				class="moves"
+				type="button"
+				title="Copy this session to the clipboard, to paste beside a solver run on the same seed"
+				onclick={copyRecording}
+			>
+				Moves ({recordedSteps.length})
+			</button>
 			<span
 				class="score"
 				title="Score: every card that goes home is worth its own points — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb is 500, so the score divided by 5 is the percentage cleared."
@@ -1857,19 +1855,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<button class="btn" onclick={replay}>Restart deal</button>
 		<button class="btn" disabled={atStart} onclick={undoMove}>Undo</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>Exit</button>
-		{#if !tomb}
-			<button class="btn" onclick={sendHome}>Auto to home</button>
-		{/if}
-		{#if tomb}
-			<!-- The move count is status, not a control, but a click still copies the session's moves. -->
-			<button
-				class="movecount"
-				title="Copy this session to the clipboard, to paste beside a solver run on the same seed"
-				onclick={copyRecording}
-			>
-				Moves ({recordedSteps.length})
-			</button>
-		{/if}
 	</footer>
 
 		{#if flash}

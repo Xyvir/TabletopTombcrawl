@@ -405,20 +405,21 @@ img {
 	color: rgba(255, 255, 255, 0.45);
 }
 
-/* The move count reads as status rather than a control, but it is still the copy button. */
-.movecount {
+/*
+ * The move count sits in the status line and wears its dress, but it is a button: the underline on hover
+ * is the only sign it can be clicked, which is the one asymmetry it has against its neighbours.
+ */
+.tombhud .moves {
 	appearance: none;
 	border: 0;
 	background: none;
 	color: inherit;
 	font: inherit;
 	padding: 0;
-	opacity: 0.7;
 	cursor: pointer;
 }
 
-.movecount:hover {
-	opacity: 1;
+.tombhud .moves:hover {
 	text-decoration: underline;
 }
 
