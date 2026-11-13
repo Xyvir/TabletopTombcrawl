@@ -19,6 +19,8 @@ Two rules for this file:
 | **Status track** | The whole row of pockets: health, party and storage in one line. Directional — wounds fill from the right, the party sits at the left. | free cells + cells |
 | **Tomb** | One dealt board. "The tomb" is the tableau and the deal together. | the deal / the game |
 | **Deal** | Starting a tomb, and the tomb itself. "Restart deal". | deal |
+| **Graveyard** | The four piles a card goes to when it is slain. Where the dead lie. | foundations |
+| **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
 | **Boss** | The king that ends the run when slain. | the protected king |
 | **Court** | The boss suit's ace through queen. Carries the deal's aura. | boss-suit minions |
 | **General** | A king of any other suit. Carries the deal's aura too. | off-suit king |
@@ -32,6 +34,16 @@ Two rules for this file:
 Monster names are per suit and never per card: Bandit (spades, Weakness), Serpent (hearts, Poison),
 Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Their courts are graded *Lesser* (ace–5), bare
 (6–9) and *Greater* (10–Q); that ladder is flavour only.
+
+### Queued for the copy pass
+
+Copy that still uses the standard name, each a one-line change:
+
+- `aria-label="foundation 2"` — becomes `grave 2`, and so for the other three.
+- The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
+  shut until another king lies in it".
+- Thief's Bounty: "the single most advanced foundation still in play" — becomes "the deepest grave".
+- The loadout and trellis copy, wherever it says a card is "sent home" — see *lay to rest* below.
 
 ---
 
@@ -74,7 +86,6 @@ Not in copy yet. Ranked by how much the current word hurts.
 | Now | Proposal | Why |
 | --- | --- | --- |
 | column / cascade | **shaft** | The tomb's columns are vertical digs; "shaft" is directional and physical. "Column" is the FreeCell word and reads as spreadsheet. |
-| foundation | **vault** | Four vaults the dead are laid in. "Foundation" is architectural but generic; "vault" is the same idea with the tomb's fiction on it. |
 | send home / played home | **lay to rest** | The game already frames a kill as sending a card to its foundation. "Lay to rest" keeps the death metaphor instead of the domestic one. |
 | moves | **steps** | The track metaphor makes a move a step; "Moves (0)" is the last mechanical word in the HUD. |
 | tableau | **the tomb floor** | Only needed where "the tomb" is too broad: "the tomb floor" is where cards lie face-up. |
@@ -83,6 +94,9 @@ Not in copy yet. Ranked by how much the current word hurts.
 
 ## Rejected
 
+- **Vault / crypt** for the graveyard — settled as Graveyard because a card is *slain* to get there; a vault
+  is storage and a crypt is the room, not the pile. The board already says "graveyard" in its own code
+  (`gravesplit`, "four graves"), so the copy is catching up to the layout, not inventing a word.
 - **Goon / Grunt / Mook** for plain cards — Rat won: a creature in a tomb, not a soldier. Soldiers collide
   with King and General.
 - **Minion** for plain cards — already means "carries the aura" in the code and the tint's own explanation.
