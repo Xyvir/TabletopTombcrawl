@@ -1866,7 +1866,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										? "Unexplored Room — explore it: the dig mends one face-down card (two with a Priest's Vigil)."
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig mends a face-down card.'
 									: tomb
-										? `${FODDER} — no power: only the boss suit's court and the kings bite.`
+										? `${FODDER} — no power.`
 										: undefined}
 						aria-label={`${down ? 'face-down card' : `${card.rank} of ${card.suit}`}, column ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
