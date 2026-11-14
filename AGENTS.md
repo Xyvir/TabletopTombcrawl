@@ -39,6 +39,13 @@ string per move, copied from the log without its columns (`home AS -> spades fou
 `drop PISORF (cell 3)`). Columns, rows and cells in a log are 1-based; a run reads top card first, and the card
 a hand takes hold of is the bottom one listed.
 
+A solver line lives there too, as `<track>-<seed>.json` with `"source": "solver"`: `scripts/verify.ts` writes one
+whenever a re-prove finds a line, so the corpus keeps the proof and not just the claim. That is the cache that
+answers a question like *did this row need the damage cap* by replaying a stored line instead of paying for
+another search. Those files carry `actions` beside `lines` — the solver's own moves — and `replay.ts` applies the
+actions when they are present, because the printed vocabulary reaches past the transcript grammar (`range 2D col 5
+row 4`, `arm PISORF (cell 3) · col 4 with col 6`) and a text-only cache could not be checked against the rules.
+
 `node scripts/run.mjs scripts/replay.ts` replays every file through the real rules and reports the first illegal
 step. `FILES=solutions/737.json` checks one, `DEBUG=1` prints the board before each move. A line that no longer
 replays is not a bug in the tool: it records a crawl played under rules that have since changed, which is worth

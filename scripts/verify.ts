@@ -23,6 +23,46 @@ interface Entry {
 	moves: number;
 	difficulty: string;
 	goal: string;
+	party?: { role: string; name: string; suit: string }[];
+}
+
+/**
+ * A line the solver found goes into `solutions/` beside the hand-played ones. The corpus keeps only the claim
+ * and its move count, so a later question ("this row needed the damage cap, didn't it?") would otherwise
+ * cost another search: the line itself is the cache that answers it. `source` says which of the two found it.
+ */
+function writeSolution(
+	entry: Entry,
+	difficulty: Difficulty,
+	moves: number,
+	nodes: number,
+	lines: string[],
+	actions: unknown[]
+) {
+	if (process.env.NO_SOLUTIONS) return;
+	writeFileSync(
+		`solutions/${difficulty}-${entry.seed}.json`,
+		JSON.stringify(
+			{
+				seed: entry.seed,
+				difficulty,
+				goal: 'boss',
+				moves,
+				loadout: entry.loadout,
+				party: (entry.party ?? []).map((member) => member.name),
+				found: new Date().toISOString().slice(0, 10),
+				source: 'solver',
+				note: `best-first, ${nodes.toLocaleString()} states, exported by scripts/verify.ts`,
+				lines,
+				// The printed line is for reading; the actions are for replaying. The solver's own vocabulary
+				// reaches further than the transcript grammar (a `range` dig, an arm fused with its aim), so a
+				// cache that kept only the text could not be checked against the rules again.
+				actions,
+			},
+			null,
+			'\t'
+		) + '\n'
+	);
 }
 
 interface Row {
@@ -88,6 +128,13 @@ for (const entry of mine) {
 	};
 	rows.push(row);
 	writeFileSync(out, JSON.stringify(rows, null, '\t'));
+	// The winning line is kept whether or not this row's budget was the widest one: a proof is a proof.
+	if (result.solved) {
+		// The labels pad their verb so a printed line reads as a column: the transcript format is one space.
+		const lines = result.steps.map((step) => step.label.replace(/\s+/g, ' ').trim());
+		const actions = result.steps.map((step) => step.action);
+		writeSolution(entry, difficulty, row.now ?? 0, result.nodes, lines, actions);
+	}
 	const mark = dealt === entry.loadout ? (row.now === null ? 'MISS' : 'ok  ') : 'DEAL';
 	console.log(
 		`${mark} ${entry.loadout} seed ${entry.seed} boss ${entry.boss ?? 'hidden'} · was ${entry.moves} · now ${row.now ?? '—'} · ${(row.ms / 1000).toFixed(1)}s`

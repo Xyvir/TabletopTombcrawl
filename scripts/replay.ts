@@ -28,6 +28,7 @@ import {
 	type Difficulty,
 	type TombState,
 } from '../src/tombcrawl';
+import { applyAction, type SolverAction } from '../src/solver';
 import { shorthandCard, type CardLocation } from '../src/game/card/card';
 
 /** Where a transcript is kept. Not gitignored: these are the baselines, so they live in the repository. */
@@ -44,6 +45,12 @@ interface Solution {
 	source: string;
 	note?: string;
 	lines: string[];
+	/**
+	 * A solver line keeps the actions it took beside the printed one. Its vocabulary is wider than the
+	 * transcript grammar (a `range` dig, an arm fused with its aim), so replaying the actions is what keeps
+	 * a cached machine solution checkable rather than merely readable.
+	 */
+	actions?: SolverAction[];
 }
 
 const column = (index: number, row = 0): CardLocation => ({ fixture: 'cascade', data: [index, row] });
@@ -145,7 +152,17 @@ function check(file: string): boolean {
 		problems.push(`${solution.lines.length} lines, claims ${solution.moves} moves`);
 	}
 
-	for (let index = 0; index < solution.lines.length && !problems.length; index++) {
+	if (solution.actions?.length) {
+		for (let index = 0; index < solution.actions.length && !problems.length; index++) {
+			const next = applyAction(state, solution.actions[index]);
+			if (!next) {
+				problems.push(`action ${index + 1} is illegal: ${JSON.stringify(solution.actions[index])}`);
+				break;
+			}
+			state = next;
+		}
+	}
+	for (let index = 0; index < solution.lines.length && !problems.length && !solution.actions?.length; index++) {
 		const line = solution.lines[index];
 		if (process.env.DEBUG) {
 			const board = state.game.tableau.map((pile, index) => `${index + 1}: ${pile.map((card) => (state.hidden.includes(shorthandCard(card)) ? `(${shorthandCard(card)})` : shorthandCard(card))).join(' ')}`);
