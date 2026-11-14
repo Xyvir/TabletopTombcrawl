@@ -28,26 +28,39 @@ const openDb = (): Promise<IDBDatabase> =>
 			return;
 		}
 		const request = indexedDB.open(DB_NAME, DB_VERSION);
+		// A refused upgrade leaves the database on its old version, and every later open fails the same way.
+		request.onblocked = () => reject(new Error('another tab is holding the progress store open'));
 		request.onupgradeneeded = () => {
 			const db = request.result;
+			const transaction = request.transaction as IDBTransaction;
 			if (!db.objectStoreNames.contains(STORE)) {
 				db.createObjectStore(STORE, { keyPath: 'id' });
 				return;
 			}
 			// Version 1 keyed a result by its party alone, which cannot tell a med win from a hard one.
-			// The store is rebuilt around `id` and every old row is carried over as a med result, since
-			// that is the track the app played before this existed.
-			const old = (request.transaction as IDBTransaction).objectStore(STORE);
-			db.deleteObjectStore(STORE);
-			const next = db.createObjectStore(STORE, { keyPath: 'id' });
+			// The store is rebuilt around `id` and every old row is carried over as a med result, since that
+			// is the track the app played before this existed.
+			//
+			// The rows are read first and written back only once the old store is gone: a handle to a
+			// deleted store throws on `openCursor`, and an exception in here aborts the whole upgrade —
+			// which left every later read and write failing silently, so marks never survived a reload.
+			const old = transaction.objectStore(STORE);
+			const carried: LayoutRecord[] = [];
 			const cursor = old.openCursor();
 			cursor.onsuccess = () => {
 				const row = cursor.result;
-				if (!row) return;
-				const value = row.value as Partial<LayoutRecord>;
-				const difficulty = value.difficulty ?? 'med';
-				if (value.loadout) next.put({ ...value, difficulty, id: `${difficulty}:${value.loadout}` });
-				row.continue();
+				if (row) {
+					const value = row.value as Partial<LayoutRecord>;
+					if (value.loadout) {
+						const difficulty = value.difficulty ?? 'med';
+						carried.push({ ...(value as LayoutRecord), difficulty, id: `${difficulty}:${value.loadout}` });
+					}
+					row.continue();
+					return;
+				}
+				db.deleteObjectStore(STORE);
+				const store = db.createObjectStore(STORE, { keyPath: 'id' });
+				for (const record of carried) store.put(record);
 			};
 		};
 		request.onsuccess = () => resolve(request.result);
@@ -88,7 +101,10 @@ export async function readLayouts(): Promise<Map<string, LayoutRecord>> {
 	try {
 		const rows = await withStore<LayoutRecord[]>('readonly', (store) => store.getAll());
 		return new Map(rows.map((row) => [row.id, row]));
-	} catch {
+	} catch (error) {
+		// Storage being unavailable is not an error the player can act on, but a silent one is a bug report
+		// waiting to happen: the trellis then only knows this session's marks, and that should be in the log.
+		console.warn('tombcrawl: saved results could not be read', error);
 		return new Map();
 	}
 }
@@ -97,7 +113,8 @@ export async function readLayouts(): Promise<Map<string, LayoutRecord>> {
 export async function markLayout(record: LayoutRecord): Promise<void> {
 	try {
 		await withStore('readwrite', (store) => store.put(record));
-	} catch {
+	} catch (error) {
 		// the trellis still shows this session's marks; they just do not survive a reload
+		console.warn('tombcrawl: a result could not be saved', error);
 	}
 }
