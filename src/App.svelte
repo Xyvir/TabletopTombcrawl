@@ -295,7 +295,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		 */
 		placeholders?: Record<
 			string,
-			Partial<Record<Difficulty, { seed: number; score: number; at?: string | null }>>
+			Partial<Record<Difficulty, { seed: number; score: number | null; at?: string | null }>>
 		>;
 		missing: string[];
 	};
@@ -2088,7 +2088,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 															entry
 																? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}`
 																: filler
-																	? `seed ${filler.seed}, best score ${filler.score} — no win yet`
+																	? `seed ${filler.seed}${filler.score === null ? '' : `, best score ${filler.score}`} — no win yet`
 																	: 'no seed found yet'
 														}`}
 													aria-label={`${key} ${statusWord(key)}`}
@@ -2162,7 +2162,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								{#if !inspectedEntry && inspectedPlaceholder}
 									<span class="goal placeholder-note">
 										<span class="label">no win yet</span>
-										best {inspectedPlaceholder.score} on seed {inspectedPlaceholder.seed}
+										{#if inspectedPlaceholder.score === null}seed {inspectedPlaceholder.seed}{:else}best {inspectedPlaceholder.score} on seed {inspectedPlaceholder.seed}{/if}
 									</span>
 								{/if}
 							</p>

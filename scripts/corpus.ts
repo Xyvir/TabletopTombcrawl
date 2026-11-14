@@ -295,8 +295,28 @@ if (mode === 'merge') {
 	const rank = (entry: Entry) => (entry.goal === 'clear' ? 0 : 1);
 	// A party is one key per track: its med seed says nothing about its hard one, so the two sit side by side.
 	const keyOf = (entry: Entry) => `${entry.difficulty ?? 'med'}|${entry.loadout}`;
+	/**
+	 * Rows a rule change has retired. A sweep that cannot re-prove a win has not proved it lost, so the seed
+	 * stays on the square as a placeholder — the party is dealt and playable — while the claim goes away. The
+	 * list lives in `corpus/retired.json` so the shard files that produced those rows stay untouched.
+	 */
+	const retiredRows = (() => {
+		const path = process.env.RETIRED ?? 'corpus/retired.json';
+		if (!existsSync(path)) return [] as { difficulty?: string; loadout: string }[];
+		try {
+			const parsed = JSON.parse(readFileSync(path, 'utf8'));
+			return Array.isArray(parsed) ? parsed : [];
+		} catch {
+			return [];
+		}
+	})();
+	const retired = new Map(retiredRows.map((row) => [`${row.difficulty ?? 'med'}|${row.loadout}`, row]));
+	const live = all.filter((entry) => !retired.has(keyOf(entry)));
+	// A retired square keeps the seed it was won on, so the placeholder is the same deal with no claim.
+	const retiredSeeds = new Map<string, Entry>();
+	for (const entry of all) if (retired.has(keyOf(entry))) retiredSeeds.set(keyOf(entry), entry);
 	const unique = new Map<string, Entry>();
-	for (const entry of all) {
+	for (const entry of live) {
 		const key = keyOf(entry);
 		const held = unique.get(key);
 		if (!held || rank(entry) < rank(held) || (rank(entry) === rank(held) && entry.moves < held.moves)) {
@@ -307,7 +327,7 @@ if (mode === 'merge') {
 	// kill and a bare tomb are different claims, so the trellis keeps both rather than one per party.
 	type Proofs = Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>;
 	const found: Record<string, Partial<Record<string, Proofs>>> = {};
-	for (const entry of all) {
+	for (const entry of live) {
 		const level = entry.difficulty ?? 'med';
 		const achieved = entry.goal === 'clear' ? 'clear' : 'boss';
 		const held = found[entry.loadout]?.[level]?.[achieved];
@@ -320,12 +340,14 @@ if (mode === 'merge') {
 	// Placeholders: a square whose crawl matches the loadout but has no win, held by the best score
 	// reached on it. Same rule as a proof — the best result holds the square — and a win on that track
 	// deletes the placeholder outright, since a square with a win is not waiting for one.
-	type Placeholder = { seed: number; score: number; at: string | null };
+	type Placeholder = { seed: number; score: number | null; at: string | null };
 	const placeholders: Record<string, Partial<Record<string, Placeholder>>> = {};
+	/** A retired row has no score to show: nobody has filed one since the claim went. */
+	const scoreOf = (row: Placeholder) => row.score ?? -1;
 	const hold = (loadout: string, level: string, row: Placeholder) => {
 		if (found[loadout]?.[level]) return;
 		const known = placeholders[loadout]?.[level];
-		if (known && known.score >= row.score) return;
+		if (known && scoreOf(known) >= scoreOf(row)) return;
 		placeholders[loadout] = { ...placeholders[loadout], [level]: row };
 	};
 	const artifact = (() => {
@@ -338,9 +360,14 @@ if (mode === 'merge') {
 	})();
 	for (const [loadout, tracks] of Object.entries<any>(artifact?.placeholders ?? {})) {
 		for (const [level, row] of Object.entries<any>(tracks ?? {})) {
-			if (typeof row?.seed !== 'number' || typeof row?.score !== 'number') continue;
-			hold(loadout, level, { seed: row.seed, score: row.score, at: row.at ?? null });
+			if (typeof row?.seed !== 'number') continue;
+			hold(loadout, level, { seed: row.seed, score: typeof row.score === 'number' ? row.score : null, at: row.at ?? null });
 		}
+	}
+	// Retired rows come last of the seeds: a real score from a sweep outbids the unknown one they carry.
+	for (const [key, entry] of retiredSeeds) {
+		const level = key.slice(0, key.indexOf('|'));
+		hold(entry.loadout, level, { seed: entry.seed, score: null, at: entry.at ?? null });
 	}
 	if (existsSync(shardDir)) {
 		for (const name of readdirSync(shardDir)) {
