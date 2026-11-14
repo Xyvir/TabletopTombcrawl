@@ -1559,11 +1559,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function replay() {
 		flushPending();
 		if (tomb) {
+			// Measured before the deal is put back, so every card has somewhere to fly home from.
+			const before = cardRects();
 			tombHistory = [];
 			tombSelected = null;
 			// The same deal again, so the square it belongs to is unchanged.
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
 			game = tomb.game;
+			const redealt = game;
+			void tick().then(() => animateFrom(before, redealt, null));
 			return;
 		}
 		apply(deal(seed));
