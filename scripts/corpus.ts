@@ -80,24 +80,26 @@ const readEntries = (path: string): Entry[] => {
 };
 
 /**
- * Parties a rule change has retired, as `track|loadout`. The shard still holds the row that was demoted, and
- * counting it as a win is what made a fresh scan skip the very parties it exists to refill: 242 of 256 deals
- * skipped, 14 searched. A retired row is open ground again.
+ * The rows a rule change has demoted, as `track|loadout|seed`.
+ *
+ * Retirement is a claim about a *seed*, not about a party: the old seed's line needed a rule that no longer
+ * exists, but another seed may still deal that party and win honestly. Keying it by party alone went wrong
+ * twice in one night — a fresh scan skipped the very parties it existed to refill (242 of 256 deals skipped,
+ * 14 searched), and the first merge threw away 113 new wins because their party was on the list.
  */
-const retiredKeys = (() => {
+const demotedRows = (() => {
 	const path = process.env.RETIRED ?? 'corpus/retired.json';
-	if (!existsSync(path)) return new Set<string>();
+	if (!existsSync(path)) return [] as { difficulty?: string; loadout: string; seed?: number }[];
 	try {
 		const parsed = JSON.parse(readFileSync(path, 'utf8'));
-		return new Set(
-			Array.isArray(parsed)
-				? parsed.map((row: { difficulty?: string; loadout: string }) => `${row.difficulty ?? 'med'}|${row.loadout}`)
-				: []
-		);
+		return Array.isArray(parsed) ? parsed : [];
 	} catch {
-		return new Set<string>();
+		return [];
 	}
 })();
+const demotedSeed = (row: { difficulty?: string; loadout: string; seed?: number }) =>
+	`${row.difficulty ?? 'med'}|${row.loadout}|${row.seed}`;
+const demotedSeeds = new Set(demotedRows.filter((row) => typeof row.seed === 'number').map(demotedSeed));
 
 /**
  * Every party any worker has already won, across the published corpus and every shard on disk. A seed
@@ -114,7 +116,8 @@ const foundAnywhere = (): string[] => {
 			if (!name.startsWith('scan-') && !name.startsWith('shard-')) continue;
 			for (const entry of readEntries(`${shardDir}/${name}`)) {
 				if (typeof entry.loadout !== 'string') continue;
-				if (retiredKeys.has(`${entry.difficulty ?? 'med'}|${entry.loadout}`)) continue;
+				// A demoted seed is not a win; a win on another seed of the same party is.
+				if (demotedSeeds.has(demotedSeed(entry))) continue;
 				found.add(entry.loadout);
 			}
 		}
@@ -349,10 +352,11 @@ if (mode === 'merge') {
 		}
 	})();
 	const retired = new Map(retiredRows.map((row) => [`${row.difficulty ?? 'med'}|${row.loadout}`, row]));
-	const live = all.filter((entry) => !retired.has(keyOf(entry)));
-	// A retired square keeps the seed it was won on, so the placeholder is the same deal with no claim.
+	// Only the demoted seed goes: a win on any other seed of that party is fresh evidence and stays live.
+	const live = all.filter((entry) => !demotedSeeds.has(demotedSeed(entry)));
+	// A demoted square keeps the seed it was demoted on, so the placeholder is the same deal with no claim.
 	const retiredSeeds = new Map<string, Entry>();
-	for (const entry of all) if (retired.has(keyOf(entry))) retiredSeeds.set(keyOf(entry), entry);
+	for (const entry of all) if (demotedSeeds.has(demotedSeed(entry))) retiredSeeds.set(keyOf(entry), entry);
 	const unique = new Map<string, Entry>();
 	for (const entry of live) {
 		const key = keyOf(entry);
