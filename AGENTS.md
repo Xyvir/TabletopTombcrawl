@@ -47,6 +47,10 @@ another search. Those files carry `actions` beside `lines` — the solver's own 
 actions when they are present, because the printed vocabulary reaches past the transcript grammar (`range 2D col 5
 row 4`, `arm PISORF (cell 3) · col 4 with col 6`) and a text-only cache could not be checked against the rules.
 
+A line played under rules that no longer exist goes to `solutions/archive/` rather than out of the repository: it
+stays readable, and the replay run only looks in `solutions/`, so a cap-era transcript can no longer be mistaken for a
+live baseline. Both of the two-heart-ceiling crawls (737, 1984) live there.
+
 `node scripts/run.mjs scripts/replay.ts` replays every file through the real rules and reports the first illegal
 step. `FILES=solutions/737.json` checks one, `DEBUG=1` prints the board before each move. A line that no longer
 replays is not a bug in the tool: it records a crawl played under rules that have since changed, which is worth
