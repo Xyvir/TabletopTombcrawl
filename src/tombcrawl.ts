@@ -88,6 +88,13 @@ export const CLAUSES = {
 	kingPowers: true,
 	/** Thief: a kill into the leading foundation is free. */
 	thiefBounty: true,
+	/**
+	 * Thief: a finished grave (a king on top) is out of the running for the bounty, so completing one
+	 * never takes the passive away for the rest of the run. With the clause off a full grave still
+	 * counts as the leader, and since nothing can out-rank a king the bounty can only ever pay for that
+	 * grave's own suit again — which is what makes a finished suit a dead end rather than a dividend.
+	 */
+	thiefFinishedPile: true,
 	/** A free cell holding two cards is worth two hearts rather than one. */
 	pisorfStack: true,
 	/**
@@ -711,7 +718,7 @@ export function leadingFoundation(state: TombState, suit: Suit): boolean {
 		// its own pile is the measure, not a rival
 		if (!card || card.suit === suit) return true;
 		const other = foundationTopRank(state, card.suit);
-		return other >= 13 || other < top;
+		return (CLAUSES.thiefFinishedPile && other >= 13) || other < top;
 	});
 }
 

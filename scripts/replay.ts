@@ -11,6 +11,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import {
+	CLAUSES,
 	FREE_CELL_COUNT,
 	armedClick,
 	armedDrop,
@@ -33,6 +34,10 @@ import { shorthandCard, type CardLocation } from '../src/game/card/card';
 
 /** Where a transcript is kept. Not gitignored: these are the baselines, so they live in the repository. */
 const DIR = process.env.DIR ?? 'solutions';
+
+// THIEF_FINISHED=0 reads the Thief's bounty the other way: a finished grave keeps the lead, so a line
+// that only survives on the second or third pile stops replaying. Used to price that clause.
+if (process.env.THIEF_FINISHED === '0') CLAUSES.thiefFinishedPile = false;
 
 interface Solution {
 	seed: number;
