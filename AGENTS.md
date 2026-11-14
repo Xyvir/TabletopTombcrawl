@@ -29,3 +29,17 @@ has not produced, which makes it a baseline to refine the solver against, not ju
 
 `corpus/` is gitignored, so `shard-human.json` is a local working file like the scan shards: the published
 `public/corpus.json` and its entry in `docs/` are what is kept in the repository.
+
+## Hand-played lines live in `solutions/`
+
+A corpus row keeps only the seed. When a player pastes the move log as well, the line itself goes into
+`solutions/<seed>.json`: the seed, track, goal, move count, loadout, party, the date, and `lines` — one action
+string per move, copied from the log without its columns (`home AS -> spades foundation`, `dig 8D col 8 row 5`,
+`park 9H col 8 -> cell 5`, `move TD JS col 3 -> col 2`, `swap AS col 4 <-> 8D col 4`, `arm PISORF (cell 3)`,
+`drop PISORF (cell 3)`). Columns, rows and cells in a log are 1-based; a run reads top card first, and the card
+a hand takes hold of is the bottom one listed.
+
+`node scripts/run.mjs scripts/replay.ts` replays every file through the real rules and reports the first illegal
+step. `FILES=solutions/737.json` checks one, `DEBUG=1` prints the board before each move. A line that no longer
+replays is not a bug in the tool: it records a crawl played under rules that have since changed, which is worth
+knowing before the line is used as a baseline.
