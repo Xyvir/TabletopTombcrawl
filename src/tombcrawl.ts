@@ -539,20 +539,35 @@ export function carriesPower(state: TombState, card: Card): boolean {
 	return CLAUSES.kingPowers && card.rank === 'king';
 }
 
-/** Monster types: the flavour behind each boss suit, and the power that suit's cards carry. */
-export const MONSTERS: Record<Suit, { name: string; power: string; text: string }> = {
+/**
+ * Monster types: the flavour behind each boss suit, the power that suit's cards carry, and the boss who
+ * wears it. The names are the ones the monsters answer to, borrowed rather than invented.
+ */
+export const MONSTERS: Record<Suit, { name: string; boss: string; power: string; text: string }> = {
 	spades: {
 		name: 'Bandit',
+		boss: 'Tomithy Longdall',
 		power: 'Weakness',
 		text: 'slaying this inflicts one extra wound, and so does stashing it in a pocket.',
 	},
 	hearts: {
 		name: 'Serpent',
+		boss: 'Jörmungandrn',
 		power: 'Poison',
 		text: 'slaying this reveals the lowest fogged card of the rightmost fogged hallway, buried or not, with no heal.',
 	},
-			clubs: { name: 'Gorgon', power: 'Burden', text: 'slaying this exhausts and wounds your item.' },
-	diamonds: { name: 'Wraith', power: 'Mana Burn', text: 'slaying this exhausts and wounds your Glyph.' },
+	clubs: {
+		name: 'Gorgon',
+		boss: 'Medusa',
+		power: 'Burden',
+		text: 'slaying this exhausts and wounds your item.',
+	},
+	diamonds: {
+		name: 'Wraith',
+		boss: 'Tormented One',
+		power: 'Mana Burn',
+		text: 'slaying this exhausts and wounds your Glyph.',
+	},
 };
 
 /** The aura is off while a Remedy is armed: the action it covers ignores the power, kill or park. */

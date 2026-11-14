@@ -1004,11 +1004,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	/* ---------- tabletop tombcrawl ---------- */
 
-	/** The boss reads as a king, its monster and the suit it lives in: "Serpent King of Hearts". */
+	/** The boss reads as its name, its monster and the suit it lives in: "Medusa, Gorgon King of Clubs". */
 	function bossTitle(state: TombState): string {
 		const suit = state.bossSuit;
 		if (!suit) return 'not revealed';
-		return `${MONSTERS[suit].name} King of ${suit[0].toUpperCase()}${suit.slice(1)}`;
+		const monster = MONSTERS[suit];
+		return `${monster.boss}, ${monster.name} King of ${suit[0].toUpperCase()}${suit.slice(1)}`;
 	}
 
 	/**
@@ -1025,7 +1026,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function carrierName(state: TombState, card: Card) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit].name;
-		if (card.rank === 'king') return `Boss ${monster}'s General`;
+		if (card.rank === 'king') return `${MONSTERS[state.bossSuit].boss}'s General`;
 		const rank = getRankForCompare(card.rank);
 		if (rank <= 4) return `Lesser ${monster}`;
 		return rank >= 9 ? `Greater ${monster}` : monster;

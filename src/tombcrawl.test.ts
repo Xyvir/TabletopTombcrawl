@@ -2306,11 +2306,11 @@ describe('mana burn on the slot', () => {
 });
 
 describe('tombcrawl monsters', () => {
-	test('every boss suit names its monster and power', () => {
-		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', power: 'Weakness' });
-		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', power: 'Poison' });
-		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', power: 'Burden' });
-		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', power: 'Mana Burn' });
+	test('every boss suit names its monster, its boss and its power', () => {
+		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Weakness' });
+		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', boss: 'Jörmungandrn', power: 'Poison' });
+		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Burden' });
+		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', boss: 'Tormented One', power: 'Mana Burn' });
 	});
 });
 
