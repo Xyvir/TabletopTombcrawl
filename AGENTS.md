@@ -1,5 +1,16 @@
 # Working notes
 
+## Overlapping windows are the design, not a bug
+
+DD and FreeCell both run on many small, overlapping windows of opportunity, and that is the shape this game
+wants. A power that has nothing to do on a particular crawl is not a broken rule: the conversion chip is
+what turns a quiet slot into a decision, so an ability going idle is one more thing to weigh when the chip
+moves, and the choice of when to spend it is the interesting part.
+
+So do not retune a power, or reject a rule, because it can be inert on some seeds — including a Thief whose
+bounty goes quiet once a grave fills. Argue a change from the windows it opens and closes, and measure it,
+never from the fact that a given crawl never needed it. "This ability did nothing here" is not evidence.
+
 ## Corpus status board
 
 When the corpus status TUI is wanted (`node scripts/run.mjs scripts/status.ts`), launch it in its own
