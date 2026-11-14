@@ -198,7 +198,7 @@ const CONSUMABLES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Elixir',
-		text: 'Arm to heal and refresh your spell glyph.',
+		text: 'Arm to refresh your spell glyph and heal one wound.',
 	},
 	diamonds: {
 		name: 'Remedy',

@@ -178,8 +178,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * bound: a line proves the deal is winnable, no line proves nothing.
 	 */
 	type Probe = { seed: number; difficulty: Difficulty; status: 'searching' } | ({ status: 'done' } & SolverReply);
-	const PROBE_NODES = 300_000;
-	const PROBE_MS = 20_000;
+	const PROBE_NODES = 800_000;
+	// The clock has to outlast the node budget: a search cut off by time reports its silence as an answer
+	// about the deal, so it is set to let eight hundred thousand nodes finish on a laptop core.
+	const PROBE_MS = 45_000;
 	let probe = $state<Probe | null>(null);
 	let probeWorker: Worker | null = null;
 	/** The deal already being looked at, so a move does not restart the search. */
