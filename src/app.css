@@ -261,8 +261,8 @@ img {
 	/* .slot img pins every picture to the slot's corner for the cards; a mark is placed, not dealt */
 	position: static;
 	inset: auto;
-	width: 74%;
-	height: 74%;
+	width: 52%;
+	height: 52%;
 	object-fit: contain;
 	border-radius: 0;
 	box-shadow: none;
