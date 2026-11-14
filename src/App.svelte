@@ -181,7 +181,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const PROBE_NODES = 800_000;
 	// The clock has to outlast the node budget: a search cut off by time reports its silence as an answer
 	// about the deal, so it is set to let eight hundred thousand nodes finish on a laptop core.
-	const PROBE_MS = 45_000;
+	const PROBE_MS = 60_000;
 	let probe = $state<Probe | null>(null);
 	let probeWorker: Worker | null = null;
 	/** The deal already being looked at, so a move does not restart the search. */
