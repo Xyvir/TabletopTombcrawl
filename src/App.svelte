@@ -53,6 +53,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		newlyWounded,
 		createTombState,
 		currentLevel,
+		difficultyOf,
 		DRAFT_CELL_COUNT,
 		FREE_CELL_COUNT,
 		PAR_TOTAL,
@@ -573,6 +574,28 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Par counted the other way round: what the dungeon has yielded, out of the whole tomb. */
 	const tombScoreNow = $derived(tomb ? PAR_TOTAL - tombPar(tomb) : 0);
 	const dragIds = $derived(new Set(drag?.cards ?? []));
+	/**
+	 * The end-of-crawl reckoning. A finished crawl is read back as four numbers (moves, gold, and whether the
+	 * boss or the whole tomb fell) and set beside whatever a machine managed on the same party, so a human
+	 * line is never just a score in a vacuum.
+	 */
+	const endMoves = $derived(recordedSteps.length);
+	const endGold = $derived(tomb ? tombScoreNow : 0);
+	const endCleared = $derived(tomb ? tombPar(tomb) === 0 : false);
+	const endBoss = $derived(tomb ? bossSlain(tomb) : false);
+	const endTrack = $derived<Difficulty>(tomb ? difficultyOf(tomb) : difficulty);
+	/** The corpus row for this party on this track, if the seed sheet has one. */
+	const endCorpus = $derived(
+		(corpus?.entries ?? []).find((entry) => entry.loadout === (dealLayout || loadoutOf(tomb)) && difficultyOfEntry(entry) === endTrack) ??
+			null
+	);
+	const endProbe = $derived(probe && probe.status === 'done' ? probe : null);
+	/** How a machine's line sits against the delver's: shorter is the only comparison that means anything. */
+	function againstTheirs(moves: number, mine = endMoves) {
+		const gap = mine - moves;
+		if (gap === 0) return 'the same count';
+		return gap > 0 ? `${gap} shorter` : `${-gap} longer`;
+	}
 
 	/**
 	 * The hint over a spent slot names the one suit that will restock it — except where a Scavenger
@@ -1850,8 +1873,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			</button>
 			<span
 				class="score"
-				title="Score: every card that goes home is worth its own points — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb is 500, so the score divided by 5 is the percentage cleared."
-			>Score {tombScoreNow}/{PAR_TOTAL} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
+				title="Gold: every card that goes home pays its own weight — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb pays 500, so the gold divided by 5 is the percentage cleared."
+			>Gold {tombScoreNow}/{PAR_TOTAL} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
 			>
 			{#if bossNoted && bossSlain(tomb)}
 				<span
@@ -2088,7 +2111,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 															entry
 																? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}`
 																: filler
-																	? `seed ${filler.seed}${filler.score === null ? '' : `, best score ${filler.score}`} — no win yet`
+																	? `seed ${filler.seed}${filler.score === null ? '' : `, best gold ${filler.score}`} — no win yet`
 																	: 'no seed found yet'
 														}`}
 													aria-label={`${key} ${statusWord(key)}`}
@@ -2162,7 +2185,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								{#if !inspectedEntry && inspectedPlaceholder}
 									<span class="goal placeholder-note">
 										<span class="label">no win yet</span>
-										{#if inspectedPlaceholder.score === null}seed {inspectedPlaceholder.seed}{:else}best {inspectedPlaceholder.score} on seed {inspectedPlaceholder.seed}{/if}
+										{#if inspectedPlaceholder.score === null}seed {inspectedPlaceholder.seed}{:else}best {inspectedPlaceholder.score} gold on seed {inspectedPlaceholder.seed}{/if}
 									</span>
 								{/if}
 							</p>
@@ -2183,10 +2206,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	{#if (tomb && tomb.won) || (!tomb && game.win)}
 		<div class="win">
 			{#if tomb}
-				<p>You escape the tomb — score {tomb.score}</p>
-				<p class="win-note">
-					Every card left off the foundation counts against you; court cards count as ten.
-				</p>
+				<p>{endCleared ? 'The tomb is bare' : 'You leave the tomb'}</p>
+				<div class="win-figures">
+					<div class="fig"><span class="n">{endMoves}</span><span class="k">moves</span></div>
+					<div class="fig"><span class="n">{endGold}</span><span class="k">gold</span></div>
+				</div>
+				<p class="win-note">{endCleared ? 'tomb cleared' : endBoss ? 'boss slain' : 'no boss kill'}</p>
+				{#if endCorpus || endProbe}
+					<!-- One benchmark line only: a recorded crawl outranks the live search, which is not even run
+					     when the seed sheet already holds an answer. -->
+					<p class="win-bench">
+						<span class="who">benchmark</span>
+						{#if endCorpus}
+							{#if endCorpus.seed !== tomb.seed}seed {endCorpus.seed} · {/if}{endCorpus.moves} moves, {endCorpus.goal ===
+							'clear'
+								? 'tomb cleared'
+								: 'boss slain'} — {againstTheirs(endCorpus.moves)}
+						{:else if endProbe}
+							solver · {endProbe.solved
+								? `${endProbe.moves} moves, tomb cleared — ${againstTheirs(endProbe.moves)}`
+								: `no line in ${endProbe.nodes.toLocaleString()} states`}
+						{/if}
+					</p>
+				{/if}
 			{:else}
 				<p>You won!</p>
 			{/if}

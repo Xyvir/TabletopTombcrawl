@@ -146,8 +146,8 @@ Not in copy yet. Ranked by how much the current word hurts.
    hurt me*; for fog it is *what does digging buy*; for a carrier it is *what will this cost*.
 2. Short beats complete. One clause of exception is already too much.
 3. Never name a rank, suit or role the card face does not show.
-4. Fantasy words carry the mechanic; mechanical words (HP, level, score) stay mechanical because the HUD is
-   a scoreboard.
+4. Fantasy words carry the mechanic; mechanical words (HP, level) stay mechanical because the HUD is a
+   scoreboard — except the purse, which is **gold**.
 5. Say **wounds**, not HP. HP belongs to the HUD readout alone, because the status track is health, party and
    storage at once and "HP" flattens all three.
 6. Anything in copy that is not in this file is a bug in this file — add it, or cut it.
@@ -167,9 +167,12 @@ Not in copy yet. Ranked by how much the current word hurts.
   the sequence, not the game.
 - **Loadout** is the configuration: the four party spots plus the crawl seed that proves them. The sheet
   says "Choose a loadout".
+- **Gold** is what the tomb pays: every card that goes home pays its own weight, a cleared tomb pays 500, and
+  "score" was the code's word for it. The end of a crawl reads back its gold, its moves and whether the boss
+  or the whole tomb fell, beside whatever the corpus and the solver managed on the same party.
 
 ### Kept as is
 
-- LEVEL, HP and SCORE in the HUD, and Easy / Med / Hard.
+- LEVEL, HP and GOLD in the HUD, and Easy / Med / Hard.
 - Kin, Class, Glyph, Item, and their passive / active labels.
 - The reference board's "FreeCell" name. It is an homage to the game this one is built from, not a leak.

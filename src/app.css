@@ -433,6 +433,9 @@ img {
 	text-align: center;
 	background: rgba(2, 20, 8, 0.72);
 	backdrop-filter: blur(3px);
+	/* Above the board: the cards carry their own stacking contexts up to 5, so an auto overlay paints
+	   behind them and the reckoning ends up read through the cards. */
+	z-index: 80;
 }
 
 .win p {
@@ -1440,5 +1443,54 @@ body:has(.card.dragging) .cells.tomb .chip {
 	margin-top: 0.35rem;
 	font-size: 0.78rem;
 	opacity: 0.75;
+}
+
+/* The delver's own reckoning: the number reads first, the word under it says what it counts. */
+.win .win-figures {
+	display: flex;
+	gap: 2.6rem;
+	margin-top: 0.3rem;
+}
+
+.win .win-figures .fig {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.1rem;
+}
+
+.win .win-figures .n {
+	font-size: 2.6rem;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+.win .win-figures .k {
+	font-size: 0.62rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	opacity: 0.6;
+}
+
+/* What the machines managed on the same party, set under the delver's own line. */
+.win .win-bench {
+	margin: 0.35rem 0 0;
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: 0.45rem;
+	font-size: 0.78rem;
+	color: rgba(255, 255, 255, 0.78);
+}
+
+.win .win-bench .who {
+	display: inline-block;
+	min-width: 4rem;
+	margin-right: 0.45rem;
+	font-size: 0.62rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.5);
 }
 
