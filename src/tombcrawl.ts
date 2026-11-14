@@ -70,12 +70,8 @@ export const CLAUSES = {
 	 * token, no counter and no note on the sheet to remember it.
 	 */
 	wizardOpening: false,
-	/** Orc: a spent slot takes any card at all, not just its own suit. */
-	orcAnySuit: true,
-	/** Orc: playing an item out of its slot onto the tableau leaves the slot waiting for a card. */
-	orcScavenge: true,
-	/** Orc: a level up refreshes every spent item, the way it refreshes the glyph. */
-	orcLevelRefresh: false,
+	/** Thief: an item slot restocked after its card went to the crypt takes any card, whatever its suit. */
+	thiefPickpocket: true,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
 	/** Weakness: a boss-suit minion costs one rank more than its card says. */
@@ -86,15 +82,15 @@ export const CLAUSES = {
 	 * court and by all four kings rather than by a quarter of the deck.
 	 */
 	kingPowers: true,
-	/** Thief: a kill into the leading foundation is free. */
-	thiefBounty: true,
 	/**
-	 * Thief: a finished grave (a king on top) is out of the running for the bounty, so completing one
-	 * never takes the passive away for the rest of the run. With the clause off a full grave still
-	 * counts as the leader, and since nothing can out-rank a king the bounty can only ever pay for that
-	 * grave's own suit again — which is what makes a finished suit a dead end rather than a dividend.
+	 * Orc: a kill into the leading grave is free. A finished grave still leads — nothing out-ranks a
+	 * king — so the first suit to go all the way home ends Bloodrush for the rest of the run.
 	 */
-	thiefFinishedPile: true,
+	orcBloodrush: true,
+	/** Wizard: the item slot becomes a second glyph slot, spelling from its own suit. */
+	wizardArcana: true,
+	/** Dwarf: the crawl opens one pocket wider than the track allows. */
+	dwarfStout: true,
 	/** A free cell holding two cards is worth two hearts rather than one. */
 	pisorfStack: true,
 	/**
@@ -144,7 +140,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Orc',
-		text: 'Scavenger: any card can restock a spent item slot, becoming the item of its suit.',
+		text: 'Bloodrush: slaying into the fullest grave inflicts no wounds.',
 	},
 	diamonds: {
 		name: 'Elf',
@@ -152,7 +148,7 @@ const KIN: Record<Suit, Ability> = {
 	},
 	spades: {
 		name: 'Dwarf',
-		text: 'Grudge: the boss king has no protection — slay it before another king lies in a grave.',
+		text: 'Stout: the crawl opens with one pocket more than the track allows.',
 	},
 };
 
@@ -167,11 +163,11 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Affinity: any cast made on the very next turn after the glyph is refreshed is free.',
+		text: 'Arcana: the item slot is a second glyph, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Bounty: slaying into the fullest grave inflicts no wounds.',
+		text: 'Pickpocket: an item sent to the crypt can be restocked by a card of any suit.',
 	},
 };
 
@@ -181,8 +177,8 @@ const GLYPHS: Record<Suit, Ability> = {
 		text: 'Arm, then move a valid stack of any size, even one your pockets could not carry. Spent by that move.',
 	},
 	hearts: {
-		name: 'IMAWAL',
-		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway — or double-click a face-up card to turn it back over.',
+		name: 'CYDSTEPP',
+		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway.',
 	},
 	clubs: {
 		name: 'PISORF',
@@ -196,8 +192,8 @@ const GLYPHS: Record<Suit, Ability> = {
 
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
-		name: 'Revive',
-		text: 'Arm to slay whatever you can reach at any price: the bill takes your whole status track to zero instead, and the item is spent with it.',
+		name: 'Purity',
+		text: 'Arm, then turn a whole hallway to fog: every card in it goes face down again. The boss is not a card the spell can touch.',
 	},
 	hearts: {
 		name: 'Potion',
@@ -238,7 +234,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'burndayraz' | 'imawal' | 'pisorf' | 'weytwut' | 'remedy' | 'revive' | 'sack';
+	kind: 'burndayraz' | 'cydstepp' | 'pisorf' | 'weytwut' | 'remedy' | 'purity' | 'sack';
 	cell: number;
 	first?: string;
 	/**
@@ -370,7 +366,9 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 	});
 
 	const cards = [...picks, ...rest];
-	const cellCount = DRAFT_CELL_COUNT + freeCells;
+	// A Dwarf's Stout opens the crawl one pocket wider than the track allows.
+	const stout = CLAUSES.dwarfStout && ABILITY_TABLE.kin[picks[0].suit].name === 'Dwarf';
+	const cellCount = DRAFT_CELL_COUNT + freeCells + (stout ? 1 : 0);
 	const game = new FreeCell({ cellCount, cascadeCount: TOMB_CASCADE_COUNT, cards });
 
 	// Fog of war: row 1 (the bottom of each column, the row you can actually touch) is face up.
@@ -391,6 +389,16 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		const ability = ABILITY_TABLE[role][card.suit];
 		return { cell: i, role, id: cardId(card), suit: card.suit, name: ability.name, text: ability.text };
 	});
+	// A Wizard's Arcana makes the item slot a second glyph: it spells from its own suit, so it wears
+	// the glyph's name on the board rather than an item's.
+	if (CLAUSES.wizardArcana && draft.some((entry) => entry.role === 'class' && entry.name === 'Wizard')) {
+		const item = draft.find((entry) => entry.role === 'consumable');
+		if (item) {
+			const glyph = GLYPHS[item.suit];
+			item.name = glyph.name;
+			item.text = glyph.text;
+		}
+	}
 
 	return {
 		game,
@@ -444,7 +452,14 @@ export function withSyntheticLoadout(state: TombState, loadout: string): TombSta
 		const ability = ABILITY_TABLE[entry.role][suit];
 		return { ...entry, suit, name: ability.name, text: ability.text };
 	});
-	return cloneWith(state, { synthetic, draft });
+	// Pinning a Wizard's class makes the item slot a glyph, and pinning it away makes it an item again.
+	const settled = draft.map((entry) => {
+		if (entry.role !== 'consumable') return entry;
+		const spell = CLAUSES.wizardArcana && draft.some((other) => other.role === 'class' && other.name === 'Wizard');
+		const ability = spell ? GLYPHS[entry.suit] : ABILITY_TABLE.consumable[entry.suit];
+		return { ...entry, name: ability.name, text: ability.text };
+	});
+	return cloneWith(state, { synthetic, draft: settled });
 }
 
 /* --------------------------------------------------------------- reading */
@@ -464,8 +479,19 @@ export function hasPassive(state: TombState, name: string): boolean {
 	);
 }
 
+/**
+ * A Wizard's Arcana: the item slot is a second glyph, holding the spell of the card's own suit. Both
+ * refresh on a level up and both are drained by a Wraith, so everything that reads "the glyph" reads
+ * this pair of slots.
+ */
+export function isArcanaItem(state: TombState, entry: DraftCard): boolean {
+	return CLAUSES.wizardArcana && entry.role === 'consumable' && hasPassive(state, 'Wizard');
+}
+
 export function hasGlyph(state: TombState, name: string): boolean {
-	return state.draft.some((entry) => entry.name === name && entry.role === 'glyph' && !state.wounded[entry.cell]);
+	return state.draft.some(
+		(entry) => entry.name === name && (entry.role === 'glyph' || isArcanaItem(state, entry)) && !state.wounded[entry.cell]
+	);
 }
 
 export function playerLevel(game: FreeCell): number {
@@ -686,7 +712,7 @@ function frozenBoss(state: TombState, card: Card): boolean {
 }
 
 /** The four glyphs that move a card rather than wound, heal or arm something else. */
-const MOVING_GLYPHS = new Set(['sack', 'imawal', 'pisorf', 'weytwut']);
+const MOVING_GLYPHS = new Set(['sack', 'cydstepp', 'pisorf', 'weytwut']);
 
 /**
  * A frozen boss cannot be moved by hand, and by default nothing moves it at all. When the rules let
@@ -708,17 +734,16 @@ export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
 			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0);
 	}/**
- * The one pile a Bounty pays for: it has to be the outright highest, so a tie is not a lead. A
- * finished pile (a king on top) is out of the running entirely, so completing one never takes the
- * passive away from the Thief for the rest of the run.
+ * The one pile Bloodrush pays for: it has to be the outright highest, so a tie is not a lead. A
+ * finished pile (a king on top) still leads, so the first suit home ends the passive for the run:
+ * there is no exception for a grave that is already full.
  */
 export function leadingFoundation(state: TombState, suit: Suit): boolean {
 	const top = foundationTopRank(state, suit);
 	return state.game.foundations.every((card) => {
 		// its own pile is the measure, not a rival
 		if (!card || card.suit === suit) return true;
-		const other = foundationTopRank(state, card.suit);
-		return (CLAUSES.thiefFinishedPile && other >= 13) || other < top;
+		return foundationTopRank(state, card.suit) < top;
 	});
 }
 
@@ -814,34 +839,12 @@ function foggedColumn(state: TombState, location: CardLocation): number | null {
 }
 
 /**
- * IMAWAL buys one illegal play: an exposed run may be laid on top of a face-down card, which
+ * CYDSTEPP buys one illegal play: an exposed run may be laid on top of a face-down card, which
  * normally blocks its whole column. The fog then stays face-down, buried for good. The run is a
- * normal supermove, so the free cells still have to carry it — IMAWAL buys the fog, not a longer arm.
+ * normal supermove, so the free cells still have to carry it — the spell buys the fog, not a longer arm.
  */
-/**
- * IMAWAL's second use: turn a face-up card back over. Once the fog is gone the spell has nothing left
- * to lay a run on, so it makes its own: the card becomes fog again, either as a place to bury a run
- * or as something to dig for the heal a dig pays.
- */
-export function imawalCanFlip(state: TombState, location: CardLocation): boolean {
-	if (state.armed?.kind !== 'imawal') return false;
-	if (location.fixture !== 'cascade') return false;
-	const card = cardAt(state.game, location);
-	return !!card && !isFaceDown(state, card) && !immobileBoss(state, card);
-}
-
-/** Spend the spell by turning one face-up card back over. Nothing is paid: it costs no hearts. */
-export function flipFaceDown(state: TombState, location: CardLocation): TombState | null {
-	if (!imawalCanFlip(state, location)) return null;
-	const card = cardAt(state.game, location);
-	if (!card) return null;
-	const hidden = [...state.hidden, cardId(card)];
-	const next = closeItemWindow(cloneWith(state, { hidden, armed: null }));
-	return spendArmedItem(settle(next, currentLevel(state)));
-}
-
-export function imawalCanBury(state: TombState, cards: Card[], to: CardLocation): boolean {
-	if (state.armed?.kind !== 'imawal' || to.fixture !== 'cascade' || !cards.length) return false;
+export function cydsteppCanBury(state: TombState, cards: Card[], to: CardLocation): boolean {
+	if (state.armed?.kind !== 'cydstepp' || to.fixture !== 'cascade' || !cards.length) return false;
 	if (cards.length > moveCapacity(state)) return false;
 	if (isFaceDown(state, cards[0])) return false;
 	return foggedColumn(state, { fixture: 'cascade', data: [to.data[0], 0] }) !== null;
@@ -982,44 +985,31 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	const ceiling = damageCapOf(state);
 	if (ceiling > 0) damage = Math.min(damage, ceiling);
-	// Bounty only pays for the pile you have pushed furthest: dumping a high card into a suit you
+	// Bloodrush only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
-	if (CLAUSES.thiefBounty && hasPassive(state, 'Thief') && leadingFoundation(state, card.suit)) damage = 0;
+	if (CLAUSES.orcBloodrush && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) damage = 0;
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
-	const itemCell = auraItemWound(state, card, from);
-	const total = damage + (itemCell === null ? 0 : 1);
+	const itemCells = auraItemWound(state, card, from);
+	const total = damage + itemCells.length;
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
 	// The reserve wants a heart held back, but only a bill can spend one: a kill that costs nothing
 	// spends nothing, so it never owes the spare heart.
-	const chargeable = total > 0;
-	const short = Math.max(0, total - free + (chargeable ? 1 : 0));
-	// A Revive answers the bill whatever it comes to: the kill is always on offer, and the track is
-	// what it takes instead of hearts, so nothing is short and no cell is needed to make change.
-	const revive = state.armed?.kind === 'revive';
-	const legal = revive || short === 0;
-	const need = !revive && short ? emptyCells(state).slice(0, short) : [];
-	const afterItem = itemCell === null ? state : woundCell(state, itemCell);
+	const short = Math.max(0, total - free + (total > 0 ? 1 : 0));
+	const legal = short === 0;
+	const need = short ? emptyCells(state).slice(0, short) : [];
+	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
 	const afterWounds = wound(afterItem, damage);
-	const locks = !legal
-		? []
-		: revive
-			? // the whole track goes down, so the preview reads as every face-up card being spent
-				state.game.cells.map((_, index) => index).filter((index) => faceUp(state, index) > 0)
-			: Array.from(new Set([...(itemCell === null ? [] : [itemCell]), ...afterWounds.locks]));
+	const locks = legal ? Array.from(new Set([...itemCells, ...afterWounds.locks])) : [];
 	return {
 		legal,
 		reason: legal ? '' : `needs ${total} wounds and one to spare, you have ${free}`,
 		damage,
 		locks,
 		need,
-		fatal: !revive && short > 0,
-		wounds: legal
-			? revive
-				? woundCardIds(state, afterItem, itemCell, wipeTrack(afterItem))
-				: woundCardIds(state, afterItem, itemCell, afterWounds.wounded)
-			: [],
+		fatal: short > 0,
+		wounds: legal ? woundCardIds(state, afterItem, itemCells, afterWounds.wounded) : [],
 	};
 }
 
@@ -1083,11 +1073,6 @@ function closeColumns(cards: Card[]): Card[] {
 	});
 }
 
-/** Every face-up card on the track turned face down: what a Revive's kill costs instead of hearts. */
-function wipeTrack(state: TombState): number[] {
-	return state.game.cells.map((_, cell) => cellCards(state, cell).length);
-}
-
 /**
  * Damage wounds the rightmost face-up cards; inside a stack it fills from the bottom up, so the
  * first point turns over the card underneath and the next one turns over the top card.
@@ -1112,13 +1097,12 @@ function wound(state: TombState, damage: number): { wounded: number[]; locks: nu
  * The exact cards a blow would turn face-down: the aura item first, then the track right edge
  * inward. Inside a stack the bottom card turns before the one on top of it.
  */
-function woundCardIds(state: TombState, afterItem: TombState, itemCell: number | null, after: number[]): string[] {
-	const drained =
-		itemCell === null
-			? []
-			: cellCards(state, itemCell)
-					.slice(state.wounded[itemCell] ?? 0, (state.wounded[itemCell] ?? 0) + 1)
-					.map((card) => shorthandCard(card));
+function woundCardIds(state: TombState, afterItem: TombState, itemCells: number[], after: number[]): string[] {
+	const drained = itemCells.flatMap((cell) =>
+		cellCards(state, cell)
+			.slice(state.wounded[cell] ?? 0, (state.wounded[cell] ?? 0) + 1)
+			.map((card) => shorthandCard(card))
+	);
 	const turned = after.flatMap((count, cell) => {
 		const stack = cellCards(afterItem, cell);
 		const was = Math.min(stack.length, afterItem.wounded[cell] ?? 0);
@@ -1155,23 +1139,14 @@ function healGlyph(state: TombState): TombState {
 }
 
 function refreshGlyphs(state: TombState): TombState {
-	const glyphs = state.draft.filter((entry) => entry.role === 'glyph');
-	// An Orc who refreshes on the level keeps his kit instead of scavenging it back, and only a glyph
-	// refresh opens the Wizard's window: an item coming back is not a spell coming back.
-	const items =
-		CLAUSES.orcLevelRefresh && hasPassive(state, 'Orc')
-			? state.draft.filter((entry) => entry.role === 'consumable')
-			: [];
-	if (!glyphs.length && !items.length) return state;
+	// Arcana puts a spell in the item slot, so a level up brings both back.
+	const glyphs = state.draft.filter((entry) => entry.role === 'glyph' || isArcanaItem(state, entry));
+	if (!glyphs.length) return state;
 	const exhausted = [...state.exhausted];
 	let refreshed = false;
 	glyphs.forEach((entry) => {
 		if (!state.game.cells[entry.cell]) return;
 		refreshed = refreshed || state.exhausted[entry.cell];
-		exhausted[entry.cell] = false;
-	});
-	items.forEach((entry) => {
-		if (!state.game.cells[entry.cell]) return;
 		exhausted[entry.cell] = false;
 	});
 	// A Wizard's window opens on a real refresh: tidying a glyph that was already fresh hands nothing
@@ -1330,11 +1305,11 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 }
 
 /**
- * What a spent item slot will take: a card of the suit it just lost, or — for the Orc's Scavenger —
- * any card at all, so he may restock a slot with an item the dungeon never gave him.
+ * What a spent item slot will take: a card of the suit it just lost, or — with a Thief's Pickpocket —
+ * any card at all. The permission rides on the window, so it outlives the item that opened it.
  */
 function restockTakes(card: Card, window: { suit: Suit; any: boolean }): boolean {
-	return (window.any && CLAUSES.orcAnySuit) || card.suit === window.suit;
+	return window.any || card.suit === window.suit;
 }
 
 /** Any action other than the feed closes a spent item slot for good. */
@@ -1347,10 +1322,10 @@ function closeFreeCast(state: TombState): TombState {
 	return state.freeCast ? cloneWith(state, { freeCast: false }) : state;
 }
 
-/** A Remedy or a Revive is spent by the action it covers: the arm clears and the item exhausts. */
+/** A Remedy is spent by the action it covers: the arm clears and the item exhausts. */
 function spendArmedItem(state: TombState): TombState {
 	const armed = state.armed;
-	if (armed?.kind !== 'remedy' && armed?.kind !== 'revive') return state;
+	if (armed?.kind !== 'remedy') return state;
 	const exhausted = [...state.exhausted];
 	exhausted[armed.cell] = true;
 	return cloneWith(state, { exhausted, armed: null });
@@ -1361,19 +1336,26 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 }
 
 /**
- * The item a monster power drains: the Consumable under a Gorgon, the Glyph under a Wraith.
+ * The cells a monster power drains: the item under a Gorgon, the Glyph under a Wraith — and with a
+ * Wizard's Arcana the item slot spells too, so a Wraith bites both glyphs.
  */
-function auraItem(state: TombState): number | null {
-	const slotOf = (role: DraftRole): number | null => {
-		const slot = ROLES_BY_DRAW_ORDER.indexOf(role);
-		return slot >= 0 && slot < state.game.cells.length ? slot : null;
-	};
+function auraCells(state: TombState): number[] {
+	const poison = state.bossSuit === 'clubs';
+	const mana = state.bossSuit === 'diamonds';
+	if (!poison && !mana) return [];
 	// The Wraith on the slot clause drains the place rather than the item, so a converted one still bites.
-	if (state.bossSuit === 'diamonds' && CLAUSES.wraithSlot) return slotOf('glyph');
-	const role: DraftRole | null = state.bossSuit === 'clubs' ? 'consumable' : state.bossSuit === 'diamonds' ? 'glyph' : null;
-	if (!role) return null;
-	const entry = state.draft.find((candidate) => candidate.role === role);
-	return entry ? entry.cell : null;
+	if (mana && CLAUSES.wraithSlot) {
+		const slot = ROLES_BY_DRAW_ORDER.indexOf('glyph');
+		return slot >= 0 && slot < state.game.cells.length ? [slot] : [];
+	}
+	return state.draft
+		.filter((entry) => (mana ? entry.role === 'glyph' || isArcanaItem(state, entry) : entry.role === 'consumable' && !isArcanaItem(state, entry)))
+		.map((entry) => entry.cell);
+}
+
+/** The first cell a monster power would drain: what the interface points the arrow at. */
+function auraItem(state: TombState): number | null {
+	return auraCells(state)[0] ?? null;
 }
 
 /** The item cell a card's power would drain, for the interface to point at. */
@@ -1393,14 +1375,13 @@ function woundCell(state: TombState, cell: number): TombState {
  * The item cell a kill drains before its own wounds, or null when there is nothing left to drain.
  * The aura exhausts that item (one already spent simply stays spent) and wounds it.
  */
-export function auraItemWound(state: TombState, card: Card, from: CardLocation): number | null {
-	if (!carriesPower(state, card) || !auraActive(state)) return null;
-	const cell = auraItem(state);
-	if (cell === null) return null;
-	// a card leaving that very cell takes the item with it: there is nothing left behind to drain
-	if (from.fixture === 'cell' && from.data[0] === cell) return null;
-	if ((state.wounded[cell] ?? 0) >= cellCards(state, cell).length) return null;
-	return cell;
+export function auraItemWound(state: TombState, card: Card, from: CardLocation): number[] {
+	if (!carriesPower(state, card) || !auraActive(state)) return [];
+	return auraCells(state).filter((cell) => {
+		// a card leaving that very cell takes the item with it: there is nothing left behind to drain
+		if (from.fixture === 'cell' && from.data[0] === cell) return false;
+		return (state.wounded[cell] ?? 0) < cellCards(state, cell).length;
+	});
 }
 
 /**
@@ -1437,12 +1418,17 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 		}
 		case 'clubs':
 		case 'diamonds': {
-			// Burden and Mana Burn take the item itself: spent, and turned face-down as a wound.
-			const cell = auraItem(state);
-			if (cell === null) return state;
-			const exhausted = [...state.exhausted];
-			exhausted[cell] = true;
-			return dropKnockedArm(woundCell(cloneWith(state, { exhausted }), cell));
+			// Burden and Mana Burn take the item itself: spent, and turned face-down as a wound. A Wizard's
+			// Arcana leaves two glyphs standing, and a Wraith takes them both.
+			const cells = auraCells(state);
+			if (!cells.length) return state;
+			return dropKnockedArm(
+				cells.reduce((next, cell) => {
+					const exhausted = [...next.exhausted];
+					exhausted[cell] = true;
+					return woundCell(cloneWith(next, { exhausted }), cell);
+				}, state)
+			);
 		}
 		default:
 			return state;
@@ -1486,7 +1472,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// Only a run the free cells could not carry spends the sack; a normal stack move leaves it armed.
 	const overfull = cards.length > moveCapacity(state);
 	const sack = state.armed?.kind === 'sack' && overfull;
-	const bury = imawalCanBury(state, cards, to);
+	const bury = cydsteppCanBury(state, cards, to);
 
 	if (source >= 0 && to.fixture === 'foundation') {
 		// Home is always an option, wounded or not: the chip's conversion order only governs leaving
@@ -1550,26 +1536,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
-	// Scavenging: a card played out of its slot onto the tableau is spent, but an Orc's slot is not
-	// closed by it. The card and its item are gone, and the empty slot waits one action for any card
-	// at all — a different suit turns it into a different spell, class or kin. The chip holds where it
-	// is while that window is open, which is what lets him work through a whole party's worth of items.
-	//
-	// A free cell is the other thing entirely. Playing the item into one is the conversion the chip
-	// counts: the slot turns plain, the chip steps past it, and nothing waits to be refilled. Only the
-	// tableau path scavenges, because only that path spends a card without spending the party.
-	const scavenged =
-		entry &&
-		source >= 0 &&
-		to.fixture === 'cascade' &&
-		!next.game.cells[source] &&
-		CLAUSES.orcScavenge &&
-		hasPassive(state, 'Orc')
-			? { cell: source, role: entry.role, suit: entry.suit, any: true }
-			: null;
-
+	// A card played out of its slot onto the tableau is spent for good: only the trip to the crypt
+	// restocks a slot, so an item played out is a conversion the player cannot take back.
 	next = settle(next, currentLevel(state));
-	if (scavenged) next = cloneWith(next, { itemWindow: scavenged });
 
 	return spendArmedItem(next);
 }
@@ -1587,7 +1556,7 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	const entry = wasCell ? draftAt(state, cellIndex) : undefined;
 	// Only the item's own card carries the item with it. A plain card can lie on top of an item slot,
 	// and sending that one home leaves the item, its exhaustion and its restock window untouched.
-	const wasOrc = hasPassive(state, 'Orc');
+	const pickpocket = CLAUSES.thiefPickpocket && hasPassive(state, 'Thief');
 	const itemCard = !!entry && entry.id === cardId(card);
 
 	let next = state;
@@ -1611,22 +1580,18 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	next = bossAura(next, card, 'kill');
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
-	const revive = state.armed?.kind === 'revive';
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
 
 	// A spent item going home leaves its slot empty and waiting: the restock is the player's pick on the
 	// very next action, and nothing is pulled off the board for them. Miss that action and the window
 	// closes — the slot is plain from then on, which is what the chip counting it as converted means.
 
-	// A Revive pays the whole bill before the level up is settled, so a kill that raises the delver a
-	// level still mends off the wiped track: they come back on one heart rather than none.
-	if (revive) next = cloneWith(next, { wounded: wipeTrack(next) });
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
-	// for an Orc) restocks the item and the chip stays put. Any other action drops the window, so the
-	// chip steps left and the cell is ordinary from then on.
+	// with a Thief's Pickpocket) restocks the item and the chip stays put. Any other action drops the
+	// window, so the chip steps left and the cell is ordinary from then on.
 	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
-	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, any: wasOrc } });
+	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, any: pickpocket } });
 }
 
 /** Single click movement affordance: the best tableau build, if there is one. */
@@ -1663,7 +1628,7 @@ export function freeCastReady(state: TombState, cell: number): boolean {
 	const entry = draftAt(state, cell);
 	return (
 		!!entry &&
-		entry.role === 'glyph' &&
+		(entry.role === 'glyph' || isArcanaItem(state, entry)) &&
 		hasPassive(state, 'Wizard') &&
 		state.freeCast
 	);
@@ -1696,8 +1661,8 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 	// Wizard-class corpus seeds the free cast won every deal it could win in exactly the same number of
 	// moves with no mend at all, so the rule was a thing to remember and not a thing that paid.
 	const exhausted = [...state.exhausted];
-	// A Remedy or a Revive is not spent by arming it: the action it covers is what exhausts it.
-	if (entry.name !== 'Remedy' && entry.name !== 'Revive' && !free) exhausted[cell] = true;
+	// A Remedy is not spent by arming it: the action it covers is what exhausts it.
+	if (entry.name !== 'Remedy' && !free) exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
@@ -1711,15 +1676,15 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		case 'Remedy':
 			next = cloneWith(next, { armed: { kind: 'remedy', cell } });
 			break;
-		case 'IMAWAL':
-			next = cloneWith(next, { armed: { kind: 'imawal', cell } });
+		case 'CYDSTEPP':
+			next = cloneWith(next, { armed: { kind: 'cydstepp', cell } });
 			break;
 		case 'Sack':
 		case 'BYSSEPS':
 			next = cloneWith(next, { armed: { kind: 'sack', cell } });
 			break;
-		case 'Revive':
-			next = cloneWith(next, { armed: { kind: 'revive', cell } });
+		case 'Purity':
+			next = cloneWith(next, { armed: { kind: 'purity', cell } });
 			break;
 		case 'BURNDAYRAZ':
 		case 'PISORF':
@@ -1744,10 +1709,10 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 	if (!state.armed) return null;
 	// The sack answers the drop itself: the grabbed run is the one it carries.
 	if (state.armed.kind === 'sack') return tombMove(state, from, to);
-	// IMAWAL answers the drop with the grabbed card laid on the fog.
-	if (state.armed.kind === 'imawal') return tombMove(state, from, to);
-	// A Remedy or Revive covers whatever action comes next, so a drop is just the action it covers.
-	if (state.armed.kind === 'remedy' || state.armed.kind === 'revive') return tombMove(state, from, to);
+	// CYDSTEPP answers the drop with the grabbed card laid on the fog.
+	if (state.armed.kind === 'cydstepp') return tombMove(state, from, to);
+	// A Remedy covers whatever action comes next, so a drop is just the action it covers.
+	if (state.armed.kind === 'remedy') return tombMove(state, from, to);
 	if (state.armed.kind === 'pisorf' || state.armed.kind === 'weytwut') {
 		const cleared = state.armed.first
 			? cloneWith(state, { armed: { ...state.armed, first: undefined } })
@@ -1773,17 +1738,17 @@ export function disarm(state: TombState): TombState {
  * cannot outlive that card: the board would go on offering a cast `abilityUsable` has already
  * refused. It is put down exactly as a disarm puts it down — the cell released, a free cast's grant
  * handed back — because losing the spell to a wound reads as a misclick, not as a lost cast.
- * This runs where the injury lands, after the arm that paid for the action has been spent, so a
- * Revive is never knocked out of hand before it can pay its own bill.
+ * This runs where the injury lands, after the arm that paid for the action has been spent, so an item
+ * that pays for the very action is never knocked out of hand by its own bill.
  * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
  * already spent, and the only powers that exhaust an unspent item (Burden, Mana Burn) wound it too.
  */
 function dropKnockedArm(state: TombState): TombState {
 	const armed = state.armed;
 	if (!armed) return state;
-	// A Remedy or a Revive is spent by the action it covers, so while that action is being resolved
-	// the item is in hand: a power that drains it does not knock it out of hand first.
-	if (armed.kind === 'remedy' || armed.kind === 'revive') return state;
+	// A Remedy is spent by the action it covers, so while that action is being resolved the item is in
+	// hand: a power that drains it does not knock it out of hand first.
+	if (armed.kind === 'remedy') return state;
 	if ((state.wounded[armed.cell] ?? 0) === 0) return state;
 	// The wounds stay as they are: the refund's snapshot predates the blow, and restoring it would
 	// undo the very wound that knocked the spell out of hand.
@@ -1835,14 +1800,31 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	// Clicking the card that armed the ability puts it away unspent instead of aiming it at itself.
 	if (location.fixture === 'cell' && location.data[0] === armed.cell) return disarm(state);
 
-	// A Remedy or Revive waits for the action it covers: clicks elsewhere leave it armed.
-	if (armed.kind === 'remedy' || armed.kind === 'revive') return null;
+	// A Remedy waits for the action it covers: clicks elsewhere leave it armed.
+	if (armed.kind === 'remedy') return null;
 
 	// The sack is a state rather than a target: it waits for the next stack move to carry.
 	if (armed.kind === 'sack') return null;
 
-	// IMAWAL takes a card first, then the fog it is laid on.
-	if (armed.kind === 'imawal') {
+	// Purity names a hallway rather than a card: every card in it turns to fog, the boss aside.
+	if (armed.kind === 'purity') {
+		if (location.fixture !== 'cascade') return null;
+		const column = state.game.tableau[location.data[0]] ?? [];
+		const hidden = [...state.hidden];
+		let turned = 0;
+		for (const card of column) {
+			const id = cardId(card);
+			// The boss is not a card the spell can touch, and fog already there is already fog.
+			if (id === state.bossId || hidden.includes(id)) continue;
+			hidden.push(id);
+			turned += 1;
+		}
+		if (!turned) return null;
+		return cloneWith(state, { hidden, armed: null });
+	}
+
+	// CYDSTEPP takes a card first, then the fog it is laid on.
+	if (armed.kind === 'cydstepp') {
 		const column = foggedColumn(state, location);
 		if (column !== null) {
 			const card = armed.first ? state.game.cards.find((candidate) => cardId(candidate) === armed.first) : undefined;

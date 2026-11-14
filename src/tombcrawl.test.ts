@@ -20,11 +20,10 @@ import {
 	canSendHome,
 	carriesPower,
 	cellCardMovable,		cellTopWounded,
-		flipFaceDown,
-
 	chipBoundary,
 	convertibleCell,
 	withSyntheticLoadout,
+	hasGlyph,
 	hasPassive,
 	newlyHealed,
 	newlyWounded,
@@ -142,7 +141,7 @@ describe('synthetic loadouts', () => {
 
 		// and those cells now confer the pinned abilities
 		expect(pinned.draft.map((entry) => entry.suit)).toEqual(['spades', 'spades', 'spades', 'spades']);
-		expect(pinned.draft.map((entry) => entry.name)).toEqual(['Dwarf', 'Fighter', 'BYSSEPS', 'Revive']);
+		expect(pinned.draft.map((entry) => entry.name)).toEqual(['Dwarf', 'Fighter', 'BYSSEPS', 'Purity']);
 		expect(hasPassive(pinned, 'Dwarf')).toBe(true);
 		expect(hasPassive(pinned, 'Fighter')).toBe(true);
 	});
@@ -163,22 +162,22 @@ describe('synthetic loadouts', () => {
 
 	test('a restocked slot keeps the pinned suit rather than the fed card’s', () => {
 		const draft: DraftCard[] = [
-			{ cell: 0, role: 'kin', id: '3H', suit: 'hearts', name: 'Human', text: '' },
-			{ cell: 2, role: 'glyph', id: '4C', suit: 'clubs', name: 'PISORF', text: '' },
+			{ cell: 0, role: 'class', id: '3H', suit: 'hearts', name: 'Priest', text: '' },
+			{ cell: 2, role: 'glyph', id: '2C', suit: 'clubs', name: 'PISORF', text: '' },
 		];
 		// a plain diamond waits in the last cell: feeding takes a card off the board, not another item
 		const state = withSyntheticLoadout(
-			makeTomb({ columns: [['5D']], cells: ['3H', null, '4C', '9D'], draft }),
-			// clubs for the kin, so the party is an Orc, and clubs for the glyph, so the pin is testable
-			'c*c*'
+			makeTomb({ columns: [['5D']], cells: ['3H', null, '2C', '9D'], foundations: ['AC'], draft }),
+			// diamonds for the class, so the party is a Thief, and clubs for the glyph, so the pin is testable
+			'*dc*'
 		);
 
-		// the glyph beside the chip is played out onto the tableau, which scavenges for the pinned Orc
-		const played = tombMove(state, cell(2), cascade(0))!;
+		// the glyph beside the chip goes to the crypt, which is the one trip that restocks its slot
+		const played = attackWith(state, cell(2))!;
 		expect(played.itemWindow).toEqual({ cell: 2, role: 'glyph', suit: 'clubs', any: true });
 
 		// a diamond fills the slot, and it becomes the pinned clubs spell, not its own suit's glyph
-		const fed = tombMove(played, cell(3), cell(2))!;
+		const fed = tombMove(played, cascade(0), cell(2))!;
 		expect(fed.draft.find((entry) => entry.cell === 2)).toMatchObject({ suit: 'clubs', name: 'PISORF' });
 	});
 });
@@ -449,8 +448,8 @@ describe('conversion order', () => {
 		expect(next).not.toBeNull();
 		expect(next!.draft.map((entry) => entry.cell)).toEqual([0]);
 		expect(convertibleCell(next!)).toBe(0);
-		// the party has an Orc in it, so the window takes any card at all
-		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs', any: true });
+		// no Thief in the party, so the window still wants the suit it lost
+		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs', any: false });
 		expect(chipBoundary(next!)).toBe(2);
 		expect(cellCardMovable(next!, 0)).toBe(true);
 	});
@@ -472,7 +471,7 @@ describe('conversion order', () => {
 
 		// the potion goes home: its slot waits one action, but the chip has not moved yet
 		const played = attackWith(state, cell(3))!;
-		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades', any: true });
+		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades', any: false });
 		expect(chipBoundary(played)).toBe(4);
 
 		// the refill was missed, so the slot is plain for good and the chip steps one slot left
@@ -742,60 +741,31 @@ describe('burden and mana burn', () => {
 	});
 });
 
-describe('the revive', () => {
-	const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TS', suit: 'spades', name: 'Revive', text: '' }];
-	// One heart left, and the kill costs eight: only the Revive can pay for this one.
+describe('purity', () => {
+	const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '9S', suit: 'spades', name: 'Purity', text: '' }];
+	// Two hallways, and the boss is buried in the second: the spell fogs cards, not the dungeon's king.
 	const board = () =>
-		makeTomb({
-			columns: [['9C'], ['4C']],
-			cells: ['TS', 'KD', 'QD', '7C'],
-			foundations: ['8C'],
-			wounded: [1, 2, 3],
-			draft,
-			boss: 'KC',
-		});
+		makeTomb({ columns: [['5C', '4C'], ['9D'], ['KH', '4D']], cells: ['9S', '2D', '3D'], draft, boss: 'KH' });
 
-	test('it kills whatever it is aimed at, and the bill takes the whole track', () => {
+	test('turns a whole hallway to fog, and the boss is not a card it can touch', () => {
 		const state = board();
-		expect(hp(state)).toBe(1);
-		expect(attackPreview(state, cascade(0, 0)).legal).toBe(false);
+		const primed = useAbility(state, 0)!;
+		expect(primed.armed).toMatchObject({ kind: 'purity' });
 
-		const armed = useAbility(state, 0)!;
-		expect(armed.armed).toMatchObject({ kind: 'revive' });
-		// arming it costs nothing: the action it covers is what spends it
-		expect(armed.exhausted[0]).toBe(false);
+		const fogged = armedClick(primed, cascade(0))!;
+		expect(fogged.armed).toBe(null);
+		expect(fogged.hidden).toEqual(expect.arrayContaining(['5C', '4C']));
+		expect(fogged.exhausted[0]).toBe(true);
 
-		const preview = attackPreview(armed, cascade(0, 0));
-		expect(preview).toMatchObject({ legal: true, fatal: false, damage: 8 });
-		// the revive pays the bill, so only the card the kill lands on is spent
-		expect(preview.locks.sort()).toEqual([0]);
-
-		const next = attackWith(armed, cascade(0, 0))!;
-		expect(hp(next)).toBe(0);
-		expect(next.armed).toBe(null);
-		expect(next.exhausted[0]).toBe(true);
+		// the boss keeps his face, and only the card above him turns
+		const bossHall = armedClick(useAbility(board(), 0)!, cascade(2))!;
+		expect(bossHall.hidden).toContain('4D');
+		expect(bossHall.hidden).not.toContain('KH');
 	});
 
-	test('without the revive armed the same kill is refused', () => {
-		const state = board();
-		expect(attackWith(state, cascade(0, 0))).toBe(null);
-	});
-
-	test('a warding kill that levels the delver still mends off the wiped track', () => {
-		const warding = makeTomb({
-			columns: [['2C'], ['4C']],
-			cells: ['TS', 'KD', 'QD', '7C'],
-			// clubs is the pile holding the level back, so its two levels the run up
-			foundations: ['2S', '2H', '2D', 'AC'],
-			draft,
-			boss: 'KC',
-		});
-		const armed = useAbility(warding, 0)!;
-		const next = attackWith(armed, cascade(0, 0))!;
-
-		// the wipe takes every card down, then the level up mends one back off the left edge
-		expect(hp(next)).toBe(1);
-		expect(next.exhausted[0]).toBe(true);
+	test('a hallway that is already fog pays nothing and is refused', () => {
+		const state = makeTomb({ columns: [['5C']], cells: ['9S', '2D'], draft, hidden: ['5C'] });
+		expect(armedClick(useAbility(state, 0)!, cascade(0))).toBe(null);
 	});
 });
 describe('the bysseps glyph', () => {
@@ -1163,8 +1133,8 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(face, cascade(0)).damage).toBe(10);
 	});
 
-	test('bounty pays only for a kill into the leading foundation', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
+	test('bloodrush pays only for a kill into the leading grave', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 		// hearts leads, so the 5 of hearts is worth the bounty
 		const leading = makeTomb({ columns: [['5H']], foundations: ['4H', '3S'], draft });
 		expect(attackPreview(leading, cascade(0)).damage).toBe(0);
@@ -1174,20 +1144,20 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
 	});
 
-	test('bounty needs the outright lead, and a finished pile is not in the running', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
+	test('bloodrush needs the outright lead, and a finished grave still leads', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 
 		// level with spades is not a lead: the tie pays the four
 		const tied = makeTomb({ columns: [['5H']], foundations: ['4H', '4S'], draft });
 		expect(attackPreview(tied, cascade(0)).damage).toBe(4);
 
-		// a king on top takes that pile out of the comparison, so hearts still leads
+		// a king on top out-ranks hearts, so the run has no leader left and the kill pays its four
 		const finished = makeTomb({ columns: [['5H']], foundations: ['4H', 'KS'], draft });
-		expect(attackPreview(finished, cascade(0)).damage).toBe(0);
+		expect(attackPreview(finished, cascade(0)).damage).toBe(4);
 
-		// with two piles finished, the only live pile is the leader again
+		// two finished graves only make it worse: nothing can climb back over a king
 		const donePiles = makeTomb({ columns: [['5H']], foundations: ['4H', 'KD', 'KC'], draft });
-		expect(attackPreview(donePiles, cascade(0)).damage).toBe(0);
+		expect(attackPreview(donePiles, cascade(0)).damage).toBe(4);
 	});
 
 	test('the boss king is shielded until a General lies in a grave', () => {
@@ -1761,7 +1731,7 @@ describe('tombcrawl progression rules', () => {
 	});
 
 	test('a level up heals and refreshes the glyph', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '4H', suit: 'hearts', name: 'IMAWAL', text: '' }];
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '4H', suit: 'hearts', name: 'CYDSTEPP', text: '' }];
 		const state = makeTomb({
 			columns: [['3C'], ['KS']],
 			cells: ['4H', '5D'],
@@ -1772,7 +1742,7 @@ describe('tombcrawl progression rules', () => {
 
 		const armed = useAbility(state, 0)!;
 		expect(armed.exhausted[0]).toBe(true);
-		expect(armed.armed).toMatchObject({ kind: 'imawal' });
+		expect(armed.armed).toMatchObject({ kind: 'cydstepp' });
 
 		const kill = attackWith(armed, cascade(0))!;
 		expect(currentLevel(kill)).toBe(4);
@@ -1950,17 +1920,17 @@ describe('tombcrawl levels', () => {
 		// a suit only as far as its ace is not far enough for the next one
 		expect(playerLevel(makeTomb({ columns: [['5H']], foundations: ['2S', '2H', '2D', 'AC'] }).game)).toBe(2);
 	});
-});	describe('tombcrawl IMAWAL', () => {
-	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'IMAWAL', text: '' }];
+});	describe('tombcrawl CYDSTEPP', () => {
+	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'CYDSTEPP', text: '' }];
 	const make = (columns: string[][] = [['3S'], ['9D', '5H'], ['4H']]) =>
 		makeTomb({ columns, cells: ['2S', '4C'], draft: glyph, hidden: ['5H'] });
 
-	test('a card can be laid on the fog only while IMAWAL is armed', () => {
+	test('a card can be laid on the fog only while CYDSTEPP is armed', () => {
 		const state = make();
 		expect(tombMove(state, cell(1), cascade(1))).toBe(null);
 
 		const primed = useAbility(state, 0)!;
-		expect(primed.armed).toMatchObject({ kind: 'imawal', cell: 0 });
+		expect(primed.armed).toMatchObject({ kind: 'cydstepp', cell: 0 });
 		const buried = tombMove(primed, cell(1), cascade(1))!;
 
 		const column = buried.game.tableau[1];
@@ -1977,7 +1947,7 @@ describe('tombcrawl levels', () => {
 
 		const column = built.game.tableau[2];
 		expect(shorthandCard(column[column.length - 1]!)).toBe('3S');
-		expect(built.armed).toMatchObject({ kind: 'imawal' });
+		expect(built.armed).toMatchObject({ kind: 'cydstepp' });
 	});
 
 	test('a run the free cells can carry is buried whole', () => {
@@ -2010,7 +1980,7 @@ describe('tombcrawl levels', () => {
 			hidden: ['5H'],
 		});
 		const primed = useAbility(state, 0)!;
-		// no free cell to wait in: IMAWAL buys the fog, not a longer arm
+		// no free cell to wait in: CYDSTEPP buys the fog, not a longer arm
 		expect(moveCapacity(primed)).toBe(1);
 		expect(tombMove(primed, cascade(0, 0), cascade(1))).toBe(null);
 	});
@@ -2018,7 +1988,7 @@ describe('tombcrawl levels', () => {
 	test('it can also be aimed by clicking a card and then the fog', () => {
 		const primed = useAbility(make(), 0)!;
 		const picked = armedClick(primed, cascade(0))!;
-		expect(picked.armed).toMatchObject({ kind: 'imawal', first: '3S' });
+		expect(picked.armed).toMatchObject({ kind: 'cydstepp', first: '3S' });
 
 		const buried = armedClick(picked, cascade(1))!;
 		expect(shorthandCard(buried.game.tableau[1][2])).toBe('3S');
@@ -2092,46 +2062,6 @@ describe('tombcrawl item refresh', () => {
 		expect(next.itemWindow).toBe(null);
 	});
 
-	test('an Orc playing a spell out keeps the slot, the chip, and takes any suit back', () => {
-		const draft: DraftCard[] = [
-			{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Orc', text: '' },
-			{ cell: 1, role: 'glyph', id: '3C', suit: 'clubs', name: 'PISORF', text: '' },
-		];
-		const state = makeTomb({ columns: [['4H']], cells: ['2S', '3C', '7D', '8D'], draft });
-		expect(chipBoundary(state)).toBe(2);
-
-		// the spell goes out to the board, so it is spent — but the slot waits an action, unslotted
-		const played = tombMove(state, cell(1), cascade(0))!;
-		expect(played.draft.map((entry) => entry.cell)).toEqual([0]);
-		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'clubs', any: true });
-		expect(chipBoundary(played)).toBe(2);
-
-		// a diamond, not a club: Scavenger takes it and the slot is now a different spell entirely
-		const restocked = tombMove(played, cell(2), cell(1))!;
-		expect(restocked.itemWindow).toBe(null);
-		expect(restocked.draft.find((entry) => entry.cell === 1)).toMatchObject({
-			role: 'glyph',
-			suit: 'diamonds',
-			name: 'WEYTWUT',
-		});
-		expect(abilityUsable(restocked, 1)).toBe(true);
-	});
-
-	test('an Orc may even trade his own kin card for another kin', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Orc', text: '' }];
-		const state = makeTomb({ columns: [['3H']], cells: ['2S', '7D'], draft });
-
-		const played = tombMove(state, cell(0), cascade(0))!;
-		expect(played.draft).toHaveLength(0);
-		expect(played.itemWindow).toEqual({ cell: 0, role: 'kin', suit: 'spades', any: true });
-		expect(chipBoundary(played)).toBe(1);
-
-		// the window remembers the Scavenger even though the Orc himself has left the party
-		const restocked = tombMove(played, cell(1), cell(0))!;
-		expect(hasPassive(restocked, 'Elf')).toBe(true);
-		expect(hasPassive(restocked, 'Orc')).toBe(false);
-	});
-
 	test('an item played into a free cell converts, and nothing waits to restock it', () => {
 		const draft: DraftCard[] = [{ cell: 1, role: 'glyph', id: 'AC', suit: 'clubs', name: 'PISORF', text: '' }];
 		const state = makeTomb({ columns: [['5C']], cells: [null, 'AC', null], draft });
@@ -2188,9 +2118,9 @@ describe('tombcrawl item refresh', () => {
 		expect(spent.draft).toHaveLength(1);
 	});
 
-	test('an Orc can feed a card of any suit, which makes that suit’s item', () => {
+	test('a Thief feeds a card of any suit, which makes that suit’s item', () => {
 		const draft: DraftCard[] = [
-			{ cell: 0, role: 'kin', id: '4C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
 			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
 		// the spades glyph goes home, then a heart — the other colour entirely — restocks it
@@ -2202,7 +2132,7 @@ describe('tombcrawl item refresh', () => {
 		expect(refilled.draft.find((item) => item.cell === 1)).toMatchObject({
 			role: 'glyph',
 			suit: 'hearts',
-			name: 'IMAWAL',
+			name: 'CYDSTEPP',
 			id: '5H',
 		});
 	});
@@ -2239,9 +2169,9 @@ describe('tombcrawl item refresh', () => {
 		expect(home.exhausted[0]).toBe(false);
 	});
 
-	test('an Orc is not handed another suit when a spent item goes home', () => {
+	test('a Thief is still not handed another suit when a spent item goes home', () => {
 		const draft: DraftCard[] = [
-			{ cell: 0, role: 'kin', id: '3C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 0, role: 'class', id: '3C', suit: 'clubs', name: 'Thief', text: '' },
 			{ cell: 1, role: 'consumable', id: '2D', suit: 'diamonds', name: 'Potion', text: '' },
 		];
 		const state = makeTomb({
@@ -2253,7 +2183,7 @@ describe('tombcrawl item refresh', () => {
 		});
 		const home = attackWith(state, cell(1))!;
 
-		// the club stays on the board: Scavenger is a feed he chooses, not an automatic grab
+		// the club stays on the board: Pickpocket is a feed he chooses, not an automatic grab
 		expect(home.game.cells[1]).toBe(null);
 		expect(home.draft).toHaveLength(1);
 		// and the slot is still waiting for whichever card he does feed it
@@ -2501,11 +2431,11 @@ describe('par', () => {
 });
 
 describe('tombcrawl a kill that costs nothing', () => {
-	// The Thief's Bounty pays for the pile leading the board, so this kill is free and the track is bare.
-	const thief = (): DraftCard[] => [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
+	// The Orc's Bloodrush pays for the pile leading the board, so this kill is free and the track is bare.
+	const orc = (): DraftCard[] => [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 
 	test('a free kill does not owe the spare heart', () => {
-		const state = makeTomb({ columns: [['5H'], []], foundations: ['4H'], draft: thief() });
+		const state = makeTomb({ columns: [['5H'], []], foundations: ['4H'], draft: orc() });
 		expect(hp(state)).toBe(0);
 		const preview = attackPreview(state, cascade(0));
 		expect(preview.damage).toBe(0);
@@ -2592,8 +2522,8 @@ describe('putting a two-click spell’s pick down', () => {
 	});
 });
 
-describe('tombcrawl IMAWAL turning a card back over', () => {
-	const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2H', suit: 'hearts', name: 'IMAWAL', text: '' }];
+describe('tombcrawl CYDSTEPP has only the one use', () => {
+	const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2H', suit: 'hearts', name: 'CYDSTEPP', text: '' }];
 	const board = () =>
 		makeTomb({
 			columns: [['5C', '4D'], ['KS'], ['QC']],
@@ -2603,28 +2533,16 @@ describe('tombcrawl IMAWAL turning a card back over', () => {
 			wounded: [1],
 		});
 
-	test('a face-up card goes back to fog, and the dig it allows still pays a heal', () => {
-		const state = board();
-		const armed = useAbility(state, 0)!;
-		expect(armed.armed).toMatchObject({ kind: 'imawal' });
+	test('a face-up card is only ever picked up, never turned back over', () => {
+		const armed = useAbility(board(), 0)!;
+		const picked = armedClick(armed, cascade(0, 1))!;
 
-		const flipped = flipFaceDown(armed, cascade(0, 1))!;
-		expect(flipped.armed).toBe(null);
-		expect(flipped.hidden).toContain('4D');
-		// the spell made itself the fog it needs: the card can be dug again for a heal
-		expect(healPreview(flipped, cascade(0, 1)).length).toBe(1);
-	});
-
-	test('a card already face down, and a spell that is not armed, turn nothing over', () => {
-		const state = board();
-		expect(flipFaceDown(state, cascade(0, 1))).toBe(null);
-		const armed = useAbility(state, 0)!;
-		expect(flipFaceDown(armed, cascade(2, 0))).toBe(null);
-		expect(flipFaceDown(armed, { fixture: 'cell', data: [1] })).toBe(null);
+		expect(picked.armed).toMatchObject({ kind: 'cydstepp', first: '4D' });
+		expect(picked.hidden).not.toContain('4D');
 	});
 });
 
-describe('the two ways an Orc gets an item back', () => {
+describe('an item coming back without a level up', () => {
 	// A level up is the third suit reaching two: the clubs two goes home onto a pile of aces while the
 	// other three piles already stand at two.
 	const levelling = () =>
@@ -2640,48 +2558,70 @@ describe('the two ways an Orc gets an item back', () => {
 		});
 	const clubsHome = { fixture: 'foundation' as const, data: [3] };
 
-	/** Flip clauses for one test, then put them back: the shipped game never runs with any of them off. */
-	const withClauses = (patch: Partial<typeof CLAUSES>, run: () => void) => {
-		const before = { ...CLAUSES };
-		Object.assign(CLAUSES, patch);
-		try {
-			run();
-		} finally {
-			Object.assign(CLAUSES, before);
-		}
-	};
-
-	test('the shipped Orc keeps his spent item through a level up', () => {
+	test('a spent item stays spent through a level up: only the glyph comes back', () => {
 		const state = levelling();
 		expect(currentLevel(state)).toBe(2);
 		const next = tombMove(state, cascade(0), clubsHome)!;
 		expect(currentLevel(next)).toBe(3);
-		// a level up refreshes the glyph, and an Orc's kit only comes back by scavenging
 		expect(next.exhausted[1]).toBe(true);
 	});
+});
 
-	test('the level-up clause brings every spent item back instead', () => {
-		withClauses({ orcLevelRefresh: true }, () => {
-			const next = tombMove(levelling(), cascade(0), clubsHome)!;
-			expect(currentLevel(next)).toBe(3);
-			expect(next.exhausted[1]).toBe(false);
+describe('the wizard’s arcana', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
+		{ cell: 1, role: 'glyph', id: '3S', suit: 'spades', name: 'BYSSEPS', text: '' },
+		{ cell: 2, role: 'consumable', id: '5H', suit: 'hearts', name: 'CYDSTEPP', text: '' },
+	];
+
+	test('the item slot is a spell, and a level up brings both of them back', () => {
+		const state = makeTomb({
+			columns: [['2C']],
+			cells: ['KC', '3S', '5H'],
+			// clubs is the pile holding the level back, so its two levels the run up
+			foundations: ['2S', '2H', '2D', 'AC'],
+			draft,
+			exhausted: [1, 2],
 		});
+		// the second slot is a glyph to everything that reads the glyph
+		expect(hasGlyph(state, 'CYDSTEPP')).toBe(true);
+		expect(hasGlyph(state, 'BYSSEPS')).toBe(true);
+
+		const next = tombMove(state, cascade(0), { fixture: 'foundation', data: [3] })!;
+		expect(currentLevel(next)).toBe(3);
+		expect(next.exhausted[1]).toBe(false);
+		expect(next.exhausted[2]).toBe(false);
 	});
 
-	test('with scavenging off, playing an item out to the tableau opens no window', () => {
-		withClauses({ orcScavenge: false }, () => {
-			const state = makeTomb({
-				columns: [['5D']],
-				cells: ['KC', '2S', '4C'],
-				draft: [
-					{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Orc', text: '' },
-					{ cell: 2, role: 'consumable', id: '4C', suit: 'clubs', name: 'Elixir', text: '' },
-				],
-			});
-			const played = tombMove(state, cell(2), cascade(0))!;
-			expect(played.itemWindow).toBe(null);
+	test('a wraith drains both glyphs at once', () => {
+		// the diamond king is the boss, so every other king carries his Mana Burn into a free cell
+		const state = makeTomb({
+			columns: [['KD'], ['KH']],
+			cells: ['KC', '2S', '5H', null],
+			draft,
+			boss: 'KD',
 		});
+		const parked = tombMove(state, cascade(1), cell(3))!;
+
+		expect(parked.wounded[1]).toBe(1);
+		expect(parked.wounded[2]).toBe(1);
+		expect(parked.exhausted[1]).toBe(true);
+		expect(parked.exhausted[2]).toBe(true);
 	});
 });
+
+describe('the dwarf’s stout', () => {
+	test('the crawl opens with one pocket more than the track allows', () => {
+		const deals = Array.from({ length: 200 }, (_, index) => createTombState(index + 1, FREE_CELL_COUNT.med));
+		const dwarf = deals.find((state) => state.draft[0].name === 'Dwarf')!;
+		const other = deals.find((state) => state.draft[0].name !== 'Dwarf')!;
+
+		expect(dwarf.game.cells.length).toBe(other.game.cells.length + 1);
+		// the party is still four cards in the first four cells
+		expect(dwarf.draft).toHaveLength(4);
+	});
+});
+
+
 
 

@@ -16,7 +16,7 @@ import {
 	elfSight,
 	hasPassive,
 	hp,
-	imawalCanBury,
+	cydsteppCanBury,
 	isFaceDown,
 	maxHp,
 	moveCapacity,
@@ -51,7 +51,9 @@ export type SolverAction =
 	 * `applyAction` plays the clicks through the rules exactly as a hand would.
 	 */
 	| { kind: 'pisorf'; cell: number; from: CardLocation; to: number }
-	| { kind: 'weytwut'; cell: number; a: CardLocation; b: CardLocation };
+	| { kind: 'weytwut'; cell: number; a: CardLocation; b: CardLocation }
+	/** Purity aims at a hallway rather than a card, so its arm and its aim are one action too. */
+	| { kind: 'purity'; cell: number; column: number };
 
 export interface SolverMove {
 	action: SolverAction;
@@ -84,6 +86,11 @@ export function applyAction(state: TombState, action: SolverAction): TombState |
 			const first = armedClick(armed, action.a);
 			if (!first) return null;
 			return armedClick(first, action.b);
+		}
+		case 'purity': {
+			const armed = useAbility(state, action.cell);
+			if (!armed) return null;
+			return armedClick(armed, { fixture: 'cascade', data: [action.column, 0] });
 		}
 	}
 }
@@ -165,7 +172,7 @@ export function generateMoves(state: TombState): SolverMove[] {
 			for (let t = 0; t < state.game.tableau.length; t++) {
 				if (t === c) continue;
 				const target = column(t, Math.max(0, (state.game.tableau[t] ?? []).length - 1));
-				const buried = imawalCanBury(state, run, target);
+				const buried = cydsteppCanBury(state, run, target);
 				if (!buried && !canBuildOn(state, run, target)) continue;
 				add(
 					{ kind: 'move', from: column(c, row), to: target },
@@ -194,7 +201,7 @@ export function generateMoves(state: TombState): SolverMove[] {
 		if (!card || !cellCardMovable(state, slot)) continue;
 		for (let t = 0; t < state.game.tableau.length; t++) {
 			const target = column(t, Math.max(0, (state.game.tableau[t] ?? []).length - 1));
-			const buried = imawalCanBury(state, [card], target);
+			const buried = cydsteppCanBury(state, [card], target);
 			if (!buried && !canBuildOn(state, [card], target)) continue;
 			add(
 				{ kind: 'move', from: cell(slot), to: target },
@@ -205,7 +212,7 @@ export function generateMoves(state: TombState): SolverMove[] {
 	}
 
 	/*
-	 * Casting. BYSSEPS, IMAWAL, BURNDAYRAZ, a Remedy or a Revive arm and then wait for the move that
+	 * Casting. BYSSEPS, CYDSTEPP, BURNDAYRAZ, a Remedy or a Purity arm and then wait for the move that
 	 * spends them, so arming is a move of its own. PISORF and WEYTWUT are aimed at what they act on with
 	 * a second click, and the rules refuse a plain move while they are armed, so their arm and their aim
 	 * are generated as one action; an Elixir mends the glyph and has no target at all.
@@ -252,6 +259,14 @@ export function generateMoves(state: TombState): SolverMove[] {
 					const action = { kind: 'weytwut' as const, cell: slot, a, b };
 					add(action, `${armLabel(entry.name, slot)} · ${where(a)} with ${where(b)}`, applyAction(state, action));
 				}
+			}
+			continue;
+		}
+		if (entry.name === 'Purity') {
+			// Purity names a hallway, so arming it and aiming it are one action, one per column.
+			for (let col = 0; col < state.game.tableau.length; col++) {
+				const action = { kind: 'purity' as const, cell: slot, column: col };
+				add(action, `${armLabel(entry.name, slot)} · ${where(column(col, 0))}`, applyAction(state, action));
 			}
 			continue;
 		}
@@ -487,7 +502,7 @@ function itemWorth(name: string, missing: number): number {
 		case 'Potion':
 			return missing;
 		case 'Remedy':
-		case 'Revive':
+		case 'Purity':
 			return 1;
 		default:
 			return 0;
@@ -510,7 +525,7 @@ function itemPull(state: TombState): { potion: number; restock: number } {
 	let restock = 0;
 	const window = state.itemWindow;
 	if (window) {
-		// Everyone else must feed the suit the slot just lost; an Orc takes any card at all.
+		// Everyone else must feed the suit the slot just lost; a Thief takes any card at all.
 		for (const suit of window.any ? SUITS : [window.suit]) {
 			restock = Math.max(restock, itemWorth(abilityFor(window.role, suit).name, missing));
 		}

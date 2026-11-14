@@ -92,8 +92,6 @@ Copy that still uses the standard name, each a one-line change:
   becomes `hallway 3, 5 cards`.
 - The exhausted pocket: "Exhausted item slot — play a ♣ card here… Miss it and this is an ordinary free
   cell." — becomes restock/convert: "Play a ♣ card here to restock it. Anything else converts this pocket."
-- Glyph texts still say `free cell`: BYSSEPS "even one your free cells could not carry", IMAWAL "a run
-  your free cells could carry", PISORF "into one open free cell" — become pockets.
 - Elf's Ranged and the Serpent's power still say `column` — become hallway.
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
   shut until another king lies in it".

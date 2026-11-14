@@ -62,14 +62,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		draftAt,
 		elfSight,
 		emptyCells,
-		flipFaceDown,
 		unpick,
 		hasPassive,
 		isBoss,
 		isBossMinion,
 		isFaceDown,
-		imawalCanBury,
-		imawalCanFlip,
+		cydsteppCanBury,
 		moveCapacity,
 		parCleared,
 		bossSlain,
@@ -598,8 +596,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The hint over a spent slot names the one suit that will restock it — except where a Scavenger
-	 * opened the window, which takes any card at all.
+	 * The hint over a spent slot names the one suit that will restock it — except where a Thief's
+	 * Pickpocket opened the window, which takes any card at all.
 	 */
 	function itemSlotHint(state: TombState | null, suit: string): string {
 		const feed = state?.itemWindow?.any ? 'any card' : `a ${suit} card`;
@@ -1120,8 +1118,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const index = location.data[0];
 			const card = state.game.cells[index];
 			if (!card) return null;
-			// An armed IMAWAL can pick up a wounded card that would otherwise be locked.
-			const parked = !cellCardMovable(state, index) && state.armed?.kind !== 'imawal';
+			// An armed CYDSTEPP can pick up a wounded card that would otherwise be locked.
+			const parked = !cellCardMovable(state, index) && state.armed?.kind !== 'cydstepp';
 			if (parked && !attackPreview(state, location).legal) return null;
 			return { location, cards: [card], peekOnly: false };
 		}
@@ -1160,7 +1158,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const overfull = run.cards.length > moveCapacity(state) && arm?.kind !== 'sack';
 		state.game.tableau.forEach((column, index) => {
 			const target = { fixture: 'cascade' as const, data: [index, Math.max(0, column.length - 1)] };
-			if ((!parked && !overfull && canBuildOn(state, run.cards, target)) || imawalCanBury(state, run.cards, target))
+			if ((!parked && !overfull && canBuildOn(state, run.cards, target)) || cydsteppCanBury(state, run.cards, target))
 				keys.push(`cascade:${index}`);
 		});
 		if (!parked && !overfull && run.cards.length === 1) emptyCells(state).forEach((index) => keys.push(`cell:${index}`));
@@ -1194,16 +1192,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombLast = double ? null : { id, time: now };
 
 		if (state.armed) {
-			// IMAWAL's second use: double-click a face-up card to turn it back over into fog, a place to
-			// bury a run later or one to dig again for the heal a dig pays. A single click still picks
-			// the card the spell is holding, so the two uses never collide.
-			if (double && imawalCanFlip(state, card.location)) {
-				const flipped = flipFaceDown(state, card.location);
-				if (flipped) {
-					commit(flipped);
-					return;
-				}
-			}
 			const armed = armedClick(state, card.location);
 			if (armed) {
 				commit(armed);
@@ -1215,10 +1203,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				commit(dropped);
 				return;
 			}
-			// A Remedy, Revive or BYSSEPS holds no target: it waits for the action it covers, so the
-			// click still has to do its ordinary job (dig the fog, select, move) — otherwise the item
-			// in hand locks the whole board, including the dig that heals it.
-			const waits = state.armed.kind === 'remedy' || state.armed.kind === 'revive' || state.armed.kind === 'sack';
+			// A Remedy or BYSSEPS holds no target: it waits for the action it covers, so the click still
+			// has to do its ordinary job (dig the fog, select, move) — otherwise the item in hand locks
+			// the whole board, including the dig that heals it.
+			const waits = state.armed.kind === 'remedy' || state.armed.kind === 'sack';
 			if (!waits) {
 				shake(el);
 				return;
@@ -1823,8 +1811,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 						{#if pending}
-							<!-- Which card would make an item here: the suit the slot lost, or every suit for an Orc's
-							     Scavenger, since a card of any suit restocks one of his. -->
+							<!-- Which card would make an item here: the suit the slot lost, or every suit for a Thief's
+							     Pickpocket, since a card of any suit restocks one of his. -->
 							<span class="pips" class:any={pending.any} aria-hidden="true">
 								{#each pending.any ? SUITS : [pending.suit] as suit (suit)}
 									<span>{SUIT_GLYPH[suit]}</span>
