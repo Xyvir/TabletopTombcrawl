@@ -1114,21 +1114,15 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(preview.wounds).toEqual([]);
 	});
 
-	test('grudge is the boss king having no protection, and nothing more', () => {
+	test('no party reaches the boss king before another king is home', () => {
+		// A Dwarf used to be the exception; Stout is his pocket now, so the Generals shield him too.
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Dwarf', text: '' }];
-
-		// the boss can be taken before any other king is home
 		const early = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], draft, boss: 'KH' });
+
 		expect(kingsHome(early)).toBe(0);
-		expect(canSendHome(early, cascade(0)).legal).toBe(true);
-		// and it costs the twelve the rank asks for, since med has no ceiling
-		expect(attackPreview(early, cascade(0)).damage).toBe(12);
+		expect(canSendHome(early, cascade(0)).legal).toBe(false);
 
-		// without the Dwarf the very same king is frozen
-		const plain = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], boss: 'KH' });
-		expect(canSendHome(plain, cascade(0)).legal).toBe(false);
-
-		// court cards are no cheaper for him: a jack costs its ten, like anyone's
+		// and a court card is no cheaper once a king is home: a jack costs its ten, like anyone's
 		const face = makeTomb({ columns: [['JC']], cells: ['2D'], foundations: ['TC', 'AD'], draft });
 		expect(attackPreview(face, cascade(0)).damage).toBe(10);
 	});
@@ -2192,7 +2186,7 @@ describe('tombcrawl item refresh', () => {
 });
 
 describe('tombcrawl boss protection', () => {
-	test('a drafted dwarf can go straight for the boss', () => {
+	test('a drafted dwarf gets no shortcut past the Generals', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '9D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 		const dwarf = makeTomb({
 			columns: [['KH']],
@@ -2201,16 +2195,11 @@ describe('tombcrawl boss protection', () => {
 			boss: 'KH',
 			draft,
 		});
-		expect(attackPreview(dwarf, cascade(0, 0))).toMatchObject({ legal: true, reason: '' });
-		expect(attackWith(dwarf, cascade(0, 0))).not.toBe(null);
-
-		const others = makeTomb({
-			columns: [['KH']],
-			cells: ['3C', '4C', '5C'],
-			foundations: ['QH', 'QS', 'QD', 'QC'],
-			boss: 'KH',
+		expect(attackPreview(dwarf, cascade(0, 0))).toMatchObject({
+			legal: false,
+			reason: 'boss king: his Generals shield him until one lies in a grave',
 		});
-		expect(attackPreview(others, cascade(0, 0)).reason).toBe('boss king: his Generals shield him until one lies in a grave');
+		expect(attackWith(dwarf, cascade(0, 0))).toBe(null);
 	});
 
 	test('a drafted dwarf no longer silences the boss aura', () => {

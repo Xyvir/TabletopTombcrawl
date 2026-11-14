@@ -58,8 +58,6 @@ export const TOMB_RULES = {
  * to lose it" — the answer only ever comes from seeds that were already winnable.
  */
 export const CLAUSES = {
-	/** Dwarf: the boss king carries no protection at all. */
-	dwarfBoss: true,
 	/** Fighter: ignore the lowest pile when reading his level. */
 	fighterLevel: true,
 	/** Wizard: a cast on the very next turn after a refresh is free. */
@@ -702,9 +700,9 @@ export function woundedCanGoHome(state: TombState): boolean {
 	return difficultyOf(state) === 'easy';
 }
 
-/** Dwarf roots: while that passive is drafted, the boss king carries no protection at all. */
+/** The boss king stands behind his Generals: no party reaches him until another king is home. */
 export function bossProtected(state: TombState): boolean {
-	return !(CLAUSES.dwarfBoss && hasPassive(state, 'Dwarf')) && !bossUnlocked(state);
+	return !bossUnlocked(state);
 }
 
 function frozenBoss(state: TombState, card: Card): boolean {
