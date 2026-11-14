@@ -1882,7 +1882,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span
 				class="score"
 				title="Gold: every card that goes home pays its own weight — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb pays 500, so the gold divided by 5 is the percentage cleared."
-			>Gold {tombScoreNow}/{PAR_TOTAL} <span class="pct">({parCleared(tomb).toFixed(1)}% cleared)</span></span
+			>Gold {tombScoreNow}/{PAR_TOTAL} <span class="pct">({parCleared(tomb).toFixed(1)}%)</span></span
 			>
 			{#if bossNoted && bossSlain(tomb)}
 				<span
