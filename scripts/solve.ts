@@ -123,7 +123,7 @@ function heading(state: TombState, options: Options): string {
 	const free = FREE_CELL_COUNT[options.difficulty];
 	const goal = options.goal === 'boss' ? 'slay the boss' : '100% clear';
 	return [
-		`seed ${state.seed}  ·  ${options.difficulty} (${free} free cells)  ·  goal: ${goal}  ·  level up heals ${TOMB_RULES.levelUpHeal}${options.difficulty === 'hard' ? '  ·  no ceiling on a blow' : TOMB_RULES.levelDamageCap ? `  ·  no blow over ${TOMB_RULES.levelDamageCap}` : ''}${TOMB_RULES.glyphMoveBoss ? '  ·  glyphs may shift the boss' : ''}`,
+		`seed ${state.seed}  ·  ${options.difficulty} (${free} free cells)  ·  goal: ${goal}  ·  level up heals ${TOMB_RULES.levelUpHeal}${options.difficulty === 'easy' ? `  ·  no blow over ${TOMB_RULES.levelDamageCap}` : '  ·  no ceiling on a blow'}${TOMB_RULES.glyphMoveBoss ? '  ·  glyphs may shift the boss' : ''}`,
 		`boss  ${state.bossSuit ? `${state.bossSuit} king` : 'not yet revealed'}  ·  party  ${party(state) || '(none)'}`,
 	].join('\n');
 }
@@ -226,11 +226,7 @@ function range(options: Options): void {
 	console.log('');
 	const heal = TOMB_RULES.levelUpHeal === 1 ? '' : `, level up heals ${TOMB_RULES.levelUpHeal}`;
 	const cap =
-		options.difficulty === 'hard'
-			? ', no ceiling on a blow'
-			: TOMB_RULES.levelDamageCap
-				? `, no blow over ${TOMB_RULES.levelDamageCap}`
-				: '';
+		options.difficulty === 'easy' ? `, no blow over ${TOMB_RULES.levelDamageCap}` : ', no ceiling on a blow';
 	console.log(`${found.length}/${rows.length} solved at ${options.difficulty}${heal}${cap} (${Math.round((found.length / rows.length) * 100)}%)`);
 	if (lengths.length) {
 		const median = lengths[Math.floor(lengths.length / 2)];

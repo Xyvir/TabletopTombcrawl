@@ -3044,6 +3044,39 @@
 			"at": "2026-11-13T07:19:41.849Z"
 		},
 		{
+			"loadout": "dhds",
+			"boss": "diamonds",
+			"seed": 1984,
+			"moves": 122,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Revive",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-14",
+			"source": "human",
+			"note": "played under the two-heart cap on med, before med was uncapped: a candidate, not a re-proved win"
+		},
+		{
 			"loadout": "dhhc",
 			"boss": null,
 			"seed": 38147,
@@ -10494,6 +10527,14 @@
 					"moves": 136
 				}
 			}
+		},
+		"dhds": {
+			"med": {
+				"clear": {
+					"seed": 1984,
+					"moves": 122
+				}
+			}
 		}
 	},
 	"placeholders": {
@@ -10560,13 +10601,6 @@
 				"at": "2026-11-13T18:42:15.979Z"
 			}
 		},
-		"dhds": {
-			"med": {
-				"seed": 1984,
-				"score": 137,
-				"at": "2026-11-13T18:45:41.030Z"
-			}
-		},
 		"sccs": {
 			"med": {
 				"seed": 1844,
@@ -10604,7 +10638,6 @@
 		}
 	},
 	"missing": [
-		"dhds",
 		"dchc",
 		"dchd",
 		"dccc",

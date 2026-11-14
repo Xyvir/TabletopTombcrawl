@@ -38,9 +38,9 @@ export const TOMB_RULES = {
 	 * The most hearts one kill may cost, or 0 for no ceiling. Damage is rank minus level, so the
 	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
 	 *
-	 * Two, for everyone on the easy and med tracks: every blow there is worth 0, 1 or 2, which is the whole
-	 * of the arithmetic a table has to do. The hard track has no ceiling at all — a king you cannot afford
-	 * is a wall rather than a bill, and some hard crawls may simply be unsolvable.
+	 * Two, on the easy track only: there every blow is worth 0, 1 or 2, which is the whole of the arithmetic a
+	 * table has to do. Med and hard have no ceiling at all — a card over a lagging level costs its whole rank,
+	 * so a king you cannot afford is a wall rather than a bill, and some crawls may simply be unsolvable.
 	 */
 	levelDamageCap: 2,
 	/**
@@ -645,12 +645,12 @@ export function bossSlain(state: TombState): boolean {
  * free cells, three or two — so its size is the rule, rather than something every state has to carry.
  */
 /**
- * The ceiling on one blow at this state's track: two on easy and med, none at all on hard. The hard track
- * is where a blow costs its whole rank, so a king early in a crawl can be untouchable — and a crawl built
- * around reaching it later. Bounty still zeroes a blow after the cap, so a free kill stays free.
+ * The ceiling on one blow at this state's track: two on easy, none at all on med or hard. Both of the harder
+ * tracks are where a blow costs its whole rank, so a card over a lagging level can be unpayable — and a crawl
+ * built around reaching it later. Bounty still zeroes a blow after the cap, so a free kill stays free.
  */
 export function damageCapOf(state: TombState): number {
-	return difficultyOf(state) === 'hard' ? 0 : TOMB_RULES.levelDamageCap;
+	return difficultyOf(state) === 'easy' ? TOMB_RULES.levelDamageCap : 0;
 }
 
 export function difficultyOf(state: TombState): Difficulty {

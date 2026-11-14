@@ -581,13 +581,13 @@ describe('burden and mana burn', () => {
 	});
 
 	test('a kill that would spend the last heart is refused', () => {
-		// one heart left, and the Gorgon wants its item drained on top of the two damage
+		// one heart left, and the Gorgon wants its item drained on top of its three damage
 		const state = board({ wounded: [1, 2, 3] });
 		expect(currentLevel(state)).toBe(1);
 		expect(hp(state)).toBe(1);
 
 		const preview = attackPreview(state, cascade(0, 0));
-		expect(preview.damage).toBe(2);
+		expect(preview.damage).toBe(3);
 		expect(preview.legal).toBe(false);
 		// the empty cell that has to take a card first, so the track can absorb the wounds
 		expect(preview.need).toContain(4);
@@ -611,10 +611,10 @@ describe('burden and mana burn', () => {
 		});
 		expect(hp(state)).toBe(2);
 
-		// two damage plus the drained item
+		// three damage plus the drained item
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.legal).toBe(false);
-		expect(preview.reason).toContain('needs 3 wounds');
+		expect(preview.reason).toContain('needs 4 wounds');
 		expect(attackWith(state, cascade(0, 0))).toBeNull();
 	});
 
@@ -733,18 +733,18 @@ describe('burden and mana burn', () => {
 			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
 		});
 		const preview = attackPreview(state, cascade(0, 0));
-		expect(preview.damage).toBe(2);
+		expect(preview.damage).toBe(3);
 		expect(preview.legal).toBe(true);
 
 		const next = attackWith(state, cascade(0, 0))!;
 		expect(next.wounded[0]).toBe(0);
-		expect(hp(next)).toBe(2);
+		expect(hp(next)).toBe(1);
 	});
 });
 
 describe('the revive', () => {
 	const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TS', suit: 'spades', name: 'Revive', text: '' }];
-	// One heart left, and even a capped kill costs two: only the Revive can pay for this one.
+	// One heart left, and the kill costs eight: only the Revive can pay for this one.
 	const board = () =>
 		makeTomb({
 			columns: [['9C'], ['4C']],
@@ -766,7 +766,7 @@ describe('the revive', () => {
 		expect(armed.exhausted[0]).toBe(false);
 
 		const preview = attackPreview(armed, cascade(0, 0));
-		expect(preview).toMatchObject({ legal: true, fatal: false, damage: 2 });
+		expect(preview).toMatchObject({ legal: true, fatal: false, damage: 8 });
 		// the revive pays the bill, so only the card the kill lands on is spent
 		expect(preview.locks.sort()).toEqual([0]);
 
@@ -1061,7 +1061,7 @@ describe('tombcrawl deal and draft', () => {
 });
 
 describe('tombcrawl damage and free-cell HP', () => {
-	test('a kill costs enemy rank minus level, paid from the right edge, capped at two', () => {
+	test('a kill costs enemy rank minus level, in full, paid from the right edge', () => {
 		const state = makeTomb({
 			columns: [['4H'], [], [], [], [], [], [], []],
 			cells: ['2C', '3C', '4C', '6C', null, null, null],
@@ -1069,14 +1069,14 @@ describe('tombcrawl damage and free-cell HP', () => {
 		});
 		expect(currentLevel(state)).toBe(1);
 
-		// rank four against a level one delver would be three, and the global ceiling is two
+		// rank four against a level one delver is three, and med pays all three
 		const preview = attackPreview(state, cascade(0));
-		expect(preview.damage).toBe(2);
-		expect(preview.locks).toEqual([3, 2]);
+		expect(preview.damage).toBe(3);
+		expect(preview.locks).toEqual([3, 2, 1]);
 
 		const next = attackWith(state, cascade(0))!;
 		expect(next.game.foundations.some((card) => card && shorthandCard(card) === '4H')).toBe(true);
-		expect(hp(next)).toBe(2);
+		expect(hp(next)).toBe(1);
 	});
 
 	test('a kill you cannot pay for is refused and names the empty cells', () => {
@@ -1151,16 +1151,16 @@ describe('tombcrawl damage and free-cell HP', () => {
 		const early = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], draft, boss: 'KH' });
 		expect(kingsHome(early)).toBe(0);
 		expect(canSendHome(early, cascade(0)).legal).toBe(true);
-		// and it costs what the ceiling says, not the twelve the rank would ask for
-		expect(attackPreview(early, cascade(0)).damage).toBe(2);
+		// and it costs the twelve the rank asks for, since med has no ceiling
+		expect(attackPreview(early, cascade(0)).damage).toBe(12);
 
 		// without the Dwarf the very same king is frozen
 		const plain = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], boss: 'KH' });
 		expect(canSendHome(plain, cascade(0)).legal).toBe(false);
 
-		// court cards are no cheaper for him: a jack costs the capped two, like anyone's
+		// court cards are no cheaper for him: a jack costs its ten, like anyone's
 		const face = makeTomb({ columns: [['JC']], cells: ['2D'], foundations: ['TC', 'AD'], draft });
-		expect(attackPreview(face, cascade(0)).damage).toBe(2);
+		expect(attackPreview(face, cascade(0)).damage).toBe(10);
 	});
 
 	test('bounty pays only for a kill into the leading foundation', () => {
@@ -1169,17 +1169,17 @@ describe('tombcrawl damage and free-cell HP', () => {
 		const leading = makeTomb({ columns: [['5H']], foundations: ['4H', '3S'], draft });
 		expect(attackPreview(leading, cascade(0)).damage).toBe(0);
 
-		// spades is further along, so the same kill pays the full ceiling
+		// spades is further along, so the same kill pays the full four
 		const behind = makeTomb({ columns: [['5H']], foundations: ['4H', '8S'], draft });
-		expect(attackPreview(behind, cascade(0)).damage).toBe(2);
+		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
 	});
 
 	test('bounty needs the outright lead, and a finished pile is not in the running', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'class', id: '2D', suit: 'diamonds', name: 'Thief', text: '' }];
 
-		// level with spades is not a lead: the tie pays the ceiling
+		// level with spades is not a lead: the tie pays the four
 		const tied = makeTomb({ columns: [['5H']], foundations: ['4H', '4S'], draft });
-		expect(attackPreview(tied, cascade(0)).damage).toBe(2);
+		expect(attackPreview(tied, cascade(0)).damage).toBe(4);
 
 		// a king on top takes that pile out of the comparison, so hearts still leads
 		const finished = makeTomb({ columns: [['5H']], foundations: ['4H', 'KS'], draft });
@@ -1577,9 +1577,9 @@ describe('tombcrawl progression rules', () => {
 		expect(next.hidden).not.toContain('2C');
 	});
 
-	test('the hard track has no ceiling on a blow: an overshooting card costs its whole rank', () => {
+	test('only the easy track has a ceiling on a blow: med and hard pay the whole rank', () => {
 		// Spades are away at nine while the other three sit on their aces, so the level lags at two and
-		// the ten of spades is worth eight: capped at two on med, its whole rank on hard.
+		// the ten of spades is worth eight: capped at two on easy, its whole rank on med and hard.
 		const board = (cellCount: number) =>
 			makeTomb({
 				columns: [['TS']],
@@ -1587,12 +1587,14 @@ describe('tombcrawl progression rules', () => {
 				foundations: ['9S', 'AH', 'AD', 'AC'],
 				cellCount,
 			});
-		const med = board(TOMB_CELL_COUNT);
+		const easy = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.easy);
+		const med = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.med);
 		const hard = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.hard);
-		expect(difficultyOf(hard)).toBe('hard');
-		expect(currentLevel(hard)).toBe(2);
+		expect(difficultyOf(easy)).toBe('easy');
+		expect(currentLevel(med)).toBe(2);
+		expect(attackPreview(easy, cascade(0)).damage).toBe(2);
+		expect(attackPreview(med, cascade(0)).damage).toBe(8);
 		expect(attackPreview(hard, cascade(0)).damage).toBe(8);
-		expect(attackPreview(med, cascade(0)).damage).toBe(2);
 	});
 
 	test('an off-suit king is weak in a spade tomb, where the boss suit costs a rank more', () => {
@@ -2521,13 +2523,15 @@ describe('tombcrawl a kill that costs nothing', () => {
 describe('tombcrawl the class powers and the hearts they pay', () => {
 	const wounds = (state: TombState) => state.wounded.reduce((sum, count) => sum + count, 0);
 
-	test('the ceiling holds for everyone, Fighter or not', () => {
+	test('the Fighter pays the same eight on med as anyone else, with no ceiling to save him', () => {
 		const fighter: DraftCard[] = [{ cell: 0, role: 'class', id: '2S', suit: 'spades', name: 'Fighter', text: '' }];
-		// a nine at level one asks for eight, and no party pays more than two for it
+		// a nine at level one asks for eight, every party pays all of it on med, and three hearts is not enough
 		const board = (draft: DraftCard[] = []) =>
 			makeTomb({ columns: [['9S'], []], foundations: ['8S'], cells: ['2H', '3H', '4H'], draft });
-		expect(attackPreview(board(fighter), cascade(0))).toMatchObject({ legal: true, damage: 2 });
-		expect(attackPreview(board(), cascade(0))).toMatchObject({ legal: true, damage: 2 });
+		const withFighter = attackPreview(board(fighter), cascade(0));
+		const plain = attackPreview(board(), cascade(0));
+		expect(withFighter).toMatchObject({ legal: false, damage: 8 });
+		expect(plain).toMatchObject({ legal: false, damage: 8 });
 	});
 
 	test('the Priest mends two on a level up', () => {
