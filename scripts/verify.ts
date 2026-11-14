@@ -39,6 +39,11 @@ const corpus = JSON.parse(readFileSync('public/corpus.json', 'utf8')) as { entri
 const shard = Number(process.env.SHARD ?? 0);
 const shards = Number(process.env.SHARDS ?? 1);
 const budget = Number(process.env.BUDGET ?? 600_000);
+/**
+ * Which policy to re-prove with. The corpus was largely found by best-first, and hybrid splits its budget
+ * across a beam pass first, so a hybrid sweep misses rows that are still winnable and reads them as lost.
+ */
+const strategy = (process.env.STRATEGY ?? 'hybrid') as 'best' | 'beam' | 'dfs' | 'hybrid';
 const out = process.env.OUT ?? `corpus/verify-${shard}.json`;
 
 // The party is dealt from the seed, so check that first: a seed that no longer deals this party makes
@@ -66,7 +71,7 @@ for (const entry of mine) {
 		state,
 		// The corpus bar is the boss kill, so a clear-goal entry is only asked for the weaker claim.
 		goal: 'boss',
-		strategy: 'hybrid',
+		strategy,
 		beamWidth: 300,
 		depth: 300,
 		nodes: budget,
