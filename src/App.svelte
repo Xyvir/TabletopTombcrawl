@@ -554,11 +554,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The card an aim would slay outright: it wears crossed swords until the pointer leaves. */
 	const slayAt = $derived(!drag && preview?.legal ? aim : null);
 	/**
-	 * The card an aim would kill only by dying: the blow itself is fine, the bill is not, so the mark is a
-	 * skull rather than swords. `fatal` is exactly "the track cannot pay this", whether or not filling an
-	 * empty cell first would make change.
+	 * An aim the delver would not survive: `fatal` is exactly "the track cannot pay this bill", whether or
+	 * not filling an empty cell first would make change. The card being hit keeps its swords, because the
+	 * blow itself is on offer; the bill is written across the pockets it would take instead.
 	 */
-	const doomedAt = $derived(!drag && preview?.fatal ? aim : null);
+	const fatalAim = $derived(!drag && !!preview?.fatal);
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
 	/**
 	 * The track read as pockets rather than as hearts: every pocket holding a card, wounded or not. A
@@ -1731,7 +1731,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const down = tomb ? Math.min(stack.length, tomb.wounded[i]) : 0}
 				{@const wounded = down > 0 ? stack[down - 1] : null}
 										{@const slaying = !!slayAt && key(slayAt) === key(location)}
-						{@const doomed = !!doomedAt && key(doomedAt) === key(location)}
+						<!-- Every face-up pocket goes down when the track cannot pay, so each one wears the skull. -->
+						{@const doomed = fatalAim && !wounded && stack.length > 0}
 				<button
 					class="slot"
 					class:selected={!!card && selected.has(key(location))}
@@ -1757,7 +1758,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:locking={!!preview?.locks.includes(i)}
-					class:need={!!preview?.need.includes(i) || !!preview?.fatal}
+					class:need={!!preview?.need.includes(i)}
 					class:empty={!card}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
@@ -1827,14 +1828,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							</span>
 						{/if}
 					{/if}
+					{#if doomed}
+						<!-- The bill, drawn on the pocket it would take rather than over the whole track. -->
+						<span class="doom" aria-hidden="true">{@render skull()}</span>
+					{/if}
 					<span
 						class="slay"
-						class:on={slaying || doomed}
-						class:doomed
+						class:on={slaying}
 						class:ranged={slaying && shotAt(tomb, location)}
 						aria-hidden="true"
 					>
-						{#if doomed}{@render skull()}{:else if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
+						{#if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
 					</span>
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
@@ -1918,7 +1922,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{@const power = !!tomb && carriesPower(tomb, card)}
 					{@const flipping = flippingIds.includes(shorthandCard(card))}
 					{@const slaying = !!slayAt && key(slayAt) === key(card.location)}
-					{@const doomed = !!doomedAt && key(doomedAt) === key(card.location)}
 					<button
 						class="card"
 						class:selected={selected.has(key(card.location))}
@@ -1966,12 +1969,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/if}
 						<span
 							class="slay"
-							class:on={slaying || doomed}
-							class:doomed
+							class:on={slaying}
 							class:ranged={slaying && shotAt(tomb, card.location)}
 							aria-hidden="true"
 						>
-							{#if doomed}{@render skull()}{:else if slaying && shotAt(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
+							{#if slaying && shotAt(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
 						</span>
 					</button>
 				{/each}
