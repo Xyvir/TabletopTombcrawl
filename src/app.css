@@ -236,13 +236,31 @@ img {
 	inset: 0;
 	display: grid;
 	place-items: center;
+	border-radius: inherit;
 	pointer-events: none;
 	/* above the need ring at 5, and well above the cards */
 	z-index: 6;
 }
 
+/*
+ * The same wash a short bill's empty cells wear, set behind the skull so the mark reads as one piece
+ * rather than a bare picture dropped on a card.
+ */
+.slot .doom::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: rgba(255, 77, 77, 0.12);
+	box-shadow: 0 0 0 3px #ff4d4d inset, 0 0 12px rgba(255, 77, 77, 0.5) inset;
+	animation: tomb-need 1s ease-in-out infinite;
+}
+
 .slot .doom .skull {
 	display: block;
+	/* .slot img pins every picture to the slot's corner for the cards; a mark is placed, not dealt */
+	position: static;
+	inset: auto;
 	width: 74%;
 	height: 74%;
 	object-fit: contain;
