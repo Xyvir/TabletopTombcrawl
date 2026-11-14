@@ -29,6 +29,11 @@ interface Entry {
 	 * recorded before the corpus kept dates carry null rather than a guess.
 	 */
 	at: string | null;
+	/**
+	 * Where the line came from, when that is worth knowing: `human` marks a crawl a player beat by hand,
+	 * kept as a baseline the solver can be measured against rather than a result it produced.
+	 */
+	source?: 'human';
 }
 
 const mode = process.env.MODE ?? 'plan';

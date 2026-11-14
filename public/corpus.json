@@ -2857,6 +2857,38 @@
 			"at": "2026-11-13T02:22:38.591Z"
 		},
 		{
+			"loadout": "dhcd",
+			"boss": "diamonds",
+			"seed": 737,
+			"moves": 136,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-14",
+			"source": "human"
+		},
+		{
 			"loadout": "dhch",
 			"boss": "clubs",
 			"seed": 38080,
@@ -10454,6 +10486,14 @@
 					"moves": 119
 				}
 			}
+		},
+		"dhcd": {
+			"med": {
+				"clear": {
+					"seed": 737,
+					"moves": 136
+				}
+			}
 		}
 	},
 	"placeholders": {
@@ -10520,13 +10560,6 @@
 				"at": "2026-11-13T18:42:15.979Z"
 			}
 		},
-		"dhcd": {
-			"med": {
-				"seed": 737,
-				"score": 71,
-				"at": "2026-11-13T18:42:56.949Z"
-			}
-		},
 		"dhds": {
 			"med": {
 				"seed": 1984,
@@ -10571,7 +10604,6 @@
 		}
 	},
 	"missing": [
-		"dhcd",
 		"dhds",
 		"dchc",
 		"dchd",
