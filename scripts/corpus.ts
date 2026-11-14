@@ -13,6 +13,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { DRAFT_CELL_COUNT, FREE_CELL_COUNT, createTombState, type Difficulty, type TombState } from '../src/tombcrawl';
 import { solveTomb } from '../src/solver';
+import { writeSolution } from './solution';
 
 type Boss = string | null;
 interface Candidate { key: string; loadout: string; boss: Boss; seeds: number[] }
@@ -79,6 +80,26 @@ const readEntries = (path: string): Entry[] => {
 };
 
 /**
+ * Parties a rule change has retired, as `track|loadout`. The shard still holds the row that was demoted, and
+ * counting it as a win is what made a fresh scan skip the very parties it exists to refill: 242 of 256 deals
+ * skipped, 14 searched. A retired row is open ground again.
+ */
+const retiredKeys = (() => {
+	const path = process.env.RETIRED ?? 'corpus/retired.json';
+	if (!existsSync(path)) return new Set<string>();
+	try {
+		const parsed = JSON.parse(readFileSync(path, 'utf8'));
+		return new Set(
+			Array.isArray(parsed)
+				? parsed.map((row: { difficulty?: string; loadout: string }) => `${row.difficulty ?? 'med'}|${row.loadout}`)
+				: []
+		);
+	} catch {
+		return new Set<string>();
+	}
+})();
+
+/**
  * Every party any worker has already won, across the published corpus and every shard on disk. A seed
  * whose party is in here costs a deal scan and no search at all.
  */
@@ -92,7 +113,9 @@ const foundAnywhere = (): string[] => {
 			// itself in silence.
 			if (!name.startsWith('scan-') && !name.startsWith('shard-')) continue;
 			for (const entry of readEntries(`${shardDir}/${name}`)) {
-				if (typeof entry.loadout === 'string') found.add(entry.loadout);
+				if (typeof entry.loadout !== 'string') continue;
+				if (retiredKeys.has(`${entry.difficulty ?? 'med'}|${entry.loadout}`)) continue;
+				found.add(entry.loadout);
 			}
 		}
 	}
@@ -228,6 +251,9 @@ if (mode === 'scan') {
 			timeBudgetMs: seconds > 0 ? seconds * 1000 : Number.POSITIVE_INFINITY,
 		});
 		if (!result.solved) continue;
+		const party = [...state.draft]
+			.sort((a, b) => a.cell - b.cell)
+			.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit }));
 		entries.push({
 			loadout: loadoutOf(state),
 			boss: state.bossSuit,
@@ -235,10 +261,22 @@ if (mode === 'scan') {
 			moves: result.steps.length,
 			difficulty,
 			goal,
-			party: [...state.draft]
-				.sort((a, b) => a.cell - b.cell)
-				.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit })),
+			party,
 			at: new Date().toISOString(),
+		});
+		// Only a win is worth a file, and only a win for a party nothing had won yet gets here at all: a
+		// corpus row without its line is what cost this sweep a night of search to answer a later question.
+		writeSolution({
+			seed,
+			difficulty,
+			goal,
+			loadout: key,
+			moves: result.steps.length,
+			party,
+			lines: result.steps.map((step) => step.label.replace(/\s+/g, ' ').trim()),
+			actions: result.steps.map((step) => step.action),
+			nodes: result.nodes,
+			note: `scan ${from}-${to}, ${strategy}`,
 		});
 		done.add(key);
 		writeFileSync(out, JSON.stringify(entries, null, '\t'));

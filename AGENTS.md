@@ -39,8 +39,9 @@ string per move, copied from the log without its columns (`home AS -> spades fou
 `drop PISORF (cell 3)`). Columns, rows and cells in a log are 1-based; a run reads top card first, and the card
 a hand takes hold of is the bottom one listed.
 
-A solver line lives there too, as `<track>-<seed>.json` with `"source": "solver"`: `scripts/verify.ts` writes one
-whenever a re-prove finds a line, so the corpus keeps the proof and not just the claim. That is the cache that
+A solver line lives there too, as `<track>-<seed>.json` with `"source": "solver"`: both producers of rows write one
+whenever a search wins — the re-prover in `scripts/verify.ts` and the scanner in `scripts/corpus.ts` — so the corpus
+keeps the proof and not just the claim. Only wins are written; an unsolved search has no line to keep. That is the cache that
 answers a question like *did this row need the damage cap* by replaying a stored line instead of paying for
 another search. Those files carry `actions` beside `lines` — the solver's own moves — and `replay.ts` applies the
 actions when they are present, because the printed vocabulary reaches past the transcript grammar (`range 2D col 5
