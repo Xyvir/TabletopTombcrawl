@@ -24,10 +24,10 @@ Two rules for this file:
 | **Graveyard** | The four piles a card goes to when it is slain. Where the dead lie. | foundations |
 | **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
 | **Boss** | The king that ends the run when slain. | the protected king |
-| **Court** | The boss suit's ace through queen. Carries the deal's aura. | boss-suit minions |
-| **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's aura too. | off-suit king |
+| **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
+| **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). | plain card |
-| **Aura** | The deal's one monster power, worn by the court and the kings. | monster power |
+| **Affliction** | The deal's one monster power — Weakness, Poison, Burden or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
@@ -44,8 +44,24 @@ A pocket is the same word in all three of its jobs — that is the point of choo
 `cell`. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of pocket it is when that matters:
 *party pocket* for the four at the left, *empty pocket* for storage.
 
-The two passive pockets are named by grammar, so the convention does not have to be rehearsed every time.
-A **class skill** is a noun naming the thing the delver does — Pickpocket, Vigil, Arcana, Strength. A **kin
+Every ability in the game names both where it comes from and what kind of thing it is, and those two words
+are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affliction** only of a monster,
+**spell** only of a glyph, **effect** only of an item — so the source is never in doubt, and a phrase like
+"the item's spell" cannot happen.
+
+| Source | The thing it gives | When it works | Example |
+| --- | --- | --- | --- |
+| Kin | **trait** | always on, while the card is unwounded | Determined |
+| Class | **skill** | always on, while the card is unwounded | Strength |
+| Monster | **affliction** | the deal's one, worn by the court and the kings | Burden |
+| Glyph | **spell** | armed, spent by the action it is armed for, refreshed on a level up | PISORF |
+| Item | **effect** | spent once, then restocked after it is slain | Potion |
+
+The role labels on the pockets carry the same four words, so a hover teaches the pairing without a rules
+page: *Kin trait*, *Class skill*, *Glyph spell*, *Item effect*.
+
+The passive words follow grammar too, which keeps the convention from having to be rehearsed every time. A
+**class skill** is a noun naming the thing the delver does — Pickpocket, Vigil, Arcana, Strength. A **kin
 trait** is an adjective describing the delver — Ranged, Stout, Determined. Bloodrush is the one exception,
 because it names the moment rather than the delver; it is the only kin word that is not an adjective, and a
 new kin trait should be one.
@@ -75,7 +91,7 @@ Notes that follow from those:
   copy should say which one the player is about to do, never "use the item or lose it".
 - **A slain party card converts its own pocket.** The thing that lived there is dead, so the pocket is
   plain from then on — slay and convert can both happen on one move.
-- **Stash is the code's "park".** The aura still fires on it: a stashed carrier sets off its power where it
+- **Stash is the code's "park".** The affliction still fires on it: a stashed carrier sets off its power where it
   lies. Copy says stash; nothing in copy says park.
 
 ### Slay vs kill
@@ -138,12 +154,12 @@ Not in copy yet. Ranked by how much the current word hurts.
   synonym problem this file exists to fix.
 - **Goon / Grunt / Mook** for plain cards — Rat won: a creature in a tomb, not a soldier. Soldiers collide
   with King and General.
-- **Minion** for plain cards — already means "carries the aura" in the code and in the tint's own explanation.
+- **Minion** for plain cards — already means "carries the affliction" in the code and in the tint's explanation.
 - **One ladder of words for both families** — a court and a rat sharing *Small* / *Medium* / *Large* read as a
   rule (is a small Gorgon as weak as a small rat?) and left a rat "large" next to a "lesser" Gorgon. Two
   ladders over the same three ranges: the court is *Lesser* / bare / *Greater*, the rats are *Small* /
   *Medium* / *Large*.
-- Listing exceptions in per-card copy (Priest's Vigil on every fogged card, the Remedy clause on every aura
+- Listing exceptions in per-card copy (Priest's Vigil on every fogged card, the Remedy clause on every affliction
   line) — the tooltip answers one question, not every edge case.
 
 ---

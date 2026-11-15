@@ -95,10 +95,10 @@ export type ClauseName = keyof typeof CLAUSES;
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
 
 export const ROLE_LABEL: Record<DraftRole, string> = {
-	kin: 'Kin · trait, always on',
-	class: 'Class · skill, always on',
-	glyph: 'Glyph · active, refreshes on level up',
-	consumable: 'Item · active, restocked after it is slain',
+	kin: 'Kin trait · always on',
+	class: 'Class skill · always on',
+	glyph: 'Glyph spell · armed, spends on use, refreshes on level up',
+	consumable: 'Item effect · spent once, restocked after it is slain',
 };
 
 /**

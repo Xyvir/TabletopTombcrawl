@@ -1054,14 +1054,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The crawl's one monster power, e.g. "Large Gorgon — Burden: slaying this exhausts and wounds your item."
-	 * The court and every other king wear it, so it is always read from the boss suit.
+	 * The deal's one monster affliction, e.g. "Affliction: Burden — slaying this exhausts and wounds your
+	 * item." The court and every other king wear it, so it is always read from the boss suit.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit];
-		const name = card ? carrierName(state, card) : monster.name;
-		return `${withName ? `${name} — ` : ''}${monster.power}: ${monster.text}`;
+		const line = `Affliction: ${monster.power} — ${monster.text}`;
+		if (!withName) return line;
+		return `${card ? carrierName(state, card) : monster.name}\n${line}`;
 	}
 
 	/** The monster power this move set off, if it killed a card that carries one. */
@@ -1977,10 +1978,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						style={cardStyle(card, i)}
 						data-card={shorthandCard(card)}
 													title={tomb && boss
-								? `${bossTitle(tomb)}${
+								? `${bossTitle(tomb)}\n${
 										bossProtected(tomb)
-											? ' — his Generals shield him: no hand moves him and no blade reaches him until one of them lies in a grave. Only a glyph can still shift him.'
-											: ' — his shield is down: he can be slain.'
+											? 'Invulnerable — cannot be slain until one of their Generals falls first.\nIndomitable — cannot be moved except by a glyph.'
+											: 'Shield down — a General has fallen, so he can be slain, and any hand can move him.'
 									}\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
 								? auraTitle(tomb, card)
