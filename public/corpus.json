@@ -1431,6 +1431,38 @@
 			"at": "2026-11-12T13:59:54.351Z"
 		},
 		{
+			"loadout": "hhhh",
+			"boss": "diamonds",
+			"seed": 2769,
+			"moves": 145,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-15T00:00:00.000Z",
+			"source": "human"
+		},
+		{
 			"loadout": "hscc",
 			"boss": "hearts",
 			"seed": 40,
@@ -2819,6 +2851,18 @@
 				}
 			}
 		},
+		"hhhh": {
+			"med": {
+				"boss": {
+					"seed": 2769,
+					"moves": 78
+				},
+				"clear": {
+					"seed": 2769,
+					"moves": 145
+				}
+			}
+		},
 		"hscc": {
 			"med": {
 				"boss": {
@@ -3535,13 +3579,6 @@
 		"hdsh": {
 			"med": {
 				"seed": 243,
-				"score": null,
-				"at": "2026-11-14"
-			}
-		},
-		"hhhh": {
-			"med": {
-				"seed": 2769,
 				"score": null,
 				"at": "2026-11-14"
 			}
@@ -4346,7 +4383,6 @@
 		}
 	},
 	"missing": [
-		"hhhh",
 		"hhhc",
 		"hhhd",
 		"hhhs",

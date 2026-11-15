@@ -24,6 +24,7 @@ import {
 	revealFaceDown,
 	tombMove,
 	tombPar,
+	tombRun,
 	useAbility,
 	type Difficulty,
 	type TombState,
@@ -105,6 +106,8 @@ function step(state: TombState, text: string): TombState | null {
 
 	// arm   PISORF (cell 3)   /   drop  PISORF (cell 3)
 	if ((m = /^arm (\w+) \(cell (\d+)\)$/.exec(text))) return useAbility(state, Number(m[2]) - 1);
+	// use   Potion (cell 4)   — an item whose effect lands as it is used, rather than one left armed
+	if ((m = /^use (\w+) \(cell (\d+)\)$/.exec(text))) return useAbility(state, Number(m[2]) - 1);
 	if ((m = /^drop (\w+) \(cell (\d+)\)$/.exec(text))) return disarm(state);
 
 	// swap  AS col 4 <-> 8D col 4
@@ -123,10 +126,17 @@ function step(state: TombState, text: string): TombState | null {
 	// move  8D col 8 -> col 5      /      move  TD JS col 3 -> col 2      /      move  9C cell 6 -> col 2
 	if ((m = /^move ([\w ]+?) col (\d+) -> col (\d+)$/.exec(text))) {
 		const [, ids, from, to] = m;
-		// A run reads top first, and the card a hand takes hold of is the bottom one of it.
-		const held = ids.trim().split(' ').pop()!;
-		const at = locOf(state, held);
-		return carry(state, at, topOf(state, Number(to) - 1));
+		// The line names the cards that went, and a hand takes hold of one end of that run — but the log
+		// does not always print the same end first, so the handle is the card whose run is that long.
+		const named = ids.trim().split(/\s+/);
+		const inColumn = named.filter((id) => {
+			const at = locOf(state, id);
+			return at.fixture === 'cascade' && at.data[0] === Number(from) - 1;
+		});
+		const held =
+			(inColumn.length ? inColumn : named).find((id) => tombRun(state, locOf(state, id)).length === named.length) ??
+			named[named.length - 1];
+		return carry(state, locOf(state, held), topOf(state, Number(to) - 1));
 	}
 	if ((m = /^move (\w+) cell (\d+) -> col (\d+)$/.exec(text))) {
 		const [, id, slot, to] = m;
