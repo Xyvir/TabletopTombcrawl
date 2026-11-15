@@ -8,6 +8,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		type Card,
 		type CardLocation,
 		type CardSequence,
+		type Suit,
 	} from './game/card/card';
 	import {
 		canDoubleTap,
@@ -1012,28 +1013,34 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * Every card that carries no power is the tomb's ordinary filler, and all of it answers to one word.
-	 * Deliberately not named after the deal's monster: a Rat is a Rat in every tomb.
+	 * Every card that carries no power is the tomb's ordinary filler, and its suit names its colour.
+	 * Deliberately not named after the deal's monster: a rat is a rat in every tomb.
 	 */
-	const FODDER = 'Rat';
+	const FODDER: Record<Suit, string> = {
+		spades: 'Black Rat',
+		hearts: 'Brown Rat',
+		clubs: 'Grey Rat',
+		diamonds: 'Red Rat',
+	};
 
 	/**
 	 * Who a carrier answers to, and how far up the monster's own ranks it sits. Rank colours the flavour
-	 * only — ace to five is a lesser monster, ten to queen a greater one, and a king of any other suit is
-	 * the boss's General. None of it changes a rule.
+	 * only — ace to five is a small monster, six to nine a medium one, ten to queen a large one, and a king
+	 * of any other suit is the boss's General. None of it changes a rule.
 	 */
 	function carrierName(state: TombState, card: Card) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit].name;
 		if (card.rank === 'king') return `${MONSTERS[state.bossSuit].boss}'s General`;
 		const rank = getRankForCompare(card.rank);
-		if (rank <= 4) return `Lesser ${monster}`;
-		return rank >= 9 ? `Greater ${monster}` : monster;
+		if (rank <= 4) return `Small ${monster}`;
+		if (rank >= 9) return `Large ${monster}`;
+		return `Medium ${monster}`;
 	}
 
 	/**
-	 * The crawl's one monster power, e.g. "Greater Gorgon — Burden: slaying this exhausts and wounds your item."
-	 * The court and every lesser king wear it, so it is always read from the boss suit.
+	 * The crawl's one monster power, e.g. "Large Gorgon — Burden: slaying this exhausts and wounds your item."
+	 * The court and every other king wear it, so it is always read from the boss suit.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
 		if (!state.bossSuit) return '';
@@ -1949,7 +1956,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										? 'Unexplored Room — dig it to heal a wound.'
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig heals a wound.'
 									: tomb
-										? `${FODDER} — no power.`
+										? `${FODDER[card.suit]} — no power.`
 										: undefined}
 						aria-label={`${down ? 'fogged card' : `${card.rank} of ${card.suit}`}, hallway ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
