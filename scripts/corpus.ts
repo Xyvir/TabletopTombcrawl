@@ -351,12 +351,23 @@ if (mode === 'merge') {
 			return [];
 		}
 	})();
-	const retired = new Map(retiredRows.map((row) => [`${row.difficulty ?? 'med'}|${row.loadout}`, row]));
+	const retired = new Map(
+		retiredRows
+			.filter((row) => (row.difficulty ?? 'med') === difficulty)
+			.map((row) => [`${row.difficulty ?? 'med'}|${row.loadout}`, row])
+	);
+	// Only the shipped track is published. A hard row proves a party on a track the game no longer has,
+	// its line cannot be replayed at med, and it would sit in the trellis as a second seed for the same
+	// party: the filter lives here, where the merge is, so no shard left on disk can put one back.
 	// Only the demoted seed goes: a win on any other seed of that party is fresh evidence and stays live.
-	const live = all.filter((entry) => !demotedSeeds.has(demotedSeed(entry)));
+	const live = all.filter(
+		(entry) => (entry.difficulty ?? 'med') === difficulty && !demotedSeeds.has(demotedSeed(entry))
+	);
 	// A demoted square keeps the seed it was demoted on, so the placeholder is the same deal with no claim.
 	const retiredSeeds = new Map<string, Entry>();
-	for (const entry of all) if (demotedSeeds.has(demotedSeed(entry))) retiredSeeds.set(keyOf(entry), entry);
+	for (const entry of all)
+		if ((entry.difficulty ?? 'med') === difficulty && demotedSeeds.has(demotedSeed(entry)))
+			retiredSeeds.set(keyOf(entry), entry);
 	const unique = new Map<string, Entry>();
 	for (const entry of live) {
 		const key = keyOf(entry);
@@ -402,6 +413,7 @@ if (mode === 'merge') {
 	})();
 	for (const [loadout, tracks] of Object.entries<any>(artifact?.placeholders ?? {})) {
 		for (const [level, row] of Object.entries<any>(tracks ?? {})) {
+			if (level !== difficulty) continue;
 			if (typeof row?.seed !== 'number') continue;
 			hold(loadout, level, { seed: row.seed, score: typeof row.score === 'number' ? row.score : null, at: row.at ?? null });
 		}
@@ -419,6 +431,7 @@ if (mode === 'merge') {
 				if (!Array.isArray(rows)) continue;
 				for (const row of rows) {
 					if (typeof row?.loadout !== 'string' || typeof row?.score !== 'number') continue;
+					if ((row.difficulty ?? 'med') !== difficulty) continue;
 					hold(row.loadout, row.difficulty ?? 'med', { seed: row.seed, score: row.score, at: row.at ?? null });
 				}
 			} catch {
@@ -429,8 +442,7 @@ if (mode === 'merge') {
 	const entries = [...unique.values()].sort((a, b) =>
 		`${a.loadout}${a.difficulty ?? 'med'}` < `${b.loadout}${b.difficulty ?? 'med'}` ? -1 : 1
 	);
-	// The headline count stays the med one: that is the corpus the status board and the first sweep built.
-	const missing = ALL_KEYS.filter((key) => !unique.has(`med|${key}`));
+	const missing = ALL_KEYS.filter((key) => !unique.has(`${difficulty}|${key}`));
 	const target = existsSync('public') ? 'public/corpus.json' : `${shardDir}/corpus.json`;
 	writeFileSync(
 		target,
@@ -440,9 +452,7 @@ if (mode === 'merge') {
 			'\t'
 		)
 	);
-	const medCount = entries.filter((entry) => (entry.difficulty ?? 'med') === 'med').length;
-	const hardCount = entries.length - medCount;
 	console.log(
-		`${medCount}/${ALL_KEYS.length} keys covered at med · ${hardCount} hard rows · ${Object.keys(placeholders).length} placeholders · ${missing.length} still to find → ${target}`
+		`${entries.length}/${ALL_KEYS.length} keys covered at ${difficulty} · ${Object.keys(placeholders).length} placeholders · ${missing.length} still to find → ${target}`
 	);
 }
