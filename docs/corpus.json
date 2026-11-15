@@ -67,6 +67,37 @@
 			"at": "2026-11-14T13:18:50.597Z"
 		},
 		{
+			"loadout": "ccch",
+			"boss": "hearts",
+			"seed": 232,
+			"moves": 99,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-15T01:49:46.955Z"
+		},
+		{
 			"loadout": "ccdd",
 			"boss": null,
 			"seed": 151265,
@@ -251,6 +282,37 @@
 				}
 			],
 			"at": "2026-11-14T12:44:50.347Z"
+		},
+		{
+			"loadout": "ccsh",
+			"boss": "clubs",
+			"seed": 124,
+			"moves": 104,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-15T01:53:25.660Z"
 		},
 		{
 			"loadout": "cdcc",
@@ -7483,6 +7545,22 @@
 					"moves": 82
 				}
 			}
+		},
+		"ccch": {
+			"med": {
+				"boss": {
+					"seed": 232,
+					"moves": 99
+				}
+			}
+		},
+		"ccsh": {
+			"med": {
+				"boss": {
+					"seed": 124,
+					"moves": 104
+				}
+			}
 		}
 	},
 	"placeholders": {
@@ -7612,13 +7690,6 @@
 				"at": "2026-11-14T07:59:56.430Z"
 			}
 		},
-		"ccsh": {
-			"med": {
-				"seed": 153139,
-				"score": null,
-				"at": "2026-11-14T08:54:12.232Z"
-			}
-		},
 		"shdd": {
 			"med": {
 				"seed": 155252,
@@ -7722,13 +7793,6 @@
 				"seed": 42540,
 				"score": null,
 				"at": "2026-11-13T03:30:23.555Z"
-			}
-		},
-		"ccch": {
-			"med": {
-				"seed": 42675,
-				"score": null,
-				"at": "2026-11-14"
 			}
 		},
 		"ccdh": {
@@ -7964,12 +8028,10 @@
 		"chcc",
 		"chdh",
 		"cchh",
-		"ccch",
 		"cccs",
 		"ccdh",
 		"ccdc",
 		"ccds",
-		"ccsh",
 		"ccss",
 		"cdhd",
 		"cddh",
