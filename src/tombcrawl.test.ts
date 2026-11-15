@@ -2131,6 +2131,43 @@ describe('tombcrawl item refresh', () => {
 		});
 	});
 
+	test('a Thief playing an item into the crypt opens the same any-suit window', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
+			{ cell: 1, role: 'glyph', id: '5S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+		];
+		// the spades glyph is played out onto the six of diamonds: spent, and the slot waits one action
+		const state = makeTomb({ columns: [['6D']], cells: ['4C', '5S', '3H', '9D'], foundations: ['4D'], draft });
+		const played = tombMove(state, cell(1), cascade(0))!;
+
+		expect(played.draft.find((item) => item.cell === 1)).toBeUndefined();
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', any: true });
+		// the chip holds where it is while the window waits, so the slot is still draftable
+		expect(chipBoundary(played)).toBe(2);
+
+		// a heart, the other colour entirely, restocks it as a heart glyph
+		const refilled = tombMove(played, cell(2), cell(1))!;
+		expect(refilled.itemWindow).toBe(null);
+		expect(refilled.draft.find((item) => item.cell === 1)).toMatchObject({
+			role: 'glyph',
+			suit: 'hearts',
+			name: 'CYDSTEPP',
+		});
+	});
+
+	test('without a Thief, an item played into the crypt converts the slot instead', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Fighter', text: '' },
+			{ cell: 1, role: 'glyph', id: '5S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+		];
+		const state = makeTomb({ columns: [['6D']], cells: ['4C', '5S', '3H', '9D'], foundations: ['4D'], draft });
+		const played = tombMove(state, cell(1), cascade(0))!;
+
+		// no window, so the chip steps past the empty slot: the conversion is final
+		expect(played.itemWindow).toBe(null);
+		expect(chipBoundary(played)).toBe(1);
+	});
+
 	test('the same colour is not the same suit: only an Orc takes any card', () => {
 		// a club is the colour of the spades slot, but a plain delver still has to find a spade
 		const played = attackWith(base(), cell(0))!;

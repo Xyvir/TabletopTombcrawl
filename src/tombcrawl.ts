@@ -165,7 +165,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Pickpocket: an item sent to the crypt can be restocked by a card of any suit.',
+		text: 'Pickpocket: an item played into the crypt or slain into a grave can be restocked by a card of any suit.',
 	},
 };
 
@@ -1463,10 +1463,10 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const entry = source >= 0 ? draftAt(state, source) : undefined;
 	// An item only leaves its slot when it is the one beside the chip: conversions run in order.
 	if (entry && source !== convertibleCell(state)) return null;
-	// An item may still be played out of its slot onto the board — a card is a card — but the play
-	// spends it for good: the slot it leaves is an ordinary free cell. Only the trip home restocks
-	// the slot, because a move costs nothing, and a window opened on one let a matching card refill
-	// the slot for ever: spent, fed, and spent again without a heart paid.
+	// An item may still be played out of its slot — a card is a card — and the play spends it. Played
+	// into a free cell it is the conversion the chip counts: the slot turns plain and the chip steps
+	// past it. Played into a hallway it has gone to the crypt, which is the one trip a Thief's
+	// Pickpocket leaves the empty slot waiting on (see the window at the end of the move).
 
 	// A spent item slot claims exactly one card on the very next action, and that card becomes the
 	// new item. It need not be the suit that left: an Orc's Scavenger takes any card at all.
@@ -1549,9 +1549,23 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
-	// A card played out of its slot onto the tableau is spent for good: only the trip to the crypt
-	// restocks a slot, so an item played out is a conversion the player cannot take back.
+	// Pickpocket: a card played out of its slot into a hallway has gone to the crypt, so the slot it
+	// emptied waits one action for a card of any suit at all — a different suit turns it into a
+	// different spell, class or kin. The chip holds where it is while that window is open, which is
+	// what lets a Thief work through a whole party's worth of items. A free cell is the other thing
+	// entirely, and the plain trip home still restocks on its own suit without him.
+	const pickpocketed =
+		entry &&
+		source >= 0 &&
+		to.fixture === 'cascade' &&
+		!next.game.cells[source] &&
+		CLAUSES.thiefPickpocket &&
+		hasPassive(state, 'Thief')
+			? { cell: source, role: entry.role, suit: entry.suit, any: true }
+			: null;
+
 	next = settle(next, currentLevel(state));
+	if (pickpocketed) next = cloneWith(next, { itemWindow: pickpocketed });
 
 	return spendArmedItem(next);
 }
