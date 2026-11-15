@@ -168,7 +168,9 @@ if (mode === 'solve') {
 	const seconds = Number(process.env.TIME ?? 0);
 	const out = process.env.OUT ?? `${shardDir}/shard-${shard}.json`;
 	const entries = readEntries(out);
-	const done = new Set(entries.map((entry) => entry.loadout));
+	// The published corpus counts as done too: a rerun of the plan has to chase the squares still empty
+	// rather than spend its budget re-solving the ones it filled last time.
+	const done = new Set([...entries.map((entry) => entry.loadout), ...publishedLoadouts()]);
 	const mine = plan.filter((_, index) => index % shards === shard);
 	for (const candidate of mine) {
 		if (done.has(candidate.key)) continue;
@@ -198,6 +200,22 @@ if (mode === 'solve') {
 					.sort((a, b) => a.cell - b.cell)
 					.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit })),
 				at: new Date().toISOString(),
+			});
+			// A win is a proof, so it keeps its line: the same rule the scan follows, for the same reason —
+			// a claim whose line was never written costs a later run the whole search again.
+			writeSolution({
+				seed,
+				difficulty,
+				goal,
+				loadout: candidate.loadout,
+				moves: result.steps.length,
+				party: [...state.draft]
+					.sort((a, b) => a.cell - b.cell)
+					.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit })),
+				lines: result.steps.map((step) => step.label.replace(/\s+/g, ' ').trim()),
+				actions: result.steps.map((step) => step.action),
+				nodes: result.nodes,
+				note: `plan fill, ${strategy}`,
 			});
 			done.add(candidate.key);
 			writeFileSync(out, JSON.stringify(entries, null, '\t'));
