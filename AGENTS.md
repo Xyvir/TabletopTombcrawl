@@ -66,3 +66,36 @@ live baseline. Both of the two-heart-ceiling crawls (737, 1984) live there.
 step. `FILES=solutions/737.json` checks one, `DEBUG=1` prints the board before each move. A line that no longer
 replays is not a bug in the tool: it records a crawl played under rules that have since changed, which is worth
 knowing before the line is used as a baseline.
+
+## The Potion proposal, kept on file (not adopted)
+
+The Potion is left exactly as it is — drink it, every wound heals, it turns face down — and it is being playtested
+before anything moves. The alternative below is written down so it can be picked up later without re-deriving it.
+
+Why it came up: wounds land from the rightmost cell inward, and the flask sits in the fourth drafted cell, the
+nearer of the party's cards to that edge. Since a wounded card cannot be armed or used, the flask is knocked out
+of hand before most of the party is, so its usable range is really "whatever is parked in the pockets to its
+right" — three or four on med. It is the item that dies first and is needed last.
+
+The proposal: **arm the Potion; the next successful slay drinks it** — every wound heals after the blow lands,
+including a wound that same blow deals to the flask itself. Three amendments, if it is ever built:
+
+1. Say *every wound*, not five. The track holds at most six or seven wounds and the one-to-spare rule means a
+   delayed heal can never arrive as a resurrection, so a number is either meaningless or re-creates the ceiling
+   problem the change exists to fix.
+2. Keep it honest about fatality: the one-to-spare check happens on the kill, so an armed flask can never make
+   an illegal slay legal. It is insurance after a blow, not the Revive that was removed.
+3. Bound the "still fires if wounded" clause to the blow that drinks it, or the arm becomes unkillable insurance
+   banked from turn one — and because `armed` is a single slot, it would also sit there blocking the glyph. Read
+   it as: the drinking slay resolves its heal before `dropKnockedArm` can spill the flask; any other action that
+   wounds it still knocks it out of hand.
+
+What it buys and costs, on the five review questions: fun and synergy go up (Bloodrush makes the trigger free, a
+ranged kill counts, a Burden hit becomes survivable, and the flask competes with the glyph for the arm), while
+intuitive-to-remember goes down a point or so (it becomes the fourth armed item, needs a two-object table state,
+and carries one exception). Today's card is the easiest in the game and the least interesting to time.
+
+Measurement, if it is tried: a `potionOnSlay` clause, a variant file switching it on, then `scripts/ab.ts` over the
+rows whose party holds a Potion — 51 of the 204 published entries, and 17 of the 67 missing squares are the hearts
+item — comparing wins, move counts, and "wounds healed per use" read off the lines. Watch the Orc/Potion pair
+specifically: Bloodrush makes the trigger cost nothing.
