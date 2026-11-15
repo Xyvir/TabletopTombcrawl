@@ -1523,8 +1523,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The column holding the locked boss: its stacking context keeps the lean inside the column. */
 	function bossColumn(cards: Card[]): boolean {
 		const state = tomb;
-		if (!state || drag || !bossProtected(state)) return false;
-		return cards.some((card) => isBoss(state, card));
+		if (!state || !bossProtected(state)) return false;
+		if (!cards.some((card) => isBoss(state, card))) return false;
+		// Only the column a drag is coming from loses its stacking context, so the moving card can ride
+		// over the board; every other column keeps the frozen king's lean contained to itself.
+		return !cards.some((card) => dragIds.has(shorthandCard(card)));
 	}
 
 	function cardStyle(card: Card, i: number) {

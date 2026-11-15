@@ -1206,8 +1206,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 /* The leaning boss lives in its own column stacking context: inside the column it keeps the
    normal card order, while the whole column sits under its neighbours, so the lean can never
-   show in front of a card in an adjacent column. Dropped while dragging so the source column
-   can still lift its card over the board. */
+   show in front of a card in an adjacent column. Lifted only for the column a drag is coming
+   from, so that source column can still lift its card over the board. */
 .cascade.bossColumn {
 	isolation: isolate;
 	z-index: 0;
