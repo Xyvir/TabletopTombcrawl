@@ -312,6 +312,27 @@ if (mode === 'scan') {
 }
 
 if (mode === 'merge') {
+	/**
+	 * A published win has to come with the line that proves it. Every producer writes one when it wins, so a
+	 * row on a seed with no `solutions/` file is a claim from before the rules moved: the square keeps its
+	 * seed as a placeholder and the claim waits for a sweep to win it again.
+	 */
+	const provedSeeds = new Set<string>();
+	const solutionDir = process.env.SOLUTIONS ?? 'solutions';
+	if (existsSync(solutionDir)) {
+		for (const name of readdirSync(solutionDir)) {
+			if (!name.endsWith('.json')) continue;
+			try {
+				const line = JSON.parse(readFileSync(`${solutionDir}/${name}`, 'utf8'));
+				if (typeof line?.seed === 'number')
+					provedSeeds.add(`${line.difficulty ?? 'med'}|${line.seed}`);
+			} catch {
+				// an unreadable line proves nothing
+			}
+		}
+	}
+	const proved = (entry: Entry) => provedSeeds.has(`${entry.difficulty ?? 'med'}|${entry.seed}`);
+
 	const all: Entry[] = [];
 	if (existsSync(shardDir)) {
 		for (const name of readdirSync(shardDir)) {
@@ -382,12 +403,15 @@ if (mode === 'merge') {
 	// party: the filter lives here, where the merge is, so no shard left on disk can put one back.
 	// Only the demoted seed goes: a win on any other seed of that party is fresh evidence and stays live.
 	const live = all.filter(
-		(entry) => (entry.difficulty ?? 'med') === difficulty && !demotedSeeds.has(demotedSeed(entry))
+		(entry) =>
+			(entry.difficulty ?? 'med') === difficulty &&
+			!demotedSeeds.has(demotedSeed(entry)) &&
+			proved(entry)
 	);
 	// A demoted square keeps the seed it was demoted on, so the placeholder is the same deal with no claim.
 	const retiredSeeds = new Map<string, Entry>();
 	for (const entry of all)
-		if ((entry.difficulty ?? 'med') === difficulty && demotedSeeds.has(demotedSeed(entry)))
+		if ((entry.difficulty ?? 'med') === difficulty && (!proved(entry) || demotedSeeds.has(demotedSeed(entry))))
 			retiredSeeds.set(keyOf(entry), entry);
 	const unique = new Map<string, Entry>();
 	for (const entry of live) {

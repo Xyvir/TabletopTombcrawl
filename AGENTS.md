@@ -112,3 +112,11 @@ The cost was measured before it was taken and again after: of the 155 corpus row
 Every party holding exactly one of the two lost every line (Human-only 33 of 33, Fighter-only 44 of 44), because
 the line's opening play was the ability it no longer has; the 16 rows holding both kept 13, and the 62 rows
 holding neither were untouched. The 359 dead lines went to `solutions/archive/`, not out of the repository.
+
+## A published win carries its line
+
+`MODE=merge` publishes a row only when `solutions/` holds a line for that seed (same track). A row whose line
+is gone — archived by a rule change, or never written — becomes a placeholder: the square keeps its seed, so the
+party is still dealt and playable, but the trellis stops listing it as a win. That makes the demotion automatic
+rather than a list to maintain: a sweep that wins the square writes a line, and the next merge promotes it back.
+After the Fighter/Human swap the corpus stands at 116 proved keys and 140 placeholder squares.
