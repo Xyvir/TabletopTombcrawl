@@ -66,6 +66,11 @@ trait** is an adjective describing the delver — Ranged, Stout, Determined. Blo
 because it names the moment rather than the delver; it is the only kin word that is not an adjective, and a
 new kin trait should be one.
 
+**The boss king** wears two shields, and they lift separately. *Invulnerable* keeps him out of any grave until
+one of his Generals falls first; once one does, a blade reaches him. *Indomitable* never lifts: no hand moves
+him for the whole crawl, and only a glyph does — a run that would carry him is refused the same way. Every
+glyph that moves a card can move him, and CYDSTEPP alone can set him down in an empty hallway, which spends it.
+
 Monster names are per suit and never per card: Bandit (spades, Weakness), Serpent (hearts, Poison),
 Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Each one has a single descriptive line above its
 affliction — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the affliction

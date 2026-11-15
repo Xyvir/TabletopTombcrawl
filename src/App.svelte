@@ -1983,9 +1983,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 													title={tomb && boss
 								? `${bossTitle(tomb)}\n${
 										bossProtected(tomb)
-											? 'Invulnerable — cannot be slain until one of their Generals falls first.\nIndomitable — cannot be moved except by a glyph.'
-											: 'Shield down — a General has fallen, so he can be slain, and any hand can move him.'
-									}\n${auraTitle(tomb, null, false)}`
+											? 'Invulnerable — cannot be slain until one of their Generals falls first.'
+											: 'Invulnerable — a General has fallen, so a blade can reach him.'
+									}\nIndomitable — cannot be moved except by a glyph.\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
 								? auraTitle(tomb, card)
 								: down && tomb

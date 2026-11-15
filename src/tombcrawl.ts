@@ -44,8 +44,9 @@ export const TOMB_RULES = {
 	 */
 	levelDamageCap: 2,
 	/**
-	 * Whether a movement glyph may carry the frozen boss king: no hand can shift it, but a spell can
-	 * lift it out of the way, which frees the column it was sitting on. Killing it stays gated.
+	 * Whether a movement glyph may carry the boss king: no hand ever shifts him, but a spell can lift him
+	 * out of the way, which frees the column he was sitting on. Killing him is a separate gate (his
+	 * Generals), so a fallen General opens the blade and leaves the hand shut.
 	 */
 	glyphMoveBoss: true,
 };
@@ -168,7 +169,7 @@ const GLYPHS: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'CYDSTEPP',
-		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway.',
+		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway. Also sets the boss king down in an empty hallway, which spends it.',
 	},
 	clubs: {
 		name: 'PISORF',
@@ -735,11 +736,12 @@ function frozenBoss(state: TombState, card: Card): boolean {
 const MOVING_GLYPHS = new Set(['sack', 'cydstepp', 'pisorf', 'weytwut']);
 
 /**
- * A frozen boss cannot be moved by hand, and by default nothing moves it at all. When the rules let
- * a movement glyph lift it, only the glyph does: the foundation stays shut until a king is home.
+ * Indomitable: no hand ever moves the boss, not even after a General falls — that lifts only his
+ * invulnerability. A movement glyph is the one thing that shifts him. A run can carry him, so every
+ * card of a run is checked rather than just its top.
  */
 function immobileBoss(state: TombState, card: Card): boolean {
-	if (!frozenBoss(state, card)) return false;
+	if (!isBoss(state, card)) return false;
 	const kind: string | undefined = state.armed?.kind;
 	return !(TOMB_RULES.glyphMoveBoss && kind !== undefined && MOVING_GLYPHS.has(kind));
 }
@@ -1481,6 +1483,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const overfull = cards.length > moveCapacity(state);
 	const sack = state.armed?.kind === 'sack' && overfull;
 	const bury = cydsteppCanBury(state, cards, to);
+	// CYDSTEPP is the spell that sets the boss down somewhere new, and carrying him is what spends it:
+	// an empty hallway is a plain build, so no hand could ever have reached him for that move.
+	const lift = state.armed?.kind === 'cydstepp' && cards.some((card) => isBoss(state, card));
 
 	if (source >= 0 && to.fixture === 'foundation') {
 		// Home is always an option, wounded or not: the chip's conversion order only governs leaving
@@ -1513,7 +1518,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	let next = cloneWith(state, {
 		game: relocate(state, moves),
 		itemWindow: null,
-		armed: sack || bury ? null : state.armed,
+		armed: sack || bury || lift ? null : state.armed,
 	});
 
 	// The item left its slot the other way: it is spent, and nothing waits to remake it.
@@ -1806,16 +1811,23 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 		return cloneWith(state, { hidden, armed: null });
 	}
 
-	// CYDSTEPP takes a card first, then the fog it is laid on.
+	const held = armed.first ? state.game.cards.find((candidate) => cardId(candidate) === armed.first) : undefined;
+
+	// CYDSTEPP takes a card first, then the fog it is laid on — or an empty hallway, which is the one
+	// square a hand can put the boss on and the reason every spell has a way to shift him.
 	if (armed.kind === 'cydstepp') {
 		const column = foggedColumn(state, location);
 		if (column !== null) {
-			const card = armed.first ? state.game.cards.find((candidate) => cardId(candidate) === armed.first) : undefined;
-			if (!card) return null;
-			return tombMove(state, card.location, { fixture: 'cascade', data: [column] });
+			if (!held) return null;
+			return tombMove(state, held.location, { fixture: 'cascade', data: [column] });
 		}
 		const card = cardAt(state.game, location);
-		if (!card || isFaceDown(state, card)) return null;
+		if (!card || isFaceDown(state, card)) {
+			const empty = location.fixture === 'cascade' && !(state.game.tableau[location.data[0]]?.length ?? 0);
+			if (empty && held && isBoss(state, held))
+				return tombMove(state, held.location, { fixture: 'cascade', data: [location.data[0]] });
+			return null;
+		}
 		if (location.fixture === 'cell' && draftAt(state, location.data[0])) return null;
 		return cloneWith(state, { armed: { ...armed, first: cardId(card) } });
 	}

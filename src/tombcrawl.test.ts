@@ -1092,13 +1092,45 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(kingsHome(unlocked)).toBe(1);
 		expect(bossUnlocked(unlocked)).toBe(true);
 		expect(canSendHome(unlocked, cascade(0)).legal).toBe(true);
-		expect(tombMove(unlocked, { fixture: 'cascade', data: [0, 0] }, { fixture: 'cascade', data: [1, 0] })).not.toBe(null);
+		// Invulnerable is gone; Indomitable is not — a General's fall opens the blade, never the hand.
+		expect(tombMove(unlocked, { fixture: 'cascade', data: [0, 0] }, { fixture: 'cascade', data: [1, 0] })).toBe(null);
 	});
 });
 
-describe('tombcrawl a boss king behind a glyph', () => {
+	describe('tombcrawl a boss king behind a glyph', () => {
 	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' }];
 	const board = () => makeTomb({ columns: [['KH'], []], foundations: ['QH'], draft: glyph, boss: 'KH' });
+	const stepper: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2H', suit: 'hearts', name: 'CYDSTEPP', text: '' }];
+
+	test('a fallen General opens the blade and leaves the hand shut', () => {
+		// A king is home, so the boss is no longer invulnerable — and still not something a hand moves.
+		const open = makeTomb({ columns: [['KH'], []], foundations: ['QH', 'KS'], boss: 'KH' });
+		expect(canSendHome(open, cascade(0)).legal).toBe(true);
+		expect(tombMove(open, cascade(0), cascade(1))).toBe(null);
+		expect(tombMove(open, cascade(0), cell(0))).toBe(null);
+	});
+
+	test('a boss king at the top of a stack does not take his stack with him', () => {
+		// The king is exposed on top of the Queen; neither he nor the card beneath him can be shifted.
+		const state = makeTomb({ columns: [['QH', 'KH'], []], foundations: ['KS'], boss: 'KH' });
+		expect(tombMove(state, cascade(0, 1), cascade(1))).toBe(null);
+		expect(tombMove(state, cascade(0), cascade(1))).toBe(null);
+	});
+
+	test('CYDSTEPP sets the king in an empty hallway and is spent doing it', () => {
+		const primed = useAbility(
+			makeTomb({ columns: [['KH'], [], []], foundations: ['QH'], draft: stepper, boss: 'KH' }),
+			0
+		)!;
+		expect(primed.armed).toMatchObject({ kind: 'cydstepp' });
+		// A click picks the king up and a second click names the empty hallway.
+		const picked = armedClick(primed, cascade(0))!;
+		expect(picked.armed).toMatchObject({ first: 'KH' });
+		const setDown = armedClick(picked, cascade(2))!;
+		expect(setDown).not.toBe(null);
+		expect(setDown.armed).toBe(null);
+		expect(shorthandCard(setDown.game.tableau[2][0])).toBe('KH');
+	});
 
 	test('no hand shifts it, a movement glyph can, and it stays unkillable', () => {
 		expect(tombMove(board(), cascade(0), cascade(1))).toBe(null);

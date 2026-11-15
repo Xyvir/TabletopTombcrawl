@@ -119,4 +119,6 @@ holding neither were untouched. The 359 dead lines went to `solutions/archive/`,
 is gone — archived by a rule change, or never written — becomes a placeholder: the square keeps its seed, so the
 party is still dealt and playable, but the trellis stops listing it as a win. That makes the demotion automatic
 rather than a list to maintain: a sweep that wins the square writes a line, and the next merge promotes it back.
-After the Fighter/Human swap the corpus stands at 116 proved keys and 140 placeholder squares.
+The corpus stands at 79 proved keys and 177 placeholder squares: the swap cost 119 rows their lines, and making the
+boss's Indomitable shield outlast his Generals cost 37 more, since those lines moved him by hand once a king was
+home. A sweep under the current rules is what wins those squares back.
