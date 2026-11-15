@@ -65,6 +65,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		unpick,
 		hasPassive,
 		isBoss,
+		levelUpGraves,
 		isBossMinion,
 		isFaceDown,
 		cydsteppCanBury,
@@ -556,6 +557,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * blow itself is on offer; the bill is written across the pockets it would take instead.
 	 */
 	const fatalAim = $derived(!drag && !!preview?.fatal);
+	/** The graves where the next card home takes the level up, lit yellow before it is played. */
+	const levelUp = $derived(new Set(tomb ? levelUpGraves(tomb) : []));
 	const tombHp = $derived(tomb ? hp(tomb) : 0);
 	/**
 	 * The track read as pockets rather than as hearts: every pocket holding a card, wounded or not. A
@@ -1709,11 +1712,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{#each game.foundations as card, i}
 				{@const location = { fixture: 'foundation' as const, data: [i] }}
 				{@const stack = foundationStack(i)}
+				{@const lifts = !!card && levelUp.has(card.suit)}
 				<button
 					class="slot"
 					class:empty={!stack.length}
+					class:levelup={lifts}
 					data-drop={`foundation:${i}`}
-					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}`}
+					title={lifts ? 'A card home here takes you to the next level' : undefined}
+					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${
+						lifts ? ', the next card here levels you up' : ''
+					}`}
 					onclick={() => tap(location)}
 				>
 					{#if stack.length}

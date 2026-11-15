@@ -495,6 +495,29 @@ export function currentLevel(state: TombState): number {
 	return 1 + (sorted[1] ?? 0);
 }
 
+/**
+ * The graves where the next card home is a level up. The level is read off the lowest grave — or the
+ * second lowest, for a Human, who ignores the first — so only the grave holding that number back can
+ * lift it: put a card on any other and the same grave counts next time. A tie at the bottom lifts
+ * nothing, and a grave already at its king can take no card at all.
+ */
+export function levelUpGraves(state: TombState): Suit[] {
+	const suits: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
+	const ranks = suits.map((suit) => foundationTopRank(state, suit));
+	const human = CLAUSES.humanLevel && hasPassive(state, 'Human');
+	const levelOf = (values: number[]) => {
+		const sorted = [...values].sort((a, b) => a - b);
+		return 1 + (human ? (sorted[1] ?? 0) : (sorted[0] ?? 0));
+	};
+	const level = levelOf(ranks);
+	return suits.filter((_, index) => {
+		if (ranks[index] >= 13) return false;
+		const raised = [...ranks];
+		raised[index] += 1;
+		return levelOf(raised) > level;
+	});
+}
+
 export function isBoss(state: TombState, card: Card): boolean {
 	return !!state.bossId && cardId(card) === state.bossId;
 }

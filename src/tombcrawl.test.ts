@@ -29,6 +29,7 @@ import {
 	newlyWounded,
 	createTombState,
 	currentLevel,
+	levelUpGraves,
 	difficultyOf,
 	emptyCells,
 	hp,
@@ -297,6 +298,27 @@ describe('monster damage on the way home', () => {
 		expect(tombMove(state, cascade(0, 0), { fixture: 'foundation', data: [0] })).toBeNull();
 	});
 });
+
+	describe('the grave a level up waits behind', () => {
+		test('is the lowest grave, empty ones included', () => {
+			// three aces home and diamonds still empty: the ace of diamonds is the level up
+			const state = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', 'AH', 'AC'] });
+			expect(levelUpGraves(state)).toEqual(['diamonds']);
+
+			// with all four aces home the bottom is a tie, and one card lifts nobody
+			const tied = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', 'AH', 'AC', 'AD'] });
+			expect(levelUpGraves(tied)).toEqual([]);
+		});
+
+		test('leaves a human the second lowest, since he ignores the first', () => {
+			const human: DraftCard[] = [{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Human', text: '' }];
+			// an empty spades grave, then hearts one, clubs two, diamonds three
+			const board = { columns: [['5D']], cells: ['KC'], foundations: ['AH', '2C', '3D'] };
+			// everyone else is held back by the empty grave; he already ignores it, so hearts is his
+			expect(levelUpGraves(makeTomb(board))).toEqual(['spades']);
+			expect(levelUpGraves(makeTomb({ ...board, draft: human }))).toEqual(['hearts']);
+		});
+	});
 
 	describe("the human's level", () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Human', text: '' }];

@@ -531,6 +531,29 @@ body:has(.card.dragging) .cells.tomb .chip {
 	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cfd8d0" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round"><path d="M5 20.5V10a7 7 0 0 1 14 0v10.5z"/><path d="M4 21.5h16"/></svg>');
 }
 
+/*
+ * A grave holding the level back: the next card home there is a level up, so it pulses yellow the way
+ * the restock window does. The wash sits over the cards rather than on the slot, so an empty grave
+ * (no ace yet) lights up for the ace exactly as clearly as a full pile lights up for its next rank.
+ */
+.foundations .slot.levelup::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	z-index: 5;
+	background: rgba(255, 214, 92, 0.1);
+	box-shadow: 0 0 0 2px rgba(255, 214, 92, 0.75) inset, 0 0 14px rgba(255, 196, 32, 0.45) inset;
+	animation: tomb-levelup 1.8s ease-in-out infinite;
+}
+
+@keyframes tomb-levelup {
+	50% {
+		box-shadow: 0 0 0 3px rgba(255, 232, 148, 0.95) inset, 0 0 26px rgba(255, 196, 32, 0.75) inset;
+	}
+}
+
 /* free cells are the wound track: a hollow red cross sits under whatever card is in them */
 .cells.tomb .slot {
 	background-repeat: no-repeat;
@@ -815,7 +838,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 @media (prefers-reduced-motion: reduce) {
 	.slot.pending,
-	.slot.need::after {
+	.slot.need::after,
+	.slot.levelup::after {
 		animation: none;
 	}
 }
