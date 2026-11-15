@@ -298,8 +298,8 @@ describe('monster damage on the way home', () => {
 	});
 });
 
-describe("the fighter's level", () => {
-	const draft: DraftCard[] = [{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Fighter', text: '' }];
+	describe("the human's level", () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Human', text: '' }];
 
 	test('ignores the lowest card, so one lagging suit does not hold him back', () => {
 		const board = { columns: [['5D']], cells: ['KC'], foundations: ['AS', '2S', '2H', '2C'] };
@@ -315,7 +315,7 @@ describe("the fighter's level", () => {
 		expect(currentLevel(aces)).toBe(2);
 	});
 
-	test('a wounded fighter loses the passive', () => {
+			test('a wounded human loses the trait', () => {
 		const state = makeTomb({ columns: [['5D']], cells: ['KC'], foundations: ['AS', '2S', '2H', '2C'], draft, wounded: [0] });
 		expect(currentLevel(state)).toBe(1);
 	});
@@ -1204,23 +1204,23 @@ describe('tombcrawl progression rules', () => {
 		expect(canSendHome(short, cascade(0)).legal).toBe(false);
 	});
 
-	describe('the human', () => {
-		const human: DraftCard[] = [{ cell: 0, role: 'kin', id: 'KS', suit: 'spades', name: 'Human', text: '' }];
+	describe('the fighter', () => {
+		const fighter: DraftCard[] = [{ cell: 0, role: 'class', id: 'KS', suit: 'spades', name: 'Fighter', text: '' }];
 
 		test('may skip exactly one rank on the way home', () => {
-			const skipping = makeTomb({ columns: [['2H']], cells: ['KS'], draft: human });
+			const skipping = makeTomb({ columns: [['2H']], cells: ['KS'], draft: fighter });
 			expect(canSendHome(skipping, cascade(0)).legal).toBe(true);
 
-			const reaching = makeTomb({ columns: [['3H']], cells: ['KS'], draft: human });
+			const reaching = makeTomb({ columns: [['3H']], cells: ['KS'], draft: fighter });
 			expect(canSendHome(reaching, cascade(0)).legal).toBe(false);
 
-			// the gap itself is the Human's alone to open
+			// the gap itself is the Fighter's alone to open
 			const plain = makeTomb({ columns: [['2H']], cells: ['KS'] });
 			expect(canSendHome(plain, cascade(0)).legal).toBe(false);
 		});
 
-		test('may slide a card under a pile that has already passed it', () => {
-			const state = makeTomb({ columns: [['3S'], ['6S']], cells: ['KS', '2C', '2D'], foundations: ['5S'], draft: human });
+				test('may slide a card under a pile that has already passed it', () => {
+			const state = makeTomb({ columns: [['3S'], ['6S']], cells: ['KS', '2C', '2D'], foundations: ['5S'], draft: fighter });
 			expect(canSendHome(state, cascade(0)).legal).toBe(true);
 
 			const home = attackWith(state, cascade(0))!;
@@ -1355,10 +1355,10 @@ describe('tombcrawl progression rules', () => {
 			expect(armedClick(primed, cascade(0, 0))).toBe(null);
 		});
 
-		test('a Human can skip the missing ace and still reach through the cover', () => {
+				test('a Fighter can skip the missing ace and still reach through the cover', () => {
 			const party: DraftCard[] = [
 				{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
-				{ cell: 1, role: 'kin', id: 'KS', suit: 'spades', name: 'Human', text: '' },
+				{ cell: 1, role: 'class', id: 'KS', suit: 'spades', name: 'Fighter', text: '' },
 			];
 			const state = makeTomb({ columns: [['2H', '6S']], cells: ['2S', 'KS', '5D'], draft: party });
 			const primed = useAbility(state, 0)!;

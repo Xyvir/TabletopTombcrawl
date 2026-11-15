@@ -58,8 +58,8 @@ export const TOMB_RULES = {
  * to lose it" — the answer only ever comes from seeds that were already winnable.
  */
 export const CLAUSES = {
-	/** Fighter: ignore the lowest pile when reading his level. */
-	fighterLevel: true,
+	/** Human: ignore the lowest grave when reading your level. */
+	humanLevel: true,
 	/** Thief: an item slot restocked after its card went to the crypt takes any card, whatever its suit. */
 	thiefPickpocket: true,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
@@ -95,8 +95,8 @@ export type ClauseName = keyof typeof CLAUSES;
 export type DraftRole = 'kin' | 'class' | 'glyph' | 'consumable';
 
 export const ROLE_LABEL: Record<DraftRole, string> = {
-	kin: 'Kin · passive',
-	class: 'Class · passive',
+	kin: 'Kin · trait, always on',
+	class: 'Class · skill, always on',
 	glyph: 'Glyph · active, refreshes on level up',
 	consumable: 'Item · active, restocked after it is slain',
 };
@@ -126,7 +126,7 @@ interface Ability {
 const KIN: Record<Suit, Ability> = {
 	hearts: {
 		name: 'Human',
-		text: 'Courageous: send a card home skipping one missing rank.',
+		text: 'Determined: ignore your lowest grave when calculating your level.',
 	},
 	clubs: {
 		name: 'Orc',
@@ -145,7 +145,7 @@ const KIN: Record<Suit, Ability> = {
 const CLASSES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Fighter',
-		text: 'Veteran: ignore the lowest card when calculating your level.',
+		text: 'Strength: send a card home skipping one missing rank.',
 	},
 	hearts: {
 		name: 'Priest',
@@ -487,8 +487,8 @@ export function playerLevel(game: FreeCell): number {
 
 export function currentLevel(state: TombState): number {
 	const level = playerLevel(state.game);
-	if (!CLAUSES.fighterLevel || !hasPassive(state, 'Fighter')) return level;
-	// A Fighter ignores the lowest pile, so one lagging suit stops holding him back: with three suits
+	if (!CLAUSES.humanLevel || !hasPassive(state, 'Human')) return level;
+	// A Human ignores the lowest grave, so one lagging suit stops holding him back: with three suits
 	// ahead of the slowest one, he is a level higher than anyone else would be.
 	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) => foundationTopRank(state, suit));
 	const sorted = ranks.sort((a, b) => a - b);
@@ -916,10 +916,10 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	const rank = rankOf(card.rank);
 	const home = foundationTopRank(state, card.suit);
 	// Anyone may slide a lower card in under a pile: the pile keeps its higher card on top, so a rank
-	// that was skipped stays available for the rest of the run. Only a Human may open the rank above
+	// that was skipped stays available for the rest of the run. Only a Fighter may open the rank above
 	// a gap in the first place.
-	const human = hasPassive(state, 'Human');
-	const gap = human ? 2 : 1;
+	const fighter = hasPassive(state, 'Fighter');
+	const gap = fighter ? 2 : 1;
 	if (rank === home) {
 		return { legal: false, reason: 'that grave is past this rank' };
 	}

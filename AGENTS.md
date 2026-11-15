@@ -99,3 +99,16 @@ Measurement, if it is tried: a `potionOnSlay` clause, a variant file switching i
 rows whose party holds a Potion — 51 of the 204 published entries, and 17 of the 67 missing squares are the hearts
 item — comparing wins, move counts, and "wounds healed per use" read off the lines. Watch the Orc/Potion pair
 specifically: Bloodrush makes the trigger cost nothing.
+
+## The Fighter/Human swap (adopted)
+
+The two class/kin passives traded places, because each was doing the other's job. A Fighter who ignores his
+weakest grave now carries **Strength** (a skill: send a card home skipping one missing rank), and the Human who
+reads his level off three graves carries **Determined** (a trait: ignore your lowest grave). Nothing about the
+mechanics changed — only who holds which, and the names, so a class skill stays a noun and a kin trait stays an
+adjective. See `lingo.md` for that convention.
+
+The cost was measured before it was taken and again after: of the 155 corpus rows with a live proof, 75 kept one.
+Every party holding exactly one of the two lost every line (Human-only 33 of 33, Fighter-only 44 of 44), because
+the line's opening play was the ability it no longer has; the 16 rows holding both kept 13, and the 62 rows
+holding neither were untouched. The 359 dead lines went to `solutions/archive/`, not out of the repository.

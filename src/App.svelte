@@ -2060,7 +2060,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							<span
 								class="tick top"
 								class:red={suit === 'hearts' || suit === 'diamonds'}
-								title={abilityFor('class', suit).text}
+								title={`Class skill — ${abilityFor('class', suit).text}`}
 								style={`grid-area: 1 / ${2 + suitIndex}`}
 							>
 								<span class="glyph">{SUIT_GLYPH[suit]}</span>
@@ -2071,7 +2071,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							<span
 								class="tick side"
 								class:red={kin === 'hearts' || kin === 'diamonds'}
-								title={abilityFor('kin', kin).text}
+								title={`Kin trait — ${abilityFor('kin', kin).text}`}
 								style={`grid-area: ${2 + kinIndex} / 1`}
 							>
 								<span class="name">{abilityFor('kin', kin).name}</span>

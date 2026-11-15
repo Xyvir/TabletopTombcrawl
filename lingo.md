@@ -44,6 +44,12 @@ A pocket is the same word in all three of its jobs — that is the point of choo
 `cell`. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of pocket it is when that matters:
 *party pocket* for the four at the left, *empty pocket* for storage.
 
+The two passive pockets are named by grammar, so the convention does not have to be rehearsed every time.
+A **class skill** is a noun naming the thing the delver does — Pickpocket, Vigil, Arcana, Strength. A **kin
+trait** is an adjective describing the delver — Ranged, Stout, Determined. Bloodrush is the one exception,
+because it names the moment rather than the delver; it is the only kin word that is not an adjective, and a
+new kin trait should be one.
+
 Monster names are per suit and never per card: Bandit (spades, Weakness), Serpent (hearts, Poison),
 Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Their courts are graded *Small* (ace–5), *Medium*
 (6–9) and *Large* (10–Q); that ladder is flavour only.
