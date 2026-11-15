@@ -1713,14 +1713,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const location = { fixture: 'foundation' as const, data: [i] }}
 				{@const stack = foundationStack(i)}
 				{@const lifts = !!card && levelUp.has(card.suit)}
+				<!-- thirteen cards is every rank of the suit: the pile has no gaps and nothing can follow -->
+				{@const full = stack.length === 13}
 				<button
 					class="slot"
 					class:empty={!stack.length}
 					class:levelup={lifts}
+					class:full
 					data-drop={`foundation:${i}`}
-					title={lifts ? 'A card home here takes you to the next level' : undefined}
+					title={full
+						? 'This grave is full: every rank of this suit is home'
+						: lifts
+							? 'A card home here takes you to the next level'
+							: undefined}
 					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${
-						lifts ? ', the next card here levels you up' : ''
+						full ? ', full' : lifts ? ', the next card here levels you up' : ''
 					}`}
 					onclick={() => tap(location)}
 				>
@@ -1728,6 +1735,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{#each stack as stacked (shorthandCard(stacked))}
 							<img src={img(stacked)} alt="" draggable="false" data-card={shorthandCard(stacked)} />
 						{/each}
+						{#if full}
+							<img class="grave-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+						{/if}
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 					{/if}
@@ -1818,6 +1828,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							{:else}
 								<img
 									class="held"
+									class:poked={faceDown}
 									class:deep={deeper}
 									class:wound-next={woundPreview.has(shorthandCard(stacked))} class:heal-next={healNext.has(shorthandCard(stacked))}
 									src={faceDown ? `${BASE}images/back.png` : img(stacked)}
