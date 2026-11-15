@@ -1517,14 +1517,17 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
-	// Pickpocket: a card played out of its slot into a hallway has gone to the crypt, so the slot it
+	// Pickpocket: an item played out of its slot into a hallway has gone to the crypt, so the pocket it
 	// emptied waits one action for a card of any suit at all — a different suit turns it into a
-	// different spell, class or kin. The chip holds where it is while that window is open, which is
-	// what lets a Thief work through a whole party's worth of items. A free cell is the other thing
+	// different item. The chip holds where it is while that window is open, which is what lets a Thief
+	// work through a pocket's worth of flasks. It is the item pocket only: the glyph, class and kin
+	// pockets keep their own suit, because a card that could re-roll a Thief's class mid-crawl is a
+	// different character every three moves rather than a thief. A free cell is the other thing
 	// entirely, and the plain trip home still restocks on its own suit without him.
 	const pickpocketed =
 		entry &&
 		source >= 0 &&
+		entry.role === 'consumable' &&
 		to.fixture === 'cascade' &&
 		!next.game.cells[source] &&
 		CLAUSES.thiefPickpocket &&
@@ -1551,7 +1554,9 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	const entry = wasCell ? draftAt(state, cellIndex) : undefined;
 	// Only the item's own card carries the item with it. A plain card can lie on top of an item slot,
 	// and sending that one home leaves the item, its exhaustion and its restock window untouched.
-	const pickpocket = CLAUSES.thiefPickpocket && hasPassive(state, 'Thief');
+	// Pickpocket's any-suit restock is the item pocket's alone: slaying a glyph, class or kin card still
+	// leaves a window that wants that pocket's own suit, for a Thief as much as for anyone else.
+	const pickpocket = CLAUSES.thiefPickpocket && entry?.role === 'consumable' && hasPassive(state, 'Thief');
 	const itemCard = !!entry && entry.id === cardId(card);
 
 	let next = state;

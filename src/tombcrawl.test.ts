@@ -159,22 +159,22 @@ describe('synthetic loadouts', () => {
 	test('a restocked slot keeps the pinned suit rather than the fed card’s', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: '3H', suit: 'hearts', name: 'Priest', text: '' },
-			{ cell: 2, role: 'glyph', id: '2C', suit: 'clubs', name: 'PISORF', text: '' },
+			{ cell: 2, role: 'consumable', id: '2C', suit: 'clubs', name: 'Elixir', text: '' },
 		];
 		// a plain diamond waits in the last cell: feeding takes a card off the board, not another item
 		const state = withSyntheticLoadout(
 			makeTomb({ columns: [['5D']], cells: ['3H', null, '2C', '9D'], foundations: ['AC'], draft }),
-			// diamonds for the class, so the party is a Thief, and clubs for the glyph, so the pin is testable
-			'*dc*'
+			// diamonds for the class, so the party is a Thief, and clubs for the item, so the pin is testable
+			'*d*c'
 		);
 
-		// the glyph beside the chip goes to the crypt, which is the one trip that restocks its slot
+		// the item beside the chip goes to the crypt, which is the one trip that restocks its pocket
 		const played = attackWith(state, cell(2))!;
-		expect(played.itemWindow).toEqual({ cell: 2, role: 'glyph', suit: 'clubs', any: true });
+		expect(played.itemWindow).toEqual({ cell: 2, role: 'consumable', suit: 'clubs', any: true });
 
-		// a diamond fills the slot, and it becomes the pinned clubs spell, not its own suit's glyph
+		// a diamond fills the pocket, and it becomes the pinned clubs item, not its own suit's
 		const fed = tombMove(played, cascade(0), cell(2))!;
-		expect(fed.draft.find((entry) => entry.cell === 2)).toMatchObject({ suit: 'clubs', name: 'PISORF' });
+		expect(fed.draft.find((entry) => entry.cell === 2)).toMatchObject({ suit: 'clubs', name: 'Elixir' });
 	});
 });
 
@@ -2015,21 +2015,22 @@ describe('tombcrawl item refresh', () => {
 		expect(spent.draft).toHaveLength(1);
 	});
 
-	test('a Thief feeds a card of any suit, which makes that suit’s item', () => {
+	test('a Thief feeds an item pocket a card of any suit, which makes that suit’s item', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
-			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+			{ cell: 1, role: 'consumable', id: '2S', suit: 'spades', name: 'Purity', text: '' },
 		];
-		// the spades glyph goes home, then a heart — the other colour entirely — restocks it
+		// the spades item goes home, then a heart — the other colour entirely — restocks it
 		const played = attackWith(base(draft, ['4C', '2S', '5S', '6S']), cell(1))!;
-		const refilled = tombMove(played, cascade(0), cell(1))!;
 
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'spades', any: true });
+
+		const refilled = tombMove(played, cascade(0), cell(1))!;
 		expect(refilled.itemWindow).toBe(null);
-		expect(refilled.draft).toHaveLength(2);
 		expect(refilled.draft.find((item) => item.cell === 1)).toMatchObject({
-			role: 'glyph',
+			role: 'consumable',
 			suit: 'hearts',
-			name: 'CYDSTEPP',
+			name: 'Potion',
 			id: '5H',
 		});
 	});
@@ -2037,25 +2038,40 @@ describe('tombcrawl item refresh', () => {
 	test('a Thief playing an item into the crypt opens the same any-suit window', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
-			{ cell: 1, role: 'glyph', id: '5S', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+			{ cell: 1, role: 'consumable', id: '5S', suit: 'spades', name: 'Purity', text: '' },
 		];
-		// the spades glyph is played out onto the six of diamonds: spent, and the slot waits one action
+		// the spades item is played out onto the six of diamonds: spent, and the pocket waits one action
 		const state = makeTomb({ columns: [['6D']], cells: ['4C', '5S', '3H', '9D'], foundations: ['4D'], draft });
 		const played = tombMove(state, cell(1), cascade(0))!;
 
 		expect(played.draft.find((item) => item.cell === 1)).toBeUndefined();
-		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', any: true });
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'spades', any: true });
 		// the chip holds where it is while the window waits, so the slot is still draftable
 		expect(chipBoundary(played)).toBe(2);
 
-		// a heart, the other colour entirely, restocks it as a heart glyph
+		// a heart, the other colour entirely, restocks it as a heart item
 		const refilled = tombMove(played, cell(2), cell(1))!;
 		expect(refilled.itemWindow).toBe(null);
 		expect(refilled.draft.find((item) => item.cell === 1)).toMatchObject({
-			role: 'glyph',
+			role: 'consumable',
 			suit: 'hearts',
-			name: 'CYDSTEPP',
+			name: 'Potion',
 		});
+	});
+
+	test('a Thief’s any-suit restock is the item pocket’s alone', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
+			{ cell: 1, role: 'glyph', id: 'AS', suit: 'spades', name: 'BYSSEPS', text: '' },
+		];
+		// a glyph sent home waits for its own suit, for a Thief as much as for anyone else
+		const state = makeTomb({ columns: [['6D']], cells: ['4C', 'AS', '3H', '9D'], draft });
+		expect(attackWith(state, cell(1))?.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', any: false });
+
+		// so a heart cannot fill it, and parks in the empty pocket instead
+		const played = attackWith(state, cell(1))!;
+		const parked = tombMove(played, cell(2), cell(1))!;
+		expect(parked.draft.find((item) => item.cell === 1)).toBeUndefined();
 	});
 
 	test('without a Thief, an item played into the crypt converts the slot instead', () => {
