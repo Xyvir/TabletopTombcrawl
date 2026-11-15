@@ -1027,17 +1027,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	/**
 	 * Who a carrier answers to, and how far up the monster's own ranks it sits. Rank colours the flavour
-	 * only — ace to five is a small monster, six to nine a medium one, ten to queen a large one, and a king
-	 * of any other suit is the boss's General. None of it changes a rule.
+	 * only — ace to five is a lesser monster, six to nine carries no prefix, ten to queen a greater one,
+	 * and a king of any other suit is the boss's General. None of it changes a rule.
 	 */
 	function carrierName(state: TombState, card: Card) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit].name;
 		if (card.rank === 'king') return `${MONSTERS[state.bossSuit].boss}'s General`;
 		const rank = getRankForCompare(card.rank);
-		if (rank <= 4) return `Small ${monster}`;
-		if (rank >= 9) return `Large ${monster}`;
-		return `Medium ${monster}`;
+		if (rank <= 4) return `Lesser ${monster}`;
+		if (rank >= 9) return `Greater ${monster}`;
+		return monster;
+	}
+
+	/**
+	 * How big a rat is. The plain cards share the court's three ranges but not its words: a filler is
+	 * graded the way a rat is measured, so it is small, medium or large and never lesser or greater.
+	 */
+	function ratName(card: Card) {
+		const name = FODDER[card.suit];
+		const rank = getRankForCompare(card.rank);
+		if (rank <= 4) return `Small ${name}`;
+		if (rank >= 9) return `Large ${name}`;
+		return `Medium ${name}`;
 	}
 
 	/**
@@ -1976,7 +1988,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										? 'Unexplored Room — dig it to heal a wound.'
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig heals a wound.'
 									: tomb
-										? `${FODDER[card.suit]} — no power.`
+										? `${ratName(card)} — no power.`
 										: undefined}
 						aria-label={`${down ? 'fogged card' : `${card.rank} of ${card.suit}`}, hallway ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}

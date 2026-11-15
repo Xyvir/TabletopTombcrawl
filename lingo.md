@@ -26,7 +26,7 @@ Two rules for this file:
 | **Boss** | The king that ends the run when slain. | the protected king |
 | **Court** | The boss suit's ace through queen. Carries the deal's aura. | boss-suit minions |
 | **General** | A king of any other suit. Carries the deal's aura too. | off-suit king |
-| **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). | plain card |
+| **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). | plain card |
 | **Aura** | The deal's one monster power, worn by the court and the kings. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
@@ -51,8 +51,9 @@ because it names the moment rather than the delver; it is the only kin word that
 new kin trait should be one.
 
 Monster names are per suit and never per card: Bandit (spades, Weakness), Serpent (hearts, Poison),
-Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Their courts are graded *Small* (ace–5), *Medium*
-(6–9) and *Large* (10–Q); that ladder is flavour only.
+Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Their courts are graded *Lesser* (ace–5), bare
+(6–9) and *Greater* (10–Q). The rats take those same three ranges and give them their own words — *Small*,
+*Medium*, *Large* — so the two ladders never borrow from each other. Both are flavour only.
 
 ---
 
@@ -138,8 +139,10 @@ Not in copy yet. Ranked by how much the current word hurts.
 - **Goon / Grunt / Mook** for plain cards — Rat won: a creature in a tomb, not a soldier. Soldiers collide
   with King and General.
 - **Minion** for plain cards — already means "carries the aura" in the code and in the tint's own explanation.
-- **Lesser / Greater** for the court ladder — too easy to read as a rule: Small, Medium and Large say the same
-  thing, and the ladder still stays inside the court, so a Rat is never "small".
+- **One ladder of words for both families** — a court and a rat sharing *Small* / *Medium* / *Large* read as a
+  rule (is a small Gorgon as weak as a small rat?) and left a rat "large" next to a "lesser" Gorgon. Two
+  ladders over the same three ranges: the court is *Lesser* / bare / *Greater*, the rats are *Small* /
+  *Medium* / *Large*.
 - Listing exceptions in per-card copy (Priest's Vigil on every fogged card, the Remedy clause on every aura
   line) — the tooltip answers one question, not every edge case.
 
