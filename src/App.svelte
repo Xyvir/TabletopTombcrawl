@@ -1982,10 +1982,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						data-card={shorthandCard(card)}
 													title={tomb && boss
 								? `${bossTitle(tomb)}\n${
+										// Once a General falls the shield is simply gone: naming its absence would describe an
+										// ability the boss no longer has.
 										bossProtected(tomb)
-											? 'Invulnerable — cannot be slain until one of their Generals falls first.'
-											: 'Invulnerable — a General has fallen, so a blade can reach him.'
-									}\nIndomitable — cannot be moved except by a glyph.\n${auraTitle(tomb, null, false)}`
+											? 'Invulnerable — cannot be slain until one of their Generals falls first.\n'
+											: ''
+									}Indomitable — cannot be moved except by a glyph.\n${auraTitle(tomb, null, false)}`
 							: power && !down && tomb
 								? auraTitle(tomb, card)
 								: down && tomb
