@@ -546,28 +546,32 @@ export function carriesPower(state: TombState, card: Card): boolean {
  * Monster types: the flavour behind each boss suit, the power that suit's cards carry, and the boss who
  * wears it. The names are the ones the monsters answer to, borrowed rather than invented.
  */
-export const MONSTERS: Record<Suit, { name: string; boss: string; power: string; text: string }> = {
+export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string; power: string; text: string }> = {
 	spades: {
 		name: 'Bandit',
 		boss: 'Tomithy Longdall',
+		blurb: 'A scallywag looking to loot the tomb.',
 		power: 'Weakness',
 		text: 'slaying this inflicts one extra wound, and so does stashing it in a pocket.',
 	},
 	hearts: {
 		name: 'Serpent',
 		boss: 'Jörmungandrn',
+		blurb: 'A serpent lying in wait, patient and venomous.',
 		power: 'Poison',
 		text: 'slaying this reveals the lowest fogged card of the rightmost fogged hallway, buried or not, with no heal.',
 	},
 	clubs: {
 		name: 'Gorgon',
 		boss: 'Medusa',
+		blurb: 'A gorgon whose gaze weighs down the living.',
 		power: 'Burden',
 		text: 'slaying this exhausts and wounds your item.',
 	},
 	diamonds: {
 		name: 'Wraith',
 		boss: 'Tormented One',
+		blurb: 'A wraith that drinks the spells out of your hand.',
 		power: 'Mana Burn',
 		text: 'slaying this exhausts and wounds your Glyph.',
 	},

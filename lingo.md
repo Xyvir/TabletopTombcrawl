@@ -26,7 +26,7 @@ Two rules for this file:
 | **Boss** | The king that ends the run when slain. | the protected king |
 | **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
 | **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
-| **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). | plain card |
+| **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **Affliction: None**. | plain card |
 | **Affliction** | The deal's one monster power — Weakness, Poison, Burden or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
@@ -67,7 +67,10 @@ because it names the moment rather than the delver; it is the only kin word that
 new kin trait should be one.
 
 Monster names are per suit and never per card: Bandit (spades, Weakness), Serpent (hearts, Poison),
-Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Their courts are graded *Lesser* (ace–5), bare
+Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Each one has a single descriptive line above its
+affliction — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the affliction
+line below it is the rule. A General and the boss carry no description, because they answer to the monster
+rather than being one. Their courts are graded *Lesser* (ace–5), bare
 (6–9) and *Greater* (10–Q). The rats take those same three ranges and give them their own words — *Small*,
 *Medium*, *Large* — so the two ladders never borrow from each other. Both are flavour only.
 

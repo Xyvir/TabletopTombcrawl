@@ -1055,14 +1055,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	/**
 	 * The deal's one monster affliction, e.g. "Affliction: Burden — slaying this exhausts and wounds your
-	 * item." The court and every other king wear it, so it is always read from the boss suit.
+	 * item." The court and every other king wear it, so it is always read from the boss suit. A court card
+	 * also carries the monster's one-line description; a General and the boss speak for themselves.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit];
 		const line = `Affliction: ${monster.power} — ${monster.text}`;
 		if (!withName) return line;
-		return `${card ? carrierName(state, card) : monster.name}\n${line}`;
+		const name = card ? carrierName(state, card) : monster.name;
+		const blurb = card && card.rank !== 'king' ? `${monster.blurb}\n` : '';
+		return `${name}\n${blurb}${line}`;
 	}
 
 	/** The monster power this move set off, if it killed a card that carries one. */
@@ -1990,7 +1993,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										? 'Unexplored Room — dig it to heal a wound.'
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig heals a wound.'
 									: tomb
-										? `${ratName(card)} — no power.`
+										? `${ratName(card)}\nA nondescript tomb rat.\nAffliction: None`
 										: undefined}
 						aria-label={`${down ? 'fogged card' : `${card.rank} of ${card.suit}`}, hallway ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
