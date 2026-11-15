@@ -2,17 +2,17 @@
 	"seed": 179554,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 78,
+	"moves": 74,
 	"loadout": "dcsd",
 	"party": [
 		"Elf",
 		"Wizard",
 		"BYSSEPS",
-		"Remedy"
+		"WEYTWUT"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 179501-180000, best, 297,136 states",
+	"note": "review 1000000 nodes, best, 404,944 states",
 	"lines": [
 		"dig AH col 6 row 5",
 		"range AH col 6 row 5",
@@ -31,66 +31,62 @@
 		"dig 9D col 4 row 3",
 		"dig 2S col 4 row 1",
 		"range 2S col 4 row 1",
+		"dig JC col 7 row 1",
+		"home 5H -> hearts foundation",
+		"dig 3S col 5 row 5",
 		"park KH col 2 -> cell 7",
+		"home 3S -> spades foundation",
 		"dig 9H col 2 row 5",
 		"range AD col 2 row 4",
 		"dig 3C col 8 row 3",
 		"range 2D col 8 row 2",
-		"dig 3S col 5 row 5",
-		"home 3S -> spades foundation",
 		"range 3C col 8 row 2",
 		"home 3D -> diamonds foundation",
-		"home 5H -> hearts foundation",
 		"range 4C col 4 row 1",
-		"dig 5C col 2 row 3",
-		"range 5C col 2 row 3",
-		"dig 6C col 8 row 1",
-		"range 6C col 8 row 1",
 		"dig 4S col 1 row 5",
 		"home 4S -> spades foundation",
+		"arm WEYTWUT (cell 4) · col 5 with col 7",
 		"home 4D -> diamonds foundation",
-		"home 7C -> clubs foundation",
-		"dig 8C col 2 row 1",
-		"range 8C col 2 row 1",
 		"home 5S -> spades foundation",
-		"dig 6D col 1 row 3",
-		"dig 9C col 3 row 3",
-		"arm BYSSEPS (cell 3)",
-		"park KD col 5 -> cell 4",
+		"dig 5C col 2 row 3",
+		"range 5C col 2 row 3",
 		"dig 6S col 5 row 3",
 		"range 5D col 5 row 2",
-		"home 6S -> spades foundation",
+		"range 6S col 5 row 2",
 		"home 7S -> spades foundation",
+		"dig 6D col 1 row 3",
 		"range 6D col 1 row 3",
-		"home 6H -> hearts foundation",
-		"range 9C col 3 row 3",
 		"range 7D col 1 row 2",
-		"park QC col 6 -> cell 3",
-		"range 8D col 2 row 1",
-		"dig KC col 6 row 3",
-		"home AC -> clubs foundation",
-		"park KC col 6 -> cell 2",
+		"dig 6C col 8 row 1",
+		"range 6C col 8 row 1",
+		"home 6H -> hearts foundation",
+		"range 8D col 2 row 2",
+		"range 9D col 4 row 1",
+		"home 7C -> clubs foundation",
 		"home 8S -> spades foundation",
+		"park QC col 6 -> cell 3",
+		"dig KC col 6 row 3",
+		"park KC col 6 -> cell 4",
 		"dig 7H col 6 row 1",
 		"range 7H col 6 row 1",
 		"home 8H -> hearts foundation",
+		"dig 8C col 2 row 1",
+		"range 8C col 2 row 1",
 		"home 9S -> spades foundation",
-		"home 9D -> diamonds foundation",
-		"home 9H -> hearts foundation",
 		"home TS -> spades foundation",
 		"home JS -> spades foundation",
+		"home 9H -> hearts foundation",
+		"dig 9C col 3 row 3",
+		"range 9C col 3 row 3",
 		"home TD -> diamonds foundation",
+		"home QD -> diamonds foundation",
 		"home TH -> hearts foundation",
 		"home TC -> clubs foundation",
 		"home QS -> spades foundation",
-		"dig JH col 5 row 1",
-		"home JH -> hearts foundation",
-		"dig JC col 7 row 1",
-		"home JC -> clubs foundation",
-		"home QD -> diamonds foundation",
-		"home QC -> clubs foundation",
-		"home KC -> clubs foundation",
 		"dig KS col 1 row 1",
+		"home KS -> spades foundation",
+		"dig QH col 3 row 1",
+		"dig JH col 5 row 1",
 		"home KD -> diamonds foundation"
 	],
 	"actions": [
@@ -283,6 +279,36 @@
 			"reach": true
 		},
 		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					2
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					4
+				]
+			}
+		},
+		{
 			"kind": "move",
 			"from": {
 				"fixture": "cascade",
@@ -299,6 +325,16 @@
 			}
 		},
 		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					4
+				]
+			}
+		},
+		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
@@ -339,26 +375,6 @@
 				]
 			},
 			"reach": true
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					4
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					4
-				]
-			}
 		},
 		{
 			"kind": "home",
@@ -386,173 +402,89 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
+					3,
+					0
+				]
+			},
+			"reach": true
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					4
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					4
+				]
+			}
+		},
+		{
+			"kind": "weytwut",
+			"cell": 3,
+			"a": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					3
+				]
+			},
+			"b": {
+				"fixture": "cascade",
+				"data": [
 					6,
-					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					3,
-					0
-				]
-			},
-			"reach": true
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					2
-				]
-			},
-			"reach": true
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
-					0
-				]
-			},
-			"reach": true
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					4
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					4
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					3
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					3,
-					2
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			},
-			"reach": true
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
 					1
 				]
 			}
 		},
 		{
-			"kind": "dig",
+			"kind": "home",
 			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					2
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					2,
-					2
-				]
-			}
-		},
-		{
-			"kind": "arm",
-			"cell": 2
-		},
-		{
-			"kind": "move",
-			"from": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					3
-				]
-			},
-			"to": {
 				"fixture": "cell",
 				"data": [
 					3
 				]
 			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					7,
+					2
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					2
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					2
+				]
+			},
+			"reach": true
 		},
 		{
 			"kind": "dig",
@@ -583,7 +515,8 @@
 					4,
 					1
 				]
-			}
+			},
+			"reach": true
 		},
 		{
 			"kind": "home",
@@ -595,12 +528,54 @@
 			}
 		},
 		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					2
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
 				"data": [
 					0,
 					2
+				]
+			},
+			"reach": true
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					1
+				]
+			},
+			"reach": true
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					7,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					7,
+					0
 				]
 			},
 			"reach": true
@@ -620,8 +595,8 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					2,
-					2
+					1,
+					1
 				]
 			},
 			"reach": true
@@ -631,11 +606,31 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					0,
-					1
+					3,
+					0
 				]
 			},
 			"reach": true
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					3,
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					1
+				]
+			}
 		},
 		{
 			"kind": "move",
@@ -654,32 +649,12 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			},
-			"reach": true
-		},
-		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
 				"data": [
 					5,
 					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					1
 				]
 			}
 		},
@@ -695,17 +670,7 @@
 			"to": {
 				"fixture": "cell",
 				"data": [
-					1
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					1
+					3
 				]
 			}
 		},
@@ -736,9 +701,30 @@
 				"fixture": "cascade",
 				"data": [
 					3,
-					1
+					0
 				]
 			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					0
+				]
+			},
+			"reach": true
 		},
 		{
 			"kind": "home",
@@ -755,28 +741,8 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					3,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
 					2,
-					3
+					4
 				]
 			}
 		},
@@ -794,13 +760,13 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					6,
-					1
+					1,
+					0
 				]
 			}
 		},
 		{
-			"kind": "home",
+			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
 				"data": [
@@ -814,58 +780,19 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					7,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
 					2,
+					2
+				]
+			},
+			"reach": true
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
 					1
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					0
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
-					0
 				]
 			}
 		},
@@ -881,8 +808,9 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
+					2,
 					2
 				]
 			}
@@ -890,8 +818,19 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
+					7,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					2,
 					1
 				]
 			}
@@ -909,9 +848,40 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					3
+					0,
+					0
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					0
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					1
 				]
 			}
 		}
