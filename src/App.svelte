@@ -1033,7 +1033,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function carrierName(state: TombState, card: Card) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit].name;
-		if (card.rank === 'king') return `${MONSTERS[state.bossSuit].boss}'s General`;
+		if (card.rank === 'king')
+			return `${MONSTERS[state.bossSuit].boss}'s General of ${card.suit[0].toUpperCase()}${card.suit.slice(1)}`;
 		const rank = getRankForCompare(card.rank);
 		if (rank <= 4) return `Lesser ${monster}`;
 		if (rank >= 9) return `Greater ${monster}`;

@@ -25,7 +25,7 @@ Two rules for this file:
 | **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
 | **Boss** | The king that ends the run when slain. | the protected king |
 | **Court** | The boss suit's ace through queen. Carries the deal's aura. | boss-suit minions |
-| **General** | A king of any other suit. Carries the deal's aura too. | off-suit king |
+| **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's aura too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). | plain card |
 | **Aura** | The deal's one monster power, worn by the court and the kings. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
