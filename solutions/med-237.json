@@ -8,11 +8,11 @@
 		"Human",
 		"Fighter",
 		"BYSSEPS",
-		"Revive"
+		"Purity"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 343,797 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 345,805 states",
 	"lines": [
 		"home 2D -> diamonds foundation",
 		"park KS col 3 -> cell 5",

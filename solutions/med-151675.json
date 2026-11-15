@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 151501-152000, best, 333,961 states",
+	"note": "re-proved best-first by scripts/verify.ts, 333,961 states",
 	"lines": [
 		"home AC -> clubs foundation",
 		"dig AS col 2 row 5",

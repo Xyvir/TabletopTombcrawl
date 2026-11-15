@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 165,725 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 165,725 states",
 	"lines": [
 		"home 2D -> diamonds foundation",
 		"park 5S col 1 -> cell 5",

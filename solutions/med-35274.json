@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 196,330 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 196,330 states",
 	"lines": [
 		"park 8S col 8 -> cell 7",
 		"dig QH col 8 row 5",

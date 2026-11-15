@@ -10,9 +10,9 @@
 		"BYSSEPS",
 		"Potion"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 342,840 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 342,840 states",
 	"lines": [
 		"home 2H -> hearts foundation",
 		"park 6D col 8 -> cell 5",

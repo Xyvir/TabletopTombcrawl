@@ -10,9 +10,9 @@
 		"BYSSEPS",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 522,622 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 522,622 states",
 	"lines": [
 		"dig AC col 8 row 5",
 		"range AC col 8 row 5",

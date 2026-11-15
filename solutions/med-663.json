@@ -7,12 +7,12 @@
 	"party": [
 		"Human",
 		"Wizard",
-		"IMAWAL",
-		"Revive"
+		"CYDSTEPP",
+		"Purity"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 290,040 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 290,065 states",
 	"lines": [
 		"move 6S cell 4 -> col 7",
 		"home 2H -> hearts foundation",

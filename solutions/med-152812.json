@@ -8,11 +8,11 @@
 		"Elf",
 		"Priest",
 		"BYSSEPS",
-		"Revive"
+		"Purity"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 152501-153000, best, 355,367 states",
+	"note": "re-proved best-first by scripts/verify.ts, 390,389 states",
 	"lines": [
 		"dig 4D col 1 row 5",
 		"range AD col 1 row 4",

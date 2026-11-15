@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 292,843 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 292,159 states",
 	"lines": [
 		"home 2H -> hearts foundation",
 		"dig 4H col 3 row 5",

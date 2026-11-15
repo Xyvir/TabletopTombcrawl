@@ -10,9 +10,9 @@
 		"WEYTWUT",
 		"Remedy"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 151001-151500, best, 464,942 states",
+	"note": "re-proved best-first by scripts/verify.ts, 464,942 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"park TH col 8 -> cell 5",

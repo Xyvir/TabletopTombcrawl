@@ -10,9 +10,9 @@
 		"WEYTWUT",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 152501-153000, best, 540,613 states",
+	"note": "re-proved best-first by scripts/verify.ts, 540,613 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"home 2D -> diamonds foundation",

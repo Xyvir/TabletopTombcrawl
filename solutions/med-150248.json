@@ -7,12 +7,12 @@
 	"party": [
 		"Elf",
 		"Fighter",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Potion"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 150001-150500, best, 285,617 states",
+	"note": "re-proved best-first by scripts/verify.ts, 285,617 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"dig 2C col 7 row 5",
@@ -45,7 +45,7 @@
 		"home 8D -> diamonds foundation",
 		"dig 5C col 3 row 5",
 		"dig JH col 3 row 3",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move 8C col 6 -> col 2 (onto fog)",
 		"dig 6C col 2 row 3",
 		"move 5H cell 4 -> col 7",

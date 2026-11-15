@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 151501-152000, best, 259,659 states",
+	"note": "re-proved best-first by scripts/verify.ts, 259,659 states",
 	"lines": [
 		"park 4C col 5 -> cell 5",
 		"dig AS col 5 row 5",

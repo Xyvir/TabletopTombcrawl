@@ -10,9 +10,9 @@
 		"WEYTWUT",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 151501-152000, best, 538,844 states",
+	"note": "re-proved best-first by scripts/verify.ts, 538,844 states",
 	"lines": [
 		"dig 9D col 7 row 5",
 		"range AH col 7 row 4",

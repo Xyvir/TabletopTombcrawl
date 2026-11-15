@@ -7,12 +7,12 @@
 	"party": [
 		"Elf",
 		"Priest",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Remedy"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 155501-156000, best, 432,718 states",
+	"note": "re-proved best-first by scripts/verify.ts, 432,718 states",
 	"lines": [
 		"dig AH col 3 row 5",
 		"range AH col 3 row 5",
@@ -55,7 +55,7 @@
 		"park QH col 8 -> cell 7",
 		"dig QD col 8 row 5",
 		"park QD col 8 -> cell 4",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move KC col 5 -> col 4 (onto fog)",
 		"home 3H -> hearts foundation",
 		"home 4H -> hearts foundation",

@@ -7,12 +7,12 @@
 	"party": [
 		"Elf",
 		"Priest",
-		"IMAWAL",
-		"Revive"
+		"CYDSTEPP",
+		"Purity"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 315,658 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 374,040 states",
 	"lines": [
 		"park QH col 2 -> cell 5",
 		"range AD col 8 row 5",
@@ -55,7 +55,7 @@
 		"home 8D -> diamonds foundation",
 		"dig 6C col 5 row 1",
 		"home 6C -> clubs foundation",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move KH col 3 -> col 5",
 		"dig 9H col 3 row 5",
 		"range 7C col 3 row 4",

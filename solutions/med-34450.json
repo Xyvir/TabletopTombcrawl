@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 316,529 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 316,529 states",
 	"lines": [
 		"home AC -> clubs foundation",
 		"dig 4C col 3 row 5",

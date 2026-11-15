@@ -7,12 +7,12 @@
 	"party": [
 		"Human",
 		"Fighter",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Remedy"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 150001-150500, best, 143,126 states",
+	"note": "re-proved best-first by scripts/verify.ts, 143,126 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"dig 2C col 2 row 5",
@@ -34,7 +34,7 @@
 		"home 4D -> diamonds foundation",
 		"home 5D -> diamonds foundation",
 		"home 6S -> spades foundation",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move 7C col 1 -> col 2 (onto fog)",
 		"dig 5C col 1 row 5",
 		"home 5C -> clubs foundation",

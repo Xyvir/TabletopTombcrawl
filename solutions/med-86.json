@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 199,146 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 199,146 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"park KC col 7 -> cell 5",

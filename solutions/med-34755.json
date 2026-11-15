@@ -7,12 +7,12 @@
 	"party": [
 		"Elf",
 		"Fighter",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 416,560 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 416,560 states",
 	"lines": [
 		"home 2H -> hearts foundation",
 		"dig AC col 2 row 5",

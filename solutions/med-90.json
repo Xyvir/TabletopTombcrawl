@@ -10,9 +10,9 @@
 		"WEYTWUT",
 		"Potion"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 208,088 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 208,088 states",
 	"lines": [
 		"home 3H -> hearts foundation",
 		"home AC -> clubs foundation",

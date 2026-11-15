@@ -8,11 +8,11 @@
 		"Elf",
 		"Fighter",
 		"WEYTWUT",
-		"Revive"
+		"Purity"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 416,386 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 421,732 states",
 	"lines": [
 		"dig 4H col 6 row 5",
 		"range AC col 6 row 4",

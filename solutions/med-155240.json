@@ -7,12 +7,12 @@
 	"party": [
 		"Human",
 		"Fighter",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Potion"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 155001-155500, best, 258,424 states",
+	"note": "re-proved best-first by scripts/verify.ts, 258,424 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"park 9H col 7 -> cell 6",
@@ -28,7 +28,7 @@
 		"dig 8D col 1 row 5",
 		"dig 5H col 4 row 5",
 		"dig QD col 5 row 5",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move 5H col 4 -> col 3 (onto fog)",
 		"move 7S col 4 -> col 1",
 		"dig JD col 4 row 3",

@@ -7,12 +7,12 @@
 	"party": [
 		"Elf",
 		"Priest",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Potion"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 328,755 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 328,755 states",
 	"lines": [
 		"dig 2D col 1 row 5",
 		"dig 6H col 1 row 3",
@@ -55,7 +55,7 @@
 		"home 4H -> hearts foundation",
 		"park JH col 4 -> cell 4",
 		"arm Potion (cell 4)",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move KD col 2 -> col 4",
 		"home 5H -> hearts foundation",
 		"move 4S col 6 -> col 2 (onto fog)",

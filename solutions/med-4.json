@@ -8,11 +8,11 @@
 		"Human",
 		"Fighter",
 		"WEYTWUT",
-		"Revive"
+		"Purity"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 317,954 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 328,372 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"home 3S -> spades foundation",

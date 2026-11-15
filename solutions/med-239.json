@@ -8,11 +8,11 @@
 		"Human",
 		"Fighter",
 		"PISORF",
-		"Revive"
+		"Purity"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 164,363 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 167,594 states",
 	"lines": [
 		"park 5C col 2 -> cell 5",
 		"dig 2H col 2 row 5",

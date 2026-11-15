@@ -7,12 +7,12 @@
 	"party": [
 		"Human",
 		"Fighter",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "best-first, 148,569 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 148,569 states",
 	"lines": [
 		"park 5D col 8 -> cell 5",
 		"home 2C -> clubs foundation",

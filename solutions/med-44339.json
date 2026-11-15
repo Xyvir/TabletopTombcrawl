@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 170,068 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 170,068 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"dig 2D col 6 row 5",

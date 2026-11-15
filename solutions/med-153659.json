@@ -2,7 +2,7 @@
 	"seed": 153659,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 76,
+	"moves": 75,
 	"loadout": "cdcd",
 	"party": [
 		"Orc",
@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 153501-154000, best, 220,861 states",
+	"note": "re-proved best-first by scripts/verify.ts, 223,844 states",
 	"lines": [
 		"home AC -> clubs foundation",
 		"home 2C -> clubs foundation",
@@ -28,8 +28,8 @@
 		"dig 6C col 7 row 5",
 		"home AH -> hearts foundation",
 		"home 4C -> clubs foundation",
-		"dig 7C col 8 row 5",
 		"home 6C -> clubs foundation",
+		"dig 7C col 8 row 5",
 		"home 7C -> clubs foundation",
 		"park 5S col 5 -> cell 4",
 		"dig TS col 5 row 5",
@@ -75,7 +75,6 @@
 		"home 7D -> diamonds foundation",
 		"home 9H -> hearts foundation",
 		"home TH -> hearts foundation",
-		"dig 3S col 5 row 1",
 		"home JH -> hearts foundation",
 		"dig 8D col 2 row 3",
 		"home 8D -> diamonds foundation",
@@ -249,21 +248,21 @@
 			}
 		},
 		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
-					4
-				]
-			}
-		},
-		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
 				"data": [
 					6,
+					4
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					7,
 					4
 				]
 			}
@@ -775,16 +774,6 @@
 				"data": [
 					0,
 					2
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					0
 				]
 			}
 		},

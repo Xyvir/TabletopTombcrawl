@@ -8,11 +8,11 @@
 		"Elf",
 		"Wizard",
 		"WEYTWUT",
-		"Revive"
+		"Purity"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 155001-155500, best, 613,019 states",
+	"note": "re-proved best-first by scripts/verify.ts, 613,184 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"dig 6C col 2 row 5",

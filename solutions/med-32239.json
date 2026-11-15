@@ -8,11 +8,11 @@
 		"Elf",
 		"Fighter",
 		"PISORF",
-		"Revive"
+		"Purity"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "best-first, 219,273 states, exported by scripts/verify.ts",
+	"note": "re-proved best-first by scripts/verify.ts, 225,185 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"home AS -> spades foundation",

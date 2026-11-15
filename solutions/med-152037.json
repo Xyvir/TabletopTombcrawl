@@ -10,9 +10,9 @@
 		"WEYTWUT",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-15",
 	"source": "solver",
-	"note": "scan 152001-152500, best, 412,889 states",
+	"note": "re-proved best-first by scripts/verify.ts, 412,889 states",
 	"lines": [
 		"home 2H -> hearts foundation",
 		"home 2C -> clubs foundation",

@@ -7,12 +7,12 @@
 	"party": [
 		"Elf",
 		"Priest",
-		"IMAWAL",
+		"CYDSTEPP",
 		"Elixir"
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 153001-153500, best, 320,218 states",
+	"note": "re-proved best-first by scripts/verify.ts, 320,218 states",
 	"lines": [
 		"dig 6H col 2 row 5",
 		"range AS col 2 row 4",
@@ -31,7 +31,7 @@
 		"move 7C col 6 -> col 4",
 		"dig 2D col 5 row 5",
 		"dig QC col 6 row 5",
-		"arm IMAWAL (cell 3)",
+		"arm CYDSTEPP (cell 3)",
 		"move QC col 6 -> col 1 (onto fog)",
 		"home 5S -> spades foundation",
 		"dig AD col 6 row 3",

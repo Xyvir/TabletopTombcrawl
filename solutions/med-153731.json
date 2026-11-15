@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-14",
 	"source": "solver",
-	"note": "scan 153501-154000, best, 311,888 states",
+	"note": "re-proved best-first by scripts/verify.ts, 311,888 states",
 	"lines": [
 		"home AH -> hearts foundation",
 		"park 9S col 3 -> cell 5",
