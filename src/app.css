@@ -383,32 +383,6 @@ img {
 	text-align: left;
 }
 
-/* difficulty: one segmented control, three states */
-.difficulty {
-	display: inline-flex;
-}
-
-.difficulty .btn {
-	border-radius: 0;
-	border-right-width: 0;
-	padding: 0.5em 0.7em;
-}
-
-.difficulty .btn:first-child {
-	border-radius: 999px 0 0 999px;
-}
-
-.difficulty .btn:last-child {
-	border-radius: 0 999px 999px 0;
-	border-right-width: 1px;
-}
-
-.difficulty .btn[aria-pressed='true'] {
-	background: #1a8f45;
-	border-color: #2bb35c;
-	color: #fff;
-}
-
 .seed {
 	display: flex;
 	align-items: center;

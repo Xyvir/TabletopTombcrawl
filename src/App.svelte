@@ -87,9 +87,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	const CELL_COUNT = 4;
 	const CASCADE_COUNT = 8;
-	/** The difficulty only moves the tomb track's free cells: 4, 3 or 2 of them. */
-	const DIFFICULTIES: Difficulty[] = ['easy', 'med', 'hard'];
-	const DIFFICULTY_LABEL: Record<Difficulty, string> = { easy: 'Easy', med: 'Med', hard: 'Hard' };
+	/**
+	 * One crawl, one track. The tomb is designed around the med board — four drafted items, three free
+	 * pockets and no damage cap — so there is no difficulty to choose and nothing to slide.
+	 */
+	const TRACK: Difficulty = 'med';
 	const BASE = import.meta.env.BASE_URL;
 	/**
 	 * Every face plus the two backs. A card coming out of the fog shows its face for the first time
@@ -167,8 +169,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let game = $state<FreeCell>(opening.game);
 	let seedInput = $state('');
 	let mode = $state<'auto' | 'pick'>('auto');
-	/** Difficulty sizes the tomb track's free cells; the classic board always keeps its four. */
-	let difficulty = $state<Difficulty>('med');
+	const difficulty: Difficulty = TRACK;
 	let board = $state<HTMLElement>();
 
 	/**
@@ -316,12 +317,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * for good, so a 100% clear would record itself under an empty loadout and never reach the trellis.
 	 */
 	let dealLayout = $state('');
-	/**
-	 * Which track the trellis is showing. Med and hard are different claims about the same party — a
-	 * two-cell track is a much harder board — so the sheet reads one tier at a time rather than
-	 * pretending a party's med seed says anything about its hard one.
-	 */
-	let layoutDifficulty = $state<Difficulty>('med');
+	/** The sheet reads the med corpus: one track means one claim per party, and no tier to tab through. */
+	const layoutDifficulty: Difficulty = TRACK;
 	const difficultyOfEntry = (entry: CorpusEntry) => (entry.difficulty as Difficulty) ?? 'med';
 	/**
 	 * Where a track's rows are kept. Easy is never solved on its own: the deal is the same board with a
@@ -434,7 +431,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		layoutOpen = false;
 		seedInput = String(filler.seed);
 		clearClickMemory();
-		difficulty = layoutDifficulty;
 		tombHistory = [];
 		tombSelected = null;
 		tombLast = null;
@@ -448,14 +444,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		layoutOpen = false;
 		seedInput = '';
 		clearClickMemory();
-		// Play the square on the track the sheet is showing: an easy square is a med seed dealt again.
-		const level = layoutDifficulty;
-		difficulty = level;
 		tombHistory = [];
 		tombSelected = null;
 		tombLast = null;
-		tomb = createTombState(entry.seed, FREE_CELL_COUNT[level]);
-		layoutDifficulty = level;
+		tomb = createTombState(entry.seed, FREE_CELL_COUNT[layoutDifficulty]);
 		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
 	}
@@ -469,9 +461,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const key = dealLayout || loadoutOf(state);
 		const status: LayoutRecord['status'] | null = tombPar(state) === 0 ? 'clear' : bossSlain(state) ? 'boss' : null;
 		if (!status) return;
-		// The track is read off the board rather than off the control: a run keeps the size it was dealt at,
-		// even if the player has since changed the control for the next deal.
-		const level = DIFFICULTIES.find((entry) => FREE_CELL_COUNT[entry] === state.game.cells.length - DRAFT_CELL_COUNT) ?? 'med';
+		// Read off the board rather than off a control: the crawl only deals one track, but a stored run
+		// from before that is still keyed by the size it was dealt at.
+		const level: Difficulty = difficultyOf(state);
 		const id = `${level}:${key}`;
 		const held = progress.get(id)?.status;
 		if (held === 'clear' || (held === 'boss' && status === 'boss')) return;
@@ -1322,7 +1314,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		variant = next;
 		if (next === 'tomb') {
 			tomb = createTombState(undefined, FREE_CELL_COUNT[difficulty]);
-			dealLayout = layoutForSeed(tomb.seed);
+		dealLayout = layoutForSeed(tomb.seed);
 			game = tomb.game;
 		} else {
 			tomb = null;
@@ -1560,26 +1552,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return;
 		}
 		apply(deal(seed));
-	}
-
-	/**
-	 * Difficulty only sizes the tomb track's free cells. The seed is reused, so the cards, the fog
-	 * and the boss stay put and only the cell count changes. Locked once a move is made, unlocked
-	 * again by undoing all the way back to the start.
-	 */
-	function setDifficulty(next: Difficulty) {
-		if (next === difficulty || !atStart || !tomb) return;
-		clearClickMemory();
-		difficulty = next;
-		tombHistory = [];
-		tombSelected = null;
-		tombLast = null;
-		tombMoved = null;
-		drag = null;
-		flippingIds = [];
-		// The same deal at another difficulty: same seed, so the same square.
-		tomb = createTombState(tomb.seed, FREE_CELL_COUNT[next]);
-		game = tomb.game;
 	}
 
 	function key(location: CardLocation) {
@@ -1996,23 +1968,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			/>
 		</label>
 		<button class="btn primary" onclick={newDeal}>New crawl</button>
-		<div class="difficulty" role="group" aria-label={`Pockets ${FREE_CELL_COUNT[difficulty]}`}>
-			{#each DIFFICULTIES as level (level)}
-				<button
-					class="btn"
-					aria-pressed={difficulty === level}
-					disabled={!tomb || !atStart}
-					title={!tomb
-						? 'Difficulty only sizes the status track: the classic board always keeps four pockets.'
-						: atStart
-							? `${FREE_CELL_COUNT[level]} pockets — ${FREE_CELL_COUNT[level] + 4} wounds before the delver falls`
-							: 'Undo all the way back to the start to change difficulty.'}
-					onclick={() => setDifficulty(level)}
-				>
-					{DIFFICULTY_LABEL[level]}
-				</button>
-			{/each}
-		</div>
 		<button class="btn" onclick={replay}>Restart crawl</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>End crawl</button>
 	</footer>
@@ -2051,14 +2006,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<header>
 					<h2>Choose a loadout</h2>
 				</header>
-				<!-- A hard clear is a different claim from a med one, so the sheet reads one track at a time. -->
-				<div class="tiers" role="group" aria-label="Which difficulty to show">
-					{#each DIFFICULTIES as level (level)}
-						<button class="btn" aria-pressed={layoutDifficulty === level} onclick={() => (layoutDifficulty = level)}>
-							{DIFFICULTY_LABEL[level]}
-						</button>
-					{/each}
-				</div>
 				<div class="layout-body" role="group" aria-label="The 256 loadouts" onmouseleave={() => (hovered = null)}>
 					<div class="trellis">
 						<span class="corner" style="grid-area: 1 / 1"></span>
