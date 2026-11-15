@@ -54,15 +54,4 @@ describe('tomb solver', () => {
 		expect(replayed!.hidden.length).toBe(cast!.next.hidden.length);
 		expect(replayed!.armed).toBeNull();
 	});
-
-	// The Wizard's window lasts one move, so it has to be part of a position's identity: collapsed into
-	// the twin without it, the free cast is a state the search can reach and then drop.
-	test('a banked free cast is its own position', () => {
-		const state = createTombState(4242);
-		const open = { ...state, freeCast: true };
-
-		expect(open.game).toBe(state.game);
-		expect(stateKey(open)).not.toBe(stateKey(state));
-		expect(stateKey({ ...state, freeCast: true })).toBe(stateKey(open));
-	});
 });

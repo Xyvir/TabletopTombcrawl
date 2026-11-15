@@ -35,7 +35,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		ROLE_WORD,
 		abilityFor,
 		abilityUsable,
-		freeCastReady,
 		armedClick,
 		armedDrop,
 		attackPreview,
@@ -1750,8 +1749,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					// Red is for a spent item still sitting in its slot: an empty slot is the restock window's
 					// gold, and once that window closes the chip stepping down says the item is gone.
 					class:exhausted={!!tomb && tomb.exhausted[i] && !!entry}
-					class:affinity={!!tomb && freeCastReady(tomb, i) && abilityUsable(tomb, i)}
-					class:stacked={stack.length > 1}
+								class:stacked={stack.length > 1}
 					class:wounded={!!wounded}
 					// the stain follows a boss-suit card into a free cell as well as down its column
 					class:boss={!!card && !!tomb && isBoss(tomb, card)}

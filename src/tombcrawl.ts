@@ -60,14 +60,6 @@ export const TOMB_RULES = {
 export const CLAUSES = {
 	/** Fighter: ignore the lowest pile when reading his level. */
 	fighterLevel: true,
-	/** Wizard: a cast on the very next turn after a refresh is free. */
-	wizardWindow: true,
-	/**
-	 * Wizard: the run opens with the window already open, so a cast as the very first action is free.
-	 * It is a window and not a bank: any other first move spends it, which is why the party needs no
-	 * token, no counter and no note on the sheet to remember it.
-	 */
-	wizardOpening: false,
 	/** Thief: an item slot restocked after its card went to the crypt takes any card, whatever its suit. */
 	thiefPickpocket: true,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
@@ -235,11 +227,6 @@ export type ArmedAbility = {
 	kind: 'burndayraz' | 'cydstepp' | 'pisorf' | 'weytwut' | 'remedy' | 'purity' | 'sack';
 	cell: number;
 	first?: string;
-	/**
-	 * What arming a free cast spent, so putting the spell down unused hands it back: a cast the player
-	 * backs out of must not cost the Wizard his bank, his window, or the heart it mended.
-	 */
-	refund?: { freeCast: boolean; wounded: number[] };
 };
 
 export interface TombState {
@@ -268,12 +255,6 @@ export interface TombState {
 	 * card itself leaving for another kin.
 	 */
 	itemWindow: { cell: number; role: DraftRole; suit: Suit; any: boolean } | null;
-	/**
-	 * The Glyph was refreshed by this action, so a Wizard's very next move may be a free cast. Any
-	 * other action closes the window: it never survives a second move. A run may also open with the
-	 * window already open (see `CLAUSES.wizardOpening`), which is the same one-move grant on move zero.
-	 */
-	freeCast: boolean;
 	/**
 	 * A balance harness pin, set only by `withSyntheticLoadout`: the suits the party is pinned to, for
 	 * whatever roles were named. Null in every real game, and never read by the deal itself.
@@ -411,7 +392,6 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		score: null,
 		armed: null,
 		itemWindow: null,
-		freeCast: CLAUSES.wizardOpening,
 		synthetic: null,
 	};
 }
@@ -1156,16 +1136,11 @@ function refreshGlyphs(state: TombState): TombState {
 	const glyphs = state.draft.filter((entry) => entry.role === 'glyph' || isArcanaItem(state, entry));
 	if (!glyphs.length) return state;
 	const exhausted = [...state.exhausted];
-	let refreshed = false;
 	glyphs.forEach((entry) => {
 		if (!state.game.cells[entry.cell]) return;
-		refreshed = refreshed || state.exhausted[entry.cell];
 		exhausted[entry.cell] = false;
 	});
-	// A Wizard's window opens on a real refresh: tidying a glyph that was already fresh hands nothing
-	// out, so there has to have been an exhaustion to spend for the free cast to be worth anything.
-	const window = refreshed && CLAUSES.wizardWindow && hasPassive(state, 'Wizard');
-	return cloneWith(state, { exhausted, freeCast: state.freeCast || window });
+	return cloneWith(state, { exhausted });
 }
 
 /**
@@ -1227,12 +1202,10 @@ export function tombExit(state: TombState): TombState | null {
  */
 function settle(state: TombState, levelBefore: number): TombState {
 	// A card leaving a stacked cell must not leave a wound behind on an empty slot.
-	let next = closeFreeCast(
-		closeItemWindow(
-			cloneWith(state, {
-				wounded: state.wounded.map((count, cell) => Math.min(count, cellCards(state, cell).length)),
-			})
-		)
+	let next = closeItemWindow(
+		cloneWith(state, {
+			wounded: state.wounded.map((count, cell) => Math.min(count, cellCards(state, cell).length)),
+		})
 	);
 
 	if (!next.bossId) {
@@ -1314,7 +1287,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return spendArmedItem(closeFreeCast(closeItemWindow(next)));
+	return spendArmedItem(closeItemWindow(next));
 }
 
 /**
@@ -1328,11 +1301,6 @@ function restockTakes(card: Card, window: { suit: Suit; any: boolean }): boolean
 /** Any action other than the feed closes a spent item slot for good. */
 function closeItemWindow(state: TombState): TombState {
 	return state.itemWindow ? cloneWith(state, { itemWindow: null }) : state;
-}
-
-/** Any action other than the free cast closes the Wizard's window. */
-function closeFreeCast(state: TombState): TombState {
-	return state.freeCast ? cloneWith(state, { freeCast: false }) : state;
 }
 
 /** A Remedy is spent by the action it covers: the arm clears and the item exhausts. */
@@ -1646,21 +1614,6 @@ export function tombFirstCell(state: TombState): CardLocation | null {
 
 /* -------------------------------------------------------------- abilities */
 
-/**
- * Whether the next cast of this Glyph costs no exhaustion: the Wizard's window after a refresh, or
- * the one cast he banks from the start of the run. The board lights the slot on this same answer,
- * so what glows blue is exactly what will not exhaust.
- */
-export function freeCastReady(state: TombState, cell: number): boolean {
-	const entry = draftAt(state, cell);
-	return (
-		!!entry &&
-		(entry.role === 'glyph' || isArcanaItem(state, entry)) &&
-		hasPassive(state, 'Wizard') &&
-		state.freeCast
-	);
-}
-
 export function abilityUsable(state: TombState, cell: number): boolean {
 	const entry = draftAt(state, cell);
 	return (
@@ -1676,20 +1629,9 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
-	// A Wizard's Affinity: one cast banked from the start, plus any cast made on the move after a
-	// refresh. Either grant makes this cast free, and a free cast spends both of them, so a window
-	// can never leave a second free cast waiting behind it.
-	const free = freeCastReady(state, cell);
-	// Take note of what the free cast is about to spend, before it is spent: a disarm can hand it all
-	// back, because arming is not the same as casting.
-	const refund = free ? { freeCast: state.freeCast, wounded: [...state.wounded] } : undefined;
-	state = closeFreeCast(state);
-	// Affinity pays in exhaustion alone. It used to mend a wound here as well, and over the 18
-	// Wizard-class corpus seeds the free cast won every deal it could win in exactly the same number of
-	// moves with no mend at all, so the rule was a thing to remember and not a thing that paid.
 	const exhausted = [...state.exhausted];
 	// A Remedy is not spent by arming it: the action it covers is what exhausts it.
-	if (entry.name !== 'Remedy' && !free) exhausted[cell] = true;
+	if (entry.name !== 'Remedy') exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
 	switch (entry.name) {
@@ -1723,8 +1665,6 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		default:
 			break;
 	}
-	// The grant rides on the arm until the spell is used, so disarming gives it back rather than burning it.
-	if (refund && next.armed) next = cloneWith(next, { armed: { ...next.armed, refund } });
 	return closeItemWindow(next);
 }
 
@@ -1763,8 +1703,8 @@ export function disarm(state: TombState): TombState {
 /**
  * A spell whose own card is turned over is knocked out of hand. An arm sits on a face-up card, so it
  * cannot outlive that card: the board would go on offering a cast `abilityUsable` has already
- * refused. It is put down exactly as a disarm puts it down — the cell released, a free cast's grant
- * handed back — because losing the spell to a wound reads as a misclick, not as a lost cast.
+ * refused. It is put down exactly as a disarm puts it down — the cell released and the spell unspent —
+ * because losing the spell to a wound reads as a misclick, not as a lost cast.
  * This runs where the injury lands, after the arm that paid for the action has been spent, so an item
  * that pays for the very action is never knocked out of hand by its own bill.
  * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
@@ -1777,32 +1717,16 @@ function dropKnockedArm(state: TombState): TombState {
 	// hand: a power that drains it does not knock it out of hand first.
 	if (armed.kind === 'remedy') return state;
 	if ((state.wounded[armed.cell] ?? 0) === 0) return state;
-	// The wounds stay as they are: the refund's snapshot predates the blow, and restoring it would
-	// undo the very wound that knocked the spell out of hand.
-	return releaseArm(state, state.wounded);
+	// The wound stays: the arm is released, the blow that knocked it out of hand is not undone.
+	return releaseArm(state);
 }
 
-/**
- * Putting a spell down, whether by hand or by having it knocked out of hand. `wounded` is only
- * overridden for the second case: a wound that interrupts a free cast must keep itself, so the
- * refund restores the grant and leaves the track alone.
- */
-function releaseArm(state: TombState, wounded?: number[]): TombState {
+/** Putting a spell down, whether by hand or by having it knocked out of hand. */
+function releaseArm(state: TombState): TombState {
 	if (!state.armed) return state;
 	const exhausted = [...state.exhausted];
 	exhausted[state.armed.cell] = false;
-	const refund = state.armed.refund;
-	// Putting a free cast down returns the grant and the heart it mended, so the blue offer is exactly
-	// where it was: nothing was cast, so nothing was spent.
-	const next = refund
-		? cloneWith(state, {
-				armed: null,
-				exhausted,
-				freeCast: refund.freeCast,
-				wounded: wounded ?? refund.wounded,
-			})
-		: cloneWith(state, { armed: null, exhausted });
-	return closeItemWindow(next);
+	return closeItemWindow(cloneWith(state, { armed: null, exhausted }));
 }
 
 /**

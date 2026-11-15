@@ -40,7 +40,6 @@ import {
 	revealFaceDown,
 	unpick,
 	disarm,
-	freeCastReady,
 	kingsHome,
 	playerLevel,
 	tombExit,
@@ -62,7 +61,6 @@ interface Setup {
 	exhausted?: number[];
 	wounded?: number[];
 	boss?: string;
-	freeCast?: boolean;
 	/** Size of the track: 8 is easy, 7 med, 6 hard. Free cells are the whole difficulty difference. */
 	cellCount?: number;
 }
@@ -76,7 +74,6 @@ function makeTomb({
 	exhausted = [],
 	wounded = [],
 	boss,
-	freeCast = false,
 	cellCount = TOMB_CELL_COUNT,
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
@@ -113,7 +110,6 @@ function makeTomb({
 		score: null,
 		armed: null,
 		itemWindow: null,
-		freeCast,
 		synthetic: null,
 	};
 }
@@ -183,118 +179,28 @@ describe('synthetic loadouts', () => {
 });
 
 describe("the wizard's affinity", () => {
-	const draft: DraftCard[] = [
-		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
-		{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },
-		{ cell: 2, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
-	];
-	// the Elixir is the cleanest way to refresh on demand: it opens the window with its own action
-	const preparing = (extra: Partial<Setup> = {}) =>
-		makeTomb({ columns: [['5H'], ['9D']], cells: ['KC', '2S', '5C'], draft, exhausted: [1], hidden: ['5H'], ...extra });
-	const refreshed = (extra: Partial<Setup> = {}) => useAbility(preparing(extra), 2)!;
-	// the same board with the glyph fresh, so the banked cast is the only free cast on offer
-	const opening = (extra: Partial<Setup> = {}) =>
-		makeTomb({ columns: [['5H'], ['9D']], cells: ['KC', '2S', '5C'], draft, hidden: ['5H'], ...extra });
-
-	test('the glyph cast on the move after a refresh costs no exhaustion', () => {
-		expect(refreshed().freeCast).toBe(true);
-
-		const cast = useAbility(refreshed(), 1)!;
-		expect(cast.armed).toMatchObject({ kind: 'sack' });
-		expect(cast.exhausted[1]).toBe(false);
-		// the window is spent by the free cast itself, so a second one in a row is not
-		expect(cast.freeCast).toBe(false);
-		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
-	});
-
-	test('a cast as the very first action is free, where the party opens with the window open', () => {
-		CLAUSES.wizardOpening = true;
-		try {
-			// the deal opens the window itself under this clause
-			expect(createTombState(2024).freeCast).toBe(true);
-			const cast = useAbility(opening({ freeCast: true }), 1)!;
-			expect(cast.exhausted[1]).toBe(false);
-			// it is a window, not a bank: the cast that took it spends it
-			expect(cast.freeCast).toBe(false);
-			expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
-		} finally {
-			CLAUSES.wizardOpening = false;
-		}
-	});
-
-	test('a first move that is not the cast spends the opening window for good', () => {
-		CLAUSES.wizardOpening = true;
-		try {
-			const dug = revealFaceDown(opening(), cascade(0, 0))!;
-			expect(dug.freeCast).toBe(false);
-			expect(useAbility(dug, 1)!.exhausted[1]).toBe(true);
-		} finally {
-			CLAUSES.wizardOpening = false;
-		}
-	});
-
-	test('any other move closes the window', () => {
-		const dug = revealFaceDown(refreshed(), cascade(0, 0))!;
-		expect(dug.freeCast).toBe(false);
-		expect(useAbility(dug, 1)!.exhausted[1]).toBe(true);
-	});
-
-	test('the first cast of a run costs its exhaustion like any other', () => {
-		// No cast is banked from the start any more: aces cause level ups early enough that the refresh
-		// window arrives while it is still worth having.
-		const cast = useAbility(opening(), 1)!;
-
-		expect(cast.armed).toMatchObject({ kind: 'sack' });
-		expect(cast.exhausted[1]).toBe(true);
-		expect(cast.freeCast).toBe(false);
-	});
-
-	test('a free cast is spent by the cast it pays for, never two in a row', () => {
-		const cast = useAbility(refreshed(), 1)!;
-		expect(cast.exhausted[1]).toBe(false);
-		expect(cast.freeCast).toBe(false);
-		expect(useAbility({ ...cast, armed: null }, 1)!.exhausted[1]).toBe(true);
-	});
-
-	test('a class that is not the wizard casts at full price', () => {
-		const fighter = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Fighter' } : entry));
-		const state = useAbility(preparing({ draft: fighter }), 2)!;
-
-		expect(state.freeCast).toBe(false);
-		expect(useAbility(state, 1)!.exhausted[1]).toBe(true);
-	});
-
-	test('putting the spell down unused gives the free cast back', () => {
-		const armed = useAbility(opening({ freeCast: true }), 1)!;
-		// arming a free cast spends the window, so the blue offer goes out with it
-		expect(armed.freeCast).toBe(false);
-		expect(freeCastReady(armed, 1)).toBe(false);
-
-		const put = disarm(armed)!;
-		expect(put.freeCast).toBe(true);
-		expect(freeCastReady(put, 1)).toBe(true);
-		expect(put.exhausted[1]).toBe(false);
-	});
-
-	test('a free cast that is put down leaves the wounds where they were', () => {
+	// Arcana superseded it: the item pocket spells from its own suit now, so a free cast after a refresh
+	// was the same grant twice over, and it was the one rule the card never said out loud.
+	test('a refresh mends the glyph and gives nothing else', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
+			{ cell: 1, role: 'glyph', id: '2S', suit: 'spades', name: 'BYSSEPS', text: '' },
+			{ cell: 2, role: 'consumable', id: '5C', suit: 'clubs', name: 'Elixir', text: '' },
+		];
 		const state = makeTomb({
 			columns: [['5H'], ['9D']],
 			cells: ['KC', '2S', '5C'],
 			draft,
-			// wound the item, not the class card: a wounded Wizard has no passive to spend
-			wounded: [2],
-			freeCast: true,
+			exhausted: [1],
+			hidden: ['5H'],
 		});
-		expect(hp(state)).toBe(2);
+		const refreshed = useAbility(state, 2)!;
+		expect(refreshed.exhausted[1]).toBe(false);
 
-		const armed = useAbility(state, 1)!;
-		expect(armed.freeCast).toBe(false);
-		// Affinity buys the exhaustion, not the heart: the wound is still there after the cast
-		expect(hp(armed)).toBe(2);
-
-		const put = disarm(armed)!;
-		expect(hp(put)).toBe(2);
-		expect(put.freeCast).toBe(true);
+		// the very next cast still costs its exhaustion: the window is gone
+		const cast = useAbility(refreshed, 1)!;
+		expect(cast.armed).toMatchObject({ kind: 'sack' });
+		expect(cast.exhausted[1]).toBe(true);
 	});
 });
 
@@ -320,17 +226,15 @@ describe('an armed spell', () => {
 		expect(struck.exhausted[2]).toBe(false);
 	});
 
-	test('a free cast knocked out of hand gives the window back, wound and all', () => {
+	test('a wizard’s spell knocked out of hand keeps the wound that did it', () => {
 		const wizard = draft.map((entry) => (entry.role === 'class' ? { ...entry, name: 'Wizard' } : entry));
-		const armed = useAbility(board({ draft: wizard, freeCast: true }), 2)!;
-		expect(armed.freeCast).toBe(false);
+		const armed = useAbility(board({ draft: wizard }), 2)!;
 
 		const struck = attackWith(armed, cascade(0, 0))!;
 		expect(struck.armed).toBe(null);
-		expect(struck.freeCast).toBe(true);
-		expect(freeCastReady(struck, 2)).toBe(true);
-		// the refund's snapshot predates the blow, so the wound that interrupted the cast still stands
+		// the blow that interrupted the cast still stands, and the cast is unspent
 		expect(struck.wounded[2]).toBe(1);
+		expect(struck.exhausted[2]).toBe(false);
 	});
 
 	test('the board never holds an arm it has already refused', () => {
@@ -363,7 +267,6 @@ describe('a club going home', () => {
 
 		// the glyph only comes back on a level up or an Elixir, never because a club went home
 		expect(next.exhausted[1]).toBe(true);
-		expect(next.freeCast).toBe(false);
 	});
 });
 
@@ -2504,26 +2407,6 @@ describe('tombcrawl the class powers and the hearts they pay', () => {
 		const plain = attackWith(board(), cascade(0))!;
 		const holy = attackWith(board(priest), cascade(0))!;
 		expect(wounds(plain) - wounds(holy)).toBe(1);
-	});
-
-	test('a free cast spares the exhaustion and nothing else', () => {
-		const draft: DraftCard[] = [
-			{ cell: 0, role: 'class', id: '2C', suit: 'clubs', name: 'Wizard', text: '' },
-			{ cell: 1, role: 'glyph', id: '3C', suit: 'clubs', name: 'WEYTWUT', text: '' },
-		];
-		const state = makeTomb({
-			columns: [['5D'], []],
-			cells: ['5S', '6S', '7S'],
-			wounded: [2],
-			draft,
-			freeCast: true,
-		});
-		expect(wounds(state)).toBe(1);
-		const cast = useAbility(state, 1)!;
-		expect(cast.armed).toMatchObject({ kind: 'weytwut' });
-		// the glyph is spared, the track is not mended
-		expect(cast.exhausted[1]).toBe(false);
-		expect(wounds(cast)).toBe(1);
 	});
 });
 
