@@ -29,7 +29,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -60,7 +60,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -91,7 +91,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -117,12 +117,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -148,12 +148,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -179,12 +179,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -215,7 +215,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -246,7 +246,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -370,7 +370,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -458,7 +458,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -489,7 +489,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -520,12 +520,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -618,7 +618,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -711,7 +711,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -804,7 +804,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -830,7 +830,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -861,7 +861,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -990,7 +990,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -1114,7 +1114,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -1233,7 +1233,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -1264,7 +1264,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -1393,7 +1393,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -1424,7 +1424,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -1455,7 +1455,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -1486,7 +1486,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -1517,7 +1517,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -1548,7 +1548,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -1579,7 +1579,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -1605,12 +1605,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -1636,12 +1636,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -1672,7 +1672,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -1703,7 +1703,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -1734,7 +1734,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -1796,7 +1796,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -1858,7 +1858,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -1982,7 +1982,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2106,7 +2106,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2132,7 +2132,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -2163,7 +2163,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -2194,7 +2194,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -2225,12 +2225,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2354,7 +2354,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2478,7 +2478,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2602,7 +2602,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2628,7 +2628,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -2659,7 +2659,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -2690,7 +2690,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -2721,12 +2721,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2850,7 +2850,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -2881,7 +2881,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -2912,7 +2912,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -2943,7 +2943,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -2974,7 +2974,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -3005,7 +3005,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -3036,7 +3036,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -3062,12 +3062,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -3093,12 +3093,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -3124,12 +3124,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -3160,7 +3160,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -3191,7 +3191,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -3222,7 +3222,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -3253,7 +3253,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -3346,7 +3346,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -3465,7 +3465,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -3496,12 +3496,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -3625,7 +3625,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -3718,7 +3718,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -3842,7 +3842,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -3868,7 +3868,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -3899,7 +3899,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -3930,7 +3930,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -3961,12 +3961,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -4090,7 +4090,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -4183,7 +4183,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -4307,7 +4307,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -4333,7 +4333,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -4364,7 +4364,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -4395,7 +4395,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -4426,12 +4426,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -4555,7 +4555,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -4586,7 +4586,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -4617,7 +4617,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -4648,7 +4648,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -4679,7 +4679,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Remedy",
+					"name": "WEYTWUT",
 					"suit": "diamonds"
 				}
 			],
@@ -4710,7 +4710,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -4741,7 +4741,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -4767,12 +4767,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -4798,12 +4798,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Potion",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				}
 			],
@@ -4829,12 +4829,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -4865,7 +4865,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Elixir",
+					"name": "PISORF",
 					"suit": "clubs"
 				}
 			],
@@ -4896,7 +4896,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "BYSSEPS",
 					"suit": "spades"
 				}
 			],
@@ -5051,7 +5051,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -5077,7 +5077,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5108,7 +5108,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5139,12 +5139,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -5361,7 +5361,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -5387,7 +5387,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5418,7 +5418,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5449,7 +5449,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5516,7 +5516,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -5733,7 +5733,7 @@
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],
@@ -5759,7 +5759,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5790,7 +5790,7 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
@@ -5821,12 +5821,12 @@
 				},
 				{
 					"role": "glyph",
-					"name": "IMAWAL",
+					"name": "CYDSTEPP",
 					"suit": "hearts"
 				},
 				{
 					"role": "consumable",
-					"name": "Revive",
+					"name": "Purity",
 					"suit": "spades"
 				}
 			],

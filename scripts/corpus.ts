@@ -57,6 +57,11 @@ const loadoutOf = (state: TombState) =>
 		.map((entry) => entry.suit[0])
 		.join('');
 const keyOf = (state: TombState) => loadoutOf(state);
+/** The party as the deal reads today: the label a row carries is a reading, not a fact about its shard. */
+const partyOf = (state: TombState) =>
+	[...state.draft]
+		.sort((a, b) => a.cell - b.cell)
+		.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit }));
 
 /** Every key the corpus is meant to cover: a suit for each of the four roles, repeats allowed. */
 const ALL_KEYS = (() => {
@@ -254,9 +259,7 @@ if (mode === 'scan') {
 			timeBudgetMs: seconds > 0 ? seconds * 1000 : Number.POSITIVE_INFINITY,
 		});
 		if (!result.solved) continue;
-		const party = [...state.draft]
-			.sort((a, b) => a.cell - b.cell)
-			.map((entry) => ({ role: entry.role, name: entry.name, suit: entry.suit }));
+		const party = partyOf(state);
 		entries.push({
 			loadout: loadoutOf(state),
 			boss: state.bossSuit,
@@ -439,10 +442,24 @@ if (mode === 'merge') {
 			}
 		}
 	}
-	const entries = [...unique.values()].sort((a, b) =>
+	// A row's party is a reading of the deal, so an ability that has been replaced or renamed would
+	// otherwise keep the name it had when the row was found — a shard written before Revive became Purity
+	// still says Revive. The label and the boss are refreshed from the seed as it deals today, and a seed
+	// whose deal no longer answers to the row's key is dropped rather than shown on the wrong square.
+	const refreshed = new Map<string, Entry>();
+	for (const [key, entry] of unique) {
+		const level = (entry.difficulty ?? 'med') as Difficulty;
+		const state = createTombState(entry.seed, FREE_CELL_COUNT[level] ?? FREE_CELL_COUNT.med);
+		if (loadoutOf(state) !== entry.loadout) {
+			console.log(`  seed ${entry.seed} now deals ${loadoutOf(state)}, not ${entry.loadout}: row dropped`);
+			continue;
+		}
+		refreshed.set(key, { ...entry, boss: state.bossSuit ?? entry.boss, party: partyOf(state) });
+	}
+	const entries = [...refreshed.values()].sort((a, b) =>
 		`${a.loadout}${a.difficulty ?? 'med'}` < `${b.loadout}${b.difficulty ?? 'med'}` ? -1 : 1
 	);
-	const missing = ALL_KEYS.filter((key) => !unique.has(`${difficulty}|${key}`));
+	const missing = ALL_KEYS.filter((key) => !refreshed.has(`${difficulty}|${key}`));
 	const target = existsSync('public') ? 'public/corpus.json' : `${shardDir}/corpus.json`;
 	writeFileSync(
 		target,
