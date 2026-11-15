@@ -1089,6 +1089,29 @@ body:has(.card.dragging) .cells.tomb .chip {
 	animation: flip-back-away 210ms step-end both;
 }
 
+/*
+ * Purity turns a whole hallway over, card by card. The delay rides a custom property so the wrapper
+ * and the back image start together. Only the back keeps its backwards fill — invisible while its
+ * turn waits — while the wrapper fills forwards alone: a card still waiting must sit upright with
+ * its face showing, not lean early into a turn it has not begun.
+ */
+.card .flip.down {
+	animation-delay: var(--flip-delay, 0ms);
+	animation-fill-mode: forwards;
+}
+
+.card .flip.down .flip-back {
+	animation-name: flip-back-in;
+	animation-delay: var(--flip-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card .flip.down,
+	.card .flip.down .flip-back {
+		animation: none;
+	}
+}
+
 /* The lean and the opening squash are not tweened: the card snaps into an off-axis, slightly
    squashed pose, then the width carries the rest of the turn. The lean snaps upright at the end. */
 @keyframes card-flip {

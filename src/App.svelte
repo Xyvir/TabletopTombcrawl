@@ -124,6 +124,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const FOUNDATION_FLIGHT_MS = 250;
 	/** A card coming out of the fog squashes, shows its face, then opens back out. */
 	const FLIP_MS = 210;
+	/** Purity turns a whole hallway over, so each card waits this long for the one above it. */
+	const TURN_STAGGER_MS = 70;
 	/** How long a banner holds the screen before it clears. */
 	const FANFARE_MS = 2200;
 
@@ -152,6 +154,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let woundingIds = $state<string[]>([]);
 	/** Cards that just came back from a wound, turning face-up for one animation. */
 	let healingIds = $state<string[]>([]);
+	/**
+	 * Cards a spell just turned face down, and how long each waits before it turns. A fogged hallway
+	 * turns over from the unburied card downwards, so the sweep reads as one gesture rather than five.
+	 */
+	let turningDelays = $state<Record<string, number>>({});
 	let tombSelected = $state<CardLocation | null>(null);
 	/** The card under the pointer: a kill you are aiming at shows what it would cost first. */
 	let tombHover = $state<CardLocation | null>(null);
@@ -1053,7 +1060,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	function commit(next: TombState, before?: Map<string, DOMRect>) {
 		if (!tomb) return;
+		const wasHidden = new Set(tomb.hidden);
 		const revealed = tomb.hidden.filter((id) => !next.hidden.includes(id));
+		// Cards a spell fogged. A card already face down is not a card turning: only the newly hidden
+		// ones get an animation, which is also why a hallway that is half fog turns half as long.
+		const fogged = next.hidden.filter((id) => !wasHidden.has(id));
 		const rects = before ?? cardRects();
 		const power = powerFlash(tomb, next);
 		// The track only flashes red when one of its cards turns face-down. A card leaving the track
@@ -1086,6 +1097,31 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			setTimeout(() => {
 				flippingIds = flippingIds.filter((id) => !revealed.includes(id));
 			}, FLIP_MS);
+		}
+		if (fogged.length) {
+			// Order by hallway, then from the unburied card down: rows count upwards from the floor, so
+			// the highest row of a hallway is the card with nothing on it.
+			const ids = new Set(fogged);
+			const turning = next.game.cards
+				.filter((card) => card.location.fixture === 'cascade' && ids.has(shorthandCard(card)))
+				.sort((a, b) => a.location.data[0] - b.location.data[0] || b.location.data[1] - a.location.data[1]);
+			const delays: Record<string, number> = {};
+			const turned = new Map<number, number>();
+			for (const card of turning) {
+				const hallway = card.location.data[0];
+				const order = turned.get(hallway) ?? 0;
+				turned.set(hallway, order + 1);
+				delays[shorthandCard(card)] = order * TURN_STAGGER_MS;
+			}
+			if (Object.keys(delays).length) {
+				turningDelays = { ...turningDelays, ...delays };
+				const life = FLIP_MS + Math.max(...Object.values(delays));
+				setTimeout(() => {
+					turningDelays = Object.fromEntries(
+						Object.entries(turningDelays).filter(([id]) => !(id in delays))
+					);
+				}, life);
+			}
 		}
 		// a card that just took a wound turns face-down with the same animation, run backwards
 		if (wounding.length) {
@@ -1886,6 +1922,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{@const minion = !!tomb && isBossMinion(tomb, card)}
 					{@const power = !!tomb && carriesPower(tomb, card)}
 					{@const flipping = flippingIds.includes(shorthandCard(card))}
+					{@const turning = turningDelays[shorthandCard(card)]}
 					{@const slaying = !!slayAt && key(slayAt) === key(card.location)}
 					<button
 						class="card"
@@ -1926,6 +1963,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					>
 						{#if flipping}
 							<span class="flip">
+								<img class="flip-front" src={img(card)} alt="" draggable="false" />
+								<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+							</span>
+						{:else if turning !== undefined}
+							<span class="flip down" style={`--flip-delay: ${turning}ms`}>
 								<img class="flip-front" src={img(card)} alt="" draggable="false" />
 								<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
 							</span>
