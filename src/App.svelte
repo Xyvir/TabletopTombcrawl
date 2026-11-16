@@ -1756,7 +1756,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							<img src={img(stacked)} alt="" draggable="false" data-card={shorthandCard(stacked)} />
 						{/each}
 						{#if full}
-							<img class="grave-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+							<img class="grave-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
 						{/if}
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
@@ -1838,12 +1838,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							{#if turning}
 								<span class="held flip down" class:deep={deeper} style={cellImageStyle(stacked)}>
 									<img class="flip-front" src={img(stacked)} alt="" draggable="false" />
-									<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+									<img class="flip-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
 								</span>
 							{:else if mending}
 								<span class="held flip up" class:deep={deeper} style={cellImageStyle(stacked)}>
 									<img class="flip-front" src={img(stacked)} alt="" draggable="false" />
-									<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+									<img class="flip-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
 								</span>
 							{:else}
 								<img
@@ -1851,7 +1851,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									class:poked={faceDown}
 									class:deep={deeper}
 									class:wound-next={woundPreview.has(shorthandCard(stacked))} class:heal-next={healNext.has(shorthandCard(stacked))}
-									src={faceDown ? `${BASE}images/back.png` : img(stacked)}
+									src={faceDown ? `${BASE}images/back.svg` : img(stacked)}
 									alt=""
 									draggable="false"
 									style={cellImageStyle(stacked)}
@@ -2010,15 +2010,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{#if flipping}
 							<span class="flip">
 								<img class="flip-front" src={img(card)} alt="" draggable="false" />
-								<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+								<img class="flip-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
 							</span>
 						{:else if turning !== undefined}
 							<span class="flip down" style={`--flip-delay: ${turning}ms`}>
 								<img class="flip-front" src={img(card)} alt="" draggable="false" />
-								<img class="flip-back" src={`${BASE}images/back.png`} alt="" draggable="false" />
+								<img class="flip-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
 							</span>
 						{:else}
-							<img src={down ? `${BASE}images/back.png` : img(card)} alt="" draggable="false" />
+							<img src={down ? `${BASE}images/back.svg` : img(card)} alt="" draggable="false" />
 						{/if}
 						<span
 							class="slay"
