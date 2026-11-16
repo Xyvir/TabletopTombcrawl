@@ -602,6 +602,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
 	const tombGoldNow = $derived(tomb ? tombGold(tomb) : 0);
+	/**
+	 * The gold on the bar. While the boss king is still under the fog the tomb's suit is unknown, so no card has a fixed
+	 * price and the count is a guess — the bar owns up to that and reads ? of a hundred.
+	 */
+	const tombGoldShown = $derived(tomb && !tomb.bossId ? '?' : `${tombGoldNow}`);
 	/** What gold pays here: twice after a true boss kill, three times for a bare tomb with the pocket intact. */
 	const tombMult = $derived(tomb ? goldMultiplier(tomb) : 1);
 	/** The scored reading, so a clean crawl can read past a hundred. */
@@ -2003,8 +2008,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			</button>
 			<span
 									class="score"
-					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss twenty-five whether or not it has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
-				>Gold {tombGoldNow}/{GOLD_TOTAL}{#if tombMult > 1}<span class="mult">×{tombMult}</span> {tombScoreNow}%{/if}</span
+					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss twenty-five whether or not it has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tomb && !tomb.bossId ? ' The boss king is still under the fog, so the tomb\'s suit is unknown and no card is priced yet: the count reads ? until it is uncovered.' : ''}${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
+				>Gold {tombGoldShown}/{GOLD_TOTAL}{#if tombMult > 1}<span class="mult">×{tombMult}</span> {tombScoreNow}%{/if}</span
 				>
 			{#if bossNoted && bossSlain(tomb)}
 				<span

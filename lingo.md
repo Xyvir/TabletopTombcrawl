@@ -223,7 +223,8 @@ Not in copy yet. Ranked by how much the current word hurts.
   says "Choose a loadout".
 - **Gold** is what the tomb pays, and it is a flat price per card: a rat one, a boss-suit minion two, a General
   five, and the boss twenty-five. A bare tomb is exactly a hundred, so the gold is read as a percentage
-  without a percent sign beside it. "Score" was the code's word for it. The end of a crawl reads back its gold,
+  without a percent sign beside it. Until the boss king is uncovered the tomb's suit is unknown and no card is
+  priced, so the bar reads **?/100** rather than a number that is about to change. "Score" was the code's word for it. The end of a crawl reads back its gold,
   its moves and whether the boss or the whole tomb fell, beside whatever the corpus and the solver managed on the
   same party. *Par* is the legacy "negative" reading the solver works in — a card is worth its rank, court fifteen,
   a king twenty, and the boss a hundred, so the number goes down as the tomb empties. It appears to the player in
