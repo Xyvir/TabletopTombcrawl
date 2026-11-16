@@ -563,8 +563,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
 	/**
 	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
-	 * Bandit would empty, the glyphs a Wraith would spend. An armed Remedy turns the whole aura off, and the
-	 * warning goes with it, since the move it covers would not do any of it.
+	 * Bandit would empty, the heart a Gorgon's rank would take, the glyphs a Wraith would spend. An armed
+	 * Remedy turns the whole aura off, and the warning goes with it, since the move it covers would not do
+	 * any of it.
 	 */
 	const afflictionIds = $derived.by(() => {
 		if (!tomb || !tombHover) return new Set<string>();

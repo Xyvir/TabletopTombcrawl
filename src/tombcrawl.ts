@@ -1489,10 +1489,25 @@ export function venomTarget(state: TombState): Card | null {
 }
 
 /**
+ * The card a single point of damage would turn face down. The track pays from the right edge inward, so
+ * this is the card the next wound costs, and the same one the red glow marks for a blow's own price.
+ */
+export function woundTarget(state: TombState): Card | null {
+	for (let cell = state.game.cells.length - 1; cell >= 0; cell--) {
+		const cards = cellCards(state, cell);
+		// A stack pays one card at a time from its bottom up; every other pocket is worth one card.
+		const pay = CLAUSES.pisorfStack ? cards.length : Math.min(1, cards.length);
+		const down = state.wounded[cell] ?? 0;
+		if (down < pay) return cards[down] ?? null;
+	}
+	return null;
+}
+
+/**
  * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the fog Venom would lift, the card in the slot Mug would shove out of the party, the glyphs
- * Mana Burn would spend. Stone Gaze prices its blow in hearts and touches no card, and an armed Remedy
- * turns the whole aura off — so both warn on nothing, because nothing would happen.
+ * pointer: the fog Venom would lift, the card in the slot Mug would shove out of the party, the card Stone
+ * Gaze would turn down, the glyphs Mana Burn would spend. An armed Remedy turns the whole aura off, so it
+ * warns on nothing at all: nothing would happen.
  */
 export function afflictionTargets(state: TombState, card: Card): string[] {
 	if (!carriesPower(state, card) || !auraActive(state)) return [];
@@ -1508,6 +1523,13 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 			const entry = slot >= 0 ? draftAt(state, slot) : undefined;
 			if (!entry || cellTopWounded(state, slot)) return [];
 			return [entry.id];
+		}
+		case 'clubs': {
+			// Stone Gaze's extra rank is a wound like any other, paid off the track's right edge — the card
+			// the blow's own price would take first. A stashed gorgon has no attack preview to show its
+			// heart, so this is the only warning that route gets.
+			const hit = woundTarget(state);
+			return hit ? [cardId(hit)] : [];
 		}
 		case 'diamonds':
 			return auraCells(state).flatMap((cell) => {

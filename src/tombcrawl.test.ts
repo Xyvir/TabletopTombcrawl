@@ -2718,10 +2718,13 @@ describe('the affliction preview', () => {
 		expect(afflictionTargets(spent, cardIn(spent, '5D'))).toEqual([]);
 	});
 
-	test('a gorgon warns on nothing: its price is paid in hearts, not in cards', () => {
-		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
-		const state = makeTomb({ columns: [['5C']], cells: ['TC', null], boss: 'KC', draft });
-		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual([]);
+	test('a gorgon warns on the heart its rank costs: the card the next wound would turn down', () => {
+		const state = makeTomb({ columns: [['5C']], cells: ['2C', '3C', '4C'], boss: 'KC' });
+		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual(['4C']);
+
+		// the track is wholly face down: the gaze has no heart left to take, and says so
+		const spent = makeTomb({ columns: [['5C']], cells: ['2C'], boss: 'KC', wounded: [0] });
+		expect(afflictionTargets(spent, cardIn(spent, '5C'))).toEqual([]);
 	});
 
 	test('an armed Remedy silences the warning, since the blow would not set the power off', () => {
