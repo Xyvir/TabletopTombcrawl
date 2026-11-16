@@ -190,7 +190,7 @@ const GLYPHS: Record<Suit, Ability> = {
 	},
 	hearts: {
 		name: 'CYDSTEPP',
-		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway. Also sets the boss king down in an empty hallway, which spends it.',
+		text: 'Arm to play a run your pockets could carry on top of a fogged card, as if it were an empty hallway. Also sets the boss down in an empty hallway, which spends it.',
 	},
 	clubs: {
 		name: 'PISORF',
@@ -770,7 +770,7 @@ export function woundedCanGoHome(state: TombState): boolean {
 	return difficultyOf(state) === 'easy';
 }
 
-/** The boss king stands behind his Generals: no party reaches him until another king is home. */
+/** The boss stands behind its Generals: no party reaches it until another king is home. */
 export function bossProtected(state: TombState): boolean {
 	return !bossUnlocked(state);
 }
@@ -986,7 +986,7 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	}
 
 	if (frozenBoss(state, card)) {
-		return { legal: false, reason: 'boss king: his Generals shield him until one lies in a grave' };
+		return { legal: false, reason: 'boss: one of its Generals has to fall first' };
 	}
 
 	const rank = rankOf(card.rank);

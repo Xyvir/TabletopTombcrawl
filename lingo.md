@@ -66,10 +66,14 @@ trait** is an adjective describing the delver — Hawkeyed, Stout, Adept, Bloodt
 one, so the convention holds without an exception to remember.
 new kin trait should be one.
 
-**The boss king** wears two shields, and they lift separately. *Invulnerable* keeps him out of any grave until
-one of his Generals falls first; once one does, a blade reaches him. *Indomitable* never lifts: no hand moves
-him for the whole crawl, and only a glyph does — a run that would carry him is refused the same way. Every
-glyph that moves a card can move him, and CYDSTEPP alone can set him down in an empty hallway, which spends it.
+**The boss** wears two shields, and they lift separately. *Invulnerable* keeps it out of any grave until one of
+its Generals falls first; once one does, a blade reaches it. *Indomitable* never lifts: no hand moves it for the
+whole crawl, and only a glyph does — a run that would carry it is refused the same way. Every glyph that moves a
+card can move it, and CYDSTEPP alone can set it down in an empty hallway, which spends it.
+
+The word is *the boss*, never *the boss king*: the throne is dealt as a king of the tomb's suit whatever monster sits
+on it, and Medusa is a woman — the rank is the card's, the word is the post. Generals keep their rank: they are kings,
+and they say so.
 
 Monster names are per suit and never per card: Bandit (spades, Mug), Viper (hearts, Venom),
 Gorgon (clubs, Stone Gaze), Wraith (diamonds, Mana Burn).
@@ -215,7 +219,7 @@ Not in copy yet. Ranked by how much the current word hurts.
 - **Loadout** is the configuration: the four party spots plus the crawl seed that proves them. The sheet
   says "Choose a loadout".
 - **Gold** is what the tomb pays, and it is a flat price per card: a rat one, a boss-suit minion two, a General
-  five, and the boss king twenty-five. A bare tomb is exactly a hundred, so the gold is read as a percentage
+  five, and the boss twenty-five. A bare tomb is exactly a hundred, so the gold is read as a percentage
   without a percent sign beside it. "Score" was the code's word for it. The end of a crawl reads back its gold,
   its moves and whether the boss or the whole tomb fell, beside whatever the corpus and the solver managed on the
   same party. *Par* is the legacy "negative" reading the solver works in — a card is worth its rank, court fifteen,

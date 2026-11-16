@@ -175,7 +175,7 @@ the second, so a clean kill followed by a bare tomb reads 200% and never 300%.
 ## Gold is a flat table (adopted)
 
 The bar counts gold, and gold is arithmetic a player can do in their head: **a rat one, a boss-suit minion two, a
-General five, and the boss king twenty-five**. Thirty-six rats, twelve minions, three Generals and the boss are
+General five, and the boss twenty-five**. Thirty-six rats, twelve minions, three Generals and the boss are
 fifty-two cards and exactly a hundred gold, so a bare tomb reads 100 and the number is already a percentage — the
 separate `(14.4%)` reading that used to sit beside it is gone rather than repeated. Each card's tooltip says what
 it pays ("Grants 2 gold on slay"), so the price of a card can be known before the blow.

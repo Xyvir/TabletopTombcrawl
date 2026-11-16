@@ -1999,13 +1999,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			</button>
 			<span
 									class="score"
-					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss king twenty-five whether or not he has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
+					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss twenty-five whether or not it has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
 				>Gold {tombGoldNow}/{GOLD_TOTAL}{#if tombMult > 1}<span class="mult">×{tombMult}</span> {tombScoreNow}%{/if}</span
 				>
 			{#if bossNoted && bossSlain(tomb)}
 				<span
 					class="bossnote"
-					title="The boss king is home, so the exit will let you leave with whatever the tomb still owes."
+					title="The boss is home, so the exit will let you leave with whatever the tomb still owes."
 					>Boss slain</span
 				>
 			{/if}

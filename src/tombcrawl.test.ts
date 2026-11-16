@@ -1120,7 +1120,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 	});
 
 	test('no party reaches the boss king before another king is home', () => {
-		// A Dwarf used to be the exception; Stout is his pocket now, so the Generals shield him too.
+		// A Dwarf used to be the exception; Stout is his pocket now, so the Generals shield the boss too.
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 		const early = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], draft, boss: 'KH' });
 
@@ -1164,7 +1164,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(kingsHome(early)).toBe(0);
 		expect(bossUnlocked(early)).toBe(false);
 		expect(canSendHome(early, cascade(0)).legal).toBe(false);
-		expect(canSendHome(early, cascade(0)).reason).toContain('shield him');
+		expect(canSendHome(early, cascade(0)).reason).toContain('Generals has to fall first');
 		// frozen means no method at all, not just the foundation
 		expect(tombMove(early, { fixture: 'cascade', data: [0, 0] }, { fixture: 'cascade', data: [1, 0] })).toBe(null);
 
@@ -1225,7 +1225,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 			expect(shorthandCard(carried!.game.tableau[1][0])).toBe('KH');
 			// The spell lifted it out of the way; the foundation stays shut until a king is home.
 			expect(canSendHome(primed, cascade(0)).legal).toBe(false);
-			expect(canSendHome(primed, cascade(0)).reason).toContain('shield him');
+			expect(canSendHome(primed, cascade(0)).reason).toContain('Generals has to fall first');
 		} finally {
 			TOMB_RULES.glyphMoveBoss = shipit;
 		}
@@ -2289,7 +2289,7 @@ describe('tombcrawl boss protection', () => {
 		});
 		expect(attackPreview(dwarf, cascade(0, 0))).toMatchObject({
 			legal: false,
-			reason: 'boss king: his Generals shield him until one lies in a grave',
+			reason: 'boss: one of its Generals has to fall first',
 		});
 		expect(attackWith(dwarf, cascade(0, 0))).toBe(null);
 	});
