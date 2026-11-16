@@ -117,6 +117,13 @@ const demotedSeeds = new Set(demotedRows.filter((row) => typeof row.seed === 'nu
  * the ~1,400 deals whose keys had no shard row at all, never once trying an open loadout.
  */
 const provedSeeds = new Set<string>();
+/**
+ * The rows the line files alone can speak for. A solution is a claim and the strongest kind — it says how the
+ * deal was won, not merely that it was — so a seed whose line is on disk is published even when the shard that
+ * produced it is gone, or when it was found on a track the sweeps no longer write rows for. It is also the only
+ * record of those deals: dropping them would put a solvable seed back in the "no seed found yet" pile.
+ */
+const solutionRows: Entry[] = [];
 {
 	const solutionsDir = process.env.SOLUTIONS ?? 'solutions';
 	if (existsSync(solutionsDir)) {
@@ -124,7 +131,20 @@ const provedSeeds = new Set<string>();
 			if (!name.endsWith('.json')) continue;
 			try {
 				const line = JSON.parse(readFileSync(`${solutionsDir}/${name}`, 'utf8'));
-				if (typeof line?.seed === 'number') provedSeeds.add(`${line.difficulty ?? 'med'}|${line.seed}`);
+				if (typeof line?.seed !== 'number') continue;
+				const level = line.difficulty ?? 'med';
+				provedSeeds.add(`${level}|${line.seed}`);
+				if (typeof line.loadout !== 'string' || typeof line.moves !== 'number') continue;
+				solutionRows.push({
+					loadout: line.loadout,
+					boss: line.boss ?? null,
+					seed: line.seed,
+					moves: line.moves,
+					difficulty: level,
+					goal: line.goal ?? 'boss',
+					party: [],
+					at: line.at ?? line.found ?? null,
+				} as Entry);
 			} catch {
 				// an unreadable line proves nothing
 			}
@@ -381,6 +401,16 @@ if (mode === 'merge') {
 			// an unreadable artifact simply contributes nothing
 		}
 	}
+	// A seed whose line is on disk but whose shard row is gone is still a solvable deal: the line is the claim.
+	{
+		const known = new Set(all.map((entry) => `${entry.difficulty ?? 'med'}|${entry.seed}`));
+		for (const row of solutionRows) {
+			const key = `${row.difficulty ?? 'med'}|${row.seed}`;
+			if (known.has(key)) continue;
+			all.push(row);
+			known.add(key);
+		}
+	}
 	// One entry per key, and the stronger result wins: a 100% clear is also a boss kill, so it beats a
 	// boss-only entry for the same key, and a shorter line beats a longer one.
 	const rank = (entry: Entry) => (entry.goal === 'clear' ? 0 : 1);
@@ -406,26 +436,45 @@ if (mode === 'merge') {
 			.filter((row) => (row.difficulty ?? 'med') === difficulty)
 			.map((row) => [`${row.difficulty ?? 'med'}|${row.loadout}`, row])
 	);
-	// Only the shipped track is published. A hard row proves a party on a track the game no longer has,
-	// its line cannot be replayed at med, and it would sit in the trellis as a second seed for the same
-	// party: the filter lives here, where the merge is, so no shard left on disk can put one back.
+	// Only the shipped track is published as a square. A hard row would sit in the trellis as a second
+	// seed for the same party, so the squares stay med whatever a shard left on disk says — but the hard
+	// rows are not thrown away: they are a proof of the deal, they name a second goal on a seed, and the
+	// merge keeps every one of them in `proved` below.
 	// Only the demoted seed goes: a win on any other seed of that party is fresh evidence and stays live.
-	const live = all.filter(
-		(entry) =>
-			(entry.difficulty ?? 'med') === difficulty &&
-			!demotedSeeds.has(demotedSeed(entry)) &&
-			proved(entry)
-	);
+	const liveAny = all.filter((entry) => !demotedSeeds.has(demotedSeed(entry)) && proved(entry));
+	const live = liveAny.filter((entry) => (entry.difficulty ?? 'med') === difficulty);
+	/**
+	 * Which seeds also fall on another track, and how well. A seed that wins at hard is the seed worth putting
+	 * on the square: the deal is probably the gentler one, and it carries two goals instead of one. Kept by party
+	 * and seed, because a hard win proves the party it was played with and not every party the seed can deal.
+	 *
+	 * It is a tiebreak, not an override: a med clear still beats a med boss kill on a hard-winnable seed, since
+	 * the square makes a claim about this track first.
+	 */
+	const elsewhere = new Map<string, number>();
+	for (const entry of liveAny) {
+		if ((entry.difficulty ?? 'med') === difficulty) continue;
+		const key = `${entry.loadout}|${entry.seed}`;
+		const held = elsewhere.get(key) ?? 9;
+		if (rank(entry) < held) elsewhere.set(key, rank(entry));
+	}
 	// A demoted square keeps the seed it was demoted on, so the placeholder is the same deal with no claim.
 	const retiredSeeds = new Map<string, Entry>();
 	for (const entry of all)
 		if ((entry.difficulty ?? 'med') === difficulty && (!proved(entry) || demotedSeeds.has(demotedSeed(entry))))
 			retiredSeeds.set(keyOf(entry), entry);
+	/** Where a party has a win on another track, this is how good it was: a clear ahead of a boss kill, then nothing. */
+	const otherTrack = (entry: Entry) => elsewhere.get(`${entry.loadout}|${entry.seed}`) ?? 9;
 	const unique = new Map<string, Entry>();
 	for (const entry of live) {
 		const key = keyOf(entry);
 		const held = unique.get(key);
-		if (!held || rank(entry) < rank(held) || (rank(entry) === rank(held) && entry.moves < held.moves)) {
+		if (
+			!held ||
+			rank(entry) < rank(held) ||
+			(rank(entry) === rank(held) && otherTrack(entry) < otherTrack(held)) ||
+			(rank(entry) === rank(held) && otherTrack(entry) === otherTrack(held) && entry.moves < held.moves)
+		) {
 			unique.set(key, entry);
 		}
 	}
@@ -433,7 +482,7 @@ if (mode === 'merge') {
 	// kill and a bare tomb are different claims, so the trellis keeps both rather than one per party.
 	type Proofs = Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>;
 	const found: Record<string, Partial<Record<string, Proofs>>> = {};
-	for (const entry of live) {
+	for (const entry of liveAny) {
 		const level = entry.difficulty ?? 'med';
 		const achieved = entry.goal === 'clear' ? 'clear' : 'boss';
 		const held = found[entry.loadout]?.[level]?.[achieved];
@@ -443,6 +492,41 @@ if (mode === 'merge') {
 			[level]: { ...found[entry.loadout]?.[level], [achieved]: { seed: entry.seed, moves: entry.moves } },
 		};
 	}
+	/**
+	 * Every win on disk, at whichever track it was found, so nothing solvable is dropped. The trellis shows one
+	 * square per party and the sweeps only search the shipped track, but a hard seed is still a deal with a line
+	 * and a date behind it: that record is what makes a preference for another seed reviewable later.
+	 */
+	const provedRows = (() => {
+		const best = new Map<string, Entry>();
+		for (const entry of liveAny) {
+			const key = `${entry.difficulty ?? 'med'}|${entry.seed}`;
+			const held = best.get(key);
+			if (!held || rank(entry) < rank(held) || (rank(entry) === rank(held) && entry.moves < held.moves)) {
+				best.set(key, entry);
+			}
+		}
+		return [...best.values()]
+			.map((entry) => ({
+				loadout: entry.loadout,
+				difficulty: entry.difficulty ?? 'med',
+				seed: entry.seed,
+				moves: entry.moves,
+				goal: entry.goal,
+				at: entry.at ?? null,
+			}))
+			.sort((a, b) =>
+				a.loadout === b.loadout
+					? a.difficulty === b.difficulty
+						? a.seed - b.seed
+						: a.difficulty < b.difficulty
+							? -1
+							: 1
+					: a.loadout < b.loadout
+						? -1
+						: 1
+			);
+	})();
 	// Placeholders: a square whose crawl matches the loadout but has no win, held by the best score
 	// reached on it. Same rule as a proof — the best result holds the square — and a win on that track
 	// deletes the placeholder outright, since a square with a win is not waiting for one.
@@ -514,7 +598,7 @@ if (mode === 'merge') {
 	writeFileSync(
 		target,
 		JSON.stringify(
-			{ difficulty, goal, rules: 'draft-any-suit', keys: ALL_KEYS.length, entries, found, placeholders, missing },
+			{ difficulty, goal, rules: 'draft-any-suit', keys: ALL_KEYS.length, entries, proved: provedRows, found, placeholders, missing },
 			null,
 			'\t'
 		)

@@ -2455,6 +2455,736 @@
 			"at": "2026-11-14T07:25:45.798Z"
 		}
 	],
+	"proved": [
+		{
+			"loadout": "ccdd",
+			"difficulty": "med",
+			"seed": 151265,
+			"moves": 94,
+			"goal": "boss",
+			"at": "2026-11-14T07:17:40.492Z"
+		},
+		{
+			"loadout": "cchh",
+			"difficulty": "med",
+			"seed": 2588,
+			"moves": 99,
+			"goal": "boss",
+			"at": "2026-11-16T03:17:07.192Z"
+		},
+		{
+			"loadout": "ccsc",
+			"difficulty": "med",
+			"seed": 2660,
+			"moves": 87,
+			"goal": "boss",
+			"at": "2026-11-16T03:14:11.668Z"
+		},
+		{
+			"loadout": "cdhd",
+			"difficulty": "med",
+			"seed": 684,
+			"moves": 110,
+			"goal": "boss",
+			"at": "2026-11-15T02:00:21.227Z"
+		},
+		{
+			"loadout": "cdsh",
+			"difficulty": "med",
+			"seed": 153399,
+			"moves": 84,
+			"goal": "boss",
+			"at": "2026-11-14T10:04:04.511Z"
+		},
+		{
+			"loadout": "chcc",
+			"difficulty": "med",
+			"seed": 2165,
+			"moves": 79,
+			"goal": "boss",
+			"at": "2026-11-15T01:57:13.059Z"
+		},
+		{
+			"loadout": "chhd",
+			"difficulty": "med",
+			"seed": 1821,
+			"moves": 100,
+			"goal": "boss",
+			"at": "2026-11-15T02:04:50.078Z"
+		},
+		{
+			"loadout": "chsh",
+			"difficulty": "med",
+			"seed": 152565,
+			"moves": 94,
+			"goal": "boss",
+			"at": "2026-11-14T08:41:00.471Z"
+		},
+		{
+			"loadout": "chsh",
+			"difficulty": "med",
+			"seed": 153256,
+			"moves": 82,
+			"goal": "boss",
+			"at": "2026-11-14T09:24:31.361Z"
+		},
+		{
+			"loadout": "cscc",
+			"difficulty": "med",
+			"seed": 1351,
+			"moves": 62,
+			"goal": "boss",
+			"at": "2026-11-15T22:14:02.156Z"
+		},
+		{
+			"loadout": "csch",
+			"difficulty": "med",
+			"seed": 528,
+			"moves": 66,
+			"goal": "boss",
+			"at": "2026-11-15T22:14:09.196Z"
+		},
+		{
+			"loadout": "csch",
+			"difficulty": "med",
+			"seed": 155187,
+			"moves": 80,
+			"goal": "boss",
+			"at": "2026-11-14T11:15:02.382Z"
+		},
+		{
+			"loadout": "cscs",
+			"difficulty": "med",
+			"seed": 986,
+			"moves": 58,
+			"goal": "boss",
+			"at": "2026-11-15T22:21:23.036Z"
+		},
+		{
+			"loadout": "csdd",
+			"difficulty": "med",
+			"seed": 397,
+			"moves": 66,
+			"goal": "boss",
+			"at": "2026-11-16T03:34:40.329Z"
+		},
+		{
+			"loadout": "csds",
+			"difficulty": "med",
+			"seed": 3902,
+			"moves": 62,
+			"goal": "boss",
+			"at": "2026-11-15T22:24:23.048Z"
+		},
+		{
+			"loadout": "cshc",
+			"difficulty": "med",
+			"seed": 153924,
+			"moves": 99,
+			"goal": "boss",
+			"at": "2026-11-14T09:58:37.127Z"
+		},
+		{
+			"loadout": "cshd",
+			"difficulty": "med",
+			"seed": 2676,
+			"moves": 75,
+			"goal": "boss",
+			"at": "2026-11-16T03:53:35.999Z"
+		},
+		{
+			"loadout": "cshs",
+			"difficulty": "med",
+			"seed": 173,
+			"moves": 76,
+			"goal": "boss",
+			"at": "2026-11-15T02:05:24.253Z"
+		},
+		{
+			"loadout": "cssc",
+			"difficulty": "med",
+			"seed": 6210,
+			"moves": 92,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "csss",
+			"difficulty": "med",
+			"seed": 215,
+			"moves": 65,
+			"goal": "boss",
+			"at": "2026-11-15T22:26:22.059Z"
+		},
+		{
+			"loadout": "dccd",
+			"difficulty": "med",
+			"seed": 196638,
+			"moves": 84,
+			"goal": "boss",
+			"at": "2026-11-14T14:33:48.263Z"
+		},
+		{
+			"loadout": "dcdd",
+			"difficulty": "med",
+			"seed": 150098,
+			"moves": 64,
+			"goal": "boss",
+			"at": "2026-11-14T06:33:04.217Z"
+		},
+		{
+			"loadout": "dcds",
+			"difficulty": "med",
+			"seed": 155332,
+			"moves": 74,
+			"goal": "boss",
+			"at": "2026-11-14T11:47:21.440Z"
+		},
+		{
+			"loadout": "dchd",
+			"difficulty": "med",
+			"seed": 2493,
+			"moves": 82,
+			"goal": "boss",
+			"at": "2026-11-16T03:38:27.912Z"
+		},
+		{
+			"loadout": "dcsd",
+			"difficulty": "med",
+			"seed": 179554,
+			"moves": 78,
+			"goal": "boss",
+			"at": "2026-11-14T14:19:19.412Z"
+		},
+		{
+			"loadout": "dcsh",
+			"difficulty": "med",
+			"seed": 1139,
+			"moves": 73,
+			"goal": "boss",
+			"at": "2026-11-15T02:01:12.272Z"
+		},
+		{
+			"loadout": "dcss",
+			"difficulty": "med",
+			"seed": 158582,
+			"moves": 91,
+			"goal": "boss",
+			"at": "2026-11-14T13:01:49.553Z"
+		},
+		{
+			"loadout": "ddcc",
+			"difficulty": "med",
+			"seed": 152440,
+			"moves": 66,
+			"goal": "boss",
+			"at": "2026-11-14T10:19:55.916Z"
+		},
+		{
+			"loadout": "ddhc",
+			"difficulty": "med",
+			"seed": 299,
+			"moves": 87,
+			"goal": "boss",
+			"at": "2026-11-15T02:19:01.737Z"
+		},
+		{
+			"loadout": "ddsh",
+			"difficulty": "med",
+			"seed": 952,
+			"moves": 95,
+			"goal": "boss",
+			"at": "2026-11-15T02:19:51.979Z"
+		},
+		{
+			"loadout": "dhcc",
+			"difficulty": "med",
+			"seed": 154307,
+			"moves": 79,
+			"goal": "boss",
+			"at": "2026-11-14T11:54:09.818Z"
+		},
+		{
+			"loadout": "dhch",
+			"difficulty": "med",
+			"seed": 158865,
+			"moves": 77,
+			"goal": "boss",
+			"at": "2026-11-14T13:18:32.026Z"
+		},
+		{
+			"loadout": "dhdc",
+			"difficulty": "med",
+			"seed": 150234,
+			"moves": 81,
+			"goal": "boss",
+			"at": "2026-11-14T07:13:32.370Z"
+		},
+		{
+			"loadout": "dhhh",
+			"difficulty": "med",
+			"seed": 54118,
+			"moves": 87,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "dhhs",
+			"difficulty": "med",
+			"seed": 49356,
+			"moves": 73,
+			"goal": "clear",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "dhsd",
+			"difficulty": "med",
+			"seed": 152904,
+			"moves": 90,
+			"goal": "boss",
+			"at": "2026-11-14T10:10:41.253Z"
+		},
+		{
+			"loadout": "dscc",
+			"difficulty": "med",
+			"seed": 1342,
+			"moves": 53,
+			"goal": "boss",
+			"at": "2026-11-15T22:39:35.170Z"
+		},
+		{
+			"loadout": "dscd",
+			"difficulty": "med",
+			"seed": 1535,
+			"moves": 57,
+			"goal": "boss",
+			"at": "2026-11-16T04:07:12.795Z"
+		},
+		{
+			"loadout": "dsch",
+			"difficulty": "med",
+			"seed": 55,
+			"moves": 57,
+			"goal": "boss",
+			"at": "2026-11-16T04:07:06.688Z"
+		},
+		{
+			"loadout": "dsdc",
+			"difficulty": "med",
+			"seed": 151918,
+			"moves": 59,
+			"goal": "boss",
+			"at": "2026-11-14T07:40:36.621Z"
+		},
+		{
+			"loadout": "dsdh",
+			"difficulty": "med",
+			"seed": 44793,
+			"moves": 67,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "dshs",
+			"difficulty": "med",
+			"seed": 40211,
+			"moves": 75,
+			"goal": "clear",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "dsss",
+			"difficulty": "med",
+			"seed": 1340,
+			"moves": 61,
+			"goal": "boss",
+			"at": "2026-11-15T23:01:24.568Z"
+		},
+		{
+			"loadout": "hcdc",
+			"difficulty": "med",
+			"seed": 58,
+			"moves": 96,
+			"goal": "boss",
+			"at": "2026-11-16T04:58:32.896Z"
+		},
+		{
+			"loadout": "hchc",
+			"difficulty": "med",
+			"seed": 3181,
+			"moves": 94,
+			"goal": "boss",
+			"at": "2026-11-16"
+		},
+		{
+			"loadout": "hdcd",
+			"difficulty": "med",
+			"seed": 2435,
+			"moves": 87,
+			"goal": "boss",
+			"at": "2026-11-16T04:19:03.473Z"
+		},
+		{
+			"loadout": "hddh",
+			"difficulty": "med",
+			"seed": 1088,
+			"moves": 76,
+			"goal": "boss",
+			"at": "2026-11-16T04:32:45.125Z"
+		},
+		{
+			"loadout": "hdhc",
+			"difficulty": "med",
+			"seed": 39182,
+			"moves": 58,
+			"goal": "boss",
+			"at": "2026-11-15T00:46:44.068Z"
+		},
+		{
+			"loadout": "hhdc",
+			"difficulty": "med",
+			"seed": 960,
+			"moves": 88,
+			"goal": "boss",
+			"at": "2026-11-16T05:09:26.796Z"
+		},
+		{
+			"loadout": "hhhc",
+			"difficulty": "med",
+			"seed": 822,
+			"moves": 74,
+			"goal": "boss",
+			"at": "2026-11-16T05:08:54.812Z"
+		},
+		{
+			"loadout": "hhhd",
+			"difficulty": "med",
+			"seed": 3816,
+			"moves": 85,
+			"goal": "boss",
+			"at": "2026-11-16T05:10:56.066Z"
+		},
+		{
+			"loadout": "hhhh",
+			"difficulty": "med",
+			"seed": 2769,
+			"moves": 145,
+			"goal": "clear",
+			"at": "2026-11-15T00:00:00.000Z"
+		},
+		{
+			"loadout": "hscc",
+			"difficulty": "hard",
+			"seed": 40,
+			"moves": 75,
+			"goal": "boss",
+			"at": "2026-11-13T16:05:37.615Z"
+		},
+		{
+			"loadout": "hscc",
+			"difficulty": "med",
+			"seed": 40,
+			"moves": 45,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hscd",
+			"difficulty": "med",
+			"seed": 80716,
+			"moves": 43,
+			"goal": "boss",
+			"at": "2026-11-16T15:39:18.961Z"
+		},
+		{
+			"loadout": "hsch",
+			"difficulty": "med",
+			"seed": 81319,
+			"moves": 49,
+			"goal": "boss",
+			"at": "2026-11-16T16:39:31.036Z"
+		},
+		{
+			"loadout": "hscs",
+			"difficulty": "med",
+			"seed": 82967,
+			"moves": 59,
+			"goal": "boss",
+			"at": "2026-11-16T19:14:50.261Z"
+		},
+		{
+			"loadout": "hsdc",
+			"difficulty": "med",
+			"seed": 152108,
+			"moves": 59,
+			"goal": "boss",
+			"at": "2026-11-14T08:56:35.955Z"
+		},
+		{
+			"loadout": "hsdc",
+			"difficulty": "med",
+			"seed": 154191,
+			"moves": 58,
+			"goal": "boss",
+			"at": "2026-11-14T11:21:42.482Z"
+		},
+		{
+			"loadout": "hsdc",
+			"difficulty": "med",
+			"seed": 155071,
+			"moves": 55,
+			"goal": "boss",
+			"at": "2026-11-14T10:42:00.347Z"
+		},
+		{
+			"loadout": "hsdd",
+			"difficulty": "med",
+			"seed": 86,
+			"moves": 49,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hsdh",
+			"difficulty": "hard",
+			"seed": 90,
+			"moves": 102,
+			"goal": "boss",
+			"at": "2026-11-13T16:05:31.862Z"
+		},
+		{
+			"loadout": "hsdh",
+			"difficulty": "med",
+			"seed": 90,
+			"moves": 60,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hsds",
+			"difficulty": "hard",
+			"seed": 4,
+			"moves": 66,
+			"goal": "boss",
+			"at": "2026-11-15"
+		},
+		{
+			"loadout": "hshc",
+			"difficulty": "med",
+			"seed": 81609,
+			"moves": 49,
+			"goal": "boss",
+			"at": "2026-11-16T17:06:56.517Z"
+		},
+		{
+			"loadout": "hshd",
+			"difficulty": "med",
+			"seed": 150250,
+			"moves": 50,
+			"goal": "boss",
+			"at": "2026-11-14T07:17:13.457Z"
+		},
+		{
+			"loadout": "hshd",
+			"difficulty": "med",
+			"seed": 151187,
+			"moves": 73,
+			"goal": "boss",
+			"at": "2026-11-14T06:54:03.434Z"
+		},
+		{
+			"loadout": "hshd",
+			"difficulty": "med",
+			"seed": 153210,
+			"moves": 69,
+			"goal": "boss",
+			"at": "2026-11-14T09:12:35.698Z"
+		},
+		{
+			"loadout": "hshd",
+			"difficulty": "med",
+			"seed": 154571,
+			"moves": 61,
+			"goal": "boss",
+			"at": "2026-11-14T10:54:43.366Z"
+		},
+		{
+			"loadout": "hshh",
+			"difficulty": "med",
+			"seed": 152018,
+			"moves": 68,
+			"goal": "boss",
+			"at": "2026-11-14T08:27:29.112Z"
+		},
+		{
+			"loadout": "hshh",
+			"difficulty": "med",
+			"seed": 155240,
+			"moves": 56,
+			"goal": "boss",
+			"at": "2026-11-14T11:26:51.424Z"
+		},
+		{
+			"loadout": "hshs",
+			"difficulty": "med",
+			"seed": 137,
+			"moves": 45,
+			"goal": "boss",
+			"at": "2026-11-12T15:53:53.655Z"
+		},
+		{
+			"loadout": "hssc",
+			"difficulty": "med",
+			"seed": 332,
+			"moves": 42,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hssd",
+			"difficulty": "hard",
+			"seed": 3054,
+			"moves": 74,
+			"goal": "boss",
+			"at": "2026-11-13T16:05:44.953Z"
+		},
+		{
+			"loadout": "hssd",
+			"difficulty": "med",
+			"seed": 3054,
+			"moves": 42,
+			"goal": "boss",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hssh",
+			"difficulty": "med",
+			"seed": 12,
+			"moves": 69,
+			"goal": "clear",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hsss",
+			"difficulty": "med",
+			"seed": 80737,
+			"moves": 61,
+			"goal": "boss",
+			"at": "2026-11-16T15:41:16.188Z"
+		},
+		{
+			"loadout": "sccc",
+			"difficulty": "med",
+			"seed": 890,
+			"moves": 107,
+			"goal": "boss",
+			"at": "2026-11-15T02:13:21.170Z"
+		},
+		{
+			"loadout": "scdh",
+			"difficulty": "med",
+			"seed": 1081,
+			"moves": 101,
+			"goal": "boss",
+			"at": "2026-11-16T05:13:33.440Z"
+		},
+		{
+			"loadout": "scss",
+			"difficulty": "med",
+			"seed": 155600,
+			"moves": 97,
+			"goal": "boss",
+			"at": "2026-11-14T10:50:37.502Z"
+		},
+		{
+			"loadout": "sdhs",
+			"difficulty": "med",
+			"seed": 36145,
+			"moves": 38,
+			"goal": "clear",
+			"at": "2026-11-14"
+		},
+		{
+			"loadout": "shcc",
+			"difficulty": "med",
+			"seed": 438,
+			"moves": 96,
+			"goal": "boss",
+			"at": "2026-11-15T02:16:53.201Z"
+		},
+		{
+			"loadout": "shhc",
+			"difficulty": "med",
+			"seed": 151067,
+			"moves": 93,
+			"goal": "boss",
+			"at": "2026-11-14T06:17:51.518Z"
+		},
+		{
+			"loadout": "shhs",
+			"difficulty": "med",
+			"seed": 1007,
+			"moves": 88,
+			"goal": "boss",
+			"at": "2026-11-15T02:42:45.915Z"
+		},
+		{
+			"loadout": "shsc",
+			"difficulty": "med",
+			"seed": 2579,
+			"moves": 99,
+			"goal": "boss",
+			"at": "2026-11-15T02:20:44.280Z"
+		},
+		{
+			"loadout": "sscc",
+			"difficulty": "med",
+			"seed": 23,
+			"moves": 64,
+			"goal": "boss",
+			"at": "2026-11-16T04:12:30.762Z"
+		},
+		{
+			"loadout": "ssch",
+			"difficulty": "med",
+			"seed": 1274,
+			"moves": 65,
+			"goal": "boss",
+			"at": "2026-11-16T04:16:27.930Z"
+		},
+		{
+			"loadout": "ssdc",
+			"difficulty": "med",
+			"seed": 150415,
+			"moves": 83,
+			"goal": "boss",
+			"at": "2026-11-14T07:59:24.510Z"
+		},
+		{
+			"loadout": "ssdd",
+			"difficulty": "med",
+			"seed": 1107,
+			"moves": 62,
+			"goal": "boss",
+			"at": "2026-11-16T05:25:39.376Z"
+		},
+		{
+			"loadout": "sshd",
+			"difficulty": "med",
+			"seed": 1446,
+			"moves": 110,
+			"goal": "boss",
+			"at": "2026-11-15T02:29:47.775Z"
+		},
+		{
+			"loadout": "sssc",
+			"difficulty": "med",
+			"seed": 151295,
+			"moves": 96,
+			"goal": "boss",
+			"at": "2026-11-14T07:25:45.798Z"
+		}
+	],
 	"found": {
 		"hscd": {
 			"med": {
@@ -2493,6 +3223,48 @@
 				"boss": {
 					"seed": 82967,
 					"moves": 59
+				}
+			}
+		},
+		"hssd": {
+			"hard": {
+				"boss": {
+					"seed": 3054,
+					"moves": 74
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 3054,
+					"moves": 42
+				}
+			}
+		},
+		"hsdh": {
+			"hard": {
+				"boss": {
+					"seed": 90,
+					"moves": 102
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 90,
+					"moves": 60
+				}
+			}
+		},
+		"hscc": {
+			"hard": {
+				"boss": {
+					"seed": 40,
+					"moves": 75
+				}
+			},
+			"med": {
+				"boss": {
+					"seed": 40,
+					"moves": 45
 				}
 			}
 		},
@@ -2744,22 +3516,6 @@
 				}
 			}
 		},
-		"hscc": {
-			"med": {
-				"boss": {
-					"seed": 40,
-					"moves": 45
-				}
-			}
-		},
-		"hsdh": {
-			"med": {
-				"boss": {
-					"seed": 90,
-					"moves": 60
-				}
-			}
-		},
 		"hssc": {
 			"med": {
 				"boss": {
@@ -2773,14 +3529,6 @@
 				"boss": {
 					"seed": 6210,
 					"moves": 92
-				}
-			}
-		},
-		"hssd": {
-			"med": {
-				"boss": {
-					"seed": 3054,
-					"moves": 42
 				}
 			}
 		},
@@ -3105,6 +3853,14 @@
 				"boss": {
 					"seed": 2493,
 					"moves": 82
+				}
+			}
+		},
+		"hsds": {
+			"hard": {
+				"boss": {
+					"seed": 4,
+					"moves": 66
 				}
 			}
 		}

@@ -188,6 +188,24 @@ to gold. A deal that opens with no boss cannot reach 100 either way — four
 kings at five and forty-eight rats at one is 68 — and that was already true of par, which opened every tomb on 500
 and could only ever be paid 420 before a boss was revealed.
 
+## A seed is never thrown away, and a two-track seed is preferred
+
+The squares publish the shipped track only, but the merge keeps **every** proved seed in the artifact's `proved`
+array: one row per `track|seed`, with its party, goal, length and date. A hard win is a proof of a real deal even
+though it cannot be the square, a solution file whose shard row is gone is still a solvable seed, and a retired seed
+keeps its line in `solutions/` regardless. Nothing that is solvable gets deleted to tidy the sheet — a row that is
+not on a square today is what lets a preference be reviewed, or reversed, later.
+
+Because the merge now reads hard rows, `found` carries them per track as well (`found[key].hard.boss`), which is
+where the trellis pane finds a party's second goal when the sheet is showing the hard tier.
+
+Seed choice: a party's med row is picked by goal (a clear beats a boss kill), then by whether the **same party is also
+proved on another track** on that seed, then by length. A seed that falls at both med and hard is likely the gentler
+deal and carries two goals, so it is the seed worth putting on the square — but the goal still leads the ordering,
+because the square is making a claim about this track first. Three seeds are currently proved on both tracks
+(`hscc` 40, `hsdh` 90, `hssd` 3054) and each already held its square, so the preference changed no square when it
+landed; it is there for the sweeps that follow.
+
 ## A published win carries its line
 
 `MODE=merge` publishes a row only when `solutions/` holds a line for that seed (same track). A row whose line
