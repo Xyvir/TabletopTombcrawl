@@ -1227,9 +1227,11 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * The warning an affliction draws on the card it is aimed at, while the carrier is under the pointer: a
- * see-through purple bang, so the card stays readable under it. None of it is a state, and none of it
- * shows while a Remedy is armed, because the move the remedy covers would not set the power off at all.
+ * The warning an affliction draws on the card it is aimed at, while the carrier is under the pointer. It
+ * is an outline rather than a filled bang: the card underneath is the information, so the mark has to say
+ * "this one" without covering the rank and suit that say what is at stake. A ghost of a fill keeps it
+ * visible in a browser that does not stroke text. None of it is a state, and none of it shows while a
+ * Remedy is armed, because the move the remedy covers would not set the power off at all.
  */
 .card .afflict,
 .slot .afflict {
@@ -1238,11 +1240,13 @@ body:has(.card.dragging) .cells.tomb .chip {
 	z-index: 3;
 	display: grid;
 	place-items: center;
-	font-size: calc(var(--col-w) * 0.7);
+	font-size: calc(var(--col-w) * 0.4);
 	font-weight: 800;
 	line-height: 1;
-	color: rgba(199, 155, 255, 0.55);
-	text-shadow: 0 0 12px rgba(128, 70, 230, 0.6);
+	color: rgba(199, 155, 255, 0.16);
+	-webkit-text-stroke: 1.5px rgba(199, 155, 255, 0.9);
+	filter: drop-shadow(0 0 6px rgba(128, 70, 230, 0.45));
+	text-shadow: none;
 	pointer-events: none;
 }
 
