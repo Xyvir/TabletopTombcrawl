@@ -129,9 +129,19 @@ Vipers (♥), Catacomb of Gorgons (♣), Crypt of Wraiths (♦), Tomb of Darknes
 boss's own name is a phrase long enough to crowd out the level, hearts, moves and gold either side of it, and it
 still has its card's tooltip.
 
-Two rules were settled while building it. Mug fires on a park as well as a kill: otherwise stashing a bandit is a
-free way to switch its affliction off. And an Arcana glyph is mugged exactly like a flask — the slot is the item
-slot whatever it holds, which is why the Wizard's text now says the slot holds a glyph *in place of an item*.
+Three rules were settled while building it. Mug fires on a park as well as a kill: otherwise stashing a bandit is a
+free way to switch its affliction off. An Arcana glyph is mugged exactly like a flask — the slot is the item slot
+whatever it holds, which is why the Wizard's text now says the slot holds a glyph *in place of an item*. And a
+wounded slot cannot be mugged: a wound turns the card face down and locks it, and a bandit has nothing to shove
+out of a locked pocket — the same bargain a Wraith offers, where a slot already paid for has nothing left to take.
+That makes fighting while damaged a little cheaper in a spades tomb, which is the shape we want: the two ways Mug
+is dodged are filling the row to its right (no free pocket, no shove) and arriving wounded.
+
+The board warns on what an affliction is aimed at: `afflictionTargets()` names the cards, and the interface draws a
+see-through purple `!` on each while a carrier is under the pointer — the fog a Viper would lift, the card in the
+slot a Bandit would shove out, the glyphs a Wraith would spend. A Gorgon names nothing, because its price is paid
+in hearts. An armed Remedy switches the aura off, so the warnings go out with it: the preview only ever shows what
+would actually happen.
 
 What it cost, measured before it was committed: every stored line was walked back through the rules, and 92 of
 178 no longer replayed (spades 31 of 34, clubs 49 of 49, hearts 5 of 37, diamonds none). Those lines went to

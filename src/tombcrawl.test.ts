@@ -9,6 +9,7 @@ import {
 	DRAFT_CELL_COUNT,
 	FREE_CELL_COUNT,
 	abilityUsable,
+	afflictionTargets,
 	armedClick,
 		armedDrop,
 
@@ -2668,6 +2669,78 @@ describe('the dwarf’s stout', () => {
 		expect(dwarf.game.cells.length).toBe(other.game.cells.length + 1);
 		// the party is still four cards in the first four cells
 		expect(dwarf.draft).toHaveLength(4);
+	});
+});
+
+describe('the affliction preview', () => {
+	const cardIn = (state: TombState, id: string) => state.game.cards.find((card) => shorthandCard(card) === id)!;
+
+	test('a bandit warns on the slot the chip has reached, and on the glyph once the item is gone', () => {
+		const item: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({ columns: [['5S']], cells: ['TC', null], boss: 'KS', draft: item });
+		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual(['TC']);
+
+		// the item is spent, so the chip has stepped onto the glyph and the glyph is what is at stake
+		const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
+		const later = makeTomb({ columns: [['5S']], cells: ['TS', null], boss: 'KS', draft: glyph });
+		expect(afflictionTargets(later, cardIn(later, '5S'))).toEqual(['TS']);
+	});
+
+	test('a wounded slot is locked, so the bandit warns on nothing and takes nothing', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({
+			columns: [['5S']],
+			cells: ['TC', '2C', '3C', '4C', '6C', '7C'],
+			foundations: ['4S'],
+			boss: 'KS',
+			draft,
+			wounded: [0],
+		});
+		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual([]);
+
+		// and the rule agrees: the kill lands and the face-down slot keeps its card and its entry
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(next.draft).toHaveLength(1);
+		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
+	});
+
+	test('a viper warns on the fog it would lift, not on any card it likes', () => {
+		const state = makeTomb({ columns: [['2C', '3C'], ['4H']], cells: ['5H', null], hidden: ['3C'], boss: 'KH' });
+		expect(afflictionTargets(state, cardIn(state, '5H'))).toEqual(['3C']);
+	});
+
+	test('a wraith warns on the glyph it would spend, and stops once the slot is face down', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: 'TD', suit: 'diamonds', name: 'CYDSTEPP', text: '' }];
+		const state = makeTomb({ columns: [['5D']], cells: ['TD', null], boss: 'KD', draft });
+		expect(afflictionTargets(state, cardIn(state, '5D'))).toEqual(['TD']);
+
+		const spent = makeTomb({ columns: [['5D']], cells: ['TD', null], boss: 'KD', draft, wounded: [0] });
+		expect(afflictionTargets(spent, cardIn(spent, '5D'))).toEqual([]);
+	});
+
+	test('a gorgon warns on nothing: its price is paid in hearts, not in cards', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({ columns: [['5C']], cells: ['TC', null], boss: 'KC', draft });
+		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual([]);
+	});
+
+	test('an armed Remedy silences the warning, since the blow would not set the power off', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Remedy', text: '' },
+			{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+		];
+		const state = makeTomb({ columns: [['5S']], cells: ['TC', 'TS'], boss: 'KS', draft });
+		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual(['TS']);
+
+		const armed = useAbility(state, 0)!;
+		expect(armed.armed?.kind).toBe('remedy');
+		expect(afflictionTargets(armed, cardIn(armed, '5S'))).toEqual([]);
+	});
+
+	test('a plain card warns on nothing, whatever tomb it stands in', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({ columns: [['5S'], ['7H']], cells: ['TC', null], boss: 'KS', draft });
+		expect(afflictionTargets(state, cardIn(state, '7H'))).toEqual([]);
 	});
 });
 

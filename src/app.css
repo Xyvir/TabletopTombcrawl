@@ -1226,6 +1226,26 @@ body:has(.card.dragging) .cells.tomb .chip {
 	outline-offset: -2px;
 }
 
+/*
+ * The warning an affliction draws on the card it is aimed at, while the carrier is under the pointer: a
+ * see-through purple bang, so the card stays readable under it. None of it is a state, and none of it
+ * shows while a Remedy is armed, because the move the remedy covers would not set the power off at all.
+ */
+.card .afflict,
+.slot .afflict {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	display: grid;
+	place-items: center;
+	font-size: calc(var(--col-w) * 0.7);
+	font-weight: 800;
+	line-height: 1;
+	color: rgba(199, 155, 255, 0.55);
+	text-shadow: 0 0 12px rgba(128, 70, 230, 0.6);
+	pointer-events: none;
+}
+
 /* the filters themselves live in the board markup, out of sight */
 .tints {
 	position: absolute;

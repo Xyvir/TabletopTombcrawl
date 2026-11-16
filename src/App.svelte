@@ -36,6 +36,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		ROLE_WORD,
 		abilityFor,
 		abilityUsable,
+	afflictionTargets,
 		armedClick,
 		armedDrop,
 		attackPreview,
@@ -48,6 +49,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		canRevealFaceDown,
 		cellCardMovable,
 		cellCards,
+		cardAt,
 		chipBoundary,
 		convertibleCell,
 		newlyHealed,
@@ -559,6 +561,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const woundPreview = $derived(new Set(preview?.wounds ?? []));
 	/** The track cards digging the hovered fog would turn back up, marked green before it is spent. */
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
+	/**
+	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
+	 * Bandit would empty, the glyphs a Wraith would spend. An armed Remedy turns the whole aura off, and the
+	 * warning goes with it, since the move it covers would not do any of it.
+	 */
+	const afflictionIds = $derived.by(() => {
+		if (!tomb || !tombHover) return new Set<string>();
+		const card = cardAt(tomb.game, tombHover);
+		return new Set(card ? afflictionTargets(tomb, card) : []);
+	});
 	/** The card an aim would slay outright: it wears crossed swords until the pointer leaves. */
 	const slayAt = $derived(!drag && preview?.legal ? aim : null);
 	/**
@@ -1901,6 +1913,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<!-- The bill, drawn on the pocket it would take rather than over the whole track. -->
 						<span class="doom" aria-hidden="true">{@render skull()}</span>
 					{/if}
+					{#if stack.some((stacked) => afflictionIds.has(shorthandCard(stacked)))}
+						<!-- The pocket an affliction is aimed at: a warning on the card, not a state of it. -->
+						<span class="afflict" aria-hidden="true">!</span>
+					{/if}
 					<span
 						class="slay"
 						class:on={slaying}
@@ -2043,6 +2059,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							</span>
 						{:else}
 							<img src={down ? `${BASE}images/back.svg` : img(card)} alt="" draggable="false" />
+						{/if}
+						{#if afflictionIds.has(shorthandCard(card))}
+							<!-- The card an affliction is aimed at: the fog it would lift, drawn before the blow. -->
+							<span class="afflict" aria-hidden="true">!</span>
 						{/if}
 						<span
 							class="slay"

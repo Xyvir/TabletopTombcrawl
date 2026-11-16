@@ -1443,6 +1443,8 @@ function mugSlot(state: TombState): TombState {
 	const slot = convertibleCell(state);
 	if (slot < 0) return state;
 	const entry = draftAt(state, slot);
+	// A wound turns the card face down and locks the slot, so a bandit has nothing to shove out of it:
+	// the same bargain a Wraith offers, where a slot already paid for has nothing left to take.
 	if (!entry || cellTopWounded(state, slot)) return state;
 	const card = state.game.cards.find(
 		(candidate) => cardId(candidate) === entry.id && candidate.location.fixture === 'cell' && candidate.location.data[0] === slot
@@ -1470,6 +1472,57 @@ function mugSlot(state: TombState): TombState {
 }
 
 /**
+ * The fog Venom would lift: the first face-down card met scanning the hallways right to left, each from
+ * its top card down. Shared with the interface, so the card the warning points at is the card the blow
+ * would turn over.
+ */
+export function venomTarget(state: TombState): Card | null {
+	const tableau = state.game.tableau as Card[][];
+	for (let c = tableau.length - 1; c >= 0; c--) {
+		const column = tableau[c];
+		for (let k = 0; k < column.length; k++) {
+			const card = column[column.length - 1 - k];
+			if (state.hidden.includes(cardId(card))) return card;
+		}
+	}
+	return null;
+}
+
+/**
+ * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
+ * pointer: the fog Venom would lift, the card in the slot Mug would shove out of the party, the glyphs
+ * Mana Burn would spend. Stone Gaze prices its blow in hearts and touches no card, and an armed Remedy
+ * turns the whole aura off — so both warn on nothing, because nothing would happen.
+ */
+export function afflictionTargets(state: TombState, card: Card): string[] {
+	if (!carriesPower(state, card) || !auraActive(state)) return [];
+	switch (state.bossSuit) {
+		case 'hearts': {
+			const fog = venomTarget(state);
+			return fog ? [cardId(fog)] : [];
+		}
+		case 'spades': {
+			// The slot, not the chip: the warning sits on the card the party would lose, which is the one
+			// the chip has reached. A wounded slot is locked, so there is nothing to take and nothing to say.
+			const slot = convertibleCell(state);
+			const entry = slot >= 0 ? draftAt(state, slot) : undefined;
+			if (!entry || cellTopWounded(state, slot)) return [];
+			return [entry.id];
+		}
+		case 'diamonds':
+			return auraCells(state).flatMap((cell) => {
+				const up = faceUp(state, cell);
+				if (up <= 0) return [];
+				const cards = cellCards(state, cell);
+				const top = cards[(state.wounded[cell] ?? 0) + up - 1];
+				return top ? [cardId(top)] : [];
+			});
+		default:
+			return [];
+	}
+}
+
+/**
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
  * `by` says which of the two it was, because Stone Gaze is the one power already priced into the kill.
@@ -1478,18 +1531,8 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
-			// Venom digs anywhere, buried or not: it finds the deepest face-down card of the
-			// rightmost column that still has fog, with no heal. Columns are scanned right to left,
-			// and each column from its bottom card up.
-			const tableau = state.game.tableau as Card[][];
-			let venom: Card | undefined;
-			for (let c = tableau.length - 1; c >= 0 && !venom; c--) {
-				const column = tableau[c];
-				for (let k = 0; k < column.length && !venom; k++) {
-					const card = column[column.length - 1 - k];
-					if (state.hidden.includes(cardId(card))) venom = card;
-				}
-			}
+			// Venom digs anywhere, buried or not — and the card it takes is the one the interface warns on.
+			const venom = venomTarget(state);
 			if (!venom) return state;
 			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(venom)) });
 		}
