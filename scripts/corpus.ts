@@ -12,7 +12,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { DRAFT_CELL_COUNT, FREE_CELL_COUNT, createTombState, type Difficulty, type TombState } from '../src/tombcrawl';
-import { solveTomb, type SolverEngine } from '../src/solver';
+import { ORGANIZE_WEIGHTS, solveTomb, type SolverEngine } from '../src/solver';
 import { writeSolution } from './solution';
 
 type Boss = string | null;
@@ -52,6 +52,9 @@ const strategy = (process.env.STRATEGY ?? 'best') as 'best' | 'beam' | 'dfs' | '
  * being the one that always gets to look.
  */
 const engine = (process.env.ENGINE ?? 'flat') as SolverEngine;
+// The organising pass's ration (see ORGANIZE_WEIGHTS): off by default, switched on to hunt with a rationed phase.
+if (process.env.DECAY) ORGANIZE_WEIGHTS.decay = Number(process.env.DECAY);
+if (process.env.CASH) ORGANIZE_WEIGHTS.cash = Number(process.env.CASH);
 const planPath = process.env.PLAN ?? 'corpus/plan.json';
 /** Shard files sit beside the plan, so a merge is one directory read and no path can go astray. */
 const shardDir = process.env.DIR ?? 'corpus';

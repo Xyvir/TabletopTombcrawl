@@ -9,7 +9,7 @@
  * that got further. States and seconds are the whole spend of the pass, both phases included.
  */
 import { FREE_CELL_COUNT, createTombState, hp, tombPar, type Difficulty } from '../src/tombcrawl';
-import { solveTomb, type Goal, type SolverEngine } from '../src/solver';
+import { ORGANIZE_WEIGHTS, solveTomb, type Goal, type SolverEngine } from '../src/solver';
 
 const seeds = (process.env.SEEDS ?? '154116,2769,12,4')
 	.split(',')
@@ -20,6 +20,11 @@ const goal = (process.env.GOAL ?? 'clear') as Goal;
 const difficulty = (process.env.DIFFICULTY ?? 'med') as Difficulty;
 const split = process.env.SPLIT ? Number(process.env.SPLIT) : undefined;
 const engines = (process.env.ENGINES ?? 'flat,two-phase,fallback').split(',') as SolverEngine[];
+// The organizing pass's two prices are what a two-phase run is really being asked about, so they can be swept here.
+if (process.env.HEARTS) ORGANIZE_WEIGHTS.hearts = Number(process.env.HEARTS);
+if (process.env.CASH) ORGANIZE_WEIGHTS.cash = Number(process.env.CASH);
+if (process.env.FOG) ORGANIZE_WEIGHTS.fog = Number(process.env.FOG);
+if (process.env.DECAY) ORGANIZE_WEIGHTS.decay = Number(process.env.DECAY);
 
 const total: Record<string, { wins: number; moves: number; nodes: number; seconds: number; tested: number }> = {};
 

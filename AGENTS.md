@@ -110,6 +110,40 @@ two (121 and 119 moves); fallback takes all four for 215k states in all, and fin
 phases are a real engine — a couple of corpus deals only it cracks — and `fallback` is the arm to reach for when one
 budget has to cover both kinds of deal.
 
+### The ration: a decaying dig price (a knob, off by default)
+
+`organizeScoreFor(hiddenAtStart)` prices a dig by a weight that **decays** with the tomb — `ORGANIZE_WEIGHTS.decay` is how
+much of the price is given back by the time every card is read, and `ORGANIZE_WEIGHTS.cash` is what a par point is worth
+at that same moment (0 = token, 7 = nearly the cash-in price). Both at 0 is the unrationed phase and the default, because
+that is what measured best; `DECAY=1 CASH=3` on either runner turns the ration on.
+
+A ration is not a free improvement, and the table says why: the deals the phases were uniquely good at are the ones it
+hurts. Two-phase alone at 150k, four seeds: unrationed takes 3054 (121) and 150250 (119) and loses 4 and 12; `decay 1,
+cash 7` wins 4 and 12 and loses 3054 and 150250 (par 327, 55); `decay 1, cash 3` takes 150250 in **83 moves**, 36 shorter
+than the unrationed line, and nothing else; `decay 1, cash 7, hearts 18` wins 4 and 12 with 150250 at par 182 and 3054 at
+par 297. Through `fallback` the unrationed phase is the only configuration that takes all four.
+
+Where the ration does pay is the handoff. On 154116 the unrationed phase hands over a dug tomb at level 6 and par 427 that
+a million states cannot move off par 427 — every card is read, the arrangement is gone, and there is no finish in it —
+while the rationed phase hands over fog 6 at seven hearts with par 492 and reaches **par 386** through the cash-in pass,
+the furthest any arm has taken that deal (flat's best is 434 at a million). That is the shape to build on: the handoff
+has to stay *finishable*, and par parity with the human's board is not enough to be finishable.
+
+### Chasing stragglers with the other arm
+
+`node scripts/run.mjs scripts/stragglers.ts` writes a `MODE=solve` plan from the squares that have no win — one seed per
+missing key, the seed its placeholder is offering, read as the deal reads today (a placeholder whose seed no longer deals
+its own party is dropped, not counted). Then:
+
+```
+MODE=solve ENGINE=two-phase PLAN=corpus/plan-stragglers.json OUT=corpus/shard-twophase.json \
+  BUDGET=200000 GOAL=boss node scripts/run.mjs scripts/corpus.ts
+```
+
+The runner skips every key the corpus already publishes, so this is a straggler hunt and nothing else. First hunt, 200k a
+candidate: **3 of the first 79 keys won** — `hchd` seed 2261 in 136 moves, `hdsh` seed 243 in 140, `hsds` seed 1532 in 119 —
+so the second arm is finding deals the flat one never cracked, which is the whole reason to keep two of them.
+
 **Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
 par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search
 left to organize buys a dug tomb and nothing else — fog 0 at 69 moves with the level at 3 and the par still at 491 —

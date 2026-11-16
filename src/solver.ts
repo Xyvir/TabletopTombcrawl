@@ -1020,13 +1020,17 @@ const isRed = (card: Card) => card.suit === 'hearts' || card.suit === 'diamonds'
  *
  * The terms and their reasons:
  * - **fog** pays well, because a dig is the only unconditional heal in the game and every dug card is a card the
- *   second phase can plan with rather than guess at.
+ *   second phase can plan with rather than guess at — but see the decay below, which is what stops this term from
+ *   buying the whole tomb at once.
  * - **level** pays as it does everywhere, since a level is a heal, a glyph refresh and a rank at once.
  * - **hearts** pay more here than in the flat score, which prices them at 4: this phase exists to arrive alive.
  * - **order** pays for the runs above, which is the arrangement the second phase cashes in.
  * - **room** pays a little, for the storage the arranging needs.
- * - **par** is kept at a token weight so the phase still prefers a board that has made progress to one that has not,
- *   without ever buying progress with the other terms.
+ * - **par** starts at a token weight so the phase can never buy progress with the other terms early, and rises towards
+ *   **cash** as the fog goes, because a tomb that is nearly read is a tomb whose remaining moves should be homes.
+ *   This is the ration, and it is the shape a hand-played crawl actually has: on seed 154116 the human's first
+ *   foundation lands at ply 2 and their tenth by ply 56, interleaved with the digs the whole way, and they reach fog
+ *   0 with the level already at 6 rather than at 1.
  * - **lowHearts** is a real charge here, unlike in the flat score: arriving at the cash-in with one heart is arriving
  *   unable to pay for it.
  */
@@ -1039,25 +1043,65 @@ export const ORGANIZE_WEIGHTS = {
 	order: 6,
 	buried: 2,
 	par: 1,
+	/**
+	 * The ration, in two prices. **decay** is how much of a dig's price is given back by the time the tomb is fully read
+	 * (0 = every dig costs the full **fog** weight, 1 = the last dig costs half), and **cash** is what a par point is
+	 * worth at that same moment (0 = a token, 7 = nearly the cash-in price). Both at 0 is the unrationed phase, and that
+	 * is the default because it is the one that measured best across the corpus deals tried.
+	 *
+	 * Measured on the same four seeds at 150k a pass, as `two-phase` alone:
+	 * - no ration: 3054 in 121 moves and 150250 in 119, the short deals lost.
+	 * - `decay: 1, cash: 7`: 4 and 12 won (112, 121), 3054 and 150250 lost (par 327, 55).
+	 * - `decay: 1, cash: 3`: 150250 in 83 moves — 36 shorter than the unrationed line — and nothing else.
+	 * - `decay: 1, cash: 7, hearts: 18`: 4 and 12 won, 150250 at par 182, 3054 at par 297.
+	 * So a ration is not a free improvement: the deals the two-phase arm was uniquely good at are the ones it hurts,
+	 * and the deals it helps are the ones the flat arm already takes. It stays a knob until something measures better.
+	 *
+	 * Where it does pay is the handoff itself. On seed 154116 the unrationed phase hands over a dug tomb at level 6 and par
+	 * 427 that a million states cannot move off par 427 — the board is read and arranged but unfinishable — while the
+	 * rationed one hands over fog 6 at seven hearts with par 492 and the cash-in pass reaches **par 386**, the furthest
+	 * any arm has taken that deal (flat's best is 434 at a million states).
+	 */
+	cash: 0,
+	decay: 0,
 	lowHearts: 40,
 };
 
-/** The organizing phase's score: how much tomb has been read, arranged and kept, rather than how much has gone home. */
-export function organizeScore(state: TombState): number {
-	const w = ORGANIZE_WEIGHTS;
-	const blocked = foundationPull(state);
-	const hearts = hp(state);
-	return (
-		(48 - state.hidden.length) * w.fog +
-		currentLevel(state) * w.level +
-		hearts * w.hearts +
-		blocked.reach * w.reach +
-		emptyCells(state).length * w.room +
-		orderedRuns(state) * w.order -
-		blocked.buried * w.buried +
-		(500 - tombPar(state)) * w.par -
-		(hearts <= 1 ? w.lowHearts : 0)
-	);
+/**
+ * The organizing phase's score, rationed by how much of the tomb is already read.
+ *
+ * A flat dig price is the whole reason the first version of this phase failed: it bought a dug tomb at level 1 with par
+ * still at 491, which is a board that has read every card and arranged nothing, and the cash-in pass could make
+ * nothing of it. So the price of a dig decays with the tomb — the *marginal* price of the next dig is what matters, and
+ * here it falls linearly from the full **fog** weight to half of it by the time every card is up — while the price of a
+ * par point climbs from the token **par** weight to **cash**. Early on that means digs are the best thing on the board
+ * by a wide margin; late, a foundation is worth nearly as much as it is in the cash-in pass, so the phase starts
+ * interleaving homes on its own.
+ *
+ * The absolute weight only matters against the other terms, which is why this is a blend of two prices rather than a
+ * pair of numbers to tune against each other: at the start of a crawl a dig is worth `fog` and a par point is worth
+ * `par`, and at the end a dig is worth `fog / 2` and a par point is worth `cash`.
+ */
+export function organizeScoreFor(hiddenAtStart: number): (state: TombState) => number {
+	return (state: TombState) => {
+		const w = ORGANIZE_WEIGHTS;
+		const remaining = state.hidden.length;
+		const dug = Math.max(0, hiddenAtStart - remaining);
+		const share = hiddenAtStart > 0 ? Math.min(1, dug / hiddenAtStart) : 1;
+		const blocked = foundationPull(state);
+		const hearts = hp(state);
+		return (
+			dug * w.fog * (1 - (share * w.decay) / 2) +
+			currentLevel(state) * w.level +
+			hearts * w.hearts +
+			blocked.reach * w.reach +
+			emptyCells(state).length * w.room +
+			orderedRuns(state) * w.order -
+			blocked.buried * w.buried +
+			(500 - tombPar(state)) * (w.par + w.cash * share) -
+			(hearts <= 1 ? w.lowHearts : 0)
+		);
+	};
 }
 
 /**
@@ -1096,7 +1140,7 @@ export function solveTwoPhase(options: SolveOptions = {}): SolveResult {
 		depth: options.depth,
 		nodes: Math.round(budget * share),
 		timeBudgetMs: Math.round(deadline * 0.6),
-		score: organizeScore,
+		score: organizeScoreFor(start.hidden.length),
 	});
 
 	const cashIn = solveTomb({
