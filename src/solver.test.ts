@@ -49,6 +49,40 @@ describe('tomb solver', () => {
 		expect(result.bestSteps.every((step) => step.label.length > 0)).toBe(true);
 	});
 
+	// The two-phase driver is a second engine over the same search, so what has to hold is that its handoff is honest:
+	// the line it reports is one board after another, each earned by a move the rules accept, and never a jump from
+	// the organizing phase's board straight into the cash-in phase's line.
+	test('the two-phase driver reports a line that is earned move by move', () => {
+		const result = solveTomb({ seed: 4242, depth: 6, nodes: 20_000, timeBudgetMs: 20_000, engine: 'two-phase' });
+
+		expect(result.nodes).toBeGreaterThan(0);
+		let state = createTombState(4242);
+		for (const step of result.solved ? result.steps : result.bestSteps) {
+			const next = applyAction(state, step.action);
+			expect(next).not.toBeNull();
+			state = next!;
+		}
+		expect(state.hidden.length).toBe(result.best.hidden.length);
+	});
+
+	// The fallback driver is the flat search with the phases behind it, so a deal the flat search cracks has to come
+	// back from it unchanged — same board, same line, same price — rather than re-solved by the phases.
+	test('the fallback driver keeps the flat win when the flat search finds one', () => {
+		const flat = solveTomb({ seed: 12, difficulty: 'med', goal: 'clear', nodes: 40_000, timeBudgetMs: 20_000 });
+		const fallback = solveTomb({
+			seed: 12,
+			difficulty: 'med',
+			goal: 'clear',
+			nodes: 40_000,
+			timeBudgetMs: 20_000,
+			engine: 'fallback',
+		});
+
+		expect(flat.solved).toBe(true);
+		expect(fallback.solved).toBe(true);
+		expect(fallback.steps.map((step) => step.label)).toEqual(flat.steps.map((step) => step.label));
+	});
+
 	// WEYTWUT is aimed at two cards with a second click, so a plain `arm` followed by a `move` is refused
 	// by the rules: the cast has to be offered as one action or the search can never make it at all.
 	test('offers a two-click cast as one action, and it replays through the rules', () => {

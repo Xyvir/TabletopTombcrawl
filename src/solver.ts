@@ -37,6 +37,14 @@ import { armLabel, cardName, digLabel, homeLabel, moveLabel, parkLabel, where } 
 export type Goal = 'clear' | 'boss';
 
 /**
+ * Which driver runs the search. `flat` is the original single-objective policy (best-first, beam, greedy or the
+ * beam-then-best hybrid); `two-phase` is the organizing-then-cashing-in driver below. The engine is an option rather
+ * than a replacement so the two can be run side by side on the same deal, which is the only honest way to say one is
+ * better: `scripts/compare-engines.ts`.
+ */
+export type SolverEngine = 'flat' | 'two-phase' | 'fallback';
+
+/**
  * One legal action, in a form that can be replayed through the real rules. Keeping the action rather
  * than only a description is what lets a solution be checked: the printed line is those moves, and
  * every one of them is applied by `applyAction` to arrive at the states shown.
@@ -307,6 +315,25 @@ export interface SolveOptions {
 	state?: TombState;
 	difficulty?: Difficulty;
 	goal?: Goal;
+	/** Which driver to run. Defaults to the flat one, so every existing caller keeps the old behaviour. */
+	engine?: SolverEngine;
+	/**
+	 * The two-phase driver's spend: the fraction of the node budget the organizing phase may use before the cashing-in
+	 * phase gets what is left. Half by default; a board that arrives already dug out wants it lower.
+	 */
+	phaseSplit?: number;
+	/**
+	 * The `fallback` driver's first pass: the fraction of the budget the flat search may have before the phases take
+	 * over. Four tenths by default, because the deals the flat search cracks, it cracks in hundreds of states, and the
+	 * deals it grinds on are exactly the ones worth handing to the phases.
+	 */
+	warmUp?: number;
+	/**
+	 * Overrides for the objective inside one pass. The two-phase driver uses them to score a board by how well it is
+	 * *ordered* rather than by par, which is not a goal the game has and so is not a `Goal`.
+	 */
+	target?: (state: TombState) => boolean;
+	score?: (state: TombState) => number;
 	/** States to examine before giving up. */
 	nodes?: number;
 	/** Keep N states per ply instead of best-first order. Breadth forces progress; 0 disables. */
@@ -722,6 +749,10 @@ class NodeHeap {
  * is a line you can read and replay rather than a bare verdict.
  */
 export function solveTomb(options: SolveOptions = {}): SolveResult {
+	// First, before any pass can recurse: the driver delegates to flat passes, and a pass that carried `engine`
+	// would delegate back to the driver for ever.
+	if (options.engine === 'two-phase') return solveTwoPhase(options);
+	if (options.engine === 'fallback') return solveFallback(options);
 	const goal: Goal = options.goal ?? 'clear';
 	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
 	const budget = Math.max(1000, options.nodes ?? 200_000);
@@ -729,6 +760,10 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	const deadline = options.timeBudgetMs ?? 90_000;
 	const began = Date.now();
 	const capacity = 12_000;
+	// The objective, in one place: a plain pass scores by par and stops on the goal; a driver's pass can score by
+	// something the game does not have a word for (an ordered tomb) and stop when the board is organized.
+	const value = options.score ?? ((board: TombState) => scoreOf(board, goal));
+	const reached = options.target ?? ((board: TombState) => isGoal(board, goal));
 
 	// The shipped policy: survey with a beam, then grind with best-first on what is left of the budget.
 	// A beam cracks the deals whose winning line is a long, patient grind (seed 12881 med needs 135
@@ -750,7 +785,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			timeBudgetMs: Math.max(2000, deadline - first.elapsedMs),
 			nodes: Math.max(1000, budget - first.nodes),
 		});
-		if (!second.solved && scoreOf(second.best, goal) < scoreOf(first.best, goal)) {
+		if (!second.solved && value(second.best) < value(first.best)) {
 			// The beam's board was better, but both passes paid for it: report the whole spend.
 			return {
 				...first,
@@ -763,7 +798,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	}
 
 	const open = new NodeHeap();
-	const firstValue = scoreOf(start, goal);
+	const firstValue = value(start);
 	const first: Node = { state: start, path: null, score: firstValue, value: firstValue, depth: 0 };
 	open.push(first);
 	const seen = new Set<string>([stateKey(start)]);
@@ -810,23 +845,23 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			}
 			const node = stack.pop()!;
 			deepest = Math.max(deepest, node.depth);
-			if (isGoal(node.state, goal)) return finish(true, node.path, node.state);
+			if (reached(node.state)) return finish(true, node.path, node.state);
 			if (node.depth >= depth) continue;
 
 			const children: Node[] = [];
 			for (const move of generateMoves(node.state)) {
 				nodes++;
 				const path: PathLink = { action: move.action, label: move.label, prev: node.path };
-				if (isGoal(move.next, goal)) {
+				if (reached(move.next)) {
 					deepest = Math.max(deepest, node.depth + 1);
 					return finish(true, path, move.next);
 				}
 				const key = stateKey(move.next);
 				if (visited.has(key)) continue;
 				visited.add(key);
-				const value = scoreOf(move.next, goal);
-				const child: Node = { state: move.next, path, value, score: value, depth: node.depth + 1 };
-				if (value > best.value) best = child;
+				const childValue = value(move.next);
+				const child: Node = { state: move.next, path, value: childValue, score: childValue, depth: node.depth + 1 };
+				if (childValue > best.value) best = child;
 				children.push(child);
 			}
 			children.sort((a, b) => a.value - b.value);
@@ -835,7 +870,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			if (stack.length > 40_000) break;
 			options.onProgress?.({ nodes, open: stack.length, best: best.value, depth: deepest, elapsedMs: Date.now() - began });
 		}
-		return finish(isGoal(best.state, goal), best.path, best.state);
+		return finish(reached(best.state), best.path, best.state);
 	}
 
 	// Beam mode: every ply advances, and only the best boards of that ply survive. Best-first can
@@ -857,7 +892,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 				for (const move of generateMoves(node.state)) {
 					nodes++;
 					const path: PathLink = { action: move.action, label: move.label, prev: node.path };
-					if (isGoal(move.next, goal)) {
+					if (reached(move.next)) {
 						deepest = Math.max(deepest, ply + 1);
 						return finish(true, path, move.next);
 					}
@@ -868,10 +903,10 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 						if (seenAll.has(key)) continue;
 						seenAll.add(key);
 					}
-					const value = scoreOf(move.next, goal);
-					const child: Node = { state: move.next, path, value, score: value, depth: ply + 1 };
+					const childValue = value(move.next);
+					const child: Node = { state: move.next, path, value: childValue, score: childValue, depth: ply + 1 };
 					children.push(child);
-					if (value > best.value) best = child;
+					if (childValue > best.value) best = child;
 				}
 			}
 			deepest = Math.max(deepest, ply + 1);
@@ -886,7 +921,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 				elapsedMs: Date.now() - began,
 			});
 		}
-		return finish(isGoal(best.state, goal), best.path, best.state);
+		return finish(reached(best.state), best.path, best.state);
 	}
 
 	while (open.size) {
@@ -898,13 +933,13 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 
 		const node = open.pop()!;
 		deepest = Math.max(deepest, node.depth);
-		if (isGoal(node.state, goal)) return finish(true, node.path, node.state);
+		if (reached(node.state)) return finish(true, node.path, node.state);
 		if (node.depth >= depth) continue;
 
 		for (const move of generateMoves(node.state)) {
 			nodes++;
 								const path: PathLink = { action: move.action, label: move.label, prev: node.path };
-			if (isGoal(move.next, goal)) {
+			if (reached(move.next)) {
 				deepest = Math.max(deepest, node.depth + 1);
 				return finish(true, path, move.next);
 			}
@@ -935,14 +970,14 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 				if (held === undefined || (held & ~spent) !== 0) leastSpent.set(board, spent);
 			}
 			seen.add(key);
-			const value = scoreOf(move.next, goal);
+			const score = value(move.next);
 			const child: Node = {
 				state: move.next,
 				path,
-				value,
+				value: score,
 				// Equal boards are common, so a small depth cost keeps the search from wandering through
 				// shuffles that gain nothing when a shorter line of the same value exists.
-				score: value - (node.depth + 1) * 0.5,
+				score: score - (node.depth + 1) * 0.5,
 				depth: node.depth + 1,
 			};
 			if (child.value > best.value) best = child;
@@ -954,7 +989,195 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 		options.onProgress?.({ nodes, open: open.size, best: best.value, depth: deepest, elapsedMs: Date.now() - began });
 	}
 
-	return finish(isGoal(best.state, goal), best.path, best.state);
+	return finish(reached(best.state), best.path, best.state);
+}
+
+/**
+ * How ordered the tomb is: the number of cards that sit on a card one rank above them in the other colour, which is
+ * the only arrangement the rules pay anything for. A face-down card breaks the run it is part of, so a buried column
+ * scores nothing until it is dug out — which is the point of measuring order rather than counting cards.
+ */
+export function orderedRuns(state: TombState): number {
+	let joins = 0;
+	for (const pile of state.game.tableau) {
+		for (let index = 1; index < pile.length; index++) {
+			const below = pile[index - 1];
+			const above = pile[index];
+			if (rankNumber(above.rank) !== rankNumber(below.rank) - 1) continue;
+			if (isRed(above) === isRed(below)) continue;
+			joins += 1;
+		}
+	}
+	return joins;
+}
+
+const isRed = (card: Card) => card.suit === 'hearts' || card.suit === 'diamonds';
+
+/**
+ * The organizing phase's price list. It is deliberately not par: an ordered tomb with its fog lifted and its track
+ * alive is worth more here than one that has bought two foundations with a heart and a buried column, because the
+ * second phase is what turns order into foundations and it needs both the information and the health to do it.
+ *
+ * The terms and their reasons:
+ * - **fog** pays well, because a dig is the only unconditional heal in the game and every dug card is a card the
+ *   second phase can plan with rather than guess at.
+ * - **level** pays as it does everywhere, since a level is a heal, a glyph refresh and a rank at once.
+ * - **hearts** pay more here than in the flat score, which prices them at 4: this phase exists to arrive alive.
+ * - **order** pays for the runs above, which is the arrangement the second phase cashes in.
+ * - **room** pays a little, for the storage the arranging needs.
+ * - **par** is kept at a token weight so the phase still prefers a board that has made progress to one that has not,
+ *   without ever buying progress with the other terms.
+ * - **lowHearts** is a real charge here, unlike in the flat score: arriving at the cash-in with one heart is arriving
+ *   unable to pay for it.
+ */
+export const ORGANIZE_WEIGHTS = {
+	fog: 8,
+	level: 30,
+	hearts: 8,
+	reach: 12,
+	room: 4,
+	order: 6,
+	buried: 2,
+	par: 1,
+	lowHearts: 40,
+};
+
+/** The organizing phase's score: how much tomb has been read, arranged and kept, rather than how much has gone home. */
+export function organizeScore(state: TombState): number {
+	const w = ORGANIZE_WEIGHTS;
+	const blocked = foundationPull(state);
+	const hearts = hp(state);
+	return (
+		(48 - state.hidden.length) * w.fog +
+		currentLevel(state) * w.level +
+		hearts * w.hearts +
+		blocked.reach * w.reach +
+		emptyCells(state).length * w.room +
+		orderedRuns(state) * w.order -
+		blocked.buried * w.buried +
+		(500 - tombPar(state)) * w.par -
+		(hearts <= 1 ? w.lowHearts : 0)
+	);
+}
+
+/**
+ * The two-phase driver: organize, then cash in.
+ *
+ * A single flat score has to answer "is this board better" for both halves of a crawl at once, and it cannot: the
+ * opening of a long win is thirty moves of digging and stacking that change par by nothing, and any frontier that
+ * prices par will walk away from it. So the first pass is scored on *order* — fog lifted, runs joined, hearts kept,
+ * levels gained — and the second pass starts from the board that pass reached and is scored on par as usual. Nothing
+ * about the rules changes between the passes; only what the search is asked to value.
+ *
+ * The split is honest about its trade: the first pass cannot use the whole budget, because a search that organizes
+ * perfectly and then has twenty states left to cash in has proved nothing. `phaseSplit` gives the organizing phase
+ * half the nodes by default, and the cash-in pass gets everything the first did not spend.
+ *
+ * The first pass deliberately has no stopping condition of its own — not "the fog is gone". Measured on seed 154116,
+ * a dug-out target fires after 56 moves and a thousand states, with the level at 1 and the par still at 496, and the
+ * handoff board is worse than useless: the cash-in pass then grinds for three hundred thousand states without ever
+ * getting home. Digging is cheap for a search; it is the *foundations* that are expensive, and a phase that stops as
+ * soon as the tomb is read stops before the expensive part. So the first pass spends its share and hands over the
+ * best-organized board it found, whatever that is.
+ */
+export function solveTwoPhase(options: SolveOptions = {}): SolveResult {
+	const goal: Goal = options.goal ?? 'clear';
+	const began = Date.now();
+	const budget = Math.max(2000, options.nodes ?? 200_000);
+	const deadline = options.timeBudgetMs ?? 90_000;
+	const share = Math.min(0.85, Math.max(0.15, options.phaseSplit ?? 0.5));
+	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
+
+	const organize = solveTomb({
+		state: start,
+		goal,
+		engine: 'flat',
+		strategy: 'best',
+		depth: options.depth,
+		nodes: Math.round(budget * share),
+		timeBudgetMs: Math.round(deadline * 0.6),
+		score: organizeScore,
+	});
+
+	const cashIn = solveTomb({
+		state: organize.best,
+		goal,
+		engine: 'flat',
+		strategy: options.strategy === 'hybrid' ? 'best' : options.strategy,
+		beamWidth: options.beamWidth,
+		depth: options.depth,
+		nodes: Math.max(1000, budget - organize.nodes),
+		timeBudgetMs: Math.max(2000, deadline - organize.elapsedMs),
+	});
+
+	const organized = organize.bestSteps;
+	const cashed = cashIn.solved ? cashIn.steps : cashIn.bestSteps;
+	const cashBoard = cashIn.best;
+	// The better final board decides when neither pass won: a dug tomb that never got cashed in is still the better
+	// answer to show than the board the first pass started from.
+	const takeCash = cashIn.solved || scoreOf(cashBoard, goal) >= scoreOf(organize.best, goal);
+	return {
+		goal,
+		solved: cashIn.solved,
+		steps: cashIn.solved ? [...organized, ...cashed] : [],
+		best: cashIn.solved ? cashBoard : takeCash ? cashBoard : organize.best,
+		bestSteps: cashIn.solved || takeCash ? [...organized, ...cashed] : organized,
+		plies: organized.length + cashIn.plies,
+		nodes: organize.nodes + cashIn.nodes,
+		elapsedMs: Date.now() - began,
+		timedOut: organize.timedOut || cashIn.timedOut,
+		pruned: {
+			spent: (organize.pruned?.spent ?? 0) + (cashIn.pruned?.spent ?? 0),
+			fog: (organize.pruned?.fog ?? 0) + (cashIn.pruned?.fog ?? 0),
+		},
+	};
+}
+
+/**
+ * Flat first, phases second: the two drivers above are better at different deals, and the comparison says so plainly.
+ * Over the same eight seeds at 150k states, the flat search cracks the short deals in a couple of thousand states and
+ * never touches the long ones, while the two-phase driver wins two deals the flat search cannot reach at all — and
+ * loses both of the short ones, because it spends its organizing half-budget on a tomb that did not need reading.
+ *
+ * So this driver buys the short end with a cheap first pass and then hands the long end to the phases with everything
+ * the first pass did not spend. It is strictly the better arm of the two on paper, and the cost is honest: an
+ * unsolved deal now pays for both attempts.
+ */
+export function solveFallback(options: SolveOptions = {}): SolveResult {
+	const goal: Goal = options.goal ?? 'clear';
+	const began = Date.now();
+	const budget = Math.max(2000, options.nodes ?? 200_000);
+	const deadline = options.timeBudgetMs ?? 90_000;
+	const warm = Math.min(0.8, Math.max(0.1, options.warmUp ?? 0.4));
+	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
+
+	const flat = solveTomb({
+		...options,
+		state: start,
+		engine: 'flat',
+		nodes: Math.max(1000, Math.round(budget * warm)),
+		timeBudgetMs: Math.round(deadline * 0.6),
+	});
+	if (flat.solved) return flat;
+
+	const phased = solveTwoPhase({
+		...options,
+		state: start,
+		nodes: Math.max(1000, budget - flat.nodes),
+		timeBudgetMs: Math.max(2000, deadline - flat.elapsedMs),
+	});
+	const spend = { nodes: flat.nodes + phased.nodes, elapsedMs: Date.now() - began };
+	if (phased.solved) return { ...phased, ...spend };
+	const flatBetter = scoreOf(flat.best, goal) >= scoreOf(phased.best, goal);
+	return {
+		...phased,
+		...spend,
+		solved: false,
+		steps: [],
+		best: flatBetter ? flat.best : phased.best,
+		bestSteps: flatBetter ? flat.bestSteps : phased.bestSteps,
+		timedOut: flat.timedOut || phased.timedOut,
+	};
 }
 
 /** A one-line summary of a board, for the printed solution's trailing column. */

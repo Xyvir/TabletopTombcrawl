@@ -24,7 +24,7 @@ import {
 	type Difficulty,
 	type TombState,
 } from '../src/tombcrawl';
-import { solveTomb } from '../src/solver';
+import { solveTomb, type SolverEngine } from '../src/solver';
 
 interface Row {
 	loadout: string;
@@ -43,6 +43,10 @@ const budget = Number(process.env.BUDGET ?? 150_000);
 const perKey = Number(process.env.PER_KEY ?? 3);
 const difficulty = (process.env.DIFFICULTY ?? 'med') as Difficulty;
 const strategy = (process.env.STRATEGY ?? 'hybrid') as 'best' | 'beam' | 'dfs' | 'hybrid';
+// Which driver fills the shard. The default is the flat one every existing shard was built with; `ENGINE=two-phase`
+// fills the same seeds with the organizing-then-cashing-in driver instead, which is how the two are compared over the
+// corpus rather than over a handful of deals (`scripts/compare-engines.ts` does the handful).
+const engine = (process.env.ENGINE ?? 'flat') as SolverEngine;
 const out = process.env.OUT ?? `corpus/fill-${shard}.json`;
 /** A win found on the way to a placeholder is a corpus entry, not a placeholder: it goes to a shard. */
 const winOut = process.env.WIN_OUT ?? `corpus/shard-fill-${shard}.json`;
@@ -121,6 +125,7 @@ for (let seed = from; seed <= to; seed++) {
 		state,
 		goal: 'boss',
 		strategy,
+		engine,
 		beamWidth: 300,
 		depth: 300,
 		nodes: budget,

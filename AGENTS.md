@@ -84,6 +84,39 @@ step. `FILES=solutions/737.json` checks one, `DEBUG=1` prints the board before e
 replays is not a bug in the tool: it records a crawl played under rules that have since changed, which is worth
 knowing before the line is used as a baseline.
 
+## Two engines, and the driver that takes both (adopted)
+
+`solveTomb` takes an `engine`, so a second way of searching can sit beside the shipped one instead of replacing it:
+the whole point is that the two can be run over the same deal at the same budget and the table decides. There are
+three arms.
+
+- **`flat`** (the default, and what every existing shard was built with): one objective, `scoreOf`, which prices a
+  board by par and what is ready to go home.
+- **`two-phase`**: an organizing pass scored on `organizeScore` — fog lifted, runs joined, hearts, levels, room, with
+  par kept at a token weight — followed by a cash-in pass from the best board it reached, scored on par as usual. The
+  first pass has *no* target of its own, deliberately: a "stop when the fog is gone" target fires on seed 154116 after
+  56 moves and a thousand states, with the level at 1 and the par at 496, and that handoff board is worse than useless.
+- **`fallback`**: the flat search with four tenths of the budget, then the phases with whatever is left. A deal the
+  flat search cracks costs two thousand states and never reaches the phases; a deal it grinds on does.
+
+`SEEDS=… BUDGET=… node scripts/run.mjs scripts/compare-engines.ts` runs the arms side by side (one line a seed,
+then wins, mean moves, states and seconds); `ENGINE=two-phase` (or `fallback`) makes `scripts/fill.ts` fill a shard
+with a different arm, which is how the comparison is done at corpus scale rather than over a handful of deals.
+
+What it measured, at 150k states a pass on `clear`/med: over seeds 4, 12, 3054 and 150250 the flat search takes the
+short two (2k and 1k states) and fails the long two at par 357 and 434; the phases lose the short two and win the long
+two (121 and 119 moves); fallback takes all four for 215k states in all, and finds seed 3054 in 117 moves rather than
+121. Over seeds 2, 4, 12, 3181, 2769, 154116, 3054, 150250 it is flat 2/8 and phases 2/8 on disjoint deals. So the
+phases are a real engine — a couple of corpus deals only it cracks — and `fallback` is the arm to reach for when one
+budget has to cover both kinds of deal.
+
+**Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
+par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search
+left to organize buys a dug tomb and nothing else — fog 0 at 69 moves with the level at 3 and the par still at 491 —
+while the human reached fog 0 around ply 96 with the level at 6 and the par already down to 428, having spent the
+first ninety moves interleaving homes with digs. Digging is cheap for a search and foundations are not, which is
+exactly the rationing a phase boundary gets wrong.
+
 ## The Potion proposal, kept on file (not adopted)
 
 The Potion is left exactly as it is — drink it, every wound heals, it turns face down — and it is being playtested
