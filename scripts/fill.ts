@@ -12,7 +12,8 @@
  * PER_KEY       seeds to try per party before leaving it alone (default 3).
  * OUT           corpus/fill-<shard>.json
  *
- * The score is the board's own: PAR_TOTAL - tombPar, the number the HUD counts up to 500.
+ * The score is par read the other way round (PAR_TOTAL - tombPar): the solver's own weighting, not the gold the
+ * bar counts, since a filler line is judged on how much of the tomb it stripped rather than on what the cards paid.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import {

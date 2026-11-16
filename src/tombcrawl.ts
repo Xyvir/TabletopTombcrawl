@@ -1211,8 +1211,35 @@ function refreshGlyphs(state: TombState): TombState {
  * whether or not the fog has lifted off him yet. It is a round five hundred so the run reads as a
  * percentage: (500 - par) / 5 is how much of the tomb is clear.
  */
-/** The whole of a tomb: par counts down from it, so the score the board shows counts up to it. */
+/**
+ * The whole of a tomb, for par: the solver is scored by how deep a card was in the deck as well as by whether it
+ * came home, and that reading lives here and in the corpus. The bar counts gold instead (GOLD_TOTAL below); par is
+ * no longer shown to the player anywhere.
+ */
 export const PAR_TOTAL = 500;
+
+/**
+ * The whole of a tomb in gold: a flat price per card, so a bare tomb reads exactly a hundred and the gold on the bar
+ * is also the percentage cleared. Thirty-six rats, twelve boss-suit minions, three Generals and the boss are 52.
+ */
+export const GOLD_TOTAL = 100;
+
+/**
+ * What one card pays when it is slain: a rat one, a boss-suit minion two, a General five, and the boss king
+ * twenty-five. The deal decides the last three — the boss's suit is the tomb's, and the kings off it answer to him.
+ */
+export function goldValue(state: TombState, card: Card): number {
+	if (state.bossId && cardId(card) === state.bossId) return 25;
+	if (card.rank === 'king') return 5;
+	return state.bossSuit && card.suit === state.bossSuit ? 2 : 1;
+}
+
+/** The gold a crawl has banked: every card that has gone home, at its own price. */
+export function tombGold(state: TombState): number {
+	return state.game.cards
+		.filter((card) => card.location.fixture === 'foundation')
+		.reduce((sum, card) => sum + goldValue(state, card), 0);
+}
 
 /** What one card is worth in par: ace one, numbers at face, court fifteen, king twenty. */
 function parValue(card: Card): number {

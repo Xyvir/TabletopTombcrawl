@@ -46,6 +46,9 @@ import {
 	playerLevel,
 	tombExit,
 	tombMove,
+	GOLD_TOTAL,
+	goldValue,
+	tombGold,
 	parCleared,
 	tombPar,
 	tombScore,
@@ -2669,6 +2672,40 @@ describe('the dwarf’s stout', () => {
 		expect(dwarf.game.cells.length).toBe(other.game.cells.length + 1);
 		// the party is still four cards in the first four cells
 		expect(dwarf.draft).toHaveLength(4);
+	});
+});
+
+describe('gold', () => {
+	const wholeTomb = (state: TombState) =>
+		state.game.cards.reduce((total, card) => total + goldValue(state, card), 0);
+
+	test('the flat table comes to exactly a hundred on a dealt tomb', () => {
+		expect(wholeTomb(makeTomb({ columns: [], boss: 'KD' }))).toBe(GOLD_TOTAL);
+	});
+
+	test('a deal with no boss cannot reach the hundred: four kings and forty-eight rats', () => {
+		expect(wholeTomb(makeTomb({ columns: [] }))).toBe(68);
+	});
+
+	test('a card pays by what it is: rat one, minion two, General five, boss twenty-five', () => {
+		const state = makeTomb({ columns: [], boss: 'KD' });
+		const card = (id: string) => state.game.cards.find((held) => shorthandCard(held) === id)!;
+		expect(goldValue(state, card('7C'))).toBe(1);
+		expect(goldValue(state, card('7D'))).toBe(2);
+		expect(goldValue(state, card('KS'))).toBe(5);
+		expect(goldValue(state, card('KD'))).toBe(25);
+	});
+
+	test('the bar counts only what has gone home, at its own price', () => {
+		const none = makeTomb({ columns: [], boss: 'KD' });
+		expect(tombGold(none)).toBe(0);
+
+		const some = makeTomb({ columns: [], foundations: ['3S', '3D', 'KD'], boss: 'KD' });
+		// a rat, a boss-suit minion and the boss
+		expect(tombGold(some)).toBe(28);
+
+		const bare = makeTomb({ columns: [], foundations: initializeDeckOfCards().map((card) => shorthandCard(card)), boss: 'KD' });
+		expect(tombGold(bare)).toBe(GOLD_TOTAL);
 	});
 });
 

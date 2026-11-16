@@ -204,9 +204,11 @@ Not in copy yet. Ranked by how much the current word hurts.
   the sequence, not the game.
 - **Loadout** is the configuration: the four party spots plus the crawl seed that proves them. The sheet
   says "Choose a loadout".
-- **Gold** is what the tomb pays: every card that goes home pays its own weight, a cleared tomb pays 500, and
-  "score" was the code's word for it. The end of a crawl reads back its gold, its moves and whether the boss
-  or the whole tomb fell, beside whatever the corpus and the solver managed on the same party.
+- **Gold** is what the tomb pays, and it is a flat price per card: a rat one, a boss-suit minion two, a General
+  five, and the boss king twenty-five. A bare tomb is exactly a hundred, so the gold is read as a percentage
+  without a percent sign beside it. "Score" was the code's word for it. The end of a crawl reads back its gold,
+  its moves and whether the boss or the whole tomb fell, beside whatever the corpus and the solver managed on the
+  same party. *Par* is the solver's own reading and is never shown to the player.
 
 ### Kept as is
 

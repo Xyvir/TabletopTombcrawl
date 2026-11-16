@@ -152,6 +152,20 @@ What it cost, measured before it was committed: every stored line was walked bac
 `solutions/archive/` with a `-mug` suffix, not out of the repository, and the merge gate demoted the corpus from
 138 proved keys to 73 — 183 placeholder squares for a sweep to win back.
 
+## Gold is a flat table (adopted)
+
+The bar counts gold, and gold is arithmetic a player can do in their head: **a rat one, a boss-suit minion two, a
+General five, and the boss king twenty-five**. Thirty-six rats, twelve minions, three Generals and the boss are
+fifty-two cards and exactly a hundred gold, so a bare tomb reads 100 and the number is already a percentage — the
+separate `(14.4%)` reading that used to sit beside it is gone rather than repeated. Each card's tooltip says what
+it pays ("Grants 2 gold on slay"), so the price of a card can be known before the blow.
+
+Par survives, unchanged and unseen: `tombPar`/`PAR_TOTAL`/`parValue` still score a card by how deep it lay in the
+deck as well as whether it came home, because that is the reading the solver is guided by and the corpus proves
+lines against. Nothing on the board shows it. A deal that opens with no boss cannot reach 100 either way — four
+kings at five and forty-eight rats at one is 68 — and that was already true of par, which opened every tomb on 500
+and could only ever be paid 420 before a boss was revealed.
+
 ## A published win carries its line
 
 `MODE=merge` publishes a row only when `solutions/` holds a line for that seed (same track). A row whose line

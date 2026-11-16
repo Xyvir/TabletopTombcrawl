@@ -59,7 +59,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		difficultyOf,
 		DRAFT_CELL_COUNT,
 		FREE_CELL_COUNT,
-		PAR_TOTAL,
+		GOLD_TOTAL,
+		goldValue,
+		tombGold,
 		disarm,
 		hp,
 		draftAt,
@@ -73,7 +75,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		isFaceDown,
 		cydsteppCanBury,
 		moveCapacity,
-		parCleared,
 		bossSlain,
 		bossProtected,
 		revealFaceDown,
@@ -594,8 +595,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
-	/** Par counted the other way round: what the dungeon has yielded, out of the whole tomb. */
-	const tombScoreNow = $derived(tomb ? PAR_TOTAL - tombPar(tomb) : 0);
+	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
+	const tombGoldNow = $derived(tomb ? tombGold(tomb) : 0);
 	const dragIds = $derived(new Set(drag?.cards ?? []));
 	/**
 	 * The end-of-crawl reckoning. A finished crawl is read back as four numbers (moves, gold, and whether the
@@ -603,7 +604,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * line is never just a score in a vacuum.
 	 */
 	const endMoves = $derived(recordedSteps.length);
-	const endGold = $derived(tomb ? tombScoreNow : 0);
+	const endGold = $derived(tomb ? tombGoldNow : 0);
 	const endCleared = $derived(tomb ? tombPar(tomb) === 0 : false);
 	const endBoss = $derived(tomb ? bossSlain(tomb) : false);
 	const endTrack = $derived<Difficulty>(tomb ? difficultyOf(tomb) : difficulty);
@@ -1099,6 +1100,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const name = card ? carrierName(state, card) : monster.name;
 		const blurb = card && card.rank !== 'king' ? `${monster.blurb}\n` : '';
 		return `${name}\n${blurb}${line}`;
+	}
+
+	/**
+	 * The last line of a card's tooltip: what the card pays when it is slain. Flat numbers, read off the deal, so
+	 * the price of a card can be known before the blow rather than inferred from the bar afterwards.
+	 */
+	function goldNote(state: TombState, card: Card) {
+		return `Grants ${goldValue(state, card)} gold on slay`;
 	}
 
 	/** The monster power this move set off, if it killed a card that carries one. */
@@ -1848,7 +1857,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									tomb && woundedCanGoHome(tomb)
 										? 'Heal it face up, or slay it straight to its grave, before you can use it.'
 										: 'Heal it face up before you can use it.'
-								}`
+								}${tomb ? `\n${goldNote(tomb, wounded)}` : ''}`
 						: entry
 							? `${entry.name} — ${ROLE_LABEL[entry.role]}.\n${entry.text}${
 									tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''
@@ -1966,8 +1975,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			</button>
 			<span
 				class="score"
-				title="Gold: every card that goes home pays its own weight — aces one, court cards fifteen, kings twenty, and the boss king a hundred whether or not he has been uncovered. A cleared tomb pays 500, so the gold divided by 5 is the percentage cleared."
-			>Gold {tombScoreNow}/{PAR_TOTAL} <span class="pct">({parCleared(tomb).toFixed(1)}%)</span></span
+				title="Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss king twenty-five whether or not he has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared."
+			>Gold {tombGoldNow}/{GOLD_TOTAL}</span
 			>
 			{#if bossNoted && bossSlain(tomb)}
 				<span
@@ -2034,15 +2043,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										bossProtected(tomb)
 											? 'Invulnerable — cannot be slain until one of their Generals falls first.\n'
 											: ''
-									}Indomitable — cannot be moved except by a glyph.\n${auraTitle(tomb, null, false)}`
+									}Indomitable — cannot be moved except by a glyph.\n${auraTitle(tomb, null, false)}\n${goldNote(tomb, card)}`
 							: power && !down && tomb
-								? auraTitle(tomb, card)
+								? `${auraTitle(tomb, card)}\n${goldNote(tomb, card)}`
 								: down && tomb
 									? canRevealFaceDown(tomb, card.location)
 										? 'Unexplored Room — dig it to heal a wound.'
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig heals a wound.'
 									: tomb
-										? `${ratName(card)}\nA nondescript tomb rat.\nAffliction: None`
+										? `${ratName(card)}\nA nondescript tomb rat.\nAffliction: None\n${goldNote(tomb, card)}`
 										: undefined}
 						aria-label={`${down ? 'fogged card' : `${card.rank} of ${card.suit}`}, hallway ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
@@ -2194,7 +2203,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 															entry
 																? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}`
 																: filler
-																	? `seed ${filler.seed}${filler.score === null ? '' : `, best gold ${filler.score}`} — no win yet`
+																	? `seed ${filler.seed} — no win yet`
 																	: 'no seed found yet'
 														}`}
 													aria-label={`${key} ${statusWord(key)}`}
@@ -2268,7 +2277,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								{#if !inspectedEntry && inspectedPlaceholder}
 									<span class="goal placeholder-note">
 										<span class="label">no win yet</span>
-										{#if inspectedPlaceholder.score === null}seed {inspectedPlaceholder.seed}{:else}best {inspectedPlaceholder.score} gold on seed {inspectedPlaceholder.seed}{/if}
+										seed {inspectedPlaceholder.seed}
 									</span>
 								{/if}
 							</p>
