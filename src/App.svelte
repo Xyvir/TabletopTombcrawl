@@ -1743,14 +1743,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					values="0.78 0 0 0 0.1035 0 0.78 0 0 0.0414 0 0 0.78 0 0.1639 0 0 0 1 0"
 				/>
 			</filter>
-			<!-- A fogged card an affliction is aimed at: a violet wash over the back, so the warning drawn on
-			     it cannot disappear into the back's own drawing. -->
-			<filter id="tombAfflict" color-interpolation-filters="sRGB">
-				<feColorMatrix
-					type="matrix"
-					values="0.75 0 0 0 0.13 0 0.75 0 0 0.04 0 0 0.75 0 0.26 0 0 0 1 0"
-				/>
-			</filter>
 			<filter id="tombBoss" color-interpolation-filters="sRGB">
 				<feColorMatrix
 					type="matrix"
