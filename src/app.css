@@ -555,6 +555,41 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
+ * The wash is quiet on an empty grave: there is no card face for the yellow to tint, only dark felt and the
+ * tombstone outline, so the slot that shouts beside a pile of cards whispers while it waits for its ace. An
+ * arrow drawn over the slot names the promise instead — the next card home here lifts you a level — and it
+ * bobs, which the eye finds even where a still glow does not register. It rides on the slot rather than on
+ * anything in it, so an empty grave and a full pile wear the same mark.
+ */
+.foundations .slot.levelup::before {
+	content: '↑';
+	position: absolute;
+	inset: 0;
+	/* held high, above the tombstone an empty grave draws and above a card's own figure */
+	padding: 0 0 44%;
+	z-index: 6;
+	display: grid;
+	place-items: center;
+	font-size: calc(var(--col-w) * 0.46);
+	line-height: 1;
+	font-weight: 700;
+	color: rgba(255, 226, 130, 0.62);
+	/* a dark halo first, so the mark stays legible over a card face as well as over bare felt */
+	text-shadow:
+		0 0 3px rgba(0, 0, 0, 0.85),
+		0 0 14px rgba(255, 196, 32, 0.7),
+		0 1px 2px rgba(0, 0, 0, 0.45);
+	pointer-events: none;
+	animation: tomb-levelup-arrow 1.8s ease-in-out infinite;
+}
+
+@keyframes tomb-levelup-arrow {
+	50% {
+		transform: translateY(-9%);
+	}
+}
+
+/*
  * A grave holding all thirteen ranks turns face down: the pile is done, and a back reads as "nothing
  * follows this" more clearly than a king does. It leans the way a card turned over on a stack leans,
  * so the corners of the king under it stay in view and the pile's suit is never lost.
@@ -859,6 +894,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	.slot.pending,
 	.slot.need::after,
 	.slot.levelup::after,
+	.slot.levelup::before,
 	.slot .grave-back {
 		animation: none;
 	}
