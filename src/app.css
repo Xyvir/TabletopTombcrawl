@@ -1262,7 +1262,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	   pale mark on a pale card was the one case where the warning disappeared entirely. The faint white halo is
 	   what keeps the dark stroke legible over the shadowed half of a court card's artwork. */
 	color: rgba(52, 16, 92, 0.12);
-	-webkit-text-stroke: 2px rgba(52, 16, 92, 0.92);
+	-webkit-text-stroke: 2px rgba(52, 16, 92, 1);
 	filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
 	text-shadow: none;
 	pointer-events: none;
@@ -1271,11 +1271,11 @@ body:has(.card.dragging) .cells.tomb .chip {
 	transition: opacity 150ms ease;
 }
 
-/* Half strength on purpose: the mark has to be findable on a busy face, not loud enough to take the face's
-   place. At full opacity the stroke and its glow read as the mark on a king's robe rather than a note on it. */
+/* Ten percent off full: the dark stroke is what makes the mark findable, and letting it down any further only
+   put it back in competition with a busy face. The hollow inside is what keeps the card readable, not the fade. */
 .card .afflict.on,
 .slot .afflict.on {
-	opacity: 0.5;
+	opacity: 0.9;
 }
 
 @media (prefers-reduced-motion: reduce) {
