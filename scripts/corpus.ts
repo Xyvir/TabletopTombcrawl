@@ -12,7 +12,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { DRAFT_CELL_COUNT, FREE_CELL_COUNT, createTombState, type Difficulty, type TombState } from '../src/tombcrawl';
-import { solveTomb } from '../src/solver';
+import { solveTomb, type SolverEngine } from '../src/solver';
 import { writeSolution } from './solution';
 
 type Boss = string | null;
@@ -46,6 +46,12 @@ const goal = (process.env.GOAL ?? 'boss') as 'boss' | 'clear';
  * before best-first starts, and a boss kill is usually found by the grind, not the survey.
  */
 const strategy = (process.env.STRATEGY ?? 'best') as 'best' | 'beam' | 'dfs' | 'hybrid';
+/**
+ * Which solver engine chases the rows. The default is the flat one every shard so far was built with; `ENGINE=two-phase`
+ * or `fallback` runs the same candidates through another arm, which is how a straggler hunt is done without either arm
+ * being the one that always gets to look.
+ */
+const engine = (process.env.ENGINE ?? 'flat') as SolverEngine;
 const planPath = process.env.PLAN ?? 'corpus/plan.json';
 /** Shard files sit beside the plan, so a merge is one directory read and no path can go astray. */
 const shardDir = process.env.DIR ?? 'corpus';
@@ -226,6 +232,7 @@ if (mode === 'solve') {
 				state,
 				goal,
 				strategy,
+				engine,
 				beamWidth: 300,
 				depth: 300,
 				nodes: budget,
@@ -261,7 +268,7 @@ if (mode === 'solve') {
 				lines: result.steps.map((step) => step.label.replace(/\s+/g, ' ').trim()),
 				actions: result.steps.map((step) => step.action),
 				nodes: result.nodes,
-				note: `plan fill, ${strategy}`,
+				note: `plan fill, ${strategy}${engine === 'flat' ? '' : `, ${engine}`}`,
 			});
 			done.add(candidate.key);
 			writeFileSync(out, JSON.stringify(entries, null, '\t'));
@@ -317,6 +324,7 @@ if (mode === 'scan') {
 			state,
 			goal,
 			strategy,
+			engine,
 			beamWidth: 300,
 			depth: 300,
 			nodes: budget,
