@@ -414,13 +414,18 @@ if (mode === 'merge') {
 	// A row's length is a claim as well, and the line is the thing that was actually played. Where a seed has a line,
 	// the row takes its move count and its goal from the file: without this the sheet advertises whatever number the
 	// oldest shard happened to write, and preferring long lines actively picks the stalest claim in the pile.
-	const lineFacts = new Map<string, { moves: number; goal: string }>();
-	for (const row of solutionRows) lineFacts.set(`${row.difficulty ?? 'med'}|${row.seed}`, { moves: row.moves, goal: row.goal });
+	const lineFacts = new Map<string, { moves: number; goal: string; at: string | null }>();
+	for (const row of solutionRows)
+		lineFacts.set(`${row.difficulty ?? 'med'}|${row.seed}`, { moves: row.moves, goal: row.goal, at: row.at });
 	for (const entry of all) {
 		const facts = lineFacts.get(`${entry.difficulty ?? 'med'}|${entry.seed}`);
 		if (!facts) continue;
+		const moved = entry.moves !== facts.moves || entry.goal !== facts.goal;
 		entry.moves = facts.moves;
 		entry.goal = facts.goal;
+		// The date only moves when the claim does: a clear played by hand today must not keep the date a solver's
+		// boss kill was found on the same seed, and a row whose numbers already match keeps its own date.
+		if (moved) entry.at = facts.at ?? entry.at;
 	}
 	// One entry per key, and the stronger claim wins: a 100% clear is also a boss kill, so it beats a boss-only
 	// entry for the same key. Among equals the *longer* line is preferred, not the shorter one.
