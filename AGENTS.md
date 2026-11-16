@@ -119,6 +119,8 @@ holding neither were untouched. The 359 dead lines went to `solutions/archive/`,
 is gone — archived by a rule change, or never written — becomes a placeholder: the square keeps its seed, so the
 party is still dealt and playable, but the trellis stops listing it as a win. That makes the demotion automatic
 rather than a list to maintain: a sweep that wins the square writes a line, and the next merge promotes it back.
-The corpus stands at 79 proved keys and 177 placeholder squares: the swap cost 119 rows their lines, and making the
+The corpus stands at 111 proved keys and 145 placeholder squares: the swap cost 119 rows their lines, and making the
 boss's Indomitable shield outlast his Generals cost 37 more, since those lines moved him by hand once a king was
-home. A sweep under the current rules is what wins those squares back.
+home. A re-solve of those squares won 18 of them back — 13 at 400k, 5 at 1M best-first — and a plan-driven sweep
+that tried each stubborn loadout's *other* dealt seeds won 16 more at 200k, which is the cheaper lever: a new seed
+is a different deal, so it does not have to carry the plan the old line did.
