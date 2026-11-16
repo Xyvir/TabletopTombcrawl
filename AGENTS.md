@@ -200,11 +200,23 @@ Because the merge now reads hard rows, `found` carries them per track as well (`
 where the trellis pane finds a party's second goal when the sheet is showing the hard tier.
 
 Seed choice: a party's med row is picked by goal (a clear beats a boss kill), then by whether the **same party is also
-proved on another track** on that seed, then by length. A seed that falls at both med and hard is likely the gentler
-deal and carries two goals, so it is the seed worth putting on the square — but the goal still leads the ordering,
-because the square is making a claim about this track first. Three seeds are currently proved on both tracks
-(`hscc` 40, `hsdh` 90, `hssd` 3054) and each already held its square, so the preference changed no square when it
-landed; it is there for the sweeps that follow.
+proved on another track** on that seed, then by the **longest** line. A seed that falls at both med and hard is likely
+the gentler deal and carries two goals, so it is the seed worth putting on the square — but the goal still leads the
+ordering, because the square is making a claim about this track first.
+
+Longest, not shortest, is the whole point of the square: a short line says the solver happened to find the cheap
+route, while a long one says the deal kept paying out for another fifty moves. That is the harder board and the more
+interesting one to hand a player, so the sheet shows the longest proof it has and the solver's own best line per goal
+stays in `found` where the pane can still read it.
+
+A row's length and goal are not its own: where a seed has a line, the row takes both from the file, because a shard
+text written months ago is a guess about a line that has since been replaced — and preferring long lines would
+otherwise pick the stalest guess in the pile. Three seeds were published at 38–67 moves against proofs of 71–92 before
+this landed.
+
+For a square with **no** win, the placeholder keeps the seed a search got furthest on, measured as
+`PAR_TOTAL - tombPar` out of 500 (higher is further in), so the deal offered to a human is the one a machine got
+closest to cracking. The pane prints that as "N/500 reached", never as par — the two run in opposite directions.
 
 ## A published win carries its line
 

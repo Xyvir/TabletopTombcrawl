@@ -228,7 +228,8 @@ Not in copy yet. Ranked by how much the current word hurts.
   its moves and whether the boss or the whole tomb fell, beside whatever the corpus and the solver managed on the
   same party. *Par* is the legacy "negative" reading the solver works in — a card is worth its rank, court fifteen,
   a king twenty, and the boss a hundred, so the number goes down as the tomb empties. It appears to the player in
-  one place only: "best par N" on a layout square the solver has reached but not won.
+  one place only: "N/500 reached" on a layout square the solver has reached but not won — a search's progress, not
+  par, because the number kept is `PAR_TOTAL - tombPar`, where higher is further in.
 
 ### Kept as is
 

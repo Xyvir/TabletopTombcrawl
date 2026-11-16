@@ -411,8 +411,23 @@ if (mode === 'merge') {
 			known.add(key);
 		}
 	}
-	// One entry per key, and the stronger result wins: a 100% clear is also a boss kill, so it beats a
-	// boss-only entry for the same key, and a shorter line beats a longer one.
+	// A row's length is a claim as well, and the line is the thing that was actually played. Where a seed has a line,
+	// the row takes its move count and its goal from the file: without this the sheet advertises whatever number the
+	// oldest shard happened to write, and preferring long lines actively picks the stalest claim in the pile.
+	const lineFacts = new Map<string, { moves: number; goal: string }>();
+	for (const row of solutionRows) lineFacts.set(`${row.difficulty ?? 'med'}|${row.seed}`, { moves: row.moves, goal: row.goal });
+	for (const entry of all) {
+		const facts = lineFacts.get(`${entry.difficulty ?? 'med'}|${entry.seed}`);
+		if (!facts) continue;
+		entry.moves = facts.moves;
+		entry.goal = facts.goal;
+	}
+	// One entry per key, and the stronger claim wins: a 100% clear is also a boss kill, so it beats a boss-only
+	// entry for the same key. Among equals the *longer* line is preferred, not the shorter one.
+	//
+	// A short line says the solver happened to find the cheap route; a long one says the deal kept paying out for
+	// another fifty moves, which is the harder board and the one worth putting in front of a player. The solver's
+	// own best line per goal still lives in `found`, so nothing is lost by showing the longer seed on the square.
 	const rank = (entry: Entry) => (entry.goal === 'clear' ? 0 : 1);
 	// A party is one key per track: its med seed says nothing about its hard one, so the two sit side by side.
 	const keyOf = (entry: Entry) => `${entry.difficulty ?? 'med'}|${entry.loadout}`;
@@ -473,7 +488,7 @@ if (mode === 'merge') {
 			!held ||
 			rank(entry) < rank(held) ||
 			(rank(entry) === rank(held) && otherTrack(entry) < otherTrack(held)) ||
-			(rank(entry) === rank(held) && otherTrack(entry) === otherTrack(held) && entry.moves < held.moves)
+			(rank(entry) === rank(held) && otherTrack(entry) === otherTrack(held) && entry.moves > held.moves)
 		) {
 			unique.set(key, entry);
 		}
