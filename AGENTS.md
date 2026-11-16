@@ -166,6 +166,12 @@ out again still ends the true win, or the pocket could be borrowed from all deal
 changes no legality, so no stored line moved, and `reserveHeld` is deliberately not part of any solver key — two
 positions that differ only in the star are the same position to the search.
 
+The star pays. A **true boss kill** multiplies gold by ×2 for the rest of the crawl and a **true clear tomb** by ×3, so
+the bar reads past a hundred — 200% and 300% on the same hundred-gold table. `goldMultiplier`/`goldScore` are the
+scored reading; `TombState.trueBoss` is the earned flag, set by `noteTrueBoss()` inside the same two funnels. It is
+sticky and separate from `reserveHeld` on purpose: spending the pocket after a clean kill costs the third step, not
+the second, so a clean kill followed by a bare tomb reads 200% and never 300%.
+
 ## Gold is a flat table (adopted)
 
 The bar counts gold, and gold is arithmetic a player can do in their head: **a rat one, a boss-suit minion two, a

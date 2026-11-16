@@ -60,6 +60,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		DRAFT_CELL_COUNT,
 		FREE_CELL_COUNT,
 		GOLD_TOTAL,
+		goldMultiplier,
+		goldScore,
 		goldValue,
 		tombGold,
 		reserveCell,
@@ -600,6 +602,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
 	const tombGoldNow = $derived(tomb ? tombGold(tomb) : 0);
+	/** What gold pays here: twice after a true boss kill, three times for a bare tomb with the pocket intact. */
+	const tombMult = $derived(tomb ? goldMultiplier(tomb) : 1);
+	/** The scored reading, so a clean crawl can read past a hundred. */
+	const tombScoreNow = $derived(tomb ? goldScore(tomb) : 0);
 	const dragIds = $derived(new Set(drag?.cards ?? []));
 	/**
 	 * The end-of-crawl reckoning. A finished crawl is read back as four numbers (moves, gold, and whether the
@@ -608,6 +614,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	const endMoves = $derived(recordedSteps.length);
 	const endGold = $derived(tomb ? tombGoldNow : 0);
+	const endMult = $derived(tomb ? tombMult : 1);
+	/** Out of a hundred, so the multiplier is what carries a win past a hundred percent. */
+	const endPercent = $derived(Math.round((tomb ? tombScoreNow : 0)));
 	const endCleared = $derived(tomb ? tombPar(tomb) === 0 : false);
 	const endBoss = $derived(tomb ? bossSlain(tomb) : false);
 	/** The optional third win: the same result with the reserve pocket never used. */
@@ -1985,10 +1994,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				Moves ({recordedSteps.length})
 			</button>
 			<span
-				class="score"
-				title="Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss king twenty-five whether or not he has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared."
-			>Gold {tombGoldNow}/{GOLD_TOTAL}</span
-			>
+									class="score"
+					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss king twenty-five whether or not he has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
+				>Gold {tombGoldNow}/{GOLD_TOTAL}{#if tombMult > 1}<span class="mult">×{tombMult}</span> {tombScoreNow}%{/if}</span
+				>
 			{#if bossNoted && bossSlain(tomb)}
 				<span
 					class="bossnote"
@@ -2313,6 +2322,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<div class="win-figures">
 					<div class="fig"><span class="n">{endMoves}</span><span class="k">moves</span></div>
 					<div class="fig"><span class="n">{endGold}</span><span class="k">gold</span></div>
+					{#if endMult > 1}
+						<div class="fig"><span class="n">×{endMult}</span><span class="k">{endPercent}% score</span></div>
+					{/if}
 				</div>
 				<p class="win-note">
 					{endCleared

@@ -79,6 +79,11 @@ star goes out for the rest of the deal the first time anything sits in it. Finis
 third win — a **true boss kill**, or a **true clear tomb** — and the end of a crawl says so in those words. It is
 never required, and it changes no rule.
 
+It does pay: a true boss kill is **×2** gold for the rest of the crawl, a true clear tomb **×3**, and since a bare
+tomb is a hundred, the score reads past a hundred — 200% for the boss's way and 300% for the whole tomb. A clean kill
+and then the pocket spent only ever caps at 200%: what the kill earned is kept, the third step is not. An ordinary
+win is still a plain 100%.
+
 The tomb you are in is named for its type and its monster, never for its boss: Barrow of Bandits (spades),
 Cairn of Vipers (hearts), Catacomb of Gorgons (clubs), Crypt of Wraiths (diamonds), and Tomb of Darkness (?) for a
 deal whose suit is not known yet. The status bar carries that name; the boss keeps its own name in the tooltip

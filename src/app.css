@@ -1417,6 +1417,15 @@ body:has(.card.dragging) .cells.tomb .chip {
 	font-weight: 700;
 }
 
+/* The multiplier is a badge beside the number, not part of it: the gold stays the gold, ×2 says what it pays. */
+.tombhud .score .mult {
+	margin-left: 0.25em;
+	padding: 0 0.26em;
+	border-radius: 3px;
+	background: rgba(255, 217, 94, 0.2);
+	font-size: 0.88em;
+}
+
 /* the parenthetical is a reading of the same number, not a second score */
 /* A world-agnostic screen tint: gold washes over a level up, red on a hit. */
 .flash {

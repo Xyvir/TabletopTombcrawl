@@ -47,6 +47,8 @@ import {
 	tombExit,
 	tombMove,
 	GOLD_TOTAL,
+	goldMultiplier,
+	goldScore,
 	goldValue,
 	reserveCell,
 	reserveHeld,
@@ -117,6 +119,7 @@ function makeTomb({
 		wounded: Array.from({ length: cellCount }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
 		reserveHeld: true,
+		trueBoss: false,
 		score: null,
 		armed: null,
 		itemWindow: null,
@@ -2707,16 +2710,74 @@ describe('the reserve pocket', () => {
 		const deck = initializeDeckOfCards().map((card) => shorthandCard(card));
 		const bared = makeTomb({ columns: [], foundations: deck, boss: 'KS' });
 		expect(trueClear(bared)).toBe(true);
-		expect(trueBossKill(bared)).toBe(true);
 
 		const borrowed = { ...bared, reserveHeld: false };
 		expect(trueClear(borrowed)).toBe(false);
-		expect(trueBossKill(borrowed)).toBe(false);
+	});
 
-		// the boss alone is a true boss kill, but never a true clear
-		const bossOnly = makeTomb({ columns: [], foundations: ['KS'], boss: 'KS' });
-		expect(trueBossKill(bossOnly)).toBe(true);
-		expect(trueClear(bossOnly)).toBe(false);
+	test('a clean boss kill is earned at the kill and kept through a borrowed pocket', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
+		const state = makeTomb({
+			columns: [['KH'], ['5D']],
+			cells: ['8C', '9C'],
+			foundations: ['QH', 'KS', 'KD', 'JC'],
+			draft,
+			boss: 'KH',
+		});
+		expect(trueBossKill(state)).toBe(false);
+
+		const slain = attackWith(state, cascade(0))!;
+		expect(bossSlain(slain)).toBe(true);
+		expect(trueBossKill(slain)).toBe(true);
+
+		// spending the pocket after the kill cannot un-earn it: it only costs the third step
+		const spent = tombMove(slain, cascade(1), cell(6))!;
+		expect(reserveHeld(spent)).toBe(false);
+		expect(trueBossKill(spent)).toBe(true);
+	});
+
+	test('a boss killed with the pocket already spent earns nothing', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
+		const state = makeTomb({
+			columns: [['KH'], ['5D']],
+			cells: ['8C', '9C'],
+			foundations: ['QH', 'KS', 'KD', 'JC'],
+			draft,
+			boss: 'KH',
+		});
+		const parked = tombMove(state, cascade(1), cell(6))!;
+		const slain = attackWith(parked, cascade(0))!;
+
+		expect(bossSlain(slain)).toBe(true);
+		expect(trueBossKill(slain)).toBe(false);
+	});
+
+	test('gold pays one, two or three, and the score reads past a hundred', () => {
+		const gold = (state: TombState) => tombGold(state);
+		// a fresh deal pays face value
+		const opening = makeTomb({ columns: [], cells: ['2C'], boss: 'KS' });
+		expect(goldMultiplier(opening)).toBe(1);
+		expect(goldScore(opening)).toBe(gold(opening));
+
+		// a true boss kill doubles whatever the tomb still owes
+		const killed: TombState = { ...opening, trueBoss: true };
+		expect(goldMultiplier(killed)).toBe(2);
+		expect(goldScore(killed)).toBe(gold(opening) * 2);
+
+		// a bare tomb with the pocket intact pays three, and reads three hundred of a hundred
+		const deck = initializeDeckOfCards().map((card) => shorthandCard(card));
+		const clean = makeTomb({ columns: [], foundations: deck, boss: 'KS' });
+		expect(goldMultiplier(clean)).toBe(3);
+		expect(goldScore(clean)).toBe(GOLD_TOTAL * 3);
+
+		// the same tomb with the pocket spent after a clean kill stops at two hundred, not three
+		const borrowed: TombState = { ...clean, reserveHeld: false, trueBoss: true };
+		expect(goldMultiplier(borrowed)).toBe(2);
+		expect(goldScore(borrowed)).toBe(GOLD_TOTAL * 2);
+
+		// and spent before the kill it is an ordinary score
+		const plain: TombState = { ...clean, reserveHeld: false };
+		expect(goldMultiplier(plain)).toBe(1);
 	});
 });
 

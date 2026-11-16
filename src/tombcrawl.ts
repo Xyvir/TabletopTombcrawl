@@ -273,6 +273,12 @@ export interface TombState {
 	 * board when the crawl ends.
 	 */
 	reserveHeld: boolean;
+	/**
+	 * A true boss kill has been earned: the boss king fell while the reserve pocket was untouched. Sticky on its own,
+	 * separately from `reserveHeld`, because spending the pocket after the kill cannot un-earn a blow that was already
+	 * clean — it only costs the step from two to three. This is what the gold multiplier reads.
+	 */
+	trueBoss: boolean;
 	/** Golf total, set when the player leaves through the exit. */
 	score: number | null;
 	armed: ArmedAbility | null;
@@ -418,6 +424,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		wounded: new Array(cellCount).fill(0),
 		won: false,
 		reserveHeld: true,
+		trueBoss: false,
 		score: null,
 		armed: null,
 		itemWindow: null,
@@ -1326,7 +1333,7 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	// Nothing ends a run on its own any more: once the boss king is down the exit is on offer,
 	// and the dungeon is only left when the player takes it.
-	return noteReserve(next);
+	return noteReserve(noteTrueBoss(next));
 }
 
 /** The right-most free cell: the reserve pocket the star sits over, and where the Dwarf's extra cell lands. */
@@ -1349,17 +1356,41 @@ export function reserveHeld(state: TombState): boolean {
 }
 
 /**
+ * Earn the true boss kill the first time the boss is home with the pocket still untouched. Sticky, like the reserve it
+ * is named after: the kill happened when it happened.
+ */
+function noteTrueBoss(state: TombState): TombState {
+	if (state.trueBoss || !state.reserveHeld || !bossSlain(state)) return state;
+	return cloneWith(state, { trueBoss: true });
+}
+
+/**
  * The optional third win, one step past the boss: he fell without anything ever sitting in the reserve pocket.
- * It changes no rule and is never required — the crawl is won either way; this only records that it was done the
- * hard way.
+ * It changes no rule and is never required — the crawl is won either way; this records that it was done the hard
+ * way, and it is what doubles the pay.
  */
 export function trueBossKill(state: TombState): boolean {
-	return state.reserveHeld && bossSlain(state);
+	return state.trueBoss;
 }
 
 /** The optional third win, all the way: a bare tomb with the reserve pocket untouched. */
 export function trueClear(state: TombState): boolean {
 	return state.reserveHeld && tombPar(state) === 0;
+}
+
+/**
+ * What gold pays on this board: one ordinarily, two after a true boss kill — kept for the rest of the crawl, so using
+ * the pocket afterwards only costs the third step rather than the second — and three for a bare tomb with the pocket
+ * untouched. That makes the score read past a hundred: the boss's way is 200%, the whole tomb the hard way 300%.
+ */
+export function goldMultiplier(state: TombState): number {
+	if (trueClear(state)) return 3;
+	return state.trueBoss ? 2 : 1;
+}
+
+/** The scored gold: what has gone home, times the multiplier. A clean tomb reads three hundred of a hundred. */
+export function goldScore(state: TombState): number {
+	return tombGold(state) * goldMultiplier(state);
 }
 
 /** A court card: the face cards, which a ranged shot cannot see past. */
@@ -1416,7 +1447,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return spendArmedItem(closeItemWindow(noteReserve(next)));
+	return spendArmedItem(closeItemWindow(noteReserve(noteTrueBoss(next))));
 }
 
 /**
