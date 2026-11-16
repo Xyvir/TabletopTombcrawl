@@ -170,8 +170,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
 	type FlashKind = 'level' | 'damage' | 'heal' | 'venom' | 'mana' | 'mug';
 	let flash = $state<{ kind: FlashKind; id: number } | null>(null);
-	/** The two moments that change what a run is: the boss dies, and the tomb is emptied. */
-	type FanfareKind = 'boss' | 'tomb';
+	/**
+	 * The three moments that change what a run is: the tomb finds its boss, the boss dies, and the tomb is
+	 * emptied. A deal can open with no boss — a king under the fog is not the boss until the fog lifts off
+	 * it — so the first of the three is the one that can catch a crawl by surprise.
+	 */
+	type FanfareKind = 'reveal' | 'boss' | 'tomb';
+	const FANFARE_TEXT: Record<FanfareKind, string> = {
+		reveal: 'Boss Revealed!',
+		boss: 'Boss Slain!',
+		tomb: 'Tomb Cleared!',
+	};
 	let fanfare = $state<{ kind: FanfareKind; id: number } | null>(null);
 	/** The boss note joins the status bar once its banner has cleared, so the two never talk at once. */
 	let bossNoted = $state(false);
@@ -1115,14 +1124,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		else if (wounding.length) startFlash('damage');
 		// A heal that comes with a level up is already gold: green is for the quiet repairs.
 		else if (healing.length) startFlash('heal');
-		// The boss dying and the tomb emptying are the two moments worth a banner. One move can do
-		// both — the boss king is a card like any other — and then the bigger banner wins while the
-		// kill is still noted once it clears.
+		// The boss appearing, the boss dying and the tomb emptying are the moments worth a banner. One move
+		// can do two of them — the boss king is a card like any other — and then the bigger banner wins
+		// while the kill is still noted once it clears.
+		const foundBoss = !tomb.bossId && !!next.bossId;
 		const killedBoss = !bossSlain(tomb) && bossSlain(next);
 		const emptiedTomb = tombPar(next) === 0 && tombPar(tomb) > 0;
 		if (killedBoss) bossNoted = false;
 		if (emptiedTomb) startFanfare('tomb', killedBoss);
 		else if (killedBoss) startFanfare('boss');
+		else if (foundBoss) startFanfare('reveal');
 		void recordRun(next);
 		tombHistory = [...tombHistory, tomb];
 		tomb = next;
@@ -2082,7 +2093,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	{#if fanfare}
 		{#key fanfare.id}
 			<div class="fanfare {fanfare.kind}" role="status">
-				<span>{fanfare.kind === 'boss' ? 'Boss Slain!' : 'Tomb Cleared!'}</span>
+				<span>{FANFARE_TEXT[fanfare.kind]}</span>
 			</div>
 		{/key}
 	{/if}

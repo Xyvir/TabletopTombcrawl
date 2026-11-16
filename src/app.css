@@ -1425,8 +1425,9 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
-/* A banner holds the screen for the two moments a run changes shape: the boss dying, and the tomb
-   being emptied. It clears itself, and the boss also leaves a yellow note in the status bar. */
+/* A banner holds the screen for the three moments a run changes shape: a fogged king turning the tomb
+   into a boss's tomb, the boss dying, and the tomb being emptied. It clears itself, and the boss also
+   leaves a yellow note in the status bar. */
 .fanfare {
 	position: fixed;
 	inset: 0;
@@ -1448,6 +1449,14 @@ body:has(.card.dragging) .cells.tomb .chip {
 	border: 1px solid rgba(255, 255, 255, 0.22);
 	text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
 	animation: fanfare-pop 900ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+/* A reveal is a warning rather than a prize, so it reads in the violet the status bar uses for the
+   tomb's own name, not the gold of a kill. */
+.fanfare.reveal span {
+	color: #d6b4ff;
+	border-color: rgba(199, 155, 255, 0.55);
+	box-shadow: 0 0 46px rgba(160, 110, 255, 0.32);
 }
 
 .fanfare.boss span {
