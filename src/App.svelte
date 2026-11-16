@@ -2342,7 +2342,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	{#if (tomb && tomb.won) || (!tomb && game.win)}
 		<div class="win">
 			{#if tomb}
-				<p>{endCleared ? 'All gold retrieved' : 'You leave the tomb'}</p>
+				<p>{endCleared ? 'All Gold Retrieved!' : 'You Escape Alive.'}</p>
 				<div class="win-figures">
 					<div class="fig"><span class="n">{endMoves}</span><span class="k">moves</span></div>
 					<div class="fig"><span class="n">{endGold}</span><span class="k">gold</span></div>
