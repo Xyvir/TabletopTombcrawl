@@ -267,6 +267,12 @@ export interface TombState {
 	 */
 	wounded: number[];
 	won: boolean;
+	/**
+	 * The reserve pocket — the right-most free cell — has never been occupied this deal. Set false the first time
+	 * any card sits in it and never set true again. It changes no rule: it is the optional third win, read off the
+	 * board when the crawl ends.
+	 */
+	reserveHeld: boolean;
 	/** Golf total, set when the player leaves through the exit. */
 	score: number | null;
 	armed: ArmedAbility | null;
@@ -411,6 +417,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		exhausted: new Array(cellCount).fill(false),
 		wounded: new Array(cellCount).fill(0),
 		won: false,
+		reserveHeld: true,
 		score: null,
 		armed: null,
 		itemWindow: null,
@@ -1319,7 +1326,40 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	// Nothing ends a run on its own any more: once the boss king is down the exit is on offer,
 	// and the dungeon is only left when the player takes it.
-	return next;
+	return noteReserve(next);
+}
+
+/** The right-most free cell: the reserve pocket the star sits over, and where the Dwarf's extra cell lands. */
+export function reserveCell(state: TombState): number {
+	return state.game.cells.length - 1;
+}
+
+/**
+ * Give up the reserve the moment anything sits in it. It is sticky on purpose: a card put in and taken out again
+ * still ends the true win, or the pocket would be free to borrow from all deal and only be guarded at the end.
+ */
+function noteReserve(state: TombState): TombState {
+	if (!state.reserveHeld || !state.game.cells[reserveCell(state)]) return state;
+	return cloneWith(state, { reserveHeld: false });
+}
+
+/** Whether the reserve pocket has never been used this deal. */
+export function reserveHeld(state: TombState): boolean {
+	return state.reserveHeld;
+}
+
+/**
+ * The optional third win, one step past the boss: he fell without anything ever sitting in the reserve pocket.
+ * It changes no rule and is never required — the crawl is won either way; this only records that it was done the
+ * hard way.
+ */
+export function trueBossKill(state: TombState): boolean {
+	return state.reserveHeld && bossSlain(state);
+}
+
+/** The optional third win, all the way: a bare tomb with the reserve pocket untouched. */
+export function trueClear(state: TombState): boolean {
+	return state.reserveHeld && tombPar(state) === 0;
 }
 
 /** A court card: the face cards, which a ranged shot cannot see past. */
@@ -1376,7 +1416,7 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 		}
 	}
 
-	return spendArmedItem(closeItemWindow(next));
+	return spendArmedItem(closeItemWindow(noteReserve(next)));
 }
 
 /**

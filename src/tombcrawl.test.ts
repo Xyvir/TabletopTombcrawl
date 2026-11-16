@@ -48,6 +48,10 @@ import {
 	tombMove,
 	GOLD_TOTAL,
 	goldValue,
+	reserveCell,
+	reserveHeld,
+	trueBossKill,
+	trueClear,
 	tombGold,
 	parCleared,
 	tombPar,
@@ -112,6 +116,7 @@ function makeTomb({
 		exhausted: Array.from({ length: cellCount }, (_, i) => exhausted.includes(i)),
 		wounded: Array.from({ length: cellCount }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
+		reserveHeld: true,
 		score: null,
 		armed: null,
 		itemWindow: null,
@@ -2672,6 +2677,46 @@ describe('the dwarf’s stout', () => {
 		expect(dwarf.game.cells.length).toBe(other.game.cells.length + 1);
 		// the party is still four cards in the first four cells
 		expect(dwarf.draft).toHaveLength(4);
+	});
+});
+
+describe('the reserve pocket', () => {
+	test('the star is held until the right-most cell is used, and not given back', () => {
+		const state = makeTomb({ columns: [['2C'], ['3D']], cells: ['5C', '5D', '5H'] });
+		expect(reserveCell(state)).toBe(6);
+		expect(reserveHeld(state)).toBe(true);
+
+		// a card parked a pocket short of it costs nothing
+		const beside = tombMove(state, cascade(0), cell(5))!;
+		expect(reserveHeld(beside)).toBe(true);
+
+		const used = tombMove(state, cascade(0), cell(6))!;
+		expect(reserveHeld(used)).toBe(false);
+
+		// taking the card out again does not hand the star back: the pocket was borrowed from
+		const away = tombMove(used, cell(6), cascade(1))!;
+		expect(reserveHeld(away)).toBe(false);
+	});
+
+	test('a dwarf slides the star out with the extra pocket', () => {
+		const state = makeTomb({ columns: [['2C']], cells: ['5C'], cellCount: 8 });
+		expect(reserveCell(state)).toBe(7);
+	});
+
+	test('the true wins are the ordinary wins with the star still up', () => {
+		const deck = initializeDeckOfCards().map((card) => shorthandCard(card));
+		const bared = makeTomb({ columns: [], foundations: deck, boss: 'KS' });
+		expect(trueClear(bared)).toBe(true);
+		expect(trueBossKill(bared)).toBe(true);
+
+		const borrowed = { ...bared, reserveHeld: false };
+		expect(trueClear(borrowed)).toBe(false);
+		expect(trueBossKill(borrowed)).toBe(false);
+
+		// the boss alone is a true boss kill, but never a true clear
+		const bossOnly = makeTomb({ columns: [], foundations: ['KS'], boss: 'KS' });
+		expect(trueBossKill(bossOnly)).toBe(true);
+		expect(trueClear(bossOnly)).toBe(false);
 	});
 });
 

@@ -74,6 +74,11 @@ glyph that moves a card can move him, and CYDSTEPP alone can set him down in an 
 Monster names are per suit and never per card: Bandit (spades, Mug), Viper (hearts, Venom),
 Gorgon (clubs, Stone Gaze), Wraith (diamonds, Mana Burn).
 
+The right-most free cell is the **reserve pocket**, marked with a gold star: it takes cards like any other, but the
+star goes out for the rest of the deal the first time anything sits in it. Finishing with it up is the optional
+third win — a **true boss kill**, or a **true clear tomb** — and the end of a crawl says so in those words. It is
+never required, and it changes no rule.
+
 The tomb you are in is named for its type and its monster, never for its boss: Barrow of Bandits (spades),
 Cairn of Vipers (hearts), Catacomb of Gorgons (clubs), Crypt of Wraiths (diamonds), and Tomb of Darkness (?) for a
 deal whose suit is not known yet. The status bar carries that name; the boss keeps its own name in the tooltip

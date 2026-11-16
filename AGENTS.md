@@ -152,6 +152,20 @@ What it cost, measured before it was committed: every stored line was walked bac
 `solutions/archive/` with a `-mug` suffix, not out of the repository, and the merge gate demoted the corpus from
 138 proved keys to 73 — 183 placeholder squares for a sweep to win back.
 
+## The reserve pocket (adopted)
+
+The right-most free cell — the Dwarf's extra one when he is in the party, since `reserveCell()` reads the track's own
+length — is the **reserve pocket**, marked with a small gold star. It is not a rule: any card can go in it. What it
+buys is an optional third win. If nothing has ever sat there, a boss kill reads **true boss kill** and a bare tomb
+reads **true clear tomb** in the end-of-crawl panel; the ordinary win is unaffected, and the star is the only thing
+that tells the player a rule they agreed to is still live.
+
+The flag is sticky and lives on `TombState.reserveHeld`, set false by `noteReserve()` inside `settle()` and
+`revealFaceDown()` — the two funnels every move passes through. Sticky matters: a card put into the pocket and taken
+out again still ends the true win, or the pocket could be borrowed from all deal and only be guarded at the end. It
+changes no legality, so no stored line moved, and `reserveHeld` is deliberately not part of any solver key — two
+positions that differ only in the star are the same position to the search.
+
 ## Gold is a flat table (adopted)
 
 The bar counts gold, and gold is arithmetic a player can do in their head: **a rat one, a boss-suit minion two, a

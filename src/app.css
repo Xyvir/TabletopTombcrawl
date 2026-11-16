@@ -457,6 +457,24 @@ img {
 }
 
 /*
+ * The reserve pocket's star: the optional third win, drawn small and gold above the right-most free cell. It is
+ * not a rule — the cell takes cards like any other — so it is a mark, not a wall: it simply goes out when the
+ * pocket is used and never comes back.
+ */
+.slot .reserve {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 0.1em);
+	transform: translateX(-50%);
+	z-index: 4;
+	font-size: calc(var(--col-w) * 0.34);
+	line-height: 1;
+	color: #ffd95e;
+	text-shadow: 0 0 8px rgba(255, 208, 70, 0.55);
+	pointer-events: none;
+}
+
+/*
  * The conversion chip: a poker chip wedged in the gap between the last ability slot and the first
  * plain free cell. Its track is the boundary between them, so it walks one slot left each time an
  * item converts, and disappears once every slot on the track is plain.

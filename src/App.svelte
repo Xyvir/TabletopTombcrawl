@@ -62,6 +62,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		GOLD_TOTAL,
 		goldValue,
 		tombGold,
+		reserveCell,
+		trueBossKill,
+		trueClear,
 		disarm,
 		hp,
 		draftAt,
@@ -607,6 +610,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const endGold = $derived(tomb ? tombGoldNow : 0);
 	const endCleared = $derived(tomb ? tombPar(tomb) === 0 : false);
 	const endBoss = $derived(tomb ? bossSlain(tomb) : false);
+	/** The optional third win: the same result with the reserve pocket never used. */
+	const endTrueClear = $derived(tomb ? trueClear(tomb) : false);
+	const endTrueBoss = $derived(tomb ? trueBossKill(tomb) : false);
 	const endTrack = $derived<Difficulty>(tomb ? difficultyOf(tomb) : difficulty);
 	/** The corpus row for this party on this track, if the seed sheet has one. */
 	const endCorpus = $derived(
@@ -1938,6 +1944,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					>
 						{#if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
 					</span>
+					{#if tomb && i === reserveCell(tomb) && tomb.reserveHeld}
+						<!-- The reserve pocket: the optional third win, and nothing more. It goes out the moment a card
+						     sits here, and it never comes back. -->
+						<span
+							class="reserve"
+							title="Reserve pocket — leave it empty all deal for a true boss kill, and a true clear of the tomb"
+							aria-hidden="true">★</span
+						>
+					{/if}
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
 						<span class="role">{entry.name}</span>
@@ -2303,7 +2318,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<div class="fig"><span class="n">{endMoves}</span><span class="k">moves</span></div>
 					<div class="fig"><span class="n">{endGold}</span><span class="k">gold</span></div>
 				</div>
-				<p class="win-note">{endCleared ? 'tomb cleared' : endBoss ? 'boss slain' : 'no boss kill'}</p>
+				<p class="win-note">
+					{endCleared
+						? endTrueClear
+							? 'true clear tomb'
+							: 'tomb cleared'
+						: endBoss
+							? endTrueBoss
+								? 'true boss kill'
+								: 'boss slain'
+							: 'no boss kill'}
+				</p>
 				{#if endCorpus || endProbe}
 					<!-- One benchmark line only: a recorded crawl outranks the live search, which is not even run
 					     when the seed sheet already holds an answer. -->
