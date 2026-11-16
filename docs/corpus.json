@@ -1618,6 +1618,37 @@
 			"at": "2026-11-16T16:39:31.036Z"
 		},
 		{
+			"loadout": "hscs",
+			"boss": "clubs",
+			"seed": 82967,
+			"moves": 59,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-16T19:14:50.261Z"
+		},
+		{
 			"loadout": "hsdc",
 			"boss": "hearts",
 			"seed": 155071,
@@ -2423,6 +2454,14 @@
 				"boss": {
 					"seed": 81609,
 					"moves": 49
+				}
+			}
+		},
+		"hscs": {
+			"med": {
+				"boss": {
+					"seed": 82967,
+					"moves": 59
 				}
 			}
 		},
@@ -4201,13 +4240,6 @@
 				"at": "2026-11-12T13:59:54.351Z"
 			}
 		},
-		"hscs": {
-			"med": {
-				"seed": 239,
-				"score": null,
-				"at": "2026-11-14"
-			}
-		},
 		"dssh": {
 			"med": {
 				"seed": 1962,
@@ -4327,7 +4359,6 @@
 		"hdsc",
 		"hdsd",
 		"hdss",
-		"hscs",
 		"hsds",
 		"chhh",
 		"chhc",
