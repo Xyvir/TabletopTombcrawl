@@ -1052,7 +1052,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(face, cascade(0)).damage).toBe(10);
 	});
 
-	test('bloodrush pays only for a kill into the leading grave', () => {
+	test('bloodthirsty pays only for a kill into the leading grave', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 		// hearts leads, so the 5 of hearts is worth the bounty
 		const leading = makeTomb({ columns: [['5H']], foundations: ['4H', '3S'], draft });
@@ -1063,7 +1063,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
 	});
 
-	test('bloodrush needs the outright lead, and a finished grave still leads', () => {
+	test('bloodthirsty needs the outright lead, and a finished grave still leads', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 
 		// level with spades is not a lead: the tie pays the four
@@ -2430,7 +2430,7 @@ describe('par', () => {
 });
 
 describe('tombcrawl a kill that costs nothing', () => {
-	// The Orc's Bloodrush pays for the pile leading the board, so this kill is free and the track is bare.
+	// The Orc's Bloodthirsty pays for the pile leading the board, so this kill is free and the track is bare.
 	const orc = (): DraftCard[] => [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 
 	test('a free kill does not owe the spare heart', () => {

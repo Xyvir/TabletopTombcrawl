@@ -75,7 +75,7 @@ export const CLAUSES = {
 	kingPowers: true,
 	/**
 	 * Orc: a kill into the leading grave is free. A finished grave still leads — nothing out-ranks a
-	 * king — so the first suit to go all the way home ends Bloodrush for the rest of the run.
+	 * king — so the first suit to go all the way home ends Bloodthirsty for the rest of the run.
 	 */
 	orcBloodrush: true,
 	/** Wizard: the item slot becomes a second glyph slot, spelling from its own suit. */
@@ -142,15 +142,15 @@ interface Ability {
 const KIN: Record<Suit, Ability> = {
 	hearts: {
 		name: 'Human',
-		text: 'Determined: ignore your lowest grave when calculating your level.',
+		text: 'Adept: ignore your lowest grave when calculating your level.',
 	},
 	clubs: {
 		name: 'Orc',
-		text: 'Bloodrush: slaying into the fullest grave inflicts no wounds.',
+		text: 'Bloodthirsty: slaying into the fullest grave inflicts no wounds.',
 	},
 	diamonds: {
 		name: 'Elf',
-		text: 'Ranged: slay or reveal any card in a hallway whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
+		text: 'Hawkeyed: slay or reveal any card in a hallway whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
 	},
 	spades: {
 		name: 'Dwarf',
@@ -771,7 +771,7 @@ export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
 			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0);
 	}/**
- * The one pile Bloodrush pays for: it has to be the outright highest, so a tie is not a lead. A
+ * The one pile Bloodthirsty pays for: it has to be the outright highest, so a tie is not a lead. A
  * finished pile (a king on top) still leads, so the first suit home ends the passive for the run:
  * there is no exception for a grave that is already full.
  */
@@ -1022,7 +1022,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	const ceiling = damageCapOf(state);
 	if (ceiling > 0) damage = Math.min(damage, ceiling);
-	// Bloodrush only pays for the pile you have pushed furthest: dumping a high card into a suit you
+	// Bloodthirsty only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (CLAUSES.orcBloodrush && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) damage = 0;
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.

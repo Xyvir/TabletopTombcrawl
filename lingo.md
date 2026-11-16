@@ -51,7 +51,7 @@ are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affli
 
 | Source | The thing it gives | When it works | Example |
 | --- | --- | --- | --- |
-| Kin | **trait** | always on, while the card is unwounded | Determined |
+| Kin | **trait** | always on, while the card is unwounded | Adept |
 | Class | **skill** | always on, while the card is unwounded | Strength |
 | Monster | **affliction** | the deal's one, worn by the court and the kings | Burden |
 | Glyph | **spell** | armed, spent by the action it is armed for, refreshed on a level up | PISORF |
@@ -62,8 +62,8 @@ page: *Kin trait*, *Class skill*, *Glyph spell*, *Item effect*.
 
 The passive words follow grammar too, which keeps the convention from having to be rehearsed every time. A
 **class skill** is a noun naming the thing the delver does — Pickpocket, Vigil, Arcana, Strength. A **kin
-trait** is an adjective describing the delver — Ranged, Stout, Determined. Bloodrush is the one exception,
-because it names the moment rather than the delver; it is the only kin word that is not an adjective, and a
+trait** is an adjective describing the delver — Hawkeyed, Stout, Adept, Bloodthirsty — and every kin word is
+one, so the convention holds without an exception to remember.
 new kin trait should be one.
 
 **The boss king** wears two shields, and they lift separately. *Invulnerable* keeps him out of any grave until
@@ -123,7 +123,7 @@ Copy that still uses the standard name, each a one-line change:
   becomes `hallway 3, 5 cards`.
 - The exhausted pocket: "Exhausted item slot — play a ♣ card here… Miss it and this is an ordinary free
   cell." — becomes restock/convert: "Play a ♣ card here to restock it. Anything else converts this pocket."
-- Elf's Ranged and the Serpent's power still say `column` — become hallway.
+- Elf's Hawkeyed and the Serpent's power still say `column` — become hallway.
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
   shut until another king lies in it".
 - Every "send home" and "played home" — becomes slay. Every "free cell" — becomes pocket.
