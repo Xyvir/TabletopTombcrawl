@@ -457,9 +457,9 @@ img {
 }
 
 /*
- * The reserve pocket's star: the optional third win, pinned just outside the right-most free cell's upper
- * corner so it shares the cell's top line without sitting on a card. It is not a rule — the cell takes cards
- * like any other — so it is a mark, not a wall: it simply goes out when the pocket is used and never comes back.
+ * The reserve pocket's star: the optional third win, tucked into the right-most free cell's own upper corner. It can
+ * sit inside the cell because it only ever shows while the cell is empty — the first card in spends the star for the
+ * rest of the deal — so there is nothing there to obscure it. It is not a rule: the cell takes cards like any other.
  *
  * It is drawn rather than typed. A font's ★ carries its own weight, its own outline and its own floor on size,
  * and at this size that read as a fuzzy character rather than a star; a five-point polygon is solid fill at any
@@ -467,8 +467,8 @@ img {
  */
 .slot .reserve {
 	position: absolute;
-	left: calc(100% + 0.05em);
-	top: 0;
+	right: calc(var(--col-w) * 0.1);
+	top: calc(var(--col-w) * 0.1);
 	width: calc(var(--col-w) * 0.16);
 	aspect-ratio: 1;
 	background: #ffd95e;
