@@ -83,6 +83,9 @@ star goes out for the rest of the deal the first time anything sits in it. Finis
 third win — a **true boss kill**, or a **true clear tomb** — and the end of a crawl says so in those words. It is
 never required, and it changes no rule.
 
+Its own tooltip is a riddle rather than a rule — *Keep this pocket empty, and the tomb tells the truth.* — because the
+star is the only place the word "true" is not already on screen; the answer is the end-of-crawl line, which says it.
+
 It does pay: a true boss kill is **×2** gold for the rest of the crawl, a true clear tomb **×3**, and since a bare
 tomb is a hundred, the score reads past a hundred — 200% for the boss's way and 300% for the whole tomb. A clean kill
 and then the pocket spent only ever caps at 200%: what the kill earned is kept, the third step is not. An ordinary

@@ -1871,7 +1871,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:empty={!card}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
-					data-role={entry ? entry.role : undefined}						title={wounded
+					data-role={entry ? entry.role : undefined}						title={tomb && !card && i === reserveCell(tomb) && tomb.reserveHeld
+						// The starred pocket says nothing about gold or multipliers: it is a riddle, and the answer is
+						// the word "true" in the end-of-crawl line.
+						? 'Keep this pocket empty, and the tomb tells the truth.'
+						: wounded
 							? `Wounded ${wounded.rank} of ${wounded.suit} — face down. ${
 									tomb && woundedCanGoHome(tomb)
 										? 'Heal it face up, or slay it straight to its grave, before you can use it.'
