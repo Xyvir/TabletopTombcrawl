@@ -100,7 +100,7 @@ export const CLAUSES = {
 	spentDominance: false,
 	/**
 	 * The search drops a board that has dug a card when the same board (fog aside) was reached with that card
-	 * still face down. Not a rule: a dug card is a heal taken, a Poison target and a clogged hallway avoided,
+	 * still face down. Not a rule: a dug card is a heal taken, a Venom target and a clogged hallway avoided,
 	 * while the fog is a heal still banked. It is a bet that fog kept is worth more than fog spent, and it is
 	 * off until a sweep measures it.
 	 */
@@ -556,7 +556,7 @@ export function isBossMinion(state: TombState, card: Card): boolean {
 
 /**
  * Cards that carry a monster power. The boss suit's court always does, and with `kingPowers` every king
- * does too, whatever suit the run dealt — a spade king in a heart tomb is a Serpent's king and poisons.
+ * does too, whatever suit the run dealt — a spade king in a heart tomb is a Viper's king and venoms.
  * The power always comes from the boss suit: one aura per deal, worn by the court and the lesser kings.
  */
 export function carriesPower(state: TombState, card: Card): boolean {
@@ -577,10 +577,10 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		text: 'slaying this, or stashing it in a pocket, shoves the card out of your item slot into the first empty pocket to its right, which spends it.',
 	},
 	hearts: {
-		name: 'Serpent',
+		name: 'Viper',
 		boss: 'Jörmungandrn',
-		blurb: 'A serpent lying in wait, patient and venomous.',
-		power: 'Poison',
+		blurb: 'A viper lying in wait, patient and venomous.',
+		power: 'Venom',
 		text: 'slaying this reveals the lowest fogged card of the rightmost fogged hallway, buried or not, with no heal.',
 	},
 	clubs: {
@@ -597,6 +597,18 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		power: 'Mana Burn',
 		text: 'slaying this exhausts and wounds your Glyph.',
 	},
+};
+
+/**
+ * What the status bar calls the place you are in: the type of tomb and the monsters that fill it, rather
+ * than the boss's name, which is a phrase too long for a bar that is already reading out a level, hearts,
+ * moves and gold. The boss keeps its own name in the tooltip on its card.
+ */
+export const TOMBS: Record<Suit, string> = {
+	spades: 'Barrow of Bandits',
+	hearts: 'Cairn of Vipers',
+	clubs: 'Catacomb of Gorgons',
+	diamonds: 'Crypt of Wraiths',
 };
 
 /** The aura is off while a Remedy is armed: the action it covers ignores the power, kill or park. */
@@ -1466,20 +1478,20 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
-			// Poison digs anywhere, buried or not: it finds the deepest face-down card of the
+			// Venom digs anywhere, buried or not: it finds the deepest face-down card of the
 			// rightmost column that still has fog, with no heal. Columns are scanned right to left,
 			// and each column from its bottom card up.
 			const tableau = state.game.tableau as Card[][];
-			let poison: Card | undefined;
-			for (let c = tableau.length - 1; c >= 0 && !poison; c--) {
+			let venom: Card | undefined;
+			for (let c = tableau.length - 1; c >= 0 && !venom; c--) {
 				const column = tableau[c];
-				for (let k = 0; k < column.length && !poison; k++) {
+				for (let k = 0; k < column.length && !venom; k++) {
 					const card = column[column.length - 1 - k];
-					if (state.hidden.includes(cardId(card))) poison = card;
+					if (state.hidden.includes(cardId(card))) venom = card;
 				}
 			}
-			if (!poison) return state;
-			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(poison)) });
+			if (!venom) return state;
+			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(venom)) });
 		}
 		case 'spades':
 			// Mug takes the slot rather than the card's worth: the bandit empties your item pocket into the

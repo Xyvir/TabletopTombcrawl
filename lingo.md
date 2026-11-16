@@ -27,7 +27,7 @@ Two rules for this file:
 | **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
 | **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **Affliction: None**. | plain card |
-| **Affliction** | The deal's one monster power — Mug, Poison, Stone Gaze or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
+| **Affliction** | The deal's one monster power — Mug, Venom, Stone Gaze or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
@@ -71,8 +71,13 @@ one of his Generals falls first; once one does, a blade reaches him. *Indomitabl
 him for the whole crawl, and only a glyph does — a run that would carry him is refused the same way. Every
 glyph that moves a card can move him, and CYDSTEPP alone can set him down in an empty hallway, which spends it.
 
-Monster names are per suit and never per card: Bandit (spades, Mug), Serpent (hearts, Poison),
-Gorgon (clubs, Stone Gaze), Wraith (diamonds, Mana Burn). Each one has a single descriptive line above its
+Monster names are per suit and never per card: Bandit (spades, Mug), Viper (hearts, Venom),
+Gorgon (clubs, Stone Gaze), Wraith (diamonds, Mana Burn).
+
+The tomb you are in is named for its type and its monster, never for its boss: Barrow of Bandits (spades),
+Cairn of Vipers (hearts), Catacomb of Gorgons (clubs), Crypt of Wraiths (diamonds), and Tomb of Darkness (?) for a
+deal whose suit is not known yet. The status bar carries that name; the boss keeps its own name in the tooltip
+on its card. Each one has a single descriptive line above its
 affliction — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the affliction
 line below it is the rule. A General and the boss carry no description, because they answer to the monster
 rather than being one. Their courts are graded *Lesser* (ace–5), bare
@@ -123,7 +128,7 @@ Copy that still uses the standard name, each a one-line change:
   becomes `hallway 3, 5 cards`.
 - The exhausted pocket: "Exhausted item slot — play a ♣ card here… Miss it and this is an ordinary free
   cell." — becomes restock/convert: "Play a ♣ card here to restock it. Anything else converts this pocket."
-- Elf's Hawkeyed and the Serpent's power still say `column` — become hallway.
+- Elf's Hawkeyed and the Viper's power still say `column` — become hallway.
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
   shut until another king lies in it".
 - Every "send home" and "played home" — becomes slay. Every "free cell" — becomes pocket.

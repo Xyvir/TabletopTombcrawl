@@ -597,7 +597,7 @@ export function boardKey(state: TombState): string {
 
 /**
  * The board with the fog left out of the key: two positions that differ only in which cards have been dug share
- * it. "Less dug" is a heuristic rather than a rule — a face-down card is a heal, a Poison target and a fogged
+ * it. "Less dug" is a heuristic rather than a rule — a face-down card is a heal, a Venom target and a fogged
  * column, while a revealed one is a playable card and a clogged hallway — so this is ordered, not proven, and it
  * lives behind `CLAUSES.fogDominance` until a sweep says it pays.
  */

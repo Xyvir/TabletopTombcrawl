@@ -119,9 +119,15 @@ The four monster powers now price four different things, where two of them used 
 different slots. **Mug** (spades, Bandit) pushes the card in your item slot into the first free pocket to its
 right, on a slay or a park, exactly as playing it out would: the slot converts, the chip steps past it, and
 nothing waits to remake the item. **Stone Gaze** (clubs, Gorgon) is the old Weakness shape — a boss-suit minion
-costs one rank more than its card says, and a park takes a heart — moved to the other suit. Poison (hearts) stays
+costs one rank more than its card says, and a park takes a heart — moved to the other suit. Venom (hearts) stays
 knowledge and Mana Burn (diamonds) stays the glyphs, so the four currencies are hearts, space, spell slots and
 knowledge instead of two of them being the item and two being the glyph.
+
+The monsters are the Bandit, the Viper, the Gorgon and the Wraith — the heart one was the Serpent until the
+Venom rename. The status bar names the tombs they fill rather than the bosses: Barrow of Bandits (♠), Cairn of
+Vipers (♥), Catacomb of Gorgons (♣), Crypt of Wraiths (♦), Tomb of Darkness (?) before the suit is known. A
+boss's own name is a phrase long enough to crowd out the level, hearts, moves and gold either side of it, and it
+still has its card's tooltip.
 
 Two rules were settled while building it. Mug fires on a park as well as a kill: otherwise stashing a bandit is a
 free way to switch its affliction off. And an Arcana glyph is mugged exactly like a flask — the slot is the item

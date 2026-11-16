@@ -1529,7 +1529,7 @@ describe('tombcrawl progression rules', () => {
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 
-	test('poison turns over the deepest face-down card in the rightmost fogged column, with no heal', () => {
+	test('venom turns over the deepest face-down card in the rightmost fogged column, with no heal', () => {
 		const state = makeTomb({
 			columns: [['2C', '8H'], ['KS', '3D'], ['4S', '5C'], [], [], [], [], ['6C', '9D']],
 			cells: ['6S', '2D'],
@@ -1546,11 +1546,11 @@ describe('tombcrawl progression rules', () => {
 		expect(next.hidden).toContain('3D');
 		expect(next.hidden).toContain('2C');
 		expect(next.hidden).toContain('KS');
-		// a card that costs nothing wounds nothing, and poison healed nothing either
+		// a card that costs nothing wounds nothing, and venom healed nothing either
 		expect(next.wounded[1]).toBe(0);
 	});
 
-	test('an off-suit king wears the boss suit power: a spade king poisons in a heart tomb', () => {
+	test('an off-suit king wears the boss suit power: a spade king venoms in a heart tomb', () => {
 		const state = makeTomb({
 			columns: [['2C', '8H'], ['KS']],
 			cells: ['6S', '2D'],
@@ -2388,7 +2388,7 @@ describe('mana burn on the slot', () => {
 describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster, its boss and its power', () => {
 		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Mug' });
-		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', boss: 'Jörmungandrn', power: 'Poison' });
+		expect(MONSTERS.hearts).toMatchObject({ name: 'Viper', boss: 'Jörmungandrn', power: 'Venom' });
 		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Stone Gaze' });
 		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', boss: 'Tormented One', power: 'Mana Burn' });
 	});

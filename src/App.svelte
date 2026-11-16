@@ -31,6 +31,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import titleMark from './assets/title.svg?raw';
 	import {
 		MONSTERS,
+		TOMBS,
 		ROLE_LABEL,
 		ROLE_WORD,
 		abilityFor,
@@ -167,7 +168,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The last card a tomb tap moved, so a second click at the same spot can rewind it. */
 	let tombMoved: { id: string; from: CardLocation; before: TombState; rect: DOMRect; time: number } | null = null;
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
-	type FlashKind = 'level' | 'damage' | 'heal' | 'poison' | 'mana' | 'mug';
+	type FlashKind = 'level' | 'damage' | 'heal' | 'venom' | 'mana' | 'mug';
 	let flash = $state<{ kind: FlashKind; id: number } | null>(null);
 	/** The two moments that change what a run is: the boss dies, and the tomb is emptied. */
 	type FanfareKind = 'boss' | 'tomb';
@@ -1015,6 +1016,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
+	 * The bar names the tomb instead of the boss: "Cairn of Vipers (♥)". The boss's own name is long enough
+	 * to crowd out the level, hearts, moves and gold it sits between, and it still has its card's tooltip.
+	 */
+	function tombTitle(state: TombState): string {
+		const suit = state.bossSuit;
+		if (!suit) return 'Tomb of Darkness (?)';
+		return `${TOMBS[suit]} (${SUIT_GLYPH[suit]})`;
+	}
+
+	/**
 	 * Every card that carries no power is the tomb's ordinary filler, and its suit names its colour.
 	 * Deliberately not named after the deal's monster: a rat is a rat in every tomb.
 	 */
@@ -1077,8 +1088,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return !!was && was.location.fixture !== 'foundation';
 		});
 		if (!slain) return null;
-		// Poison only bites when there is fog left to dig into.
-		if (slain.suit === 'hearts') return after.hidden.length < before.hidden.length ? 'poison' : null;
+		// Venom only bites when there is fog left to dig into.
+		if (slain.suit === 'hearts') return after.hidden.length < before.hidden.length ? 'venom' : null;
 		// Mug shows when the bandit actually got the item out: the slot converts, so the draft shrinks.
 		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
 		// Stone Gaze is wounds, and the wound flash already answers for it; Mana Burn needs a glyph to drain.
@@ -1912,7 +1923,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				title={`${tombHp} hearts left over ${filledPockets} filled pocket${filledPockets === 1 ? '' : 's'}${openSlots ? ` · ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each` : ''}`}
 			>HP {tombHp}/{filledPockets}{#if openSlots}<sup class="open"> +{openSlots}</sup>{/if}</span
 			>
-			<span class="bosstag">{bossTitle(tomb)}</span>
+			<span class="tombstag" title={bossTitle(tomb)}>{tombTitle(tomb)}</span>
 			<!-- Status in dress, a button in fact: the move count is still the copy shortcut. -->
 			<button
 				class="moves"

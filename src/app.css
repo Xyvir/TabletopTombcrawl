@@ -1315,7 +1315,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	line-height: 1;
 }
 
-.tombhud .bosstag {
+.tombhud .tombstag {
 	color: #c79bff;
 }
 
@@ -1383,7 +1383,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	animation-duration: 420ms;
 }
 
-.flash.poison {
+.flash.venom {
 	background: radial-gradient(
 		ellipse at 50% 50%,
 		rgba(168, 84, 255, 0.34),
