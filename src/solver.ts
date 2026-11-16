@@ -534,7 +534,11 @@ function itemPull(state: TombState): { potion: number; restock: number } {
 }
 
 /** How good a position looks, as the weighted sum of everything the tuner can move. */
-function scoreOf(state: TombState, goal: Goal = 'clear'): number {
+/**
+ * The board's own value: how close a position is to the goal. Exported so a sweep can rank one deal's best
+ * board against another's and spend its deep budget on the candidates that got somewhere.
+ */
+export function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 	const w = SCORE_WEIGHTS;
 	const blocked = foundationPull(state);
 	const hearts = hp(state);
