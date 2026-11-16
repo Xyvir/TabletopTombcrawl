@@ -311,8 +311,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			}
 		>;
 		/**
-		 * Parties whose best crawl has no win yet: the best score the solver reached on a seed that does
-		 * match the loadout. Kept per track, and dropped the moment a win lands on that square.
+		 * Parties whose best crawl has no win yet: the best par the solver reached on a seed that does match
+		 * the loadout. Kept per track, and dropped the moment a win lands on that square.
 		 */
 		placeholders?: Record<
 			string,
@@ -2203,7 +2203,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 															entry
 																? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}`
 																: filler
-																	? `seed ${filler.seed} — no win yet`
+																	? `seed ${filler.seed}${filler.score === null ? '' : `, best par ${filler.score}`} — no win yet`
 																	: 'no seed found yet'
 														}`}
 													aria-label={`${key} ${statusWord(key)}`}
@@ -2277,7 +2277,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								{#if !inspectedEntry && inspectedPlaceholder}
 									<span class="goal placeholder-note">
 										<span class="label">no win yet</span>
-										seed {inspectedPlaceholder.seed}
+										{#if inspectedPlaceholder.score === null}seed {inspectedPlaceholder.seed}{:else}best par {inspectedPlaceholder.score} on seed {inspectedPlaceholder.seed}{/if}
 									</span>
 								{/if}
 							</p>

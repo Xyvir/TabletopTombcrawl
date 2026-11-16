@@ -160,9 +160,11 @@ fifty-two cards and exactly a hundred gold, so a bare tomb reads 100 and the num
 separate `(14.4%)` reading that used to sit beside it is gone rather than repeated. Each card's tooltip says what
 it pays ("Grants 2 gold on slay"), so the price of a card can be known before the blow.
 
-Par survives, unchanged and unseen: `tombPar`/`PAR_TOTAL`/`parValue` still score a card by how deep it lay in the
-deck as well as whether it came home, because that is the reading the solver is guided by and the corpus proves
-lines against. Nothing on the board shows it. A deal that opens with no boss cannot reach 100 either way — four
+Par survives, and it is the legacy *negative* reading: `tombPar`/`PAR_TOTAL`/`parValue` still score a card by how
+deep it lay in the deck as well as whether it came home, because that is what the solver is guided by and what the
+corpus proves lines against. Nothing on the board shows it; the one place it surfaces is the layout sheet's "best
+par N" on a square the solver has reached but not won, because those scan numbers are par and cannot be converted
+to gold. A deal that opens with no boss cannot reach 100 either way — four
 kings at five and forty-eight rats at one is 68 — and that was already true of par, which opened every tomb on 500
 and could only ever be paid 420 before a boss was revealed.
 

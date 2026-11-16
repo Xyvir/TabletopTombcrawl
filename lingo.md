@@ -208,7 +208,9 @@ Not in copy yet. Ranked by how much the current word hurts.
   five, and the boss king twenty-five. A bare tomb is exactly a hundred, so the gold is read as a percentage
   without a percent sign beside it. "Score" was the code's word for it. The end of a crawl reads back its gold,
   its moves and whether the boss or the whole tomb fell, beside whatever the corpus and the solver managed on the
-  same party. *Par* is the solver's own reading and is never shown to the player.
+  same party. *Par* is the legacy "negative" reading the solver works in — a card is worth its rank, court fifteen,
+  a king twenty, and the boss a hundred, so the number goes down as the tomb empties. It appears to the player in
+  one place only: "best par N" on a layout square the solver has reached but not won.
 
 ### Kept as is
 
