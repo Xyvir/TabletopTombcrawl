@@ -1383,6 +1383,9 @@ body:has(.card.dragging) .cells.tomb .chip {
 	animation-duration: 420ms;
 }
 
+/* Venom is a debuff and not a hit, so it is the one flash that lingers: it lands as fast as damage
+   does, then bleeds away over the best part of a second instead of blinking out in 420ms. That tail
+   is the whole difference between "something went wrong" and "something is wrong with you now". */
 .flash.venom {
 	background: radial-gradient(
 		ellipse at 50% 50%,
@@ -1390,7 +1393,24 @@ body:has(.card.dragging) .cells.tomb .chip {
 		rgba(86, 20, 150, 0.18) 55%,
 		transparent 84%
 	);
-	animation-duration: 420ms;
+	animation: flash-venom 1100ms both;
+}
+
+@keyframes flash-venom {
+	0% {
+		opacity: 0;
+		animation-timing-function: ease-out;
+	}
+	10% {
+		opacity: 1;
+	}
+	32% {
+		opacity: 0.8;
+		animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+	}
+	100% {
+		opacity: 0;
+	}
 }
 
 .flash.mana {
