@@ -1262,9 +1262,11 @@ body:has(.card.dragging) .cells.tomb .chip {
 	transition: opacity 150ms ease;
 }
 
+/* Half strength on purpose: the mark has to be findable on a busy face, not loud enough to take the face's
+   place. At full opacity the stroke and its glow read as the mark on a king's robe rather than a note on it. */
 .card .afflict.on,
 .slot .afflict.on {
-	opacity: 1;
+	opacity: 0.5;
 }
 
 @media (prefers-reduced-motion: reduce) {
