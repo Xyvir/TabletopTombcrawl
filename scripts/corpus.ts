@@ -110,6 +110,30 @@ const demotedSeeds = new Set(demotedRows.filter((row) => typeof row.seed === 'nu
  * Every party any worker has already won, across the published corpus and every shard on disk. A seed
  * whose party is in here costs a deal scan and no search at all.
  */
+/**
+ * Seeds with a line on disk, on the same `track|seed` key the merge uses. A row in a shard file is a claim: the
+ * claim is worth publishing only while its line still replays, and a worker that counts claims as wins skips the
+ * squares the corpus is actually short of. That happened — the scan walked 20,000 seeds apiece and searched only
+ * the ~1,400 deals whose keys had no shard row at all, never once trying an open loadout.
+ */
+const provedSeeds = new Set<string>();
+{
+	const solutionsDir = process.env.SOLUTIONS ?? 'solutions';
+	if (existsSync(solutionsDir)) {
+		for (const name of readdirSync(solutionsDir)) {
+			if (!name.endsWith('.json')) continue;
+			try {
+				const line = JSON.parse(readFileSync(`${solutionsDir}/${name}`, 'utf8'));
+				if (typeof line?.seed === 'number') provedSeeds.add(`${line.difficulty ?? 'med'}|${line.seed}`);
+			} catch {
+				// an unreadable line proves nothing
+			}
+		}
+	}
+}
+const proved = (entry: { difficulty?: string; seed?: number }) =>
+	typeof entry.seed === 'number' && provedSeeds.has(`${entry.difficulty ?? 'med'}|${entry.seed}`);
+
 const foundAnywhere = (): string[] => {
 	const found = new Set(publishedLoadouts());
 	if (existsSync(shardDir)) {
@@ -123,6 +147,8 @@ const foundAnywhere = (): string[] => {
 				if (typeof entry.loadout !== 'string') continue;
 				// A demoted seed is not a win; a win on another seed of the same party is.
 				if (demotedSeeds.has(demotedSeed(entry))) continue;
+				// ...and a row whose line is gone is a claim, not a win: the merge already refuses to publish it.
+				if (!proved(entry)) continue;
 				found.add(entry.loadout);
 			}
 		}
@@ -312,27 +338,9 @@ if (mode === 'scan') {
 }
 
 if (mode === 'merge') {
-	/**
-	 * A published win has to come with the line that proves it. Every producer writes one when it wins, so a
-	 * row on a seed with no `solutions/` file is a claim from before the rules moved: the square keeps its
-	 * seed as a placeholder and the claim waits for a sweep to win it again.
-	 */
-	const provedSeeds = new Set<string>();
-	const solutionDir = process.env.SOLUTIONS ?? 'solutions';
-	if (existsSync(solutionDir)) {
-		for (const name of readdirSync(solutionDir)) {
-			if (!name.endsWith('.json')) continue;
-			try {
-				const line = JSON.parse(readFileSync(`${solutionDir}/${name}`, 'utf8'));
-				if (typeof line?.seed === 'number')
-					provedSeeds.add(`${line.difficulty ?? 'med'}|${line.seed}`);
-			} catch {
-				// an unreadable line proves nothing
-			}
-		}
-	}
-	const proved = (entry: Entry) => provedSeeds.has(`${entry.difficulty ?? 'med'}|${entry.seed}`);
-
+	// `proved` is the module-level test above, the same one the skip list uses: a published win has to come
+	// with the line that proves it, so a row on a seed with no `solutions/` file keeps its square as a
+	// placeholder and waits for a sweep to win it again.
 	const all: Entry[] = [];
 	if (existsSync(shardDir)) {
 		for (const name of readdirSync(shardDir)) {
