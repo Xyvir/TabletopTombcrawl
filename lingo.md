@@ -27,7 +27,7 @@ Two rules for this file:
 | **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
 | **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **Affliction: None**. | plain card |
-| **Affliction** | The deal's one monster power — Weakness, Poison, Burden or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
+| **Affliction** | The deal's one monster power — Mug, Poison, Stone Gaze or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
@@ -53,7 +53,7 @@ are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affli
 | --- | --- | --- | --- |
 | Kin | **trait** | always on, while the card is unwounded | Adept |
 | Class | **skill** | always on, while the card is unwounded | Strength |
-| Monster | **affliction** | the deal's one, worn by the court and the kings | Burden |
+| Monster | **affliction** | the deal's one, worn by the court and the kings | Mana Burn |
 | Glyph | **spell** | armed, spent by the action it is armed for, refreshed on a level up | PISORF |
 | Item | **effect** | spent once, then restocked after it is slain | Potion |
 
@@ -71,8 +71,8 @@ one of his Generals falls first; once one does, a blade reaches him. *Indomitabl
 him for the whole crawl, and only a glyph does — a run that would carry him is refused the same way. Every
 glyph that moves a card can move him, and CYDSTEPP alone can set him down in an empty hallway, which spends it.
 
-Monster names are per suit and never per card: Bandit (spades, Weakness), Serpent (hearts, Poison),
-Gorgon (clubs, Burden), Wraith (diamonds, Mana Burn). Each one has a single descriptive line above its
+Monster names are per suit and never per card: Bandit (spades, Mug), Serpent (hearts, Poison),
+Gorgon (clubs, Stone Gaze), Wraith (diamonds, Mana Burn). Each one has a single descriptive line above its
 affliction — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the affliction
 line below it is the rule. A General and the boss carry no description, because they answer to the monster
 rather than being one. Their courts are graded *Lesser* (ace–5), bare

@@ -65,8 +65,14 @@ export const CLAUSES = {
 	thiefPickpocket: true,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
-	/** Weakness: a boss-suit minion costs one rank more than its card says. */
-	weaknessRank: true,
+	/** Stone Gaze: a boss-suit minion costs one rank more than its card says. */
+	stoneGaze: true,
+	/**
+	 * Mug: a bandit slays or stashes your item out of its slot into the next free pocket along, spending it the
+	 * way playing it out yourself would. Every affliction prices a different thing — hearts, space, knowledge,
+	 * spell slots — and this one prices the pockets.
+	 */
+	banditMug: true,
 	/**
 	 * Every king is a lesser king of the boss: it carries the boss suit's power, whatever its own suit is,
 	 * the way a euchre bower answers to the trump. That keeps one aura per deal to learn, felt by the
@@ -169,7 +175,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Arcana: the item slot is a second glyph, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
+		text: 'Arcana: the item slot holds a second glyph in place of an item, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -567,8 +573,8 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		name: 'Bandit',
 		boss: 'Tomithy Longdall',
 		blurb: 'A scallywag looking to loot the tomb.',
-		power: 'Weakness',
-		text: 'slaying this inflicts one extra wound, and so does stashing it in a pocket.',
+		power: 'Mug',
+		text: 'slaying this, or stashing it in a pocket, shoves the card out of your item slot into the first empty pocket to its right, which spends it.',
 	},
 	hearts: {
 		name: 'Serpent',
@@ -581,8 +587,8 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		name: 'Gorgon',
 		boss: 'Medusa',
 		blurb: 'A gorgon whose gaze weighs down the living.',
-		power: 'Burden',
-		text: 'slaying this exhausts and wounds your item.',
+		power: 'Stone Gaze',
+		text: 'slaying this costs one rank more than its card says, and stashing it in a pocket inflicts one wound.',
 	},
 	diamonds: {
 		name: 'Wraith',
@@ -1016,7 +1022,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
-	if (CLAUSES.weaknessRank && carriesPower(state, card) && state.bossSuit === 'spades' && auraActive(state)) {
+	if (CLAUSES.stoneGaze && carriesPower(state, card) && state.bossSuit === 'clubs' && auraActive(state)) {
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
@@ -1364,17 +1370,20 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
  * The cells a monster power drains: the item under a Gorgon, the Glyph under a Wraith — and with a
  * Wizard's Arcana the item slot spells too, so a Wraith bites both glyphs.
  */
+/**
+ * The cells Mana Burn drains. The item used to share this list — one affliction for each spent slot — but the
+ * item is Mug's now: a bandit moves the card out of its pocket rather than spending it, so this list is the
+ * Wraith's alone. The glyphs are its own, and a Wizard's Arcana makes the item slot one of them.
+ */
 function auraCells(state: TombState): number[] {
-	const poison = state.bossSuit === 'clubs';
-	const mana = state.bossSuit === 'diamonds';
-	if (!poison && !mana) return [];
+	if (state.bossSuit !== 'diamonds') return [];
 	// The Wraith on the slot clause drains the place rather than the item, so a converted one still bites.
-	if (mana && CLAUSES.wraithSlot) {
+	if (CLAUSES.wraithSlot) {
 		const slot = ROLES_BY_DRAW_ORDER.indexOf('glyph');
 		return slot >= 0 && slot < state.game.cells.length ? [slot] : [];
 	}
 	return state.draft
-		.filter((entry) => (mana ? entry.role === 'glyph' || isArcanaItem(state, entry) : entry.role === 'consumable' && !isArcanaItem(state, entry)))
+		.filter((entry) => entry.role === 'glyph' || isArcanaItem(state, entry))
 		.map((entry) => entry.cell);
 }
 
@@ -1410,9 +1419,48 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 }
 
 /**
+ * Mug: the bandit shoves the card in your item slot down the row, into the first free pocket to its right.
+ * It lands the way a card you played out yourself lands, and that is the whole price: the slot converts, so the
+ * chip steps past it and nothing waits to remake the item — a restock answers an item you spent, not one that
+ * was taken off you. With every pocket to the right already full the bandit has nowhere to put it and the item
+ * stays where it is, which is the counterplay: keep the row behind the slot busy. A wound lying over the slot
+ * keeps the card where it is too. The slot is the item slot whatever it holds, so a Wizard's Arcana glyph is
+ * mugged exactly like a flask, and a card merely resting on top of a drafted item is not the item.
+ */
+function mugSlot(state: TombState): TombState {
+	const slot = convertibleCell(state);
+	if (slot < 0) return state;
+	const entry = draftAt(state, slot);
+	if (!entry || cellTopWounded(state, slot)) return state;
+	const card = state.game.cards.find(
+		(candidate) => cardId(candidate) === entry.id && candidate.location.fixture === 'cell' && candidate.location.data[0] === slot
+	);
+	if (!card) return state;
+	// The first free pocket along the row, skipping any that are taken. Drafted slots hold party cards, so in
+	// practice this walks past the rest of the party into the plain pockets.
+	let target = -1;
+	for (let cell = slot + 1; cell < state.game.cells.length; cell++) {
+		if (!state.game.cells[cell]) {
+			target = cell;
+			break;
+		}
+	}
+	if (target < 0) return state;
+	const exhausted = [...state.exhausted];
+	exhausted[slot] = false;
+	return dropKnockedArm(
+		cloneWith(state, {
+			game: relocate(state, [{ id: cardId(card), to: { fixture: 'cell', data: [target] } }]),
+			exhausted,
+			draft: consumeDraft(state, slot),
+		})
+	);
+}
+
+/**
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
- * `by` says which of the two it was, because Weakness is the one power already priced into the kill.
+ * `by` says which of the two it was, because Stone Gaze is the one power already priced into the kill.
  */
 function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState {
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
@@ -1433,17 +1481,20 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 			if (!poison) return state;
 			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(poison)) });
 		}
-		case 'spades': {
-			// Weakness is already priced into the kill — the attack adds the rank back on — so a kill
-			// owes nothing here. A minion parked in a cell has no bill to add to, and used to cost
-			// nothing at all; it now takes the same single heart off the track. It spends no item: a
-			// Bandit takes a heart, not your kit.
+		case 'spades':
+			// Mug takes the slot rather than the card's worth: the bandit empties your item pocket into the
+			// next free one along, and it does it whether the bandit went down to a blade or was only
+			// stashed. Nothing is priced into the kill for this, so both routes land here.
+			return CLAUSES.banditMug ? mugSlot(state) : state;
+		case 'clubs': {
+			// Stone Gaze is already priced into the kill — the attack adds the rank back on — so a kill
+			// owes nothing here. A gorgon parked in a cell has no bill to add to, so it takes the same
+			// single heart off the track instead.
 			if (by !== 'park') return state;
 			return dropKnockedArm(cloneWith(state, { wounded: wound(state, 1).wounded }));
 		}
-		case 'clubs':
 		case 'diamonds': {
-			// Burden and Mana Burn take the item itself: spent, and turned face-down as a wound. A Wizard's
+			// Mana Burn takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
 			// Arcana leaves two glyphs standing, and a Wraith takes them both.
 			const cells = auraCells(state);
 			if (!cells.length) return state;
@@ -1624,7 +1675,9 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 		});
 	}
 
-	next = bossAura(next, card, 'kill');
+	// A power card that was itself the item is already converting its own slot on the way home, so there is no
+	// item left to mug: the bandit takes what is in the slot, not the next pocket's worth after a conversion.
+	next = itemCard ? next : bossAura(next, card, 'kill');
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });

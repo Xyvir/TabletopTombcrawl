@@ -167,7 +167,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The last card a tomb tap moved, so a second click at the same spot can rewind it. */
 	let tombMoved: { id: string; from: CardLocation; before: TombState; rect: DOMRect; time: number } | null = null;
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
-	type FlashKind = 'level' | 'damage' | 'heal' | 'poison' | 'mana' | 'burden';
+	type FlashKind = 'level' | 'damage' | 'heal' | 'poison' | 'mana' | 'mug';
 	let flash = $state<{ kind: FlashKind; id: number } | null>(null);
 	/** The two moments that change what a run is: the boss dies, and the tomb is emptied. */
 	type FanfareKind = 'boss' | 'tomb';
@@ -1054,8 +1054,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The deal's one monster affliction, e.g. "Affliction: Burden — slaying this exhausts and wounds your
-	 * item." The court and every other king wear it, so it is always read from the boss suit. A court card
+	 * The deal's one monster affliction, e.g. "Affliction: Mug — slaying this, or stashing it in a pocket,
+	 * shoves the card out of your item slot into the first empty pocket to its right, which spends it." The court and every other king wear it, so it is always read from the boss suit. A court card
 	 * also carries the monster's one-line description; a General and the boss speak for themselves.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
@@ -1079,9 +1079,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (!slain) return null;
 		// Poison only bites when there is fog left to dig into.
 		if (slain.suit === 'hearts') return after.hidden.length < before.hidden.length ? 'poison' : null;
-		// Burden and Mana Burn need an item behind them to drain.
+		// Mug shows when the bandit actually got the item out: the slot converts, so the draft shrinks.
+		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
+		// Stone Gaze is wounds, and the wound flash already answers for it; Mana Burn needs a glyph to drain.
 		if (auraItemOf(after, slain) === null) return null;
-		return slain.suit === 'clubs' ? 'burden' : 'mana';
+		return 'mana';
 	}
 
 	function commit(next: TombState, before?: Map<string, DOMRect>) {

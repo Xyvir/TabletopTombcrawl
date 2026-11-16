@@ -113,6 +113,25 @@ Every party holding exactly one of the two lost every line (Human-only 33 of 33,
 the line's opening play was the ability it no longer has; the 16 rows holding both kept 13, and the 62 rows
 holding neither were untouched. The 359 dead lines went to `solutions/archive/`, not out of the repository.
 
+## The affliction swap (adopted)
+
+The four monster powers now price four different things, where two of them used to price the same thing in
+different slots. **Mug** (spades, Bandit) pushes the card in your item slot into the first free pocket to its
+right, on a slay or a park, exactly as playing it out would: the slot converts, the chip steps past it, and
+nothing waits to remake the item. **Stone Gaze** (clubs, Gorgon) is the old Weakness shape — a boss-suit minion
+costs one rank more than its card says, and a park takes a heart — moved to the other suit. Poison (hearts) stays
+knowledge and Mana Burn (diamonds) stays the glyphs, so the four currencies are hearts, space, spell slots and
+knowledge instead of two of them being the item and two being the glyph.
+
+Two rules were settled while building it. Mug fires on a park as well as a kill: otherwise stashing a bandit is a
+free way to switch its affliction off. And an Arcana glyph is mugged exactly like a flask — the slot is the item
+slot whatever it holds, which is why the Wizard's text now says the slot holds a glyph *in place of an item*.
+
+What it cost, measured before it was committed: every stored line was walked back through the rules, and 92 of
+178 no longer replayed (spades 31 of 34, clubs 49 of 49, hearts 5 of 37, diamonds none). Those lines went to
+`solutions/archive/` with a `-mug` suffix, not out of the repository, and the merge gate demoted the corpus from
+138 proved keys to 73 — 183 placeholder squares for a sweep to win back.
+
 ## A published win carries its line
 
 `MODE=merge` publishes a row only when `solutions/` holds a line for that seed (same track). A row whose line

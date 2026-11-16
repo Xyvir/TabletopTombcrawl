@@ -470,42 +470,42 @@ describe('the wound turn', () => {
 	});
 });
 
-describe('burden and mana burn', () => {
+describe('mana burn and mug', () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' },
 		{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 	];
 	const board = (overrides: Partial<Setup> = {}) =>
 		makeTomb({
-			columns: [['4C']],
+			columns: [['4D']],
 			cells: ['TC', 'TS', 'KD', 'QD'],
-			foundations: ['3C'],
+			foundations: ['3D'],
 			draft,
-			boss: 'KC',
+			boss: 'KD',
 			...overrides,
 		});
 
-	test('a Gorgon kill spends and wounds the Consumable before the damage lands', () => {
+	test('a Wraith kill spends and wounds the Glyph before the damage lands', () => {
 		// one heart has to be left standing, so this kill runs a rank below the deadly one
-		const state = board({ columns: [['3C']], foundations: ['2C'] });
+		const state = board({ columns: [['3D']], foundations: ['2D'] });
 		expect(currentLevel(state)).toBe(1);
 		expect(hp(state)).toBe(4);
 
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.damage).toBe(2);
-		expect(preview.locks).toContain(0);
+		expect(preview.locks).toContain(1);
 
 		const next = attackWith(state, cascade(0, 0))!;
-		expect(next.exhausted[0]).toBe(true);
-		expect(next.wounded[0]).toBe(1);
-		expect(abilityUsable(next, 0)).toBe(false);
-		// one heart for the item, then the kill's own two, paid from the right edge inward
-		expect(next.wounded).toEqual([1, 0, 1, 1, 0, 0, 0]);
+		expect(next.exhausted[1]).toBe(true);
+		expect(next.wounded[1]).toBe(1);
+		expect(abilityUsable(next, 1)).toBe(false);
+		// one heart for the glyph, then the kill's own two, paid from the right edge inward
+		expect(next.wounded).toEqual([0, 1, 1, 1, 0, 0, 0]);
 		expect(hp(next)).toBe(1);
 	});
 
 	test('a kill that would spend the last heart is refused', () => {
-		// one heart left, and the Gorgon wants its item drained on top of its three damage
+		// one heart left, and the Wraith wants its glyph burned on top of its three damage
 		const state = board({ wounded: [1, 2, 3] });
 		expect(currentLevel(state)).toBe(1);
 		expect(hp(state)).toBe(1);
@@ -519,23 +519,23 @@ describe('burden and mana burn', () => {
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 
-	test('an already spent Consumable is still wounded', () => {
-		const state = board({ exhausted: [0], columns: [['3C']], foundations: ['2C'] });
+	test('an already spent Glyph is still burned', () => {
+		const state = board({ exhausted: [1], columns: [['3D']], foundations: ['2D'] });
 		const next = attackWith(state, cascade(0, 0))!;
 
-		expect(next.exhausted[0]).toBe(true);
-		expect(next.wounded[0]).toBe(1);
+		expect(next.exhausted[1]).toBe(true);
+		expect(next.wounded[1]).toBe(1);
 	});
 
 	test('the aura wound is owed on top, so a kill one HP short is refused', () => {
 		const state = board({
 			cells: ['TC', 'TS', 'KD'],
 			wounded: [2],
-			draft: [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }],
+			draft: [{ cell: 0, role: 'glyph', id: 'TC', suit: 'clubs', name: 'PISORF', text: '' }],
 		});
 		expect(hp(state)).toBe(2);
 
-		// three damage plus the drained item
+		// three damage plus the burned glyph
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.legal).toBe(false);
 		expect(preview.reason).toContain('needs 4 wounds');
@@ -552,15 +552,19 @@ describe('burden and mana burn', () => {
 		expect(hp(next)).toBe(1);
 	});
 
-	test('parking a Gorgon in a free cell burdens the Consumable, just like a kill', () => {
-		const state = board();
+	test('parking a Gorgon in a free cell costs one heart, and leaves the item alone', () => {
+		const state = board({ boss: 'KC', columns: [['4C']] });
+		const before = hp(state);
 		const next = tombMove(state, cascade(0, 0), cell(4))!;
 
 		expect(shorthandCard(next.game.cells[4]!)).toBe('4C');
-		expect(next.exhausted[0]).toBe(true);
-		expect(next.wounded[0]).toBe(1);
-		// the card was not killed, so the power's one wound is the whole bill
-		expect(next.wounded).toEqual([1, 0, 0, 0, 0, 0, 0]);
+		expect(next.exhausted[0]).toBe(false);
+		expect(next.wounded[0]).toBe(0);
+		expect(next.draft).toHaveLength(2);
+		// the card was not killed, so the power's one wound is the whole bill: the parked card is a
+		// fresh heart and the gaze takes it straight back
+		expect(hp(next)).toBe(before);
+		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(1);
 	});
 
 	test('parking a Wraith in a free cell burns the Glyph too', () => {
@@ -573,19 +577,19 @@ describe('burden and mana burn', () => {
 	});
 
 	test('sending a boss-suit minion home from the tableau sets its power off', () => {
-		const state = board({ columns: [['3C']], foundations: ['2C'] });
+		const state = board({ columns: [['3D']], foundations: ['2D'] });
 		const next = tombMove(state, cascade(0, 0), { fixture: 'foundation', data: [0] })!;
 
-		expect(next.exhausted[0]).toBe(true);
-		expect(next.wounded[0]).toBe(1);
+		expect(next.exhausted[1]).toBe(true);
+		expect(next.wounded[1]).toBe(1);
 	});
 
-	test('the card that restocks a spent slot becomes the item, so the power holds its fire', () => {
+	test('the card that restocks a spent slot becomes the item, and nothing drains it on the way in', () => {
 		const state = makeTomb({
 			columns: [['4C']],
 			cells: [null, 'TS', 'KD', 'QD'],
 			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
-			boss: 'KC',
+			boss: 'KS',
 		});
 		const feeding = {
 			...state,
@@ -652,16 +656,74 @@ describe('burden and mana burn', () => {
 		expect(abilityUsable(next, 1)).toBe(false);
 	});
 
-	test('a converted item is not there to drain, so the kill costs only its damage', () => {
-		const state = board({
-			draft: [{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }],
+	test('mug needs a free pocket to its right, and leaves the item when the row is full', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({
+			columns: [['5S']],
+			cells: ['TC', '2C', '3C', '4C', '6C', '7C', '8C'],
+			foundations: ['4S'],
+			boss: 'KS',
+			draft,
 		});
+		const next = attackWith(state, cascade(0, 0))!;
+
+		// there is nowhere to put it, so the item keeps its slot: the pockets are the price, and there are none
+		expect(next.draft).toHaveLength(1);
+		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
+	});
+
+	test('a Wizard\'s Arcana glyph is mugged out of the item slot like an item', () => {
+		// the class card sits left of the item, so the item slot is still the slot beside the chip
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: 'TD', suit: 'diamonds', name: 'Wizard', text: '' },
+			{ cell: 2, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5S']],
+			cells: ['TD', '3C', 'TC', null],
+			foundations: ['4S', '4H', '4D', '4C'],
+			boss: 'KS',
+			draft,
+		});
+		const next = attackWith(state, cascade(0, 0))!;
+
+		// the slot is the slot whatever it holds: one entry leaves, the class card stays
+		expect(next.draft.map((entry) => entry.role)).toEqual(['class']);
+		expect(shorthandCard(next.game.cells[3]!)).toBe('TC');
+	});
+
+	test('an armed Remedy covers a mugging, so the item keeps its slot', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Remedy', text: '' },
+			{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5S']],
+			cells: ['TC', 'TS', '3C', null],
+			foundations: ['4S', '4H', '4D', '4C'],
+			boss: 'KS',
+			draft,
+		});
+		const armed = useAbility(state, 0)!;
+		const next = attackWith(armed, cascade(0, 0))!;
+
+		// the glyph is the item slot's card, and the Remedy covering the kill keeps it there
+		expect(next.draft).toHaveLength(2);
+		expect(shorthandCard(next.game.cells[1]!)).toBe('TS');
+		// the arm was spent covering the kill
+		expect(next.armed).toBe(null);
+	});
+
+	test('a converted glyph is not there to burn, so the kill costs only its damage', () => {
+		const state = board({ draft: [] });
 		const preview = attackPreview(state, cascade(0, 0));
 		expect(preview.damage).toBe(3);
 		expect(preview.legal).toBe(true);
 
 		const next = attackWith(state, cascade(0, 0))!;
-		expect(next.wounded[0]).toBe(0);
+		// nothing is drained: the three damage is the whole bill
+		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(3);
+		expect(next.exhausted.some(Boolean)).toBe(false);
 		expect(hp(next)).toBe(1);
 	});
 });
@@ -743,31 +805,32 @@ describe('the remedy', () => {
 
 	test('while it is armed, a boss-suit kill ignores the power', () => {
 		// one heart has to be left standing, so this kill runs a rank below the deadly one
-		const kill = board({ columns: [['3C']], foundations: ['2C'] });
-		// without the remedy the Gorgon's Burden would drain the Consumable before the wounds land
-		expect(attackPreview(kill, cascade(0, 0)).locks).toContain(0);
+		const kill = board({ columns: [['3D']], foundations: ['2D'], boss: 'KD' });
+		// without the remedy the Wraith would burn the Glyph before the wounds land
+		expect(attackPreview(kill, cascade(0, 0)).locks).toContain(1);
 
 		const armed = useAbility(kill, 0)!;
 		const preview = attackPreview(armed, cascade(0, 0));
 		expect(preview.legal).toBe(true);
 		expect(preview.fatal).toBe(false);
-		expect(preview.locks).not.toContain(0);
+		expect(preview.locks).not.toContain(1);
 
 		const next = attackWith(armed, cascade(0, 0))!;
-		expect(next.wounded[0]).toBe(0);
+		expect(next.wounded[1]).toBe(0);
 		// the action it covered is what exhausts it
 		expect(next.exhausted[0]).toBe(true);
 		expect(next.armed).toBe(null);
 	});
 
 	test('a minion parked in a free cell is covered too', () => {
-		// unarmed, the Burden drains the Consumable even when the card is only going to a cell
-		const plain = tombMove(board(), cascade(0, 0), cell(4))!;
-		expect(plain.wounded[0]).toBe(1);
+		// unarmed, the Wraith burns the Glyph even when the card is only going to a cell
+		const parking = board({ columns: [['4D']], boss: 'KD' });
+		const plain = tombMove(parking, cascade(0, 0), cell(4))!;
+		expect(plain.wounded[1]).toBe(1);
 
-		const armed = useAbility(board(), 0)!;
+		const armed = useAbility(parking, 0)!;
 		const next = tombMove(armed, cascade(0, 0), cell(4))!;
-		expect(next.wounded[0]).toBe(0);
+		expect(next.wounded[1]).toBe(0);
 		// the park is the action the remedy covers, so the arm is spent and the item exhausts
 		expect(next.armed).toBe(null);
 		expect(next.exhausted[0]).toBe(true);
@@ -984,35 +1047,40 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackWith(state, cascade(0))).toBe(null);
 	});
 
-	test('parking a spade minion in a free cell deals one wound, and spends nothing', () => {
+	test('parking a bandit in a free cell mugs the item, and costs no heart', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '2C', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['5S']],
-			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
+			cells: ['2C', '3C', '4C', '6C', '7C', null, null],
 			boss: 'KS',
-			exhausted: [0, 1, 2, 3, 4, 5],
+			draft,
 		});
-		expect(hp(state)).toBe(6);
+		expect(hp(state)).toBe(5);
 
-		const parked = tombMove(state, cascade(0, 0), cell(6))!;
-		// the parked card is a fresh heart on the track, and Weakness takes one straight back: the
-		// track reads the same while one of its cards has turned face down
+		const parked = tombMove(state, cascade(0, 0), cell(5))!;
+		// the parked card is a fresh heart on the track, and Mug takes no heart at all
 		expect(hp(parked)).toBe(6);
-		expect(parked.wounded.reduce((total, count) => total + count, 0)).toBe(1);
+		// the item left its slot for the first free pocket along — past the card just parked — and the
+		// slot converted behind it, so nothing is left waiting to remake it
+		expect(parked.draft).toHaveLength(0);
+		expect(parked.game.cells[0]).toBe(null);
+		expect(shorthandCard(parked.game.cells[6]!)).toBe('2C');
+		expect(parked.itemWindow).toBe(null);
 
-		// a minion of another suit parks for free, so the track keeps the heart it just gained
-		const other = makeTomb({ columns: [['5H']], cells: ['2C', '3C', '4C', '6C', '7C', '8C', null], boss: 'KS' });
-		expect(hp(tombMove(other, cascade(0, 0), cell(6))!)).toBe(7);
-		// a Bandit takes a heart, not a kit: the powers that drain an item still do, and this one does not
-		 expect(parked.exhausted).toEqual(state.exhausted);
+		// a minion of another suit parks for free and touches nothing
+		const other = makeTomb({ columns: [['5H']], cells: ['2C', '3C', '4C', '6C', '7C', null, null], boss: 'KS', draft });
+		const otherParked = tombMove(other, cascade(0, 0), cell(5))!;
+		expect(otherParked.draft).toHaveLength(1);
+		expect(hp(otherParked)).toBe(6);
 	});
 
-	test('spades weakness charges a rank more than the card is worth', () => {
-		// level four, so a four of spades is free and Weakness makes it cost one
+	test('stone gaze charges a rank more than the card is worth', () => {
+		// level four, so a four of clubs is free and the gaze makes it cost one
 		const state = makeTomb({
-			columns: [['4S'], ['4H']],
-			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
+			columns: [['4C'], ['4H']],
+			cells: ['2C', '3C', '5C', '6C', '7C', '8C', null],
 			foundations: ['3S', '3H', '3D', '3C'],
-			boss: 'KS',
+			boss: 'KC',
 		});
 		expect(currentLevel(state)).toBe(4);
 		expect(attackPreview(state, cascade(0)).damage).toBe(1);
@@ -1518,30 +1586,32 @@ describe('tombcrawl progression rules', () => {
 		expect(attackPreview(hard, cascade(0)).damage).toBe(8);
 	});
 
-	test('an off-suit king is weak in a spade tomb, where the boss suit costs a rank more', () => {
+	test('an off-suit king is weak in a club tomb, where the boss suit costs a rank more', () => {
 		const state = makeTomb({
 			columns: [['KH']],
 			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
 			foundations: ['QH', 'QS', 'QD', 'QC'],
-			boss: 'KS',
+			boss: 'KC',
 		});
 		const level = currentLevel(state);
-		// Weakness charges a rank more than the card is worth: 13 + 1 - level, not 13 - level
+		// Stone Gaze charges a rank more than the card is worth: 13 + 1 - level, not 13 - level
 		expect(attackPreview(state, cascade(0)).damage).toBe(Math.max(0, 14 - level));
 	});
 
-	test('an off-suit king drains the consumable in a club tomb', () => {
+	test('an off-suit king mugs the consumable in a spade tomb', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '7C', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['KH']],
 			cells: ['7C', '3C', '4C', '6C', '7D', '8C', null],
 			foundations: ['QH', 'QS', 'QD', 'QC'],
 			draft,
-			boss: 'KC',
+			boss: 'KS',
 		});
-		const bitten = attackWith(state, cascade(0, 0))!;
-		expect(bitten.exhausted[0]).toBe(true);
-		expect(bitten.wounded[0]).toBe(1);
+		const mugged = attackWith(state, cascade(0, 0))!;
+		// the first free pocket to the right of the slot, past the rest of the party
+		expect(mugged.draft).toHaveLength(0);
+		expect(shorthandCard(mugged.game.cells[6]!)).toBe('7C');
+		expect(mugged.exhausted[0]).toBe(false);
 	});
 
 	test('a drafted card played out to the board is spent for good', () => {
@@ -2215,13 +2285,13 @@ describe('tombcrawl boss protection', () => {
 	test('a drafted dwarf no longer silences the boss aura', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '9D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 		const dwarf = makeTomb({
-			columns: [['9S']],
+			columns: [['9C']],
 			cells: ['9D', '3C'],
 			foundations: ['8S', '8H', '8D', '8C'],
-			boss: 'KS',
+			boss: 'KC',
 			draft,
 		});
-		// Weakness still adds a rank: 9 + 1 - 9
+		// Stone Gaze still adds a rank: 9 + 1 - 9
 		expect(attackPreview(dwarf, cascade(0, 0)).damage).toBe(1);
 	});
 });
@@ -2317,9 +2387,9 @@ describe('mana burn on the slot', () => {
 
 describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster, its boss and its power', () => {
-		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Weakness' });
+		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Mug' });
 		expect(MONSTERS.hearts).toMatchObject({ name: 'Serpent', boss: 'Jörmungandrn', power: 'Poison' });
-		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Burden' });
+		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Stone Gaze' });
 		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', boss: 'Tormented One', power: 'Mana Burn' });
 	});
 });
