@@ -41,6 +41,23 @@ has not produced, which makes it a baseline to refine the solver against, not ju
 `corpus/` is gitignored, so `shard-human.json` is a local working file like the scan shards: the published
 `public/corpus.json` and its entry in `docs/` are what is kept in the repository.
 
+Both live hand-played lines replay on the current rules (154116: par 0, hp 0, 131 moves; 2769: par 0, hp 0, 145).
+The two archived ones (737, 1984) still do not, and they fail early and plainly — 737 at step 27, 1984 at step 18 —
+which is what the two-heart ceiling left behind them; they stay in `solutions/archive/` and their rows keep their
+seeds on their squares as placeholders.
+
+**Neither human line is reachable by the search, and the reason is scoring, not legality.** 154116's 131 moves were
+checked against `generateMoves` at each of the human's own boards: every single one is generated, none missing. But 81
+of the 131 land outside the search's own top three by `scoreOf`, some of them last of twenty at a negative score —
+the human's opening is setup (dig, stack, park) which changes nothing about par, the term that pays 10 a point, and a
+best-first frontier spends its budget on boards that already look better. At 1M states the clear-goal search reaches
+par 434 at ply 118 on 154116 while the human finishes at par 0 in 131; on 2769 it stalls at par 160.
+
+Weight and strategy sweeps were tried and none is worth taking: `fog: 8`, `buried: 4`, `clear: 6` and `hearts: 8` all
+lose deals the search already wins (seed 12 and/or seed 4 at 150k), `level: 45` changes nothing on the targets, and
+beam/dfs/hybrid all do worse on the targets while beam loses the controls. A fix has to change the *plan* — dig the
+fog out first, then cash in — not the price of a board.
+
 ## Hand-played lines live in `solutions/`
 
 A corpus row keeps only the seed. When a player pastes the move log as well, the line itself goes into
