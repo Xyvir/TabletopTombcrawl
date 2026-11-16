@@ -2271,10 +2271,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							<ul>
 								{#each ROLE_ORDER as role (role)}
 									{@const suit = inspected[role]}
+									<!--
+										The pane reads the party back the way the board deals it, so a Wizard's item slot spells
+										rather than carrying a potion: the role is still the item pocket, the ability is the glyph.
+									-->
+									{@const shown = abilityFor(role === 'consumable' && inspected.class === 'clubs' ? 'glyph' : role, suit)}
 									<li>
 										<span class="role">{ROLE_WORD[role]}</span>
 										<span class="glyph" class:red={suit === 'hearts' || suit === 'diamonds'}>{SUIT_GLYPH[suit]}</span>
-										<span class="ability">{abilityFor(role, suit).name}</span>
+										<span class="ability">{shown.name}</span>
 									</li>
 								{/each}
 							</ul>
