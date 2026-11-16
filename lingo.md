@@ -23,7 +23,7 @@ Two rules for this file:
 | **Crawl** | One whole board: the tomb, the status track and the graveyard. The run, start to finish. "Restart crawl", "Crawl #12345". | the deal / the game |
 | **Graveyard** | The four piles a card goes to when it is slain. Where the dead lie. | foundations |
 | **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
-| **Boss** | The king that ends the run when slain. | the protected king |
+| **Boss** | The king that ends the run when slain, titled *<Name>, <Monster> Boss of <Suit>* — "Medusa, Gorgon Boss of Clubs". Boss is the post, not the card: the off-suit kings rank below her as Generals of theirs, and Medusa is never called a king. | the protected king |
 | **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
 | **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **Affliction: None**. | plain card |

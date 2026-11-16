@@ -1045,12 +1045,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	/* ---------- tabletop tombcrawl ---------- */
 
-	/** The boss reads as its name, its monster and the suit it lives in: "Medusa, Gorgon King of Clubs". */
+	/**
+	 * The boss reads as its name, its monster and the suit it lives in: "Medusa, Gorgon Boss of Clubs". The word is
+	 * the post, not the card: Medusa is not a king, and the off-suit kings answer to her as Generals of their suits,
+	 * so the tomb's own king is the same rank of title one step up rather than a king among generals.
+	 */
 	function bossTitle(state: TombState): string {
 		const suit = state.bossSuit;
 		if (!suit) return 'not revealed';
 		const monster = MONSTERS[suit];
-		return `${monster.boss}, ${monster.name} King of ${suit[0].toUpperCase()}${suit.slice(1)}`;
+		return `${monster.boss}, ${monster.name} Boss of ${suit[0].toUpperCase()}${suit.slice(1)}`;
 	}
 
 	/**
