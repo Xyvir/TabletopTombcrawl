@@ -2252,9 +2252,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							</span>
 						{/each}
 						{#each SUITS as cls, clsIndex (cls)}
+							<!--
+								A Wizard's Arcana makes the item slot a second glyph, spelling from the suit of the card in it, so
+								his block's four columns are four glyphs rather than four items: the bottom margin says what they are
+								in his column, the way the side margin already names the first one.
+							-->
 							<span class="margin bottom" style={`grid-column: ${2 + clsIndex}; grid-row: 6`}>
 								{#each SUITS as item (item)}
-									<span title={abilityFor('consumable', item).text}>{abilityFor('consumable', item).name}</span>
+									{@const label = abilityFor(cls === 'clubs' ? 'glyph' : 'consumable', item)}
+									<span title={label.text}>{label.name}</span>
 								{/each}
 							</span>
 						{/each}
