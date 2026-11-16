@@ -1,6 +1,16 @@
 import { describe, expect, test } from 'vitest';
 import { createTombState } from './tombcrawl';
-import { applyAction, generateMoves, solveTomb, stateKey } from './solver';
+import { shorthandCard } from './game/card/card';
+import {
+	applyAction,
+	boardKey,
+	fogKey,
+	fogMask,
+	generateMoves,
+	solveTomb,
+	spentMask,
+	stateKey,
+} from './solver';
 
 const home = (state: ReturnType<typeof createTombState>) =>
 	state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
@@ -53,5 +63,30 @@ describe('tomb solver', () => {
 		expect(home(replayed!)).toBe(home(cast!.next));
 		expect(replayed!.hidden.length).toBe(cast!.next.hidden.length);
 		expect(replayed!.armed).toBeNull();
+	});
+
+	// The dominance clauses lean on keys that ignore exactly one field. A spent cell and a kept one have to look
+	// like the same board, and a dug card and a face-down one too — and nothing else may be ignored, or two
+	// genuinely different boards would be pruned as twins.
+	test('the dominance keys separate exactly one field from a board', () => {
+		const state = createTombState(4242);
+		expect(state.exhausted[0]).toBe(false);
+		const spent = { ...state, exhausted: [...state.exhausted] };
+		spent.exhausted[0] = true;
+
+		expect(stateKey(spent)).not.toBe(stateKey(state));
+		expect(boardKey(spent)).toBe(boardKey(state));
+		expect(spentMask(spent) ^ spentMask(state)).toBe(1);
+
+		const index = new Map(state.game.cards.map((card, at) => [shorthandCard(card), 1n << BigInt(at)]));
+		const dug = { ...state, hidden: state.hidden.slice(1) };
+		expect(state.hidden.length).toBeGreaterThan(0);
+		expect(stateKey(dug)).not.toBe(stateKey(state));
+		expect(fogKey(dug)).toBe(fogKey(state));
+		// the dug state's fog is a proper subset of the undug one's, which is what the clause compares
+		const whole = fogMask(state, index);
+		const less = fogMask(dug, index);
+		expect(whole & less).toBe(less);
+		expect(whole).not.toBe(less);
 	});
 });

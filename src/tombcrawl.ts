@@ -85,6 +85,21 @@ export const CLAUSES = {
 	/** A free cell holding two cards is worth two hearts rather than one. */
 	pisorfStack: true,
 	/**
+	 * The search drops a board reached with an item spent when the same board was already reached with that item
+	 * in hand. Exhaustion gates the ability and nothing else — a spent card is still playable out of its slot — so
+	 * the unspent twin has every move the spent one has and the branch below it is wasted budget. Sound, and it
+	 * fired zero times in a 40k-node A/B over 16 proved seeds: positions differing only in the spent bits are not
+	 * being reached twice at that scale. Off until a deeper sweep says otherwise.
+	 */
+	spentDominance: false,
+	/**
+	 * The search drops a board that has dug a card when the same board (fog aside) was reached with that card
+	 * still face down. Not a rule: a dug card is a heal taken, a Poison target and a clogged hallway avoided,
+	 * while the fog is a heal still banked. It is a bet that fog kept is worth more than fog spent, and it is
+	 * off until a sweep measures it.
+	 */
+	fogDominance: false,
+	/**
 	 * Wraith: Mana Burn drains the glyph slot rather than the Glyph item, so a slot the chip has stepped
 	 * past is still bitten instead of going quiet.
 	 */

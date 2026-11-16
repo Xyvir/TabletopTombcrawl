@@ -1,5 +1,6 @@
 import { shorthandCard, type Card, type CardLocation } from './game/card/card';
 import {
+	CLAUSES,
 	FREE_CELL_COUNT,
 	abilityUsable,
 	armedClick,
@@ -337,6 +338,8 @@ export interface SolveResult {
 	bestSteps: SolveStep[];
 	/** Depth of the deepest line followed. */
 	plies: number;
+	/** Branches dropped as a worse twin of a position already reached, by which clause. */
+	pruned?: { spent: number; fog: number };
 	nodes: number;
 	elapsedMs: number;
 	timedOut: boolean;
@@ -579,6 +582,43 @@ export function scoreOf(state: TombState, goal: Goal = 'clear'): number {
 const FIXTURE_CODE: Record<string, number> = { cascade: 1, cell: 2, foundation: 3, deck: 4 };
 
 export function stateKey(state: TombState): string {
+	return hashBoard(state, true, true);
+}
+
+/**
+ * The same board with the spent bits left out, so a position reached with an item spent and the same position
+ * reached with it still available share a key. Exhaustion gates the ability and nothing else — the spent card can
+ * still be played out of its slot — so the unspent twin has every move the spent one has, and is better to be in.
+ * `spentMask` says which cells are spent, which is what orders the two.
+ */
+export function boardKey(state: TombState): string {
+	return hashBoard(state, false, true);
+}
+
+/**
+ * The board with the fog left out of the key: two positions that differ only in which cards have been dug share
+ * it. "Less dug" is a heuristic rather than a rule — a face-down card is a heal, a Poison target and a fogged
+ * column, while a revealed one is a playable card and a clogged hallway — so this is ordered, not proven, and it
+ * lives behind `CLAUSES.fogDominance` until a sweep says it pays.
+ */
+export function fogKey(state: TombState): string {
+	return hashBoard(state, true, false);
+}
+
+/** Which cards are face down, as a bit per card in the deal's own order. */
+export function fogMask(state: TombState, index: Map<string, bigint>): bigint {
+	let mask = 0n;
+	for (const id of state.hidden) mask |= index.get(id) ?? 0n;
+	return mask;
+}
+
+export function spentMask(state: TombState): number {
+	let bits = 0;
+	for (let index = 0; index < state.exhausted.length; index++) if (state.exhausted[index]) bits |= 1 << index;
+	return bits;
+}
+
+function hashBoard(state: TombState, withSpent: boolean, withFog: boolean): string {
 	let a = 0x811c9dc5;
 	let b = 0x9e3779b9;
 	const mix = (value: number) => {
@@ -596,11 +636,11 @@ export function stateKey(state: TombState): string {
 		const { fixture, data } = card.location;
 		mix(FIXTURE_CODE[fixture] * 256 + (data[0] ?? 0) * 16 + (data[1] ?? 0));
 	}
-	for (const id of state.hidden) mixText(id);
-	mix(state.hidden.length);
-	let bits = 0;
-	for (let index = 0; index < state.exhausted.length; index++) if (state.exhausted[index]) bits |= 1 << index;
-	mix(bits);
+	if (withFog) {
+		for (const id of state.hidden) mixText(id);
+		mix(state.hidden.length);
+	}
+	if (withSpent) mix(spentMask(state));
 	for (const count of state.wounded) mix(count);
 	for (const entry of state.draft) {
 		mix(entry.cell);
@@ -727,10 +767,21 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	const first: Node = { state: start, path: null, score: firstValue, value: firstValue, depth: 0 };
 	open.push(first);
 	const seen = new Set<string>([stateKey(start)]);
+	/**
+	 * Per board (spent bits excluded), the fewest spent cells any way of reaching it has managed. A state that
+	 * arrives with a spent cell its twin did not have is strictly worse and cannot add a move the twin lacked, so
+	 * it is dropped before it costs an expansion.
+	 */
+	const leastSpent = new Map<string, number>();
+	/** Per board (fog excluded), the most cards any way of reaching it has left face down. */
+	const mostFog = new Map<string, bigint>();
+	const fogIndex = new Map<string, bigint>();
+	start.game.cards.forEach((card, index) => fogIndex.set(shorthandCard(card), 1n << BigInt(index)));
 	let best = first;
 	let nodes = 1;
 	let deepest = 0;
 	let timedOut = false;
+	const pruned = { spent: 0, fog: 0 };
 
 	const finish = (solved: boolean, path: PathLink | null, state: TombState): SolveResult => ({
 		goal,
@@ -742,6 +793,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 		nodes,
 		elapsedMs: Date.now() - began,
 		timedOut,
+		pruned,
 	});
 
 	// Depth-first with the best board on top of the stack: dives long lines instead of surveying the
@@ -799,7 +851,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 				timedOut = true;
 				break;
 			}
-			const seen = new Set<string>();
+						const seen = new Set<string>();
 			const children: Node[] = [];
 			for (const node of frontier) {
 				for (const move of generateMoves(node.state)) {
@@ -858,6 +910,30 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			}
 			const key = stateKey(move.next);
 			if (seen.has(key)) continue;
+			if (CLAUSES.fogDominance) {
+				const board = fogKey(move.next);
+				const fog = fogMask(move.next, fogIndex);
+				const held = mostFog.get(board);
+				// Every face-down card of this position was already face down in that one, and that one kept more:
+				// this state has spent a dig the other had not, which is the trade this clause is willing to take.
+				if (held !== undefined && (held & fog) === fog && held !== fog) {
+					pruned.fog += 1;
+					continue;
+				}
+				if (held === undefined || (fog & ~held) !== 0n) mostFog.set(board, fog);
+			}
+			if (CLAUSES.spentDominance) {
+				const board = boardKey(move.next);
+				const spent = spentMask(move.next);
+				const held = leastSpent.get(board);
+				// A cell spent here that the earlier arrival still had in hand: everything reachable from this state
+				// was reachable from that one, so the branch is a worse twin and stops here.
+				if (held !== undefined && (spent & ~held) !== 0) {
+					pruned.spent += 1;
+					continue;
+				}
+				if (held === undefined || (held & ~spent) !== 0) leastSpent.set(board, spent);
+			}
 			seen.add(key);
 			const value = scoreOf(move.next, goal);
 			const child: Node = {
