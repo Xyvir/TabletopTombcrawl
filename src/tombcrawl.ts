@@ -588,7 +588,7 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		boss: 'Medusa',
 		blurb: 'A gorgon whose gaze weighs down the living.',
 		power: 'Stone Gaze',
-		text: 'slaying this costs one rank more than its card says, and stashing it in a pocket inflicts one wound.',
+		text: 'inflict one extra wound.',
 	},
 	diamonds: {
 		name: 'Wraith',
