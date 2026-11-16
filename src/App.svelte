@@ -1947,11 +1947,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{#if tomb && i === reserveCell(tomb) && tomb.reserveHeld}
 						<!-- The reserve pocket: the optional third win, and nothing more. It goes out the moment a card
 						     sits here, and it never comes back. -->
-						<span
-							class="reserve"
-							title="Reserve pocket — leave it empty all deal for a true boss kill, and a true clear of the tomb"
-							aria-hidden="true">★</span
-						>
+						<span class="reserve" aria-hidden="true"></span>
 					{/if}
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
