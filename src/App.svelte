@@ -1922,10 +1922,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<!-- The bill, drawn on the pocket it would take rather than over the whole track. -->
 						<span class="doom" aria-hidden="true">{@render skull()}</span>
 					{/if}
-					{#if stack.some((stacked) => afflictionIds.has(shorthandCard(stacked)))}
-						<!-- The pocket an affliction is aimed at: a warning on the card, not a state of it. -->
-						<span class="afflict" aria-hidden="true">!</span>
-					{/if}
+					<!-- The pocket an affliction is aimed at: a warning on the card, not a state of it. It stays
+					     mounted so it can fade in and out the way the swords do. -->
+					<span
+						class="afflict"
+						class:on={stack.some((stacked) => afflictionIds.has(shorthandCard(stacked)))}
+						aria-hidden="true">!</span
+					>
 					<span
 						class="slay"
 						class:on={slaying}
@@ -2072,10 +2075,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{:else}
 							<img src={down ? `${BASE}images/back.svg` : img(card)} alt="" draggable="false" />
 						{/if}
-						{#if afflictionIds.has(shorthandCard(card))}
-							<!-- The card an affliction is aimed at: the fog it would lift, drawn before the blow. -->
-							<span class="afflict" aria-hidden="true">!</span>
-						{/if}
+						<!-- The card an affliction is aimed at, mounted so the mark can fade rather than pop. -->
+						<span
+							class="afflict"
+							class:on={afflictionIds.has(shorthandCard(card))}
+							aria-hidden="true">!</span
+						>
 						<span
 							class="slay"
 							class:on={slaying}

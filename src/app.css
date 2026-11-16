@@ -1257,6 +1257,21 @@ body:has(.card.dragging) .cells.tomb .chip {
 	filter: drop-shadow(0 0 6px rgba(128, 70, 230, 0.45));
 	text-shadow: none;
 	pointer-events: none;
+	/* mounted always, lit only while the carrier is under the pointer: the swords' tween, not a pop */
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.card .afflict.on,
+.slot .afflict.on {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card .afflict,
+	.slot .afflict {
+		transition: none;
+	}
 }
 
 /* the filters themselves live in the board markup, out of sight */
