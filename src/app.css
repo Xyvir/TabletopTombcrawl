@@ -1227,6 +1227,15 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
+ * A fogged card an affliction is aimed at wears a violet wash on its back as well as the bang. The back is
+ * a drawing of its own, and an outline over it can vanish into the bricks; the stain is what makes the
+ * pointed-at card findable at a glance. Venom is the only power that aims at fog, so this is its card.
+ */
+.card.down.afflicted img:not(.flip-front) {
+	filter: url(#tombAfflict);
+}
+
+/*
  * The warning an affliction draws on the card it is aimed at, while the carrier is under the pointer. It
  * is an outline rather than a filled bang: the card underneath is the information, so the mark has to say
  * "this one" without covering the rank and suit that say what is at stake. A ghost of a fill keeps it

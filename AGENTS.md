@@ -141,8 +141,10 @@ The board warns on what an affliction is aimed at: `afflictionTargets()` names t
 see-through purple `!` on each while a carrier is under the pointer — the fog a Viper would lift, the card in the
 slot a Bandit would shove out, the card a Gorgon's rank would turn down, the glyphs a Wraith would spend. The Gorgon
 one rides on the card the red glow already marks, which reinforces that the extra rank is the gaze's doing, and it
-is the only warning a stashed gorgon gets: a park has no attack preview to show the heart it costs. An armed Remedy
-switches the aura off, so the warnings go out with it: the preview only ever shows what would actually happen.
+is the only warning a stashed gorgon gets: a park has no attack preview to show the heart it costs. A fogged
+target also wears a violet wash on its back, because the back is a drawing of its own and the outline can vanish
+into it. An armed Remedy switches the aura off, so the warnings go out with it: the preview only ever shows what
+would actually happen.
 
 What it cost, measured before it was committed: every stored line was walked back through the rules, and 92 of
 178 no longer replayed (spades 31 of 34, clubs 49 of 49, hearts 5 of 37, diamonds none). Those lines went to

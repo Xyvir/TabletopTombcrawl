@@ -1743,6 +1743,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					values="0.78 0 0 0 0.1035 0 0.78 0 0 0.0414 0 0 0.78 0 0.1639 0 0 0 1 0"
 				/>
 			</filter>
+			<!-- A fogged card an affliction is aimed at: a violet wash over the back, so the warning drawn on
+			     it cannot disappear into the back's own drawing. -->
+			<filter id="tombAfflict" color-interpolation-filters="sRGB">
+				<feColorMatrix
+					type="matrix"
+					values="0.75 0 0 0 0.13 0 0.75 0 0 0.04 0 0 0.75 0 0.26 0 0 0 1 0"
+				/>
+			</filter>
 			<filter id="tombBoss" color-interpolation-filters="sRGB">
 				<feColorMatrix
 					type="matrix"
@@ -2016,6 +2024,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						class:dragging={dragIds.has(shorthandCard(card))}
 						class:boss
 						class:aura={power && !down && !boss}
+						// The card an affliction under the pointer would touch: stained as well as banged, so the
+						// mark is findable on a face-down back that has a drawing of its own.
+						class:afflicted={afflictionIds.has(shorthandCard(card))}
 						class:locked={!!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 						class:down
 						class:flipping
