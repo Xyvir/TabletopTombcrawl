@@ -1307,6 +1307,37 @@
 			"at": "2026-11-16T04:58:32.896Z"
 		},
 		{
+			"loadout": "hchc",
+			"boss": "diamonds",
+			"seed": 3181,
+			"moves": 94,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "PISORF",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-16"
+		},
+		{
 			"loadout": "hdcd",
 			"boss": "spades",
 			"seed": 2435,
@@ -2753,6 +2784,14 @@
 				}
 			}
 		},
+		"hchc": {
+			"med": {
+				"boss": {
+					"seed": 3181,
+					"moves": 94
+				}
+			}
+		},
 		"hssh": {
 			"med": {
 				"boss": {
@@ -3461,13 +3500,6 @@
 				"seed": 47,
 				"score": null,
 				"at": "2026-11-12T13:59:44.592Z"
-			}
-		},
-		"hchc": {
-			"med": {
-				"seed": 975,
-				"score": null,
-				"at": "2026-11-15T02:21:11.530Z"
 			}
 		},
 		"hcsh": {
@@ -4332,7 +4364,6 @@
 		"hhsd",
 		"hhss",
 		"hchh",
-		"hchc",
 		"hchd",
 		"hchs",
 		"hcch",
