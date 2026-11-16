@@ -1556,6 +1556,68 @@
 			"at": "2026-11-14"
 		},
 		{
+			"loadout": "hscd",
+			"boss": null,
+			"seed": 80716,
+			"moves": 43,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-16T15:39:18.961Z"
+		},
+		{
+			"loadout": "hsch",
+			"boss": "hearts",
+			"seed": 81319,
+			"moves": 49,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-16T16:39:31.036Z"
+		},
+		{
 			"loadout": "hsdc",
 			"boss": "hearts",
 			"seed": 155071,
@@ -1647,6 +1709,37 @@
 				}
 			],
 			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hshc",
+			"boss": "hearts",
+			"seed": 81609,
+			"moves": 49,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-16T17:06:56.517Z"
 		},
 		{
 			"loadout": "hshd",
@@ -1833,6 +1926,37 @@
 				}
 			],
 			"at": "2026-11-14"
+		},
+		{
+			"loadout": "hsss",
+			"boss": "diamonds",
+			"seed": 80737,
+			"moves": 61,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-16T15:41:16.188Z"
 		},
 		{
 			"loadout": "sccc",
@@ -2270,6 +2394,38 @@
 		}
 	],
 	"found": {
+		"hscd": {
+			"med": {
+				"boss": {
+					"seed": 80716,
+					"moves": 43
+				}
+			}
+		},
+		"hsss": {
+			"med": {
+				"boss": {
+					"seed": 80737,
+					"moves": 61
+				}
+			}
+		},
+		"hsch": {
+			"med": {
+				"boss": {
+					"seed": 81319,
+					"moves": 49
+				}
+			}
+		},
+		"hshc": {
+			"med": {
+				"boss": {
+					"seed": 81609,
+					"moves": 49
+				}
+			}
+		},
 		"dcdd": {
 			"med": {
 				"boss": {
@@ -4024,13 +4180,6 @@
 				"at": "2026-11-16T03:53:22.859Z"
 			}
 		},
-		"hscd": {
-			"med": {
-				"seed": 34,
-				"score": null,
-				"at": "2026-11-12T14:00:29.040Z"
-			}
-		},
 		"hsds": {
 			"med": {
 				"seed": 1532,
@@ -4045,20 +4194,6 @@
 				"at": "2026-11-14"
 			}
 		},
-		"hsch": {
-			"med": {
-				"seed": 378,
-				"score": null,
-				"at": "2026-11-15T02:21:52.663Z"
-			}
-		},
-		"hshc": {
-			"med": {
-				"seed": 24,
-				"score": null,
-				"at": "2026-11-12T14:01:24.851Z"
-			}
-		},
 		"hhds": {
 			"med": {
 				"seed": 452,
@@ -4071,13 +4206,6 @@
 				"seed": 239,
 				"score": null,
 				"at": "2026-11-14"
-			}
-		},
-		"hsss": {
-			"med": {
-				"seed": 2859,
-				"score": null,
-				"at": "2026-11-16T02:57:45.076Z"
 			}
 		},
 		"dssh": {
@@ -4199,12 +4327,8 @@
 		"hdsc",
 		"hdsd",
 		"hdss",
-		"hshc",
-		"hsch",
-		"hscd",
 		"hscs",
 		"hsds",
-		"hsss",
 		"chhh",
 		"chhc",
 		"chhs",
