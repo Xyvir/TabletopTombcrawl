@@ -1131,7 +1131,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * the price of a card can be known before the blow rather than inferred from the bar afterwards.
 	 */
 	function goldNote(state: TombState, card: Card) {
-		return `Grants ${goldValue(state, card)} gold on slay`;
+		return `Drops ${goldValue(state, card)} gold on slay`;
 	}
 
 	/** The monster power this move set off, if it killed a card that carries one. */

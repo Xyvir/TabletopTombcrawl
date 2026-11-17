@@ -337,7 +337,7 @@ The bar counts gold, and gold is arithmetic a player can do in their head: **a r
 General five, and the boss twenty-five**. Thirty-six rats, twelve minions, three Generals and the boss are
 fifty-two cards and exactly a hundred gold, so a bare tomb reads 100 and the number is already a percentage — the
 separate `(14.4%)` reading that used to sit beside it is gone rather than repeated. Each card's tooltip says what
-it pays ("Grants 2 gold on slay"), so the price of a card can be known before the blow.
+it pays ("Drops 2 gold on slay"), so the price of a card can be known before the blow.
 
 Par survives, and it is the legacy *negative* reading: `tombPar`/`PAR_TOTAL`/`parValue` still score a card by how
 deep it lay in the deck as well as whether it came home, because that is what the solver is guided by and what the
