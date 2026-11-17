@@ -168,7 +168,8 @@ which the fills already tried): flat and two-phase on boss goal, plan on clear, 
 two-phase 4. Every arm found squares the other two lost, which is the argument for sweeping all three. A later
 plan-only sweep over the 114 stragglers and 221 fresh seeds with the freshness price took it to **149 of 256** —
 7 new squares plus solver proofs on the two hand-played deals, one of them re-proving a retired seed. A second
-plan-only sweep over 202 fresh seeds (400001–600000) for the 107 keys still missing took it to **168 of 256**.
+plan-only sweep over 202 fresh seeds (400001–600000) for the 107 keys still missing took it to **168 of 256**. A third plan-only sweep over 174 fresh seeds
+(600001–800000) for the 88 keys still missing took it to **186 of 256**.
 
 **Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
 par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search
