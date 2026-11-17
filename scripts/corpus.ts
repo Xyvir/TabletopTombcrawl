@@ -426,10 +426,34 @@ if (mode === 'merge') {
 	// the row takes its move count and its goal from the file: without this the sheet advertises whatever number the
 	// oldest shard happened to write, and preferring long lines actively picks the stalest claim in the pile.
 	const lineFacts = new Map<string, { moves: number; goal: string; at: string | null }>();
-	for (const row of solutionRows)
-		lineFacts.set(`${row.difficulty ?? 'med'}|${row.seed}`, { moves: row.moves, goal: row.goal, at: row.at });
+	for (const row of solutionRows) {
+		// Two lines can share a seed — a hand-played line and a solver's shorter one. The square shows the
+		// longer line (see `unique` below), so the row takes the longer line's facts, or the sheet advertises
+		// one line's count beside the other's seed.
+		const key = `${row.difficulty ?? 'med'}|${row.seed}`;
+		const held = lineFacts.get(key);
+		// A clear outranks a boss kill whatever the lengths (see `rank`); among equals the longer line
+		// is the one the square shows.
+		const rankGoal = (goal: string) => (goal === 'clear' ? 0 : 1);
+		const better =
+			!held ||
+			rankGoal(row.goal) < rankGoal(held.goal) ||
+			(rankGoal(row.goal) === rankGoal(held.goal) && row.moves > held.moves);
+		if (better) lineFacts.set(key, { moves: row.moves, goal: row.goal, at: row.at });
+	}
+	// The move counts any line on the seed actually played: a row already matching one of them is accurate
+	// and keeps its own numbers, so a solver's shorter line on a hand-won seed does not rewrite the hand's
+	// row (nor the reverse). Only a stale guess — a count no line on disk plays — takes the facts.
+	const lineCounts = new Map<string, Set<number>>();
+	for (const row of solutionRows) {
+		const key = `${row.difficulty ?? 'med'}|${row.seed}`;
+		if (!lineCounts.has(key)) lineCounts.set(key, new Set());
+		lineCounts.get(key)!.add(row.moves);
+	}
 	for (const entry of all) {
-		const facts = lineFacts.get(`${entry.difficulty ?? 'med'}|${entry.seed}`);
+		const key = `${entry.difficulty ?? 'med'}|${entry.seed}`;
+		if (lineCounts.get(key)?.has(entry.moves)) continue;
+		const facts = lineFacts.get(key);
 		if (!facts) continue;
 		const moved = entry.moves !== facts.moves || entry.goal !== facts.goal;
 		entry.moves = facts.moves;
