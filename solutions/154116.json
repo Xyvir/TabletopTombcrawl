@@ -25,7 +25,7 @@
 		"dig 6H col 8 row 5",
 		"park 4S col 7 -> cell 5",
 		"arm CYDSTEPP (cell 4)",
-		"move KH col 3 -> col 7",
+		"move KH col 3 -> col 7 (onto fog)",
 		"dig 7C col 3 row 5",
 		"move 8D 7C col 3 -> col 1",
 		"dig 3C col 3 row 3",

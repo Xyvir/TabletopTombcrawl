@@ -2609,6 +2609,37 @@
 			"at": "2026-11-15T23:01:24.568Z"
 		},
 		{
+			"loadout": "hccc",
+			"boss": "spades",
+			"seed": 150309,
+			"moves": 166,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "PISORF",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-17"
+		},
+		{
 			"loadout": "hcch",
 			"boss": null,
 			"seed": 31020,
@@ -3573,7 +3604,7 @@
 			"loadout": "hhhh",
 			"boss": "diamonds",
 			"seed": 2769,
-			"moves": 145,
+			"moves": 144,
 			"difficulty": "med",
 			"goal": "clear",
 			"party": [
@@ -6609,6 +6640,14 @@
 			"at": "2026-11-15T23:01:24.568Z"
 		},
 		{
+			"loadout": "hccc",
+			"difficulty": "med",
+			"seed": 150309,
+			"moves": 166,
+			"goal": "clear",
+			"at": "2026-11-17"
+		},
+		{
 			"loadout": "hcch",
 			"difficulty": "med",
 			"seed": 31020,
@@ -7725,6 +7764,14 @@
 				"boss": {
 					"seed": 150250,
 					"moves": 50
+				}
+			}
+		},
+		"hccc": {
+			"med": {
+				"clear": {
+					"seed": 150309,
+					"moves": 166
 				}
 			}
 		},
@@ -9407,13 +9454,6 @@
 				"at": "2026-11-14T08:46:13.265Z"
 			}
 		},
-		"hccc": {
-			"med": {
-				"seed": 150309,
-				"score": null,
-				"at": "2026-11-14T07:34:48.656Z"
-			}
-		},
 		"chdc": {
 			"med": {
 				"seed": 151786,
@@ -9616,7 +9656,6 @@
 		"hhcc",
 		"hhdd",
 		"hhsd",
-		"hccc",
 		"hccd",
 		"hccs",
 		"hcds",

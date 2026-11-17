@@ -330,6 +330,17 @@ describe('monster damage on the way home', () => {
 			expect(levelUpGraves(makeTomb(board))).toEqual(['spades']);
 			expect(levelUpGraves(makeTomb({ ...board, draft: human }))).toEqual(['hearts']);
 		});
+
+		test('follows the next card home over a card the tomb drafted', () => {
+			// clubs sits on its ace with the tomb's own two drafted, so the card that can come home there is
+			// the three. Read off the lowest grave, that club lifts it; a Human ignores that grave and is held
+			// by the diamond's two, so the diamond's three lifts him as well.
+			const glyph: DraftCard = { cell: 1, role: 'glyph', id: '2C', suit: 'clubs', name: 'PISORF', text: '' };
+			const human: DraftCard = { cell: 0, role: 'kin', id: '9H', suit: 'hearts', name: 'Human', text: '' };
+			const board = { columns: [['3C', '8D']], cells: ['9H', '2C'], foundations: ['5S', '5H', 'AC', '2D'] };
+			expect(levelUpGraves(makeTomb({ ...board, draft: [glyph] }))).toEqual(['clubs']);
+			expect(levelUpGraves(makeTomb({ ...board, draft: [human, glyph] }))).toEqual(['clubs', 'diamonds']);
+		});
 	});
 
 	describe("the human's level", () => {

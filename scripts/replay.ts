@@ -30,6 +30,7 @@ import {
 	type TombState,
 } from '../src/tombcrawl';
 import { applyAction, type SolverAction } from '../src/solver';
+import { describeStep } from '../src/notation';
 import { shorthandCard, type CardLocation } from '../src/game/card/card';
 
 /** Where a transcript is kept. Not gitignored: these are the baselines, so they live in the repository. */
@@ -84,7 +85,7 @@ function carry(state: TombState, from: CardLocation, to: CardLocation): TombStat
 
 const SUIT_NAMES: Record<string, string> = { h: 'hearts', c: 'clubs', d: 'diamonds', s: 'spades' };
 
-function step(state: TombState, text: string): TombState | null {
+export function step(state: TombState, text: string): TombState | null {
 	let m: RegExpExecArray | null;
 
 	// home  AS -> spades foundation
@@ -120,11 +121,24 @@ function step(state: TombState, text: string): TombState | null {
 		const [, id, col, slot] = m;
 		const from = locOf(state, id);
 		if (from.fixture !== 'cascade' || from.data[0] !== Number(col) - 1) throw new Error(`${id} is not in col ${col}`);
+		// A PISORF cast prints as the park of the card the deck lists first: the spell is still armed
+		// across the transcript's invisible aim, so the grab is the named card when it heads the pair
+		// and the card under it when the pair's top card is the one the deck lists first.
+		if (state.armed?.kind === 'pisorf') {
+			const column = state.game.tableau[from.data[0]] ?? [];
+			const under = column[from.data[1] - 1];
+			for (const spot of [from, ...(under ? [under.location] : [])]) {
+				const next = armedDrop(state, spot, cell(Number(slot) - 1));
+				if (next) return next;
+			}
+			return null;
+		}
 		return carry(state, from, cell(Number(slot) - 1));
 	}
 
 	// move  8D col 8 -> col 5      /      move  TD JS col 3 -> col 2      /      move  9C cell 6 -> col 2
-	if ((m = /^move ([\w ]+?) col (\d+) -> col (\d+)$/.exec(text))) {
+	// A move that buries onto fog carries the " (onto fog)" suffix; it names no new information.
+	if ((m = /^move ([\w ]+?) col (\d+) -> col (\d+)( \(onto fog\))?$/.exec(text))) {
 		const [, ids, from, to] = m;
 		// The line names the cards that went, and a hand takes hold of one end of that run — but the log
 		// does not always print the same end first, so the handle is the card whose run is that long.
@@ -138,14 +152,49 @@ function step(state: TombState, text: string): TombState | null {
 			named[named.length - 1];
 		return carry(state, locOf(state, held), topOf(state, Number(to) - 1));
 	}
-	if ((m = /^move (\w+) cell (\d+) -> col (\d+)$/.exec(text))) {
+	if ((m = /^move (\w+) cell (\d+) -> col (\d+)( \(onto fog\))?$/.exec(text))) {
 		const [, id, slot, to] = m;
 		const at = locOf(state, id);
 		if (at.fixture !== 'cell' || at.data[0] !== Number(slot) - 1) throw new Error(`${id} is not in cell ${slot}`);
 		return carry(state, at, topOf(state, Number(to) - 1));
 	}
 
+	// move  2C JS cell 3 -> cell 7 — a park plus the Mug it sets off, printed as one line off the
+	// mugged card: the bandit went to a free pocket and the item slot's card went to the next one.
+	// The transcript names the deck's first card first, so the grab is the named card itself for a
+	// plain re-park and the cascade run's lowest card beside it for a park with a Mug.
+	if ((m = /^move ([\w ]+?) cell (\d+) -> cell (\d+)$/.exec(text))) {
+		const [, ids, a] = m;
+		const named = ids.trim().split(/\s+/);
+		const first = locOf(state, named[0]);
+		if (first.fixture !== 'cell' || first.data[0] !== Number(a) - 1) throw new Error(`${named[0]} is not in cell ${a}`);
+		const grabs = [first];
+		const rest = named.slice(1).map((id) => locOf(state, id));
+		const cols = new Set(rest.map((at) => (at.fixture === 'cascade' ? at.data[0] : -1)));
+		if (rest.length && cols.size === 1 && !cols.has(-1)) {
+			grabs.push(rest.reduce((low, at) => (at.data[1] < low.data[1] ? at : low), rest[0]));
+		}
+		const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+		for (const grab of grabs) {
+			for (let e = 0; e < state.game.cells.length; e++) {
+				if (state.game.cells[e]) continue;
+				const next = tombMove(state, grab, cell(e));
+				if (next && describeStep(state, next) && norm(describeStep(state, next)!) === norm(text)) return next;
+			}
+		}
+		return null;
+	}
+
 	throw new Error(`cannot read the line "${text}"`);
+}
+
+/** A line the grammar does not know, read as a failure rather than a crash. */
+export function tryStep(state: TombState, text: string): TombState | null {
+	try {
+		return step(state, text);
+	} catch {
+		return null;
+	}
 }
 
 function check(file: string): boolean {
@@ -178,9 +227,17 @@ function check(file: string): boolean {
 			const board = state.game.tableau.map((pile, index) => `${index + 1}: ${pile.map((card) => (state.hidden.includes(shorthandCard(card)) ? `(${shorthandCard(card)})` : shorthandCard(card))).join(' ')}`);
 			console.log(`  before ${index + 1} · hp ${hp(state)}/${state.game.cells.length} · armed ${state.armed?.kind ?? '-'} · ${board.join(' | ')} · cells ${state.game.cells.map((card) => (card ? shorthandCard(card) : '.')).join(' ')}`);
 		}
-		const next = step(state, line);
+		const next = tryStep(state, line);
 		if (!next) {
 			problems.push(`step ${index + 1} is illegal: "${line}"`);
+			break;
+		}
+		// The transcript is printed off the board, so the parsed action has to print back as the
+		// same line: a step that moves the right cards for the wrong reason is still the wrong step.
+		const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+		const back = describeStep(state, next);
+		if (!back || norm(back) !== norm(line)) {
+			problems.push(`step ${index + 1} replays as "${back ?? '(nothing)'}", not "${line}"`);
 			break;
 		}
 		state = next;
@@ -200,8 +257,11 @@ function check(file: string): boolean {
 	return problems.length === 0;
 }
 
-const files = (process.env.FILES ?? '').split(',').filter(Boolean);
-const chosen = files.length ? files.map((path) => path.replace(`${DIR}/`, '')) : readdirSync(DIR).filter((name) => name.endsWith('.json'));
-const results = chosen.map(check);
-console.log(`${results.filter(Boolean).length}/${results.length} transcripts replay`);
-process.exit(results.every(Boolean) ? 0 : 1);
+// The runner only runs as the entry: probes import step/tryStep without replaying the world.
+if ((process.argv[1] ?? '').replace(/\\/g, '/').endsWith('scripts/replay.ts')) {
+	const files = (process.env.FILES ?? '').split(',').filter(Boolean);
+	const chosen = files.length ? files.map((path) => path.replace(`${DIR}/`, '')) : readdirSync(DIR).filter((name) => name.endsWith('.json'));
+	const results = chosen.map(check);
+	console.log(`${results.filter(Boolean).length}/${results.length} transcripts replay`);
+	process.exit(results.every(Boolean) ? 0 : 1);
+}

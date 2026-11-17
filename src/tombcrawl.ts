@@ -535,7 +535,8 @@ export function currentLevel(state: TombState): number {
  * The graves where the next card home is a level up. The level is read off the lowest grave — or the
  * second lowest, for a Human, who ignores the first — so only the grave holding that number back can
  * lift it: put a card on any other and the same grave counts next time. A tie at the bottom lifts
- * nothing, and a grave already at its king can take no card at all.
+ * nothing, and a grave already at its king can take no card at all. The next card home is the highest
+ * rank the grave can take, which is not always the one right above it (see `graveReach`).
  */
 export function levelUpGraves(state: TombState): Suit[] {
 	const suits: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
@@ -547,9 +548,10 @@ export function levelUpGraves(state: TombState): Suit[] {
 	};
 	const level = levelOf(ranks);
 	return suits.filter((_, index) => {
-		if (ranks[index] >= 13) return false;
+		const reach = graveReach(state, suits[index]);
+		if (reach <= ranks[index]) return false;
 		const raised = [...ranks];
-		raised[index] += 1;
+		raised[index] = reach;
 		return levelOf(raised) > level;
 	});
 }
@@ -841,6 +843,19 @@ export function phantomRank(state: TombState, suit: Suit, ignore?: string): numb
 	return card ? rankOf(card.rank) : 0;
 }
 
+/**
+ * How high this grave can be landed on in one card. Anyone may slide a lower card under a pile, and a
+ * Fighter may open the rank above a gap, so a landing can come as high as `top + gap`; when the tomb holds
+ * the very rank this pile is waiting for, that card can never come home and the rank above it comes
+ * home instead. The pile reads its highest card, so this is also the rank it would be read at.
+ */
+export function graveReach(state: TombState, suit: Suit, ignore?: string): number {
+	const top = foundationTopRank(state, suit);
+	const gap = hasPassive(state, 'Fighter') ? 2 : 1;
+	const skip = phantomRank(state, suit, ignore) === top + gap ? 1 : 0;
+	return Math.min(13, top + gap + skip);
+}
+
 /* ------------------------------------------------------------ move rules */
 
 export function tombRun(state: TombState, from: CardLocation): Card[] {
@@ -992,21 +1007,14 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	const rank = rankOf(card.rank);
 	const home = foundationTopRank(state, card.suit);
 	// Anyone may slide a lower card in under a pile: the pile keeps its higher card on top, so a rank
-	// that was skipped stays available for the rest of the run. Only a Fighter may open the rank above
-	// a gap in the first place.
-	const fighter = hasPassive(state, 'Fighter');
-	const gap = fighter ? 2 : 1;
+	// that was skipped stays available for the rest of the run. `graveReach` is how high this landing
+	// can come: only a Fighter may open the rank above a gap, and a card the tomb drafted counts as
+	// already home, so the rank above it comes home instead. A drafted three does not open the four
+	// while the two is still buried, so no kill (or wound preview) is offered for a card out of reach.
 	if (rank === home) {
 		return { legal: false, reason: 'that grave is past this rank' };
 	}
-
-	// A drafted card counts as already home, but only once it is the card this pile is really waiting
-	// for: it opens the rank above it and never withholds the ranks below. A drafted three does not
-	// open the four while the two is still buried, so no kill (or wound preview) is offered for a
-	// card that is out of reach.
-	const drafted = phantomCard(state, card.suit, cardId(card));
-	const skip = !!drafted && rankOf(drafted.rank) === home + gap && rank === rankOf(drafted.rank) + 1;
-	if (rank > home + gap && !skip) {
+	if (rank > graveReach(state, card.suit, cardId(card))) {
 		return {
 			legal: false,
 			reason: home ? `the grave needs the ${home + 1 <= 13 ? home + 1 : 'next'} of this suit` : 'needs an ace',
