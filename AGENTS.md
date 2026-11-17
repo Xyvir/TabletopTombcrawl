@@ -222,7 +222,11 @@ park the dig-out, 5D is wounded in a cell, and the one legal home (8S, exposed) 
 common blind spot: releaseCost/`affordable` treat a wounded-parked need as a payable home, so phases burn
 doubled budget chasing an illegal home and the miss counter quits with budget unspent. Fix directions: exclude
 wound-locked needs from `due` when no heal is available, prefer freeing a cell when the due's cover has nowhere
-to go, and count par improvement against the miss counter. A 1M plan sweep over all 66 placeholders' own seeds
+to go, and count par improvement against the miss counter. All three were tried on 2026-11-17 and reverted:
+excluding wound-locked needs (Potion/dig/Elixir-for-glyph heal check) plus par-against-misses kept the six baseline
+wins move-identical but moved 3054 par 226 to 246 with 150250 and 150309 unchanged, and pricing room at 6/cell under
+a cover deficit lost 1518 and 2769 outright. The stalls are true deadlocks — no heal left anywhere in the tomb — not
+targeting errors, so there is nothing for the planner to aim at instead. A 1M plan sweep over all 66 placeholders' own seeds
 won nothing — these deals are hard, not under-searched. The engine's test replays its line
 move by move without asserting a win, so the arm can change the line without changing the test.
 
