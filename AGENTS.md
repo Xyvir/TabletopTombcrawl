@@ -169,7 +169,8 @@ two-phase 4. Every arm found squares the other two lost, which is the argument f
 plan-only sweep over the 114 stragglers and 221 fresh seeds with the freshness price took it to **149 of 256** —
 7 new squares plus solver proofs on the two hand-played deals, one of them re-proving a retired seed. A second
 plan-only sweep over 202 fresh seeds (400001–600000) for the 107 keys still missing took it to **168 of 256**. A third plan-only sweep over 174 fresh seeds
-(600001–800000) for the 88 keys still missing took it to **186 of 256**.
+(600001–800000) for the 88 keys still missing took it to **186 of 256**. A fourth plan-only sweep over 134 fresh seeds
+(800001–1000000) for the 70 keys still missing took it to **190 of 256** — only 4 wins, so the easy keys are thinning.
 
 **Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
 par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search
