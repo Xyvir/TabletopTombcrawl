@@ -161,6 +161,12 @@ in 120, `ddds` 153579 in 105 — every one a deal the flat arm never cracked at 
 80 keys to **85 of 256** with 171 placeholders left. That is the whole argument for keeping two arms: the second one is
 finding squares, not just reading them differently.
 
+A later double sweep ran all three methods over the stragglers and over fresh seeds above the walked ranges
+(`scripts/fresh-plan.ts` buckets untried seeds per missing key, because `MODE=plan` buckets the lowest seeds,
+which the fills already tried): flat and two-phase on boss goal, plan on clear, 200k apiece. It took the sheet from
+88 to **142 of 256** with 114 placeholders left — plan won 48 of the 54 new squares (44 it alone cracks), flat 6,
+two-phase 4. Every arm found squares the other two lost, which is the argument for sweeping all three.
+
 **Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
 par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search
 left to organize buys a dug tomb and nothing else — fog 0 at 69 moves with the level at 3 and the par still at 491 —
