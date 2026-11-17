@@ -165,7 +165,9 @@ A later double sweep ran all three methods over the stragglers and over fresh se
 (`scripts/fresh-plan.ts` buckets untried seeds per missing key, because `MODE=plan` buckets the lowest seeds,
 which the fills already tried): flat and two-phase on boss goal, plan on clear, 200k apiece. It took the sheet from
 88 to **142 of 256** with 114 placeholders left — plan won 48 of the 54 new squares (44 it alone cracks), flat 6,
-two-phase 4. Every arm found squares the other two lost, which is the argument for sweeping all three.
+two-phase 4. Every arm found squares the other two lost, which is the argument for sweeping all three. A later
+plan-only sweep over the 114 stragglers and 221 fresh seeds with the freshness price took it to **149 of 256** —
+7 new squares plus solver proofs on the two hand-played deals, one of them re-proving a retired seed.
 
 **Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
 par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search
