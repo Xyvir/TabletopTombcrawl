@@ -25,6 +25,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		type TapResult,
 	} from './interaction';
 	import { describeStep, transcript } from './notation';
+	import { playMoveSfx, playSfx, setSfxEnabled } from './sfx';
 	import type { SolverReply } from './solver.worker';
 	import { markLayout, readLayouts, type LayoutRecord } from './progress';
 	import './trellis.css';
@@ -1185,8 +1186,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		// (played to the board, converted home) costs a heart without costing a wound.
 		const wounding = newlyWounded(tomb, next);
 		const healing = newlyHealed(tomb, next);
+		const leveled = currentLevel(next) > currentLevel(tomb);
 		if (power) startFlash(power);
-		else if (currentLevel(next) > currentLevel(tomb)) startFlash('level');
+		else if (leveled) startFlash('level');
 		else if (wounding.length) startFlash('damage');
 		// A heal that comes with a level up is already gold: green is for the quiet repairs.
 		else if (healing.length) startFlash('heal');
@@ -1200,6 +1202,31 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (emptiedTomb) startFanfare('tomb', killedBoss);
 		else if (killedBoss) startFanfare('boss');
 		else if (foundBoss) startFanfare('reveal');
+		// Sound, read off the same two boards as the flashes and banners above. Every true flag
+		// plays, because a move that does two things should sound like two.
+		const prev = tomb;
+		const label = describeStep(prev, next);
+		const wasLoc = new Map(prev.game.cards.map((card) => [shorthandCard(card), card.location]));
+		const homedPrev = next.game.cards.filter(
+			(card) => card.location.fixture === 'foundation' && wasLoc.get(shorthandCard(card))?.fixture !== 'foundation'
+		);
+		const spent = next.draft.find((entry) => next.exhausted[entry.cell] && !prev.exhausted[entry.cell]);
+		playMoveSfx({
+			homed: homedPrev.length > 0,
+			ranged: homedPrev.some((card) => shotAt(prev, wasLoc.get(shorthandCard(card)) ?? null)),
+			dug: label?.startsWith('dig') ?? false,
+			parked: label?.startsWith('park') ?? false,
+			stepped: (label?.startsWith('move') ?? false) || (label?.startsWith('swap') ?? false),
+			armed: label?.startsWith('arm') ?? false,
+			usedGlyph: spent?.role === 'glyph',
+			usedItem: !!spent && spent.role !== 'glyph',
+			converted: next.draft.length < prev.draft.length,
+			leveled,
+			bossFound: foundBoss,
+			bossKilled: killedBoss,
+			tombEmptied: emptiedTomb,
+			afflicted: !!power,
+		});
 		void recordRun(next);
 		tombHistory = [...tombHistory, tomb];
 		tomb = next;
@@ -1430,7 +1457,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function exitTomb() {
 		if (!tomb) return;
 		const exited = tombExit(tomb);
-		if (exited) commit(exited);
+		if (exited) {
+			commit(exited);
+			playSfx('exit');
+		}
 	}
 
 	/** Copy the session, so it can be pasted beside a solver run on the same seed. */
@@ -1651,6 +1681,32 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/* ---------- controls ---------- */
+
+	/**
+	 * Sound effects, off until the speaker pill says otherwise. Remembered per browser, so a
+	 * player who turns them on keeps them on; a fresh browser still opens silent.
+	 */
+	function storedSfx(): boolean {
+		try {
+			return localStorage.getItem('tombcrawl.sfx') === '1';
+		} catch {
+			return false;
+		}
+	}
+	let sfxOn = $state(storedSfx());
+	$effect(() => {
+		setSfxEnabled(sfxOn);
+	});
+	function toggleSfx() {
+		sfxOn = !sfxOn;
+		try {
+			localStorage.setItem('tombcrawl.sfx', sfxOn ? '1' : '0');
+		} catch {
+		// A browser that forgets is still a browser that plays.
+		}
+		// The tap that turns it on is the gesture, so the blip always lands.
+		if (sfxOn) playSfx('arm');
+	}
 
 	function undoMove() {
 		flushPending();
@@ -2173,6 +2229,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<button class="btn primary" onclick={newDeal}>New crawl</button>
 		<button class="btn" onclick={replay}>Restart crawl</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>End crawl</button>
+		<!-- The speaker pill: sound effects, off until this says otherwise. -->
+		<button
+			class="btn"
+			aria-pressed={sfxOn}
+			onclick={toggleSfx}
+			title={`Sound effects are ${sfxOn ? 'on' : 'off'}`}
+			aria-label="Toggle sound effects"
+		>
+			{#if sfxOn}🔊{:else}🔇{/if} SFX
+		</button>
 	</footer>
 
 		{#if flash}
@@ -2239,8 +2305,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									aria-label={`kin ${kin}, class ${cls}`}
 									style={`grid-area: ${2 + kinIndex} / ${2 + clsIndex}`}
 								>
-									<!-- Read on narrow sheets, where the class ticks across the top are hidden. -->
-									<span class="block-label">{abilityFor('class', cls).name}</span>
 									{#each SUITS as glyph (glyph)}
 										{#each SUITS as item (item)}
 											{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}

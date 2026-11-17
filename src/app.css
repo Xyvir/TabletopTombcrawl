@@ -349,6 +349,12 @@ img {
 	border-color: #2bb35c;
 }
 
+/* The speaker pill lights up the way the trellis tiers do while its state is on. */
+.controls .btn[aria-pressed='true'] {
+	background: #1a8f45;
+	border-color: #2bb35c;
+}
+
 /* playtest log: the session's moves, printed the way the solver prints them */
 .log {
 	margin: 0 auto;
