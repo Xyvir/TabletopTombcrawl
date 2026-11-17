@@ -1474,6 +1474,60 @@ function bossBlockedCount(state: TombState): number {
 }
 
 /**
+ * Royalty sitting under the boss: jacks and better, the cards every suit needs last. A boss on low cards is a
+ * midgame blockage — the suits demand those cards soon and the phases dig them out as a matter of course. A
+ * boss on royalty is an endgame blockage wearing a midgame face: nothing demands a jack until ten homes are
+ * in, by which time the lifts are spent and the fog is gone. On 154116 the planner lifts KH onto an exposed
+ * JH at move 21 (five blockers for one — the count says it is a bargain) and never lifts it off again.
+ */
+function royaltyBlocked(state: TombState): number {
+	if (!state.bossId || bossSlain(state)) return 0;
+	const boss = state.game.cards.find((card) => isBoss(state, card));
+	if (!boss || boss.location.fixture !== 'cascade') return 0;
+	const pile = state.game.tableau[boss.location.data[0]] ?? [];
+	const drafted = new Set(state.draft.map((entry) => entry.id));
+	let blocked = 0;
+	for (let index = 0; index < boss.location.data[1]; index++) {
+		const card = pile[index];
+		if (card && !drafted.has(shorthandCard(card)) && planRank(card) >= 11) blocked++;
+	}
+	return blocked;
+}
+
+/**
+ * Whether a lift is on the table right now: a CYDSTEPP home in its slot and ready to arm. Using a glyph never
+ * moves its card, so one ready glyph is lifts without end — but only while it is ready; an exhausted glyph
+ * waits on a level and a spent one never comes back, and an unblock phase with no lift in it is budget burnt
+ * for nothing. Other glyphs cannot lift, and kin, class and consumables convert by leaving.
+ */
+function liftReady(state: TombState): boolean {
+	for (const entry of state.draft) {
+		if (entry.name !== 'CYDSTEPP') continue;
+		const card = state.game.cells[entry.cell];
+		if (!card || shorthandCard(card) !== entry.id) continue;
+		if (abilityUsable(state, entry.cell)) return true;
+	}
+	return false;
+}
+
+/**
+ * CYDSTEPPS not ready to lift: exhausted by a bury, or spent as a build. Arming one for routine cover is
+ * cheap in the moment and ruinous in hindsight — on 154116 the move-15 bury spends the freshness the
+ * move-22 re-lift needs, and the endgame dies with both glyphs home but neither ready. Twelve a head while
+ * the boss is still unsafe, because a level refreshes what a bury spends: the price comes off on its own,
+ * so lines that lift after levelling pay nothing and lines that bury before levelling pay for the risk.
+ */
+function dullGlyphs(state: TombState): number {
+	let dull = 0;
+	for (const entry of state.draft) {
+		if (entry.name !== 'CYDSTEPP') continue;
+		const card = state.game.cells[entry.cell];
+		if (!card || shorthandCard(card) !== entry.id || state.exhausted[entry.cell]) dull++;
+	}
+	return dull;
+}
+
+/**
  * The party the phase started with: every draft entry's card and cell. A draft card that leaves its cell is
  * spent — the entry is consumed and no level brings it back — and the planner spends them like spare builds:
  * on 154116 it plays out both CYDSTEPPS and the Wizard midgame, and the endgame then needs a lift no hand
@@ -1496,6 +1550,7 @@ export function planBreakdown(state: TombState): {
 	level: number;
 	blocked: number;
 	squat: number;
+	dull: number;
 } {
 	const context = releaseContext(state);
 	let cheapest = 0;
@@ -1518,6 +1573,15 @@ export function planBreakdown(state: TombState): {
 		level: currentLevel(state),
 		blocked: bossBlockedCount(state),
 		squat: squatters(state),
+		// Freshness is worth protecting only when there is a spare to keep: a lone CYDSTEPP is the whole
+		// lifting corps, and taxing its every routine bury reroutes the tomb around a tool it cannot spare
+		// (150250: par 214 to 460 with the tax on, exactly 214 with it off). Two or more may spell each other
+		// while one stays ready, which is the only arrangement the re-lift can count on.
+		// A lone CYDSTEPP pays this too, and on 150250 the reroute lands worse (par 214 to 460, still lost)
+		// while on 2769 it lands better (lost to a 120-move win) — the same tight use-level cycle, lucky in
+		// one tomb and unlucky in another. No count of glyphs carves that difference, so the price stays
+		// unconditional and the next sweep adjudicates it by squares, not pars.
+		dull: state.bossId && !bossSlain(state) && bossBlockedCount(state) > 0 ? dullGlyphs(state) : 0,
 	};
 }
 
@@ -1552,7 +1616,11 @@ function planScore(state: TombState): number {
 		// A plain pocket hands its card back; a draft slot below the chip does not, so a foreign card parked
 		// there is locked until the chip arrives. Eight a squatter keeps the parking in the pockets, where a
 		// later phase can still take hold of it — the human's parks never touch the party's slots at all.
-		parts.squat * 8
+		parts.squat * 8 +
+		// A glyph spent on routine cover while the boss is unsafe is the re-lift thrown away: twelve a dull
+		// head, which a bury's handful cannot pay but a level wipes clean. Bend, not break — a tomb whose
+		// only way forward is a bury still buries, and the lift that moves the boss pays it gladly.
+		parts.dull * 12
 	);
 }
 
@@ -1570,6 +1638,9 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 	const deadline = options.timeBudgetMs ?? 600_000;
 	const basePhase = Math.min(40_000, Math.max(10_000, Math.round(budget / 60)));
 	let phaseBudget = basePhase;
+	// Homes stood at the last unblock miss: a lift with no landing today may have one after the next home,
+	// but never before, so the attempt waits on progress instead of burning budget every iteration.
+	let homesAtUnblockMiss = -1;
 	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
 	const isClear = (state: TombState) => state.game.cards.every((card) => card.location.fixture === 'foundation');
 
@@ -1610,6 +1681,40 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		const startHp = hp(state);
 		const startBlocked = bossBlockedCount(state);
 		const startHomes = homes;
+		// The boss sits on royalty: jacks and better, the cards every suit needs last. Nothing demands them
+		// until the tomb is nearly empty, by which time the lifts are spent and the fog is gone — so the lift
+		// happens now, before the home phases, while a glyph is ready and the tomb is still fogged. The human's
+		// own line does exactly this on 154116: lifts KH onto JH at ply 12, then lifts it straight off again
+		// at ply 28 and digs the jack out from underneath. The count-based target below cannot see the job —
+		// any landing buries the count deeper — so this phase scores royalty, not bodies, and ends the moment
+		// no jack or better lies under the boss. A miss costs nothing and changes nothing: the lift may be
+		// impossible yet and possible after the next home, so only a home re-arms the attempt and failures
+		// never hear of it.
+		if (bossAlive && royaltyBlocked(state) > 0 && liftReady(state) && homes !== homesAtUnblockMiss) {
+			const startRoyalty = royaltyBlocked(state);
+		const unblock = solveTomb({
+				state,
+				goal: 'clear',
+				engine: 'flat',
+				strategy: 'best',
+				depth: 90,
+				nodes: Math.min(2000, Math.max(500, budget - nodes)),
+				timeBudgetMs: Math.max(2000, deadline - (Date.now() - began)),
+				score: (board) => planScore(board) + 25 * bossBlockedCount(board) - 100 * royaltyBlocked(board),
+				target: (board) => royaltyBlocked(board) < startRoyalty || bossSlain(board),
+			});
+			nodes += unblock.nodes;
+			timedOut = timedOut || unblock.timedOut;
+			if (unblock.solved) {
+				for (const step of unblock.steps) line.push(step);
+				state = unblock.steps.length ? unblock.steps[unblock.steps.length - 1].state : unblock.best;
+				failures = 0;
+				homes = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
+				phaseBudget = basePhase;
+				continue;
+			}
+			homesAtUnblockMiss = homes;
+		}
 		// The level is read off the lowest grave, so only a home on a lagging suit moves it — and a level is
 		// a heal that makes every later home cheaper. A phase that ends on an exposed high card while another
 		// suit lags is how a track climbs to D5/S5 at level 3 with four wounded cells. So the phase is only

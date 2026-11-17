@@ -183,21 +183,32 @@ on a needed home, a boss kill, a level, or a banked heal; three phaseless misses
 other two in `compare-engines.ts` (`ENGINES=plan`) and changes nothing about them — one added export (`immobileBoss`)
 aside, the flat and phase drivers are byte-identical, which is the condition for keeping it.
 
-What it measured, 200k states a pass on `clear`/med over 4, 12, 3054, 150250, 2769, 154116: wins 4 (93 moves) and 12
-(132) — both flat's deals, so not yet additive — and loses 3054 (par 226), 150250 (214), 2769 (483), 154116 (130).
-On the target it is still the furthest any arm has taken the deal: 49 homes against flat's best par 434 at a million
-and the phases' 457. The fixes that moved it there, each tied to a stall it sat in: phases end only on lagging-grave
-homes (climbing high graves at level 3 is how a track bleeds out wounded); the boss prices per card it sits on (the
-human lifts KH on ply 11; every planner stall was a needed card under an unmoved boss); cover behind an immovable top
-prices as unreachable rather than as moves; needs see through drafted phantoms to the rank the skip rule opens; and an
-empty due ends the phase on any home (twelve one-movers the flat score will not cross the tomb for). Priced and
-reverted along the way: room above a whisper, per-phase tool-keeping, and join rewards — the last actively fights
-homes, which is what ends a release, so it will not come back as a price.
+What it measured, 200k states a pass on `clear`/med over 4, 12, 1518, 328, 3054, 150250, 2769, 154116: wins 4 (93),
+12 (132), 1518 (107), 328 (102), 2769 (120), and 154116 (115) — the last two no other arm has ever won, and the
+154116 win beats the human's 131-move line. It loses 3054-med (par 226, never won by anyone) and 150250 (par 460).
+The fixes that moved it there, each tied to a stall it sat in: phases end only on lagging-grave homes (climbing high
+graves at level 3 is how a track bleeds out wounded); the boss prices per card it sits on (the human lifts KH on ply
+11; every planner stall was a needed card under an unmoved boss); cover behind an immovable top prices as unreachable
+rather than as moves; needs see through drafted phantoms to the rank the skip rule opens; an empty due ends the phase
+on any home (twelve one-movers the flat score will not cross the tomb for); and unready CYDSTEPPS price twelve a head
+while the boss is unsafe (see below). Priced and reverted along the way: room above a whisper, per-phase tool-keeping,
+join rewards — the last actively fights homes, which is what ends a release, so it will not come back as a price —
+and absolute tool-counting, a ban on playing tools out, and a last-glyph penalty, all of which the midgame routed
+around into worse tombs. The tools are load-bearing builds; nothing that forbids spending them survives contact.
 
-Three open stalls, which is the next leg: 154116 parks KH onto JH three cards from home with no glyph left to lift it
-again; 2769 fills all seven cells by move fifteen and locks a homeable ace in a below-chip slot; 3054 and 150250 die
-in the midgame at par ~220 with the release priced but unreachable. The engine's test replays its line move by move
-without asserting a win, so the arm can change the line without changing the test.
+The endgame fix, from the human's own tips (bank in rank bands, level-heals cover wounds, park high cards in free
+cells): arming a glyph for routine cover spends the freshness the re-lift needs, and exhaustion only refreshes on a
+level — so a CYDSTEPP that cannot lift right now prices twelve a head while the boss sits on unhomed cards. The price
+comes off on a level by itself, so lines that lift after levelling pay nothing and lines that bury before levelling pay
+for the risk. On 154116 the search answers by parking the boss itself in a free cell at move 4 — the user's Q/K-cell
+tip, executed by the search — and JH digs out normally; on 2769 by running tight arm-use-level cycles that never let
+a draft slot clog. A dedicated royalty-unblock phase (boss on a jack or better, a fresh glyph home) stands by for
+tombs where the lift is the play, but it has yet to fire on a measured seed — the freshness price keeps the glyph
+ready so the normal phases find the lift themselves. Watch item: 150250 (lone glyph) reroutes worse with the price on
+(par 214 to 460, still lost) while 2769 (lone glyph) reroutes better — no glyph count carves that difference, so the
+price stays unconditional and the next sweep adjudicates it by squares, not pars. Two open stalls are the next leg:
+3054 and 150250 die in the midgame with the release priced but unreachable. The engine's test replays its line
+move by move without asserting a win, so the arm can change the line without changing the test.
 
 ## The Potion proposal, kept on file (not adopted)
 
