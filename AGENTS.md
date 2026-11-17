@@ -212,7 +212,18 @@ tombs where the lift is the play, but it has yet to fire on a measured seed — 
 ready so the normal phases find the lift themselves. Watch item: 150250 (lone glyph) reroutes worse with the price on
 (par 214 to 460, still lost) while 2769 (lone glyph) reroutes better — no glyph count carves that difference, so the
 price stays unconditional and the next sweep adjudicates it by squares, not pars. Two open stalls are the next leg:
-3054 and 150250 die in the midgame with the release priced but unreachable. The engine's test replays its line
+3054 and 150250 die in the midgame with the release priced but unreachable. Diagnosed both at 200k with a board probe
+(`corpus/diag-*.ts`, gitignored): neither is a pricing failure — both are endgame deadlocks the planner cannot see.
+3054 reaches level 12 with 39 homes and quits with 120k of 200k unspent: its last two needs (6H, QS) sit face-up
+in plain cells, priced payable, but both are wounded and med forbids homing a wound — while the party is spent
+down to one Human, so no heal is coming; the level that would heal them needs a home, and the homes need the
+heal. 150250 sits at level 3 with 13 homes: H3/C3 lie under 8-deep cover in one column with zero free cells to
+park the dig-out, 5D is wounded in a cell, and the one legal home (8S, exposed) costs 5 hearts against 4. The
+common blind spot: releaseCost/`affordable` treat a wounded-parked need as a payable home, so phases burn
+doubled budget chasing an illegal home and the miss counter quits with budget unspent. Fix directions: exclude
+wound-locked needs from `due` when no heal is available, prefer freeing a cell when the due's cover has nowhere
+to go, and count par improvement against the miss counter. A 1M plan sweep over all 66 placeholders' own seeds
+won nothing — these deals are hard, not under-searched. The engine's test replays its line
 move by move without asserting a win, so the arm can change the line without changing the test.
 
 ## The Potion proposal, kept on file (not adopted)
