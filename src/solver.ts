@@ -1,4 +1,4 @@
-import { shorthandCard, type Card, type CardLocation } from './game/card/card';
+import { getRankForCompare, shorthandCard, type Card, type CardLocation } from './game/card/card';
 import {
 	CLAUSES,
 	FREE_CELL_COUNT,
@@ -6,8 +6,10 @@ import {
 	armedClick,
 	attackWith,
 	bossSlain,
+	isBoss,
 	canBuildOn,
 	canRevealFaceDown,
+	immobileBoss,
 	cellCardMovable,
 	abilityFor,
 	createTombState,
@@ -42,7 +44,7 @@ export type Goal = 'clear' | 'boss';
  * than a replacement so the two can be run side by side on the same deal, which is the only honest way to say one is
  * better: `scripts/compare-engines.ts`.
  */
-export type SolverEngine = 'flat' | 'two-phase' | 'fallback';
+export type SolverEngine = 'flat' | 'two-phase' | 'fallback' | 'plan';
 
 /**
  * One legal action, in a form that can be replayed through the real rules. Keeping the action rather
@@ -761,6 +763,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	// would delegate back to the driver for ever.
 	if (options.engine === 'two-phase') return solveTwoPhase(options);
 	if (options.engine === 'fallback') return solveFallback(options);
+	if (options.engine === 'plan') return solvePlanned(options);
 	const goal: Goal = options.goal ?? 'clear';
 	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
 	const budget = Math.max(1000, options.nodes ?? 200_000);
@@ -1264,6 +1267,429 @@ export function solveFallback(options: SolveOptions = {}): SolveResult {
 		best: flatBetter ? flat.best : phased.best,
 		bestSteps: flatBetter ? flat.bestSteps : phased.bestSteps,
 		timedOut: flat.timedOut || phased.timedOut,
+	};
+}
+
+/**
+ * The release-order planner: a clear is 48 ordered events — every foundation rank is gated on the one
+ * before it — so instead of pricing boards by how much par they hold, this driver prices them by how
+ * close the *next* cards are to coming home, frees the cheapest one with a short focused search, and
+ * repeats. Par cannot see that plan at all: the opening of a long human win is ninety moves of digging
+ * and stacking that change par by almost nothing, which is exactly why a frontier that prices par walks
+ * away from it. Release cost can see it, because every dig and every parked card is one move closer to
+ * a home. The phases chain because a home never comes back out of a foundation.
+ */
+interface PlanNeed {
+	suit: SolverSuit;
+	rank: number;
+}
+
+/**
+ * A card's rank as a number, on the game's own words. The solver's `rankNumber` reads the short names
+ * (`'A'`, `'J'`) while cards carry the full ones (`'ace'`, `'jack'`), so it scores every face card as zero;
+ * the planner needs the real numbers, and this is where it gets them. (That older quirk is load-bearing
+ * for the flat weights now, so it stays where it is.)
+ */
+const planRank = (card: Card): number => getRankForCompare(card.rank) + 1;
+
+/** The top of each foundation grave: what each suit has already paid. */
+export function planTops(state: TombState): Record<SolverSuit, number> {
+	const tops: Record<SolverSuit, number> = { hearts: 0, clubs: 0, diamonds: 0, spades: 0 };
+	for (const card of state.game.cards) {
+		if (card.location.fixture !== 'foundation') continue;
+		const rank = planRank(card);
+		if (rank >= 1 && rank <= 13 && rank > tops[card.suit]) tops[card.suit] = rank;
+	}
+	return tops;
+}
+
+/**
+ * The cards the foundations are waiting on: the lowest unhomed rank of each suit, skipping a suit whose
+ * card is held by the party. A drafted card can never come home, so its suit is stalled for the rest of
+ * the run and planning around it would be planning a line that does not exist.
+ */
+export function planNeeds(state: TombState, tops: Record<SolverSuit, number>): PlanNeed[] {
+	const drafted = new Set(state.draft.map((entry) => entry.id));
+	const needs: PlanNeed[] = [];
+	for (const suit of SUITS) {
+		if (tops[suit] >= 13) continue;
+		// A drafted card counts as already home: it opens the rank above it and never withholds the ranks
+		// below, so a suit whose next card is held by the party is not stalled — the card above the phantom is
+		// homeable by the skip rule and is the suit's real need. Dropping the whole suit here is how a track
+		// with four phantom-blocked suits stops at 37 homes with an empty needs list and no miss to show for
+		// it; worse, it is the standing invitation to play the draft out of its slots to unstall by hand.
+		let rank = tops[suit] + 1;
+		while (rank <= 13) {
+			const card = state.game.cards.find(
+				(candidate) => candidate.suit === suit && planRank(candidate) === rank && candidate.location.fixture !== 'foundation',
+			);
+			if (!card) break;
+			if (!drafted.has(shorthandCard(card))) {
+				needs.push({ suit, rank });
+				break;
+			}
+			rank++;
+		}
+	}
+	return needs;
+}
+
+/** What a release is measured against: the graves, the room, and what a home may still cost. */
+interface ReleaseContext {
+	tops: Record<SolverSuit, number>;
+	free: number;
+	level: number;
+	hearts: number;
+	lagging: number;
+	leading: number;
+}
+
+/**
+ * Estimated moves to get a needed card home: its cover, its fog, whether there is anywhere to put the
+ * cover — and whether the track can pay the home itself. A home costs a heart per rank above the level and
+ * the track spends every heart but the last, so a parked card the level cannot afford is not a free home but
+ * a trap: it scores zero cover with nothing left to do. Pricing that in is what keeps the gradient pointed
+ * at the cover that can actually move. Advancing the lagging grave is priced as progress on its own, because
+ * that is what a level is read off, and a level is a heal.
+ */
+function releaseCost(state: TombState, need: PlanNeed, context: ReleaseContext): number | null {
+	const card = state.game.cards.find(
+		(candidate) => candidate.suit === need.suit && planRank(candidate) === need.rank && candidate.location.fixture !== 'foundation',
+	);
+	// No such card off the foundation: it is already home, which is not a price but the absence of one.
+	if (!card) return null;
+	const price = Math.max(0, need.rank - context.level);
+	const bill = price > context.hearts - 1 ? 40 : price * 2;
+	// The level is read off the lowest grave, and every home above it is paid in wounds: climbing a high
+	// grave while another lags is how a track bleeds out at level 3 with four wounded cells. The pull toward
+	// the lagging grave scales with the spread, so an even tomb plans freely and a lopsided one corrects.
+	const ahead = -6 * (context.leading - context.tops[need.suit]);
+	const loc = card.location;
+	if (loc.fixture === 'cell') return bill + ahead;
+	if (loc.fixture !== 'cascade') return 8 + bill + ahead;
+	const pile = state.game.tableau[loc.data[0]] ?? [];
+	let above = 0;
+	let fog = 0;
+	let homable = 0;
+	for (let index = loc.data[1] + 1; index < pile.length; index++) {
+		above++;
+		const cover = pile[index];
+		if (isFaceDown(state, cover)) fog++;
+		else if (planRank(cover) === context.tops[cover.suit] + 1) homable++;
+	}
+	const self = isFaceDown(state, card) ? 3 : 0;
+	const deficit = Math.max(0, above - homable - context.free - 2);
+	// The cover count assumes the pile top can be taken hold of — parked, dug, homed or built on. A top that
+	// nothing can move (a queen with no king out, an unliftable boss) makes the need beneath unreachable, and
+	// a release priced as moves is a lie the search pays for by burying the rest of the board against it:
+	// phase 4 on 154116 spent 32 moves and 10k states digging at an ace under an immovable queen and left a
+	// tomb with one legal move. Price the lie as what it is and the planner works the suits that can move.
+	if (above > 0 && !pileTopMovable(state, loc.data[0], context)) return 500 + bill + ahead;
+	return above * 2 + fog + self + deficit * 6 + bill + ahead;
+}
+
+/**
+ * Whether anything can take hold of a pile's top card. The check is exact for the single top: a run's landing
+ * is read off its bottom card, which is the top, and a lone card always fits the carry limit — so longer runs
+ * never open a landing the top alone lacks. (A lonelier rulebook would also ask after PISORF pairs and armed
+ * WEYTWUT foggings; those move two cards where one would do, and the search finds them when they pay.)
+ */
+function pileTopMovable(state: TombState, pileIndex: number, context: ReleaseContext): boolean {
+	const pile = state.game.tableau[pileIndex] ?? [];
+	const top = pile[pile.length - 1];
+	if (!top) return true;
+	// A dig takes hold of fog, and an armed moving glyph takes hold of the boss: those are the tomb's two ways
+	// past a top no hand can shift. Anything else immobile is stuck until the board changes around it.
+	if (isFaceDown(state, top)) return true;
+	if (isBoss(state, top)) return !immobileBoss(state, top);
+	if (emptyCells(state).length > 0) return true;
+	// Home takes hold of a wanted card the track can pay; the bill already prices the ones it cannot.
+	if (planRank(top) === context.tops[top.suit] + 1 && planRank(top) - context.level <= context.hearts - 1) return true;
+	for (let index = 0; index < state.game.tableau.length; index++) {
+		if (index === pileIndex) continue;
+		if (canBuildOn(state, [top], { fixture: 'cascade', data: [index, 0] })) return true;
+	}
+	return false;
+}
+
+/** Every suit's release price on one board, for the trace. */
+export function planCosts(state: TombState): { suit: string; rank: number; cost: number | null }[] {
+	const context = releaseContext(state);
+	const out: { suit: string; rank: number; cost: number | null }[] = [];
+	for (const suit of SUITS) {
+		if (context.tops[suit] >= 13) continue;
+		out.push({ suit, rank: context.tops[suit] + 1, cost: releaseCost(state, { suit, rank: context.tops[suit] + 1 }, context) });
+	}
+	return out;
+}
+
+/** The context a release is measured against, read off the board it starts from. */
+function releaseContext(state: TombState): ReleaseContext {
+	const tops = planTops(state);
+	return {
+		tops,
+		free: emptyCells(state).length,
+		level: currentLevel(state),
+		hearts: hp(state),
+		lagging: Math.min(tops.hearts, tops.clubs, tops.diamonds, tops.spades),
+		leading: Math.max(tops.hearts, tops.clubs, tops.diamonds, tops.spades),
+	};
+}
+
+/**
+ * Foreign cards squatting in draft slots: the slot's tool is out and something else sits where it lay. A draft
+ * slot below the chip does not hand its card back — conversions run in order — so a parked card there is
+ * locked until the chip arrives, and on 2769 the planner fills all four slots (boss included) and triple-misses
+ * with the ace it needs to move on locked underneath. Plain pockets hand back freely; the score says so.
+ */
+function squatters(state: TombState): number {
+	let squatting = 0;
+	for (const entry of state.draft) {
+		const card = state.game.cells[entry.cell];
+		if (card && shorthandCard(card) !== entry.id) squatting++;
+	}
+	return squatting;
+}
+
+/**
+ * Cards the boss is sitting on: unhomed, undrafted cards beneath it in its column. Lifting the boss is the
+ * only way to release them short of slaying it, and the landing it needs (a queen to build on, or a fogged
+ * column to bury onto) disappears as the tomb clears — so the price of leaving it grows while the means
+ * shrink. The human line lifts KH on ply 11, before anything is trapped; every planner stall so far has been
+ * a needed card under an unmoved boss with no fog left to bury it onto. Pricing the blockage is what gets the
+ * boss moved on time: the lift is two moves (arm, lift) that no home-chasing gradient will ever buy.
+ */
+function bossBlockedCount(state: TombState): number {
+	if (!state.bossId || bossSlain(state)) return 0;
+	const boss = state.game.cards.find((card) => isBoss(state, card));
+	if (!boss || boss.location.fixture !== 'cascade') return 0;
+	const pile = state.game.tableau[boss.location.data[0]] ?? [];
+	const drafted = new Set(state.draft.map((entry) => entry.id));
+	let blocked = 0;
+	for (let index = 0; index < boss.location.data[1]; index++) {
+		const card = pile[index];
+		if (card && !drafted.has(shorthandCard(card))) blocked++;
+	}
+	return blocked;
+}
+
+/**
+ * The party the phase started with: every draft entry's card and cell. A draft card that leaves its cell is
+ * spent — the entry is consumed and no level brings it back — and the planner spends them like spare builds:
+ * on 154116 it plays out both CYDSTEPPS and the Wizard midgame, and the endgame then needs a lift no hand
+ * can make (c7[JH KH], par 130, three cards from home). The human never plays an item out in 131 moves; the
+ * score charges thirty a head for the ones that leave, which is what a firing line full of homes still
+ * cannot pay. The baseline rides the phase because restocks and conversions legitimately rewrite the draft —
+ * what matters is only whether the tools the phase started with are still in their slots.
+ */
+
+
+
+
+/** The planner's price, taken apart for the trace. */
+export function planBreakdown(state: TombState): {
+	cheapest: number;
+	hp: number;
+	par: number;
+	reach: number;
+	hidden: number;
+	level: number;
+	blocked: number;
+	squat: number;
+} {
+	const context = releaseContext(state);
+	let cheapest = 0;
+	let found = false;
+	for (const suit of SUITS) {
+		if (context.tops[suit] >= 13) continue;
+		const cost = releaseCost(state, { suit, rank: context.tops[suit] + 1 }, context);
+		if (cost === null) continue;
+		if (!found || cost < cheapest) {
+			cheapest = cost;
+			found = true;
+		}
+	}
+	return {
+		cheapest,
+		hp: hp(state),
+		par: 500 - tombPar(state),
+		reach: foundationPull(state).reach,
+		hidden: state.hidden.length,
+		level: currentLevel(state),
+		blocked: bossBlockedCount(state),
+		squat: squatters(state),
+	};
+}
+
+/**
+ * The planner's price: how close the closest home is, in estimated moves. Everything else is small change
+ * beside it — hearts to stay alive, a little par so opportunistic progress is still progress, reach for the
+ * homes already on the board, fog gone, levels gained. One price per board, and the cheapest home leads.
+ */
+function planScore(state: TombState): number {
+	const parts = planBreakdown(state);
+	return (
+		-parts.cheapest * 6 +
+		parts.hp * 1.5 +
+		parts.par * 0.2 +
+		parts.reach * 2 -
+		parts.hidden * 0.5 +
+		parts.level * 2 +
+		// An empty cell is a place to put cover; a whisper of it keeps a gridlocked board from scoring standing
+		// still above the move that would unlock it. More than a whisper buys hoarding instead (measured: 3/cell
+		// stalls seed 154116 at 6 homes where 1/cell walks past), because the planner starts keeping cells empty
+		// rather than spending them on the release. The flat score prices room at zero and means it.
+		emptyCells(state).length * 1 -
+		// A card under the boss is a card no hand can touch until the boss moves or dies, and the lift needs a
+		// landing that the clearing tomb destroys. Each blocked card prices the lift the search will not buy
+		// on a home gradient, so the boss moves while there is still somewhere to put it — and what it must
+		// never do is sit down on fresh cards: the human's own lifts never raise the count, and a firing line
+		// that parks the boss onto an unhomed jack has traded two homes now for a tomb that cannot finish.
+		// Measured: at 8 the planner still takes that trade on 154116 and strands JH under KH three cards
+		// from home; at 25 it leaves the boss where it lies. Bend, not break — a tomb with nowhere safe for
+		// the boss still lets the search touch it, at a price.
+		bossBlockedCount(state) * 25 -
+		// A plain pocket hands its card back; a draft slot below the chip does not, so a foreign card parked
+		// there is locked until the chip arrives. Eight a squatter keeps the parking in the pockets, where a
+		// later phase can still take hold of it — the human's parks never touch the party's slots at all.
+		parts.squat * 8
+	);
+}
+
+/**
+ * Free the cheapest home, then look again. Each phase is a short best-first search scored by release cost
+ * and stopping the moment any needed card goes home or the boss falls. Three phases in a row with no new
+ * home means the plan is stuck, and the driver stops rather than grinding the same cover forever.
+ */
+export function solvePlanned(options: SolveOptions = {}): SolveResult {
+	// The planner only knows the clear: a boss run's objective is one card, and release order says nothing
+	// about it, so that goal keeps the flat driver it was measured with.
+	if ((options.goal ?? 'clear') === 'boss') return solveTomb({ ...options, engine: 'flat' });
+	const began = Date.now();
+	const budget = Math.max(10_000, options.nodes ?? 2_000_000);
+	const deadline = options.timeBudgetMs ?? 600_000;
+	const basePhase = Math.min(40_000, Math.max(10_000, Math.round(budget / 60)));
+	let phaseBudget = basePhase;
+	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
+	const isClear = (state: TombState) => state.game.cards.every((card) => card.location.fixture === 'foundation');
+
+	let state = start;
+	const line: SolveStep[] = [];
+	let nodes = 0;
+	let failures = 0;
+	let homes = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
+	let timedOut = false;
+
+	for (let phase = 0; phase < 150; phase++) {
+		if (isClear(state)) {
+			return {
+				goal: 'clear',
+				solved: true,
+				steps: line,
+				best: state,
+				bestSteps: line,
+				plies: line.length,
+				nodes,
+				elapsedMs: Date.now() - began,
+				timedOut,
+			};
+		}
+		if (nodes >= budget || Date.now() - began > deadline) {
+			timedOut = Date.now() - began > deadline;
+			break;
+		}
+		const tops = planTops(state);
+		const needs = planNeeds(state, tops);
+		const bossAlive = !!state.bossId && !bossSlain(state);
+		// No break when the needs run out: with every grave topped there is no next card, but the low cards
+		// skipped over by phantoms may still lie about the tomb, exposed and homeable. The phase runs anyway
+		// with an empty due, and the target below ends it on any home (mop-up). If nothing is homeable the
+		// phase misses, and three misses stop the driver. (A fully homed tomb never reaches here: isClear at
+		// the loop top already returned the win.)
+		const startLevel = currentLevel(state);
+		const startHp = hp(state);
+		const startBlocked = bossBlockedCount(state);
+		const startHomes = homes;
+		// The level is read off the lowest grave, so only a home on a lagging suit moves it — and a level is
+		// a heal that makes every later home cheaper. A phase that ends on an exposed high card while another
+		// suit lags is how a track climbs to D5/S5 at level 3 with four wounded cells. So the phase is only
+		// over when a lagging grave moves (or the boss falls); other homes are welcome along the way — they
+		// still count as progress — but they do not end the phase early.
+		const floor = Math.min(tops.hearts, tops.clubs, tops.diamonds, tops.spades);
+		const lagging = new Set(SUITS.filter((suit) => tops[suit] === floor));
+		const owing = needs.filter((need) => lagging.has(need.suit));
+		const due = owing.length ? owing : needs;
+		// A home costs a heart per rank above the level and the track spends every heart but the last, so a
+		// phase that chases a home it cannot pay is a phase that grinds cover for nothing. When nothing owing
+		// is payable, the phase heals instead: a dig is the only unconditional heal, and the track banks it.
+		const affordable = due.filter((need) => Math.max(0, need.rank - startLevel) <= startHp - 1);
+		const target = (board: TombState) =>
+			due.some((need) => {
+				const card = board.game.cards.find(
+					(candidate) => candidate.suit === need.suit && planRank(candidate) === need.rank,
+				);
+				return card?.location.fixture === 'foundation';
+			}) ||
+			(bossAlive && bossSlain(board)) ||
+			// A level is progress even when no grave advanced on paper: the track heals on it, and the next
+			// expensive home gets cheaper. Levels never come back out of the foundations, so this cannot loop.
+			currentLevel(board) > startLevel ||
+			// Moving the boss off a deep column is progress with no home in it: the cards beneath become
+			// diggable, and the landing the lift needs only exists while the tomb is still fogged. A phase may
+			// end on the lift itself, because waiting for the home means waiting past the last bury target.
+			(startBlocked > 0 && bossBlockedCount(board) < startBlocked) ||
+			// With every grave topped there is no next card and no due, but the low cards skipped over by
+			// phantoms still lie about the tomb — exposed, homeable, worth almost nothing, and the whole
+			// finish. A phase that will not end on them stops at 40 homes with twelve one-movers on the
+			// board; ending on any home mops them up, and homes never come back out.
+			(due.length === 0 && board.game.cards.filter((card) => card.location.fixture === 'foundation').length > startHomes) ||
+			(!affordable.length && hp(board) > startHp);
+		const pass = solveTomb({
+			state,
+			goal: 'clear',
+			engine: 'flat',
+			strategy: 'best',
+			depth: 90,
+			nodes: Math.min(phaseBudget, Math.max(1000, budget - nodes)),
+			// A phase that misses is telling the driver the release is deeper than the budget allowed: double
+			// the next attempt rather than grinding the same cover at the same depth. A firing phase resets
+			// to the base, because an easy home should stay cheap.
+			timeBudgetMs: Math.max(2000, deadline - (Date.now() - began)),
+			score: planScore,
+			target,
+		});
+		nodes += pass.nodes;
+		timedOut = timedOut || pass.timedOut;
+		const walked = pass.solved ? pass.steps : pass.bestSteps;
+		for (const step of walked) line.push(step);
+		state = walked.length ? walked[walked.length - 1].state : pass.best;
+		const now = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
+		// A heal with no home is still progress — it banks what the next expensive home spends — but only the
+		// affordable-gated phases may claim it, so a track at full hearts cannot spin on it forever.
+		const healed = !affordable.length && hp(state) > startHp;
+		const progressed = pass.solved || now > homes || (bossAlive && bossSlain(state)) || healed;
+		if (progressed) {
+			failures = 0;
+			homes = now;
+			phaseBudget = basePhase;
+		} else if (++failures >= 3) {
+			break;
+		} else {
+			phaseBudget = Math.min(100_000, phaseBudget * 2);
+		}
+	}
+
+	const cleared = isClear(state);
+	return {
+		goal: 'clear',
+		solved: cleared,
+		steps: cleared ? line : [],
+		best: state,
+		bestSteps: line,
+		plies: line.length,
+		nodes,
+		elapsedMs: Date.now() - began,
+		timedOut,
 	};
 }
 

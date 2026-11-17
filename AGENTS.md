@@ -168,6 +168,31 @@ while the human reached fog 0 around ply 96 with the level at 6 and the par alre
 first ninety moves interleaving homes with digs. Digging is cheap for a search and foundations are not, which is
 exactly the rationing a phase boundary gets wrong.
 
+## A third arm: the release-order planner (adopted as an arm, not a replacement)
+
+`solveTomb` takes `engine: 'plan'`: short best-first phases chained toward the next foundation card, each scored on
+release cost (cover, fog, parking room, what the home itself costs) instead of par. A clear is 48 gated releases and
+par cannot see the setup for them; the planner prices every dig and parked card as moves toward a home. A phase ends
+on a needed home, a boss kill, a level, or a banked heal; three phaseless misses stop the driver. It runs beside the
+other two in `compare-engines.ts` (`ENGINES=plan`) and changes nothing about them — one added export (`immobileBoss`)
+aside, the flat and phase drivers are byte-identical, which is the condition for keeping it.
+
+What it measured, 200k states a pass on `clear`/med over 4, 12, 3054, 150250, 2769, 154116: wins 4 (93 moves) and 12
+(132) — both flat's deals, so not yet additive — and loses 3054 (par 226), 150250 (214), 2769 (483), 154116 (130).
+On the target it is still the furthest any arm has taken the deal: 49 homes against flat's best par 434 at a million
+and the phases' 457. The fixes that moved it there, each tied to a stall it sat in: phases end only on lagging-grave
+homes (climbing high graves at level 3 is how a track bleeds out wounded); the boss prices per card it sits on (the
+human lifts KH on ply 11; every planner stall was a needed card under an unmoved boss); cover behind an immovable top
+prices as unreachable rather than as moves; needs see through drafted phantoms to the rank the skip rule opens; and an
+empty due ends the phase on any home (twelve one-movers the flat score will not cross the tomb for). Priced and
+reverted along the way: room above a whisper, per-phase tool-keeping, and join rewards — the last actively fights
+homes, which is what ends a release, so it will not come back as a price.
+
+Three open stalls, which is the next leg: 154116 parks KH onto JH three cards from home with no glyph left to lift it
+again; 2769 fills all seven cells by move fifteen and locks a homeable ace in a below-chip slot; 3054 and 150250 die
+in the midgame at par ~220 with the release priced but unreachable. The engine's test replays its line move by move
+without asserting a win, so the arm can change the line without changing the test.
+
 ## The Potion proposal, kept on file (not adopted)
 
 The Potion is left exactly as it is — drink it, every wound heals, it turns face down — and it is being playtested

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createTombState } from './tombcrawl';
+import { FREE_CELL_COUNT, createTombState } from './tombcrawl';
 import { shorthandCard } from './game/card/card';
 import {
 	applyAction,
@@ -81,6 +81,22 @@ describe('tomb solver', () => {
 		expect(flat.solved).toBe(true);
 		expect(fallback.solved).toBe(true);
 		expect(fallback.steps.map((step) => step.label)).toEqual(flat.steps.map((step) => step.label));
+	});
+
+	// The planner chains short release-ordered phases, so what has to hold is the same honesty as the other
+	// drivers: every reported move is earned through the rules, and the handoff between two phases is a real
+	// board, not a jump.
+	test('the planner reports a line that is earned move by move', () => {
+		const result = solveTomb({ seed: 12, difficulty: 'med', goal: 'clear', engine: 'plan', nodes: 200_000, timeBudgetMs: 60_000 });
+
+		expect(result.nodes).toBeGreaterThan(0);
+		let state = createTombState(12, FREE_CELL_COUNT.med);
+		for (const step of result.solved ? result.steps : result.bestSteps) {
+			const next = applyAction(state, step.action);
+			expect(next).not.toBeNull();
+			state = next!;
+		}
+		expect(state.hidden.length).toBe(result.best.hidden.length);
 	});
 
 	// WEYTWUT is aimed at two cards with a second click, so a plain `arm` followed by a `move` is refused

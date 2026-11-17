@@ -787,7 +787,7 @@ const MOVING_GLYPHS = new Set(['sack', 'cydstepp', 'pisorf', 'weytwut']);
  * invulnerability. A movement glyph is the one thing that shifts him. A run can carry him, so every
  * card of a run is checked rather than just its top.
  */
-function immobileBoss(state: TombState, card: Card): boolean {
+export function immobileBoss(state: TombState, card: Card): boolean {
 	if (!isBoss(state, card)) return false;
 	const kind: string | undefined = state.armed?.kind;
 	return !(TOMB_RULES.glyphMoveBoss && kind !== undefined && MOVING_GLYPHS.has(kind));
