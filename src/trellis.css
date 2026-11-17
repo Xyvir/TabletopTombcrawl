@@ -192,6 +192,25 @@ button.titlecard:focus-visible {
 	background: rgba(255, 255, 255, 0.045);
 }
 
+.layout-preview .code-edit {
+	margin: 0 0 0.45rem;
+	width: 7ch;
+	padding: 0.1rem 0.3rem;
+	border: 1px solid rgba(241, 232, 212, 0.4);
+	border-radius: 0.3rem;
+	background: rgba(0, 0, 0, 0.4);
+	color: #f1e8d4;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 0.78rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.layout-preview .code-edit:focus {
+	outline: 2px solid #f1e8d4;
+	outline-offset: 1px;
+}
+
 .layout-preview h3 {
 	margin: 0 0 0.45rem;
 	font-family: Georgia, 'Times New Roman', serif;
@@ -199,6 +218,10 @@ button.titlecard:focus-visible {
 	font-weight: 400;
 	letter-spacing: 0.14em;
 	color: rgba(241, 232, 212, 0.72);
+}
+
+.layout-preview h3 {
+	cursor: text;
 }
 
 .layout-preview ul {

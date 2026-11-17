@@ -381,6 +381,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const SUIT_BY_LETTER: Record<string, SuitName> = { h: 'hearts', c: 'clubs', d: 'diamonds', s: 'spades' };
 	/** The square the pointer or the keyboard is on, so the panel can read its party out. */
 	let hovered = $state<string | null>(null);
+	/** Typed-code entry: double-click the preview code to type a loadout like `hsds`. */
+	let codeEditing = $state(false);
+	let codeDraft = $state('');
+	let codeInputEl = $state<HTMLInputElement | null>(null);
+
+	function openCodeEdit() {
+		codeDraft = inspectedKey.toUpperCase();
+		codeEditing = true;
+		void tick().then(() => codeInputEl?.select());
+	}
+
+	function confirmCodeEdit(start: boolean) {
+		const clean = codeDraft.toLowerCase().replace(/[^hcds]/g, '').slice(0, 4);
+		if (clean.length === 4) hovered = clean;
+		codeEditing = false;
+		if (start && clean.length === 4) {
+			const key = clean;
+		const entry = entriesByLayout.get(key);
+		if (entry) startLayout(entry);
+		else if (placeholderFor(key)) startPlaceholder(key);
+		else hovered = key;
+		}
+	}
 	const inspectedKey = $derived(hovered || currentLayout || 'hhhh');
 	const inspected = $derived.by(() => {
 		if (inspectedKey.length !== 4) return null;
@@ -440,10 +463,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	function openLayout() {
+		codeEditing = false;
 		layoutOpen = true;
 	}
 
 	function closeLayout() {
+		codeEditing = false;
 		layoutOpen = false;
 	}
 
@@ -2229,8 +2254,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 												class="pip {layoutStatus(key)}"
 												class:mine={key === currentLayout}
 												disabled={!entry && !filler}
-												onmouseenter={() => (hovered = key)}
-												onfocus={() => (hovered = key)}
+												onmouseenter={() => {
+											if (!codeEditing) hovered = key;
+										}}
+												onfocus={() => {
+											if (!codeEditing) hovered = key;
+										}}
 												onclick={() => (entry ? startLayout(entry) : startPlaceholder(key))}
 																									title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
 															entry
@@ -2267,7 +2296,35 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					</div>
 					<aside class="layout-preview" aria-live="polite">
 						{#if inspected}
-							<h3>{inspectedKey.toUpperCase()}</h3>
+							{#if codeEditing}
+								<input
+									class="code-edit"
+									aria-label="Type a loadout code"
+									bind:this={codeInputEl}
+									bind:value={codeDraft}
+									maxlength={4}
+									autocapitalize="characters"
+									autocomplete="off"
+									spellcheck={false}
+									oninput={() => {
+										const clean = codeDraft.toLowerCase().replace(/[^hcds]/g, '').slice(0, 4);
+										codeDraft = clean.toUpperCase();
+										if (clean.length === 4) hovered = clean;
+									}}
+									onkeydown={(event) => {
+										event.stopPropagation();
+										if (event.key === 'Enter') confirmCodeEdit(true);
+										else if (event.key === 'Escape') codeEditing = false;
+										else if (event.key === 'Tab') codeEditing = false;
+									}}
+									onblur={() => confirmCodeEdit(false)}
+								/>
+							{:else}
+								<h3
+									title="Double-click to type a loadout code"
+									ondblclick={openCodeEdit}
+								>{inspectedKey.toUpperCase()}</h3>
+							{/if}
 							<ul>
 								{#each ROLE_ORDER as role (role)}
 									{@const suit = inspected[role]}
