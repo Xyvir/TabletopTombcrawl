@@ -105,6 +105,13 @@ export function step(state: TombState, text: string): TombState | null {
 		return revealFaceDown(state, at);
 	}
 
+	// drop  Purity (cell 4) -> col 2 — a Purity cast names the hallway it refogs, while a bare drop
+	// puts the spell away unspent
+	if ((m = /^drop (\w+) \(cell (\d+)\) -> col (\d+)$/.exec(text))) {
+		const cast = state.armed;
+		if (cast?.kind !== 'purity' || cast.cell !== Number(m[2]) - 1) throw new Error(`no Purity armed in cell ${m[2]}`);
+		return armedClick(state, column(Number(m[3]) - 1));
+	}
 	// arm   PISORF (cell 3)   /   drop  PISORF (cell 3)
 	if ((m = /^arm (\w+) \(cell (\d+)\)$/.exec(text))) return useAbility(state, Number(m[2]) - 1);
 	// use   Potion (cell 4)   — an item whose effect lands as it is used, rather than one left armed

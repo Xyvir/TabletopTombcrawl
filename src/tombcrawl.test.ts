@@ -72,7 +72,7 @@ interface Setup {
 	exhausted?: number[];
 	wounded?: number[];
 	boss?: string;
-	/** Size of the track: 8 is easy, 7 med, 6 hard. Free cells are the whole difficulty difference. */
+	/** Size of the deal: 7 pockets on the baseline, 6 on a legacy hard deal. */
 	cellCount?: number;
 }
 
@@ -368,9 +368,9 @@ describe('monster damage on the way home', () => {
 
 describe('conversion order', () => {
 	test('the chip starts between the party and the plain free cells', () => {
-		const easy = createTombState(4242, FREE_CELL_COUNT.easy);
+		const med = createTombState(4242, FREE_CELL_COUNT.med);
 		const hard = createTombState(4242, FREE_CELL_COUNT.hard);
-		[easy, hard].forEach((state) => {
+		[med, hard].forEach((state) => {
 			expect(chipBoundary(state)).toBe(4);
 			expect(convertibleCell(state)).toBe(3);
 		});
@@ -948,24 +948,22 @@ describe('tombcrawl deal and draft', () => {
 		});
 	});
 
-	test('difficulty adds or drops free cells without touching the deal', () => {
-		const easy = createTombState(1234, FREE_CELL_COUNT.easy);
+	test('fewer free cells never touch the deal', () => {
 		const med = createTombState(1234, FREE_CELL_COUNT.med);
 		const hard = createTombState(1234, FREE_CELL_COUNT.hard);
 
-		// four drafted items plus 4 / 3 / 2 free cells, and the HP pool is the whole track
-		expect([easy, med, hard].map((state) => state.game.cells.length)).toEqual([8, 7, 6]);
-		expect([easy, med, hard].map(maxHp)).toEqual([8, 7, 6]);
+		// four drafted items plus 3 / 2 free cells, and the HP pool is the whole track
+		expect([med, hard].map((state) => state.game.cells.length)).toEqual([7, 6]);
+		expect([med, hard].map(maxHp)).toEqual([7, 6]);
 		expect(hard.exhausted).toHaveLength(6);
 		expect(hard.wounded).toHaveLength(6);
 
 		// the seed alone decides the cards, so every difficulty shows the same deal and fog
 		const layout = (state: TombState) =>
 			state.game.tableau.map((column) => column.map(shorthandCard).join(' '));
-		expect(layout(easy)).toEqual(layout(med));
 		expect(layout(hard)).toEqual(layout(med));
 
-		[easy, med, hard].forEach((state) => {
+		[med, hard].forEach((state) => {
 			expect(state.draft.map((entry) => entry.cell)).toEqual([0, 1, 2, 3]);
 			expect(emptyCells(state)).toEqual(
 				Array.from({ length: state.game.cells.length - 4 }, (_, i) => 4 + i)
@@ -1244,7 +1242,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 });
 
 describe('tombcrawl a wounded card', () => {
-	// Easy keeps four free cells, so the track is eight slots; med and hard use seven and six.
+	// Seven slots on the baseline, six on a legacy hard deal.
 	const board = (cellCount: number) =>
 		makeTomb({
 			cellCount,
@@ -1254,23 +1252,12 @@ describe('tombcrawl a wounded card', () => {
 			wounded: [1, 0, 0, 0, 0, 0],
 		});
 
-	test('on easy the foundation is the one way out that needs no heal', () => {
-		const state = board(8);
+	test('a wound has to be healed face up first: the foundation is no way out', () => {
+		const state = board(7);
 		expect(cellTopWounded(state, 0)).toBe(true);
 		// locked against the board, even to an empty column
 		expect(tombMove(state, { fixture: 'cell', data: [0] }, cascade(1))).toBe(null);
-		// but the kill is still on offer
-		const preview = attackPreview(state, { fixture: 'cell', data: [0] });
-		expect(preview.legal).toBe(true);
-		expect(preview.damage).toBe(2);
-		const kill = attackWith(state, { fixture: 'cell', data: [0] })!;
-		expect(kill.game.cards.find((card) => shorthandCard(card) === '3C')!.location.fixture).toBe('foundation');
-		// the wound leaves with the card instead of haunting the empty slot
-		expect(kill.wounded[0]).toBe(0);
-	});
-
-	test('on med the same wound has to be healed face up first', () => {
-		const state = board(7);
+		// and the kill is not on offer either
 		expect(attackPreview(state, { fixture: 'cell', data: [0] })).toMatchObject({ legal: false, reason: 'wounded' });
 		expect(attackWith(state, { fixture: 'cell', data: [0] })).toBe(null);
 	});
@@ -1589,9 +1576,9 @@ describe('tombcrawl progression rules', () => {
 		expect(next.hidden).not.toContain('2C');
 	});
 
-	test('only the easy track has a ceiling on a blow: med and hard pay the whole rank', () => {
+	test('no blow has a ceiling on the baseline: every deal pays the whole rank', () => {
 		// Spades are away at nine while the other three sit on their aces, so the level lags at two and
-		// the ten of spades is worth eight: capped at two on easy, its whole rank on med and hard.
+		// the ten of spades is worth its whole eight on every deal.
 		const board = (cellCount: number) =>
 			makeTomb({
 				columns: [['TS']],
@@ -1599,14 +1586,23 @@ describe('tombcrawl progression rules', () => {
 				foundations: ['9S', 'AH', 'AD', 'AC'],
 				cellCount,
 			});
-		const easy = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.easy);
 		const med = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.med);
 		const hard = board(DRAFT_CELL_COUNT + FREE_CELL_COUNT.hard);
-		expect(difficultyOf(easy)).toBe('easy');
 		expect(currentLevel(med)).toBe(2);
-		expect(attackPreview(easy, cascade(0)).damage).toBe(2);
 		expect(attackPreview(med, cascade(0)).damage).toBe(8);
 		expect(attackPreview(hard, cascade(0)).damage).toBe(8);
+	});
+
+	test('a Dwarf’s extra pocket is the easy mode, not another track', () => {
+		// seed 3 drafts a Dwarf: eight pockets on the baseline, seven on a legacy hard deal
+		const med = createTombState(3, FREE_CELL_COUNT.med);
+		const hard = createTombState(3, FREE_CELL_COUNT.hard);
+		expect(med.draft[0].name).toBe('Dwarf');
+		expect(difficultyOf(med)).toBe('med');
+		// hard and med run the same rules, so the smaller Dwarf board reads med too
+		expect(difficultyOf(hard)).toBe('med');
+		// while a non-Dwarf legacy hard deal still reads hard
+		expect(difficultyOf(createTombState(1, FREE_CELL_COUNT.hard))).toBe('hard');
 	});
 
 	test('an off-suit king is weak in a club tomb, where the boss suit costs a rank more', () => {
@@ -2204,6 +2200,21 @@ describe('tombcrawl item refresh', () => {
 			suit: 'hearts',
 			name: 'Potion',
 		});
+	});
+
+	test('a Thief setting an item down in an empty hallway converts the slot with no window', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
+			{ cell: 1, role: 'consumable', id: '5S', suit: 'spades', name: 'Purity', text: '' },
+		];
+		// the second hallway stands empty: the item is set down in the open rather than lost to the crypt
+		const state = makeTomb({ columns: [['6D'], []], cells: ['4C', '5S', '3H', '9D'], foundations: ['4D'], draft });
+		const played = tombMove(state, cell(1), cascade(1))!;
+
+		expect(played.draft.find((item) => item.cell === 1)).toBeUndefined();
+		expect(played.itemWindow).toBe(null);
+		// the slot converts like a cell-park: the chip steps past the empty slot
+		expect(chipBoundary(played)).toBe(1);
 	});
 
 	test('a Thief’s any-suit restock is the item pocket’s alone', () => {

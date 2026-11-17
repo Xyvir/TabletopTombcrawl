@@ -56,7 +56,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		newlyWounded,
 		createTombState,
 		currentLevel,
-		difficultyOf,
 		DRAFT_CELL_COUNT,
 		FREE_CELL_COUNT,
 		GOLD_TOTAL,
@@ -346,26 +345,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The sheet reads the med corpus: one track means one claim per party, and no tier to tab through. */
 	const layoutDifficulty: Difficulty = TRACK;
 	const difficultyOfEntry = (entry: CorpusEntry) => (entry.difficulty as Difficulty) ?? 'med';
-	/**
-	 * Where a track's rows are kept. Easy is never solved on its own: the deal is the same board with a
-	 * cell more to store in and a wound more to spare, so every med line is already an easy line and the
-	 * sheet mirrors the med corpus rather than chasing a claim one track easier.
-	 */
-	const tierShown = (level: Difficulty): Difficulty => (level === 'easy' ? 'med' : level);
+	/** Where a track's rows are kept. The sheet reads the med corpus: one baseline, one claim per party. */
 	const entriesByLayout = $derived(
 		new Map(
 			(corpus?.entries ?? [])
-				.filter((entry) => difficultyOfEntry(entry) === tierShown(layoutDifficulty))
+				.filter((entry) => difficultyOfEntry(entry) === layoutDifficulty)
 				.map((entry) => [entry.loadout, entry])
 		)
 	);
 	/** The square's best no-win crawl, on the track the sheet is showing. */
-	const placeholderFor = (key: string) => corpus?.placeholders?.[key]?.[tierShown(layoutDifficulty)];
+	const placeholderFor = (key: string) => corpus?.placeholders?.[key]?.[layoutDifficulty];
 	// A typed seed belongs to a square only at the track it was solved on, which is the track on screen.
 	const entriesBySeed = $derived(
 		new Map(
 			(corpus?.entries ?? [])
-				.filter((entry) => difficultyOfEntry(entry) === tierShown(difficulty))
+				.filter((entry) => difficultyOfEntry(entry) === difficulty)
 				.map((entry) => [entry.seed, entry])
 		)
 	);
@@ -421,8 +415,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const proofs = corpus?.found?.[inspectedKey] as
 			| (Partial<Record<'boss' | 'clear', { seed: number; moves: number }>> & Record<string, unknown>)
 			| undefined;
-		const tier = tierShown(layoutDifficulty);
-		const known = (proofs?.[tier] ?? (tier === 'med' ? proofs : undefined)) as
+		const known = (proofs?.[layoutDifficulty] ?? proofs) as
 			| Partial<Record<'boss' | 'clear', { seed: number; moves: number }>>
 			| undefined;
 		const boss = known?.boss ?? (entry?.goal === 'boss' ? { seed: entry.seed, moves: entry.moves } : undefined);
@@ -512,9 +505,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const key = dealLayout || loadoutOf(state);
 		const status: LayoutRecord['status'] | null = tombPar(state) === 0 ? 'clear' : bossSlain(state) ? 'boss' : null;
 		if (!status) return;
-		// Read off the board rather than off a control: the crawl only deals one track, but a stored run
-		// from before that is still keyed by the size it was dealt at.
-		const level: Difficulty = difficultyOf(state);
+		// The crawl only deals one track, so the mark is keyed by it directly: reading the track off the
+		// board miskeys Dwarf crawls, whose extra pocket looks like a whole easier track.
+		const level: Difficulty = layoutDifficulty;
 		const id = `${level}:${key}`;
 		const held = progress.get(id)?.status;
 		if (held === 'clear' || (held === 'boss' && status === 'boss')) return;
@@ -652,7 +645,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The optional third win: the same result with the reserve pocket never used. */
 	const endTrueClear = $derived(tomb ? trueClear(tomb) : false);
 	const endTrueBoss = $derived(tomb ? trueBossKill(tomb) : false);
-	const endTrack = $derived<Difficulty>(tomb ? difficultyOf(tomb) : difficulty);
+	// The crawl only deals one track: reading it off the board miskeys Dwarf crawls the same way the
+	// progress mark did, and the end panel would compare against the wrong tier.
+	const endTrack: Difficulty = layoutDifficulty;
 	/** The corpus row for this party on this track, if the seed sheet has one. */
 	const endCorpus = $derived(
 		(corpus?.entries ?? []).find((entry) => entry.loadout === (dealLayout || loadoutOf(tomb)) && difficultyOfEntry(entry) === endTrack) ??
@@ -2244,6 +2239,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									aria-label={`kin ${kin}, class ${cls}`}
 									style={`grid-area: ${2 + kinIndex} / ${2 + clsIndex}`}
 								>
+									<!-- Read on narrow sheets, where the class ticks across the top are hidden. -->
+									<span class="block-label">{abilityFor('class', cls).name}</span>
 									{#each SUITS as glyph (glyph)}
 										{#each SUITS as item (item)}
 											{@const key = `${kin[0]}${cls[0]}${glyph[0]}${item[0]}`}
@@ -2400,13 +2397,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<div class="win">
 			{#if tomb}
 				<p>{endCleared ? 'All Gold Retrieved!' : 'You Escape Alive.'}</p>
-				<div class="win-figures">
-					<div class="fig"><span class="n">{endMoves}</span><span class="k">moves</span></div>
-					<div class="fig"><span class="n">{endGold}</span><span class="k">gold</span></div>
-					{#if endMult > 1}
+				<p class="win-earned">you earned <span class="gold">{endGold}</span> gold in <span class="steps">{endMoves}</span> steps.</p>
+				{#if endMult > 1}
+					<div class="win-figures">
 						<div class="fig"><span class="n">×{endMult}</span><span class="k">{endPercent}% score</span></div>
-					{/if}
-				</div>
+					</div>
+				{/if}
 				<p class="win-note">
 					{endCleared
 						? endTrueClear
@@ -2424,13 +2420,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<p class="win-bench">
 						<span class="who">benchmark</span>
 						{#if endCorpus}
-							{#if endCorpus.seed !== tomb.seed}seed {endCorpus.seed} · {/if}{endCorpus.moves} moves, {endCorpus.goal ===
+							{#if endCorpus.seed !== tomb.seed}seed {endCorpus.seed} · {/if}{endCorpus.moves} steps, {endCorpus.goal ===
 							'clear'
 								? 'tomb cleared'
 								: 'boss slain'} — {againstTheirs(endCorpus.moves)}
 						{:else if endProbe}
 							solver · {endProbe.solved
-								? `${endProbe.moves} moves, tomb cleared — ${againstTheirs(endProbe.moves)}`
+								? `${endProbe.moves} steps, tomb cleared — ${againstTheirs(endProbe.moves)}`
 								: `no line in ${endProbe.nodes.toLocaleString()} states`}
 						{/if}
 					</p>

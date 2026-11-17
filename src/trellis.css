@@ -301,13 +301,69 @@ button.titlecard:focus-visible {
 	color: rgba(255, 255, 255, 0.4);
 }
 
+/* Names the block's class on narrow sheets, where the class ticks across the top are hidden. */
+.block .block-label {
+	display: none;
+}
+
 @media (max-width: 620px) {
+	.layout-card {
+		/* The pips grow back once the four class columns stack instead of sitting side by side. */
+		--pip: clamp(18px, 5.2vw, 24px);
+		max-width: 100%;
+		padding: 0.75rem 0.8rem 0.9rem;
+		overflow-x: hidden;
+	}
+
 	.layout-body {
 		grid-template-columns: 1fr;
 	}
 
+	/* The readout comes first: the typed code and the inspected party, no scrolling past the grid. */
 	.layout-preview {
+		order: -1;
 		width: auto;
+	}
+
+	/*
+	 * The trellis stacks: each kin keeps its tick as a group header, with its four class blocks
+	 * 2 x 2 beneath it. The corner, the top ticks and both margins are desktop axis labels with
+	 * no room here — the block carries its own class name instead, and the readout above names
+	 * the square. Nothing in the stack is wider than two blocks, so no sideways scrolling.
+	 */
+	.trellis {
+		grid-template-columns: repeat(2, auto);
+		justify-content: center;
+		gap: 6px;
+	}
+
+	.trellis > * {
+		grid-area: auto !important;
+	}
+
+	.trellis .corner,
+	.trellis .tick.top,
+	.trellis .margin {
+		display: none;
+	}
+
+	.trellis .tick.side {
+		grid-column: 1 / -1;
+		display: flex;
+		align-items: baseline;
+		gap: 0.45rem;
+		margin: 0.55rem 0 0.05rem;
+		text-align: left;
+	}
+
+	.block .block-label {
+		display: block;
+		grid-column: 1 / -1;
+		padding: 0.1rem 0 0.2rem;
+		font-size: 0.62rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.6);
 	}
 }
 

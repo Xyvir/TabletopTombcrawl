@@ -21,8 +21,10 @@ import { FreeCell } from './game/game';
 /** The drafted party always fills the first four cells, one per role. */
 export const DRAFT_CELL_COUNT = 4;
 /** Free cells past the party: the difficulty knob, and the size of the HP track. */
-export const FREE_CELL_COUNT: Record<Difficulty, number> = { easy: 4, med: 3, hard: 2 };
-export type Difficulty = 'easy' | 'med' | 'hard';
+/** Free pockets beside the four drafted ones: three on the baseline, two on a legacy hard deal. */
+export const FREE_CELL_COUNT: Record<Difficulty, number> = { med: 3, hard: 2 };
+/** The baseline and its legacy harder deal. Easy is retired; the Dwarf's extra pocket is the easy mode. */
+export type Difficulty = 'med' | 'hard';
 /** The default track: four drafted items and three free cells. */
 export const TOMB_CELL_COUNT = DRAFT_CELL_COUNT + FREE_CELL_COUNT.med;
 export const TOMB_CASCADE_COUNT = 8;
@@ -38,11 +40,12 @@ export const TOMB_RULES = {
 	 * The most hearts one kill may cost, or 0 for no ceiling. Damage is rank minus level, so the
 	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
 	 *
-	 * Two, on the easy track only: there every blow is worth 0, 1 or 2, which is the whole of the arithmetic a
-	 * table has to do. Med and hard have no ceiling at all — a card over a lagging level costs its whole rank,
-	 * so a king you cannot afford is a wall rather than a bill, and some crawls may simply be unsolvable.
+	 * Zero on the baseline: a card over a lagging level costs its whole rank, so a king you cannot
+	 * afford is a wall rather than a bill, and some crawls may simply be unsolvable. Experiments may
+	 * set a cap; the retired easy track used two, which was the whole of the arithmetic its table
+	 * had to do.
 	 */
-	levelDamageCap: 2,
+	levelDamageCap: 0,
 	/**
 	 * Whether a movement glyph may carry the boss king: no hand ever shifts him, but a spell can lift him
 	 * out of the way, which frees the column he was sitting on. Killing him is a separate gate (his
@@ -748,28 +751,25 @@ export function bossSlain(state: TombState): boolean {
  * free cells, three or two — so its size is the rule, rather than something every state has to carry.
  */
 /**
- * The ceiling on one blow at this state's track: two on easy, none at all on med or hard. Both of the harder
- * tracks are where a blow costs its whole rank, so a card over a lagging level can be unpayable — and a crawl
- * built around reaching it later. Bounty still zeroes a blow after the cap, so a free kill stays free.
+ * The ceiling on one blow: whatever the table is set to, which is nothing on the baseline. A capped
+ * blow still zeroes under Bounty after the cap, so a free kill stays free.
  */
 export function damageCapOf(state: TombState): number {
-	return difficultyOf(state) === 'easy' ? TOMB_RULES.levelDamageCap : 0;
+	return TOMB_RULES.levelDamageCap;
 }
 
 export function difficultyOf(state: TombState): Difficulty {
-	const cells = state.game.cells.length;
-	return (
-		(Object.keys(FREE_CELL_COUNT) as Difficulty[]).find((key) => DRAFT_CELL_COUNT + FREE_CELL_COUNT[key] === cells) ??
-		'med'
-	);
+	// One baseline and its legacy harder deal: six pockets is hard, anything else is med. The Dwarf's
+	// extra pocket is the easy mode, not another track, so an eight-pocket Dwarf crawl reads med.
+	return state.game.cells.length === DRAFT_CELL_COUNT + FREE_CELL_COUNT.hard ? 'hard' : 'med';
 }
 
 /**
- * Whether a wounded card may still be slain straight to its foundation. On easy the tomb is the
- * lesson and a wound is no life sentence; med and hard make you heal it face up first.
+ * Whether a wounded card may still be slain straight to its foundation. Never on the baseline: the
+ * wound has to be healed face up first. (Easy's one-way-out lesson is retired with the track.)
  */
 export function woundedCanGoHome(state: TombState): boolean {
-	return difficultyOf(state) === 'easy';
+	return false;
 }
 
 /** The boss stands behind its Generals: no party reaches it until another king is home. */
@@ -984,8 +984,8 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 			if (card.location.fixture === 'foundation') return { legal: false, reason: 'already in its grave' };
 
 	if (from.fixture === 'cell') {
-		// A wound locks a card against building, spells and passives. The foundation is the one way out
-		// that needs no heal first — but only on easy: med and hard turn you back to heal it.
+		// A wound locks a card against building, spells and passives, and the foundation is no way
+		// out: the wound has to be healed face up first.
 		if (cellTopWounded(state, from.data[0]) && !woundedCanGoHome(state)) {
 			return { legal: false, reason: 'wounded' };
 		}
@@ -1712,7 +1712,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	// An item may still be played out of its slot — a card is a card — and the play spends it. Played
 	// into a free cell it is the conversion the chip counts: the slot turns plain and the chip steps
 	// past it. Played into a hallway it has gone to the crypt, which is the one trip a Thief's
-	// Pickpocket leaves the empty slot waiting on (see the window at the end of the move).
+	// Pickpocket leaves the empty slot waiting on (see the window at the end of the move) — unless
+	// the hallway stands empty, in which case the item is set down in the open and the slot converts
+	// like a cell-park, with no restock waiting.
 
 	// A spent item slot claims exactly one card on the very next action, and that card becomes the
 	// new item. It need not be the suit that left: an Orc's Scavenger takes any card at all.
@@ -1798,23 +1800,26 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
-	// Pickpocket: an item played out of its slot into a hallway has gone to the crypt, so the pocket it
-	// emptied waits one action for a card of any suit at all — a different suit turns it into a
-	// different item. The chip holds where it is while that window is open, which is what lets a Thief
-	// work through a pocket's worth of flasks. It is the item pocket only: the glyph, class and kin
-	// pockets keep their own suit, because a card that could re-roll a Thief's class mid-crawl is a
-	// different character every three moves rather than a thief. A free cell is the other thing
-	// entirely, and the plain trip home still restocks on its own suit without him.
+		// Pickpocket: an item played out of its slot into a lived-in hallway has gone to the crypt, so the
+	// pocket it emptied waits one action for a card of any suit at all — a different suit turns it
+	// into a different item. The chip holds where it is while that window is open, which is what lets
+	// a Thief work through a pocket's worth of flasks. An empty hallway is set down in the open
+	// instead: no window opens, and the slot converts like a cell-park. It is the item pocket only:
+	// the glyph, class and kin pockets keep their own suit, because a card that could re-roll a
+	// Thief's class mid-crawl is a different character every three moves rather than a thief. A free
+	// cell is the other thing entirely, and the plain trip home still restocks on its own suit
+	// without him.
 	const pickpocketed =
 		entry &&
 		source >= 0 &&
 		entry.role === 'consumable' &&
 		to.fixture === 'cascade' &&
+		(state.game.tableau[to.data[0]]?.length ?? 0) > 0 &&
 		!next.game.cells[source] &&
 		CLAUSES.thiefPickpocket &&
 		hasPassive(state, 'Thief')
-			? { cell: source, role: entry.role, suit: entry.suit, any: true }
-			: null;
+		? { cell: source, role: entry.role, suit: entry.suit, any: true }
+		: null;
 
 	next = settle(next, currentLevel(state));
 	if (pickpocketed) next = cloneWith(next, { itemWindow: pickpocketed });

@@ -1678,3 +1678,21 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: rgba(255, 255, 255, 0.5);
 }
 
+/* The delver's reckoning in one line: gold reads yellow, steps read blue. */
+.win .win-earned {
+	margin: 0.35rem 0 0;
+	font-size: 1.2rem;
+}
+
+.win .win-earned .gold {
+	color: #ffd95e;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.win .win-earned .steps {
+	color: #8fb4ff;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+

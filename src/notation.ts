@@ -1,7 +1,6 @@
 import { shorthandCard, type Card, type CardLocation } from './game/card/card';
 import {
 	DRAFT_CELL_COUNT,
-	FREE_CELL_COUNT,
 	ROLE_WORD,
 	TOMB_RULES,
 	currentLevel,
@@ -9,7 +8,6 @@ import {
 	maxHp,
 	parCleared,
 	tombPar,
-	type Difficulty,
 	type TombState,
 } from './tombcrawl';
 
@@ -104,6 +102,18 @@ export function describeStep(before: TombState, after: TombState): string | null
 		return moveLabel(moved, from, first.location, buried);
 	}
 
+	// Aiming Purity at a hallway turns every card in it to fog: nothing moves and the spell is spent, so
+	// without its own print the cast would read as putting the spell away unspent.
+	const arm = before.armed;
+	const fogged = after.hidden.filter((id) => !before.hidden.includes(id));
+	if (arm?.kind === 'purity' && fogged.length) {
+		const landed = fogged.map((id) => (now as Map<string, Card>).get(id)).find((card) => card?.location.fixture === 'cascade');
+		const entry = before.draft.find((candidate) => candidate.cell === arm.cell);
+		if (landed?.location.fixture === 'cascade' && entry) {
+			return `drop  ${entry.name} (cell ${arm.cell + 1}) -> col ${landed.location.data[0] + 1}`;
+		}
+	}
+
 	// Arming or dropping a spell: no card moves, so this is the whole of the step.
 	const beforeArm = before.armed;
 	const afterArm = after.armed;
@@ -143,12 +153,6 @@ function party(state: TombState): string {
 		.join(' · ');
 }
 
-function difficultyOf(state: TombState): string {
-	const free = state.game.cells.length - DRAFT_CELL_COUNT;
-	const found = (Object.keys(FREE_CELL_COUNT) as Difficulty[]).find((key) => FREE_CELL_COUNT[key] === free);
-	return found ?? 'med';
-}
-
 /**
  * A pasteable session: the seed, the party, then one numbered line per move with the board it left,
  * in the same shape as `npm run solve` prints. Two transcripts of the same seed can be diffed.
@@ -156,7 +160,7 @@ function difficultyOf(state: TombState): string {
 export function transcript(start: TombState, steps: RecordedStep[]): string {
 	const free = start.game.cells.length - DRAFT_CELL_COUNT;
 	const lines = [
-		`seed ${start.seed}  ·  ${difficultyOf(start)} (${free} free cells)  ·  level up heals ${TOMB_RULES.levelUpHeal}`,
+		`seed ${start.seed}  ·  ${free} free cells  ·  level up heals ${TOMB_RULES.levelUpHeal}`,
 		`boss  ${start.bossSuit ? `${start.bossSuit} king` : 'not yet revealed'}  ·  party  ${party(start) || '(none)'}`,
 		`fog ${start.hidden.length} cards face down · starting ${boardSummary(start)}`,
 		'',

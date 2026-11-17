@@ -32,6 +32,7 @@ Two rules for this file:
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
 | **Delver** | The player. Not "you" in rules text, "the delver" where a subject is needed. | player |
+| **Steps** | One move of the crawl; the track metaphor makes a move a step. Copy counts steps, never moves. | moves |
 
 A **crawl** is the whole board; the **tomb** is only the part you play in. Copy that means everything on the
 table says crawl, and copy that means the eight hallways says tomb — "a card in the tomb", "the tomb empties".
@@ -152,16 +153,6 @@ Copy that still uses the standard name, each a one-line change:
 
 ---
 
-## Proposals
-
-Not in copy yet. Ranked by how much the current word hurts.
-
-| Now | Proposal | Why |
-| --- | --- | --- |
-| moves | **steps** | The track metaphor makes a move a step; "Moves (0)" is the last mechanical word in the HUD. |
-
----
-
 ## Rejected
 
 - **Expedition / excursion / scenario / campaign** for a crawl — expedition and excursion are a mouthful for
@@ -233,6 +224,6 @@ Not in copy yet. Ranked by how much the current word hurts.
 
 ### Kept as is
 
-- LEVEL, HP and GOLD in the HUD, and Easy / Med / Hard.
+- LEVEL, HP and GOLD in the HUD, and Med / Hard.
 - Kin, Class, Glyph, Item, and their passive / active labels.
 - The reference board's "FreeCell" name. It is an homage to the game this one is built from, not a leak.
