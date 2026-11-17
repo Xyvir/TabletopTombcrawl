@@ -98,6 +98,37 @@
 			"at": "2026-11-16T03:14:11.668Z"
 		},
 		{
+			"loadout": "ccss",
+			"boss": null,
+			"seed": 1518,
+			"moves": 107,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-17T02:14:58.342Z"
+		},
+		{
 			"loadout": "cdhd",
 			"boss": "diamonds",
 			"seed": 684,
@@ -1276,6 +1307,37 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "dshd",
+			"boss": "hearts",
+			"seed": 87147,
+			"moves": 60,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-17T01:33:35.891Z"
+		},
+		{
 			"loadout": "dshs",
 			"boss": "diamonds",
 			"seed": 40211,
@@ -2266,6 +2328,37 @@
 				}
 			],
 			"at": "2026-11-16T05:13:33.440Z"
+		},
+		{
+			"loadout": "schh",
+			"boss": null,
+			"seed": 328,
+			"moves": 102,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-17T02:14:58.718Z"
 		},
 		{
 			"loadout": "scss",
@@ -2666,6 +2759,14 @@
 			"at": "2026-11-16T03:14:11.668Z"
 		},
 		{
+			"loadout": "ccss",
+			"difficulty": "med",
+			"seed": 1518,
+			"moves": 107,
+			"goal": "clear",
+			"at": "2026-11-17T02:14:58.342Z"
+		},
+		{
 			"loadout": "cdhd",
 			"difficulty": "med",
 			"seed": 684,
@@ -2984,6 +3085,14 @@
 			"moves": 76,
 			"goal": "boss",
 			"at": "2026-11-15"
+		},
+		{
+			"loadout": "dshd",
+			"difficulty": "med",
+			"seed": 87147,
+			"moves": 60,
+			"goal": "boss",
+			"at": "2026-11-17T01:33:35.891Z"
 		},
 		{
 			"loadout": "dshs",
@@ -3322,6 +3431,14 @@
 			"at": "2026-11-16T05:13:33.440Z"
 		},
 		{
+			"loadout": "schh",
+			"difficulty": "med",
+			"seed": 328,
+			"moves": 102,
+			"goal": "clear",
+			"at": "2026-11-17T02:14:58.718Z"
+		},
+		{
 			"loadout": "scss",
 			"difficulty": "med",
 			"seed": 155600,
@@ -3456,6 +3573,14 @@
 				"boss": {
 					"seed": 82967,
 					"moves": 59
+				}
+			}
+		},
+		"dshd": {
+			"med": {
+				"boss": {
+					"seed": 87147,
+					"moves": 60
 				}
 			}
 		},
@@ -3989,6 +4114,22 @@
 				}
 			}
 		},
+		"ccss": {
+			"med": {
+				"clear": {
+					"seed": 1518,
+					"moves": 107
+				}
+			}
+		},
+		"schh": {
+			"med": {
+				"clear": {
+					"seed": 328,
+					"moves": 102
+				}
+			}
+		},
 		"hsds": {
 			"med": {
 				"boss": {
@@ -4144,13 +4285,6 @@
 				"seed": 1900,
 				"score": 81,
 				"at": "2026-11-13T18:45:35.736Z"
-			}
-		},
-		"ccss": {
-			"med": {
-				"seed": 1518,
-				"score": 100,
-				"at": "2026-11-13T18:44:35.998Z"
 			}
 		},
 		"sdss": {
@@ -4592,13 +4726,6 @@
 				"seed": 499,
 				"score": null,
 				"at": "2026-11-15T02:25:48.814Z"
-			}
-		},
-		"dshd": {
-			"med": {
-				"seed": 34426,
-				"score": null,
-				"at": "2026-11-14"
 			}
 		},
 		"ddch": {
@@ -5154,13 +5281,6 @@
 				"at": "2026-11-13T18:44:16.289Z"
 			}
 		},
-		"schh": {
-			"med": {
-				"seed": 328,
-				"score": 18,
-				"at": "2026-11-13T18:42:15.658Z"
-			}
-		},
 		"scsc": {
 			"med": {
 				"seed": 159075,
@@ -5385,7 +5505,6 @@
 		"ccds",
 		"ccsh",
 		"ccsd",
-		"ccss",
 		"cdhh",
 		"cdhc",
 		"cdhs",
@@ -5438,7 +5557,6 @@
 		"ddss",
 		"dshh",
 		"dshc",
-		"dshd",
 		"dscs",
 		"dsdd",
 		"dsds",
@@ -5457,7 +5575,6 @@
 		"shsh",
 		"shsd",
 		"shss",
-		"schh",
 		"schc",
 		"schd",
 		"schs",
