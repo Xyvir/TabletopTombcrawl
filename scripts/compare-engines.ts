@@ -25,6 +25,7 @@ if (process.env.HEARTS) ORGANIZE_WEIGHTS.hearts = Number(process.env.HEARTS);
 if (process.env.CASH) ORGANIZE_WEIGHTS.cash = Number(process.env.CASH);
 if (process.env.FOG) ORGANIZE_WEIGHTS.fog = Number(process.env.FOG);
 if (process.env.DECAY) ORGANIZE_WEIGHTS.decay = Number(process.env.DECAY);
+if (process.env.READY) ORGANIZE_WEIGHTS.ready = Number(process.env.READY);
 
 const total: Record<string, { wins: number; moves: number; nodes: number; seconds: number; tested: number }> = {};
 

@@ -129,6 +129,20 @@ while the rationed phase hands over fog 6 at seven hearts with par 492 and reach
 the furthest any arm has taken that deal (flat's best is 434 at a million). That is the shape to build on: the handoff
 has to stay *finishable*, and par parity with the human's board is not enough to be finishable.
 
+### The finishability test (a knob, off by default)
+
+The handoff can be gated: `handoff: 'finishable'` walks the organizing line back to the deepest board that still has a home
+on it (`foundationPull(...).reach > 0`) instead of handing over the pass's best board regardless. The failure it is aimed
+at is real — on 154116 at a 1M cash-in the unrationed handoff is a board with no home on it, and a million states off it
+move par by nothing — and the gate does move off it. But it buys less than it gives up: gated, that run ends at par 449
+against the dead board's own 427, because the earlier board it walks back to is further from home. So the default is the
+plain handoff (`handoff: 'best'`).
+
+Pricing the same idea into the phase instead — `ORGANIZE_WEIGHTS.ready`, which pays for a wanted card late in the pass —
+is worse still: at 12 the phases lose the two deals they are uniquely good at (3054 falls from a 121-move win to par 370,
+150250 from 119 to par 301) and gain only seed 12, which the flat arm takes in a thousand states. `ready` therefore ships
+at 0. Both remain knobs for a later attempt that can afford to be selective about which handoff it wants.
+
 ### Chasing stragglers with the other arm
 
 `node scripts/run.mjs scripts/stragglers.ts` writes a `MODE=solve` plan from the squares that have no win — one seed per
@@ -141,8 +155,11 @@ MODE=solve ENGINE=two-phase PLAN=corpus/plan-stragglers.json OUT=corpus/shard-tw
 ```
 
 The runner skips every key the corpus already publishes, so this is a straggler hunt and nothing else. First hunt, 200k a
-candidate: **3 of the first 79 keys won** — `hchd` seed 2261 in 136 moves, `hdsh` seed 243 in 140, `hsds` seed 1532 in 119 —
-so the second arm is finding deals the flat one never cracked, which is the whole reason to keep two of them.
+candidate, all 176 missing keys: **5 won** — `hchd` 2261 in 136 moves, `hdsh` 243 in 140, `hsds` 1532 in 119, `ddhd` 1706
+in 120, `ddds` 153579 in 105 — every one a deal the flat arm never cracked at any budget tried. All five lines replay
+(`med-2261.json`, `med-243.json`, `med-1532.json`, `med-1706.json`, `med-153579.json`), and the merge took the corpus from
+80 keys to **85 of 256** with 171 placeholders left. That is the whole argument for keeping two arms: the second one is
+finding squares, not just reading them differently.
 
 **Neither arm reaches the two hand-played lines.** At 600k states: 154116 par 457 (phases) and 440 (fallback), 2769
 par 407 and 160, against a human par 0 in 131 and 145 moves. The diagnostic is the handoff, not the search: a search

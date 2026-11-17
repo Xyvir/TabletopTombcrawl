@@ -329,6 +329,14 @@ export interface SolveOptions {
 	 */
 	warmUp?: number;
 	/**
+	 * What the two-phase driver hands over. `best` (the default) gives the cash-in pass the organizing pass's best board
+	 * whatever it looks like; `finishable` walks the organizing line back to the deepest board that still has a home on
+	 * it. The test is real — on 154116 at a 1M cash-in the unrationed handoff is a dead board, and `finishable` does move
+	 * off it — but it gives up more progress than the dead board cost (par 449 against the dead board's own 427), so the
+	 * default is the plain handoff.
+	 */
+	handoff?: 'best' | 'finishable';
+	/**
 	 * Overrides for the objective inside one pass. The two-phase driver uses them to score a board by how well it is
 	 * *ordered* rather than by par, which is not a goal the game has and so is not a `Goal`.
 	 */
@@ -1064,6 +1072,17 @@ export const ORGANIZE_WEIGHTS = {
 	 */
 	cash: 0,
 	decay: 0,
+	/**
+	 * What a card the foundations want *right now* is worth once the tomb is fully read. It rides on top of **reach**,
+	 * so it is the late value of a board that can still be finished rather than one that is merely read: `reach` 0 at the
+	 * handoff means there is no home on the board at all, and a phase that hands over one of those has spent the whole
+	 * arranging budget buying a position the cash-in pass cannot open.
+	 *
+	 * Off by default, and deliberately: at 12 the phases lose the two deals they are uniquely good at — 3054 falls from a
+	 * 121-move win to par 370 and 150250 from 119 to par 301 — while gaining only seed 12, which the flat arm already
+	 * takes in a thousand states. The handoff gate below gets the same guarantee for nothing.
+	 */
+	ready: 0,
 	lowHearts: 40,
 };
 
@@ -1094,7 +1113,7 @@ export function organizeScoreFor(hiddenAtStart: number): (state: TombState) => n
 			dug * w.fog * (1 - (share * w.decay) / 2) +
 			currentLevel(state) * w.level +
 			hearts * w.hearts +
-			blocked.reach * w.reach +
+			blocked.reach * (w.reach + w.ready * share) +
 			emptyCells(state).length * w.room +
 			orderedRuns(state) * w.order -
 			blocked.buried * w.buried +
@@ -1124,6 +1143,29 @@ export function organizeScoreFor(hiddenAtStart: number): (state: TombState) => n
  * soon as the tomb is read stops before the expensive part. So the first pass spends its share and hands over the
  * best-organized board it found, whatever that is.
  */
+/**
+ * The handoff test. A board is only worth handing to the cash-in pass if a home is actually on it: `reach` is the count
+ * of cards the foundations want that can be played there and then, and a board with none of them is a board the second
+ 	 * pass can only shuffle — measured on seed 154116, a million states off exactly that board moved par by nothing.
+	 *
+	 * It costs nothing where the organizing pass already hands over a live board (seeds 3054 and 150250 at 150k are
+	 * unchanged with the gate on and off) and it never chooses a board the pass would not have chosen when that board is
+	 * finishable, so it is on by default; the price that keeps a *live* board lates in the phase is `ready`, which
+	 * measured worse on those same two deals and stays at 0.
+	 *
+	 * So the driver walks its own organizing line back from the best board and takes the deepest board with a home on it,
+ * rather than the best board regardless. The walk is free: the line is already in hand, and each of its steps carries its
+ * state.
+ */
+function finishableHandoff(best: TombState, steps: SolveStep[]): TombState {
+	if (foundationPull(best).reach > 0) return best;
+	for (let index = steps.length - 1; index >= 0; index--) {
+		const board = steps[index].state;
+		if (foundationPull(board).reach > 0) return board;
+	}
+	return best;
+}
+
 export function solveTwoPhase(options: SolveOptions = {}): SolveResult {
 	const goal: Goal = options.goal ?? 'clear';
 	const began = Date.now();
@@ -1143,8 +1185,9 @@ export function solveTwoPhase(options: SolveOptions = {}): SolveResult {
 		score: organizeScoreFor(start.hidden.length),
 	});
 
+	const handoff = options.handoff === 'finishable' ? finishableHandoff(organize.best, organize.bestSteps) : organize.best;
 	const cashIn = solveTomb({
-		state: organize.best,
+		state: handoff,
 		goal,
 		engine: 'flat',
 		strategy: options.strategy === 'hybrid' ? 'best' : options.strategy,
@@ -1154,7 +1197,7 @@ export function solveTwoPhase(options: SolveOptions = {}): SolveResult {
 		timeBudgetMs: Math.max(2000, deadline - organize.elapsedMs),
 	});
 
-	const organized = organize.bestSteps;
+	const organized = handoff === organize.best ? organize.bestSteps : organize.bestSteps.slice(0, organize.bestSteps.findIndex((step) => step.state === handoff) + 1);
 	const cashed = cashIn.solved ? cashIn.steps : cashIn.bestSteps;
 	const cashBoard = cashIn.best;
 	// The better final board decides when neither pass won: a dug tomb that never got cashed in is still the better
