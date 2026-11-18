@@ -32,7 +32,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import titleMark from './assets/title.svg?raw';
 	import {
 		MONSTERS,
-		TOMBS,
 		ROLE_LABEL,
 		ROLE_WORD,
 				abilityFor,
@@ -83,6 +82,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		moveCapacity,
 		bossSlain,
 		bossProtected,
+		kingsHome,
 		stoneGazeBonus,
 		revealFaceDown,
 		tombExit,
@@ -140,6 +140,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const TURN_STAGGER_MS = 70;
 	/** How long a banner holds the screen before it clears. */
 	const FANFARE_MS = 2200;
+	/** A level up is the smallest banner and clears quickly, so a run of levels can each be read. */
+	const LESSER_FANFARE_MS = 1300;
 
 	/** Tabletop Tombcrawl is the table the app opens on; the toggle falls back to plain FreeCell. */
 	const opening = createTombState();
@@ -184,12 +186,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * The three moments that change what a run is: the tomb finds its boss, the boss dies, and the tomb is
 	 * emptied. A deal can open with no boss — a king under the fog is not the boss until the fog lifts off
 	 * it — so the first of the three is the one that can catch a crawl by surprise.
+	 *
+	 * Two lesser beats take the same banner at a smaller size: the first General (the kill that opens the
+	 * boss to the blade) and a level up, which is frequent enough to read as punctuation rather than news.
 	 */
-	type FanfareKind = 'reveal' | 'boss' | 'tomb';
+	type FanfareKind = 'reveal' | 'boss' | 'tomb' | 'general' | 'level';
 	const FANFARE_TEXT: Record<FanfareKind, string> = {
 		reveal: 'Boss Revealed!',
 		boss: 'Boss Slain!',
 		tomb: 'Tomb Cleared!',
+		general: 'General Slain!',
+		level: 'Level Up!',
 	};
 	let fanfare = $state<{ kind: FanfareKind; id: number } | null>(null);
 	/** The boss note joins the status bar once its banner has cleared, so the two never talk at once. */
@@ -678,11 +685,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The hint over a spent slot names the one suit that will restock it — except where a Thief's
-	 * Pickpocket opened the window, which takes any card at all.
+	 * The hint over a spent slot names what will restock it: the one suit it lost, any card at all when a
+	 * Thief's Pickpocket was won with a kill, or any card but that suit when he emptied it into the crypt.
 	 */
 	function itemSlotHint(state: TombState | null, suit: string): string {
-		const feed = state?.itemWindow?.any ? 'any card' : `a ${suit} card`;
+		const takes = state?.itemWindow?.takes;
+		const feed =
+			takes === 'any' ? 'any card' : takes === 'other' ? 'a card of another suit' : `a ${suit} card`;
 		return `Spent item pocket — play ${feed} here on your next action to restock it. Anything else converts this pocket.`;
 	}
 
@@ -866,7 +875,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return;
 		}
 		fanfare = { kind, id: (fanfare?.id ?? 0) + 1 };
-		setTimeout(done, FANFARE_MS);
+		setTimeout(done, kind === 'level' ? LESSER_FANFARE_MS : FANFARE_MS);
 	}
 
 	function shake(el?: HTMLElement | null) {
@@ -1099,13 +1108,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The bar names the tomb instead of the boss: "Cairn of Vipers (♥)". The boss's own name is long enough
-	 * to crowd out the level, hearts, moves and gold it sits between, and it still has its card's tooltip.
+	 * The bar names the tomb by its monster alone: "Viper (♥)". "Cairn of Vipers" is a better name and a third
+	 * of a phone's status line, and the full title is still on the tooltip.
 	 */
 	function tombTitle(state: TombState): string {
 		const suit = state.bossSuit;
-		if (!suit) return 'Tomb of Darkness (?)';
-		return `${TOMBS[suit]} (${SUIT_GLYPH[suit]})`;
+		if (!suit) return 'Tomb (?)';
+		return `${MONSTERS[suit].name} (${SUIT_GLYPH[suit]})`;
 	}
 
 	/**
@@ -1212,11 +1221,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		// while the kill is still noted once it clears.
 		const foundBoss = !tomb.bossId && !!next.bossId;
 		const killedBoss = !bossSlain(tomb) && bossSlain(next);
+		// The first General is the kill that opens the boss to the blade, so it is worth a banner of its own;
+		// the ones after it are ordinary kings going home.
+		const slainGeneral = kingsHome(tomb) === 0 && kingsHome(next) > 0;
 		const emptiedTomb = tombPar(next) === 0 && tombPar(tomb) > 0;
 		if (killedBoss) bossNoted = false;
 		if (emptiedTomb) startFanfare('tomb', killedBoss);
 		else if (killedBoss) startFanfare('boss');
+		else if (slainGeneral) startFanfare('general');
 		else if (foundBoss) startFanfare('reveal');
+		else if (leveled) startFanfare('level');
 		// Sound, read off the same two boards as the flashes and banners above. Every true flag
 		// plays, because a move that does two things should sound like two.
 		const prev = tomb;
@@ -2061,13 +2075,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 						{#if pending}
-							<!-- Which card would make an item here: the suit the slot lost, or every suit for a Thief's
-							     Pickpocket, since a card of any suit restocks one of his. -->
-							<span class="pips" class:any={pending.any} aria-hidden="true">
-								{#each pending.any ? SUITS : [pending.suit] as suit (suit)}
-									<span>{SUIT_GLYPH[suit]}</span>
-								{/each}
-							</span>
+							<!-- Which card would make an item here: the suit the slot lost, or the fan of four for a Thief's
+							     Pickpocket. A pocket he emptied into the crypt keeps the same fan with the suit that left
+							     hidden, so the reminder reads as three suits rather than being redrawn short. -->
+							{#if pending.takes === 'same'}
+								<span class="pips" aria-hidden="true">
+									<span>{SUIT_GLYPH[pending.suit]}</span>
+								</span>
+							{:else}
+								<span class="pips any" aria-hidden="true">
+									{#each SUITS as suit (suit)}
+										<span class:barred={pending.takes === 'other' && suit === pending.suit}
+											>{SUIT_GLYPH[suit]}</span
+										>
+									{/each}
+								</span>
+							{/if}
 						{/if}
 					{/if}
 					{#if doomed}
@@ -2287,7 +2310,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			title={`Sound effects are ${sfxOn ? 'on' : 'off'}`}
 			aria-label="Toggle sound effects"
 		>
-			{#if sfxOn}🔊{:else}🔇{/if} SFX
+			{#if sfxOn}🔊{:else}🔇{/if}<span class="sfx-label"> SFX</span>
 		</button>
 	</footer>
 

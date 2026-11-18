@@ -64,7 +64,10 @@ export const TOMB_RULES = {
 export const CLAUSES = {
 	/** Human: ignore the lowest grave when reading your level. */
 	humanLevel: true,
-	/** Thief: an item slot restocked after its card went to the crypt takes any card, whatever its suit. */
+	/**
+	 * Thief: a spent item slot restocked after its card was slain into a grave takes any card, while one
+	 * restocked after its card was played into the crypt takes another suit — never the suit that left.
+	 */
 	thiefPickpocket: true,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
@@ -182,7 +185,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Pickpocket: an item played into the crypt or slain into a grave can be restocked by a card of any suit.',
+		text: 'Pickpocket: an item slain into a grave can be restocked by any card; one played into the crypt only by another suit.',
 	},
 };
 
@@ -254,6 +257,12 @@ export type ArmedAbility = {
 	first?: string;
 };
 
+/**
+ * What a spent item slot will take on the action after the item leaves. `same` waits for the suit it lost,
+ * `any` takes any card at all, and `other` takes any suit but the one that left.
+ */
+export type RestockTakes = 'same' | 'any' | 'other';
+
 export interface TombState {
 	game: FreeCell;
 	seed: number;
@@ -287,11 +296,12 @@ export interface TombState {
 	armed: ArmedAbility | null;
 	/**
 	 * A spent slot: feed it a card on the very next action to remake the item. The suit is the one
-	 * that left; `any` records that an Orc's Scavenger was in the party when the window opened, and it
-	 * is held on the window rather than read from the party so the permission outlives even the kin
-	 * card itself leaving for another kin.
+	 * that left, and `takes` is how wide the window is — a Thief's Pickpocket opened one that takes any
+	 * card when the item was slain into a grave, or any other suit when it was played into the crypt. It
+	 * is held on the window rather than read from the party, so the permission outlives even the class
+	 * card itself being replaced.
 	 */
-	itemWindow: { cell: number; role: DraftRole; suit: Suit; any: boolean } | null;
+	itemWindow: { cell: number; role: DraftRole; suit: Suit; takes: RestockTakes } | null;
 	/**
 	 * A balance harness pin, set only by `withSyntheticLoadout`: the suits the party is pinned to, for
 	 * whatever roles were named. Null in every real game, and never read by the deal itself.
@@ -1487,11 +1497,24 @@ export function revealFaceDown(state: TombState, location: CardLocation): TombSt
 }
 
 /**
- * What a spent item slot will take: a card of the suit it just lost, or — with a Thief's Pickpocket —
- * any card at all. The permission rides on the window, so it outlives the item that opened it.
+ * What a spent item slot will take. An ordinary slot waits for the suit it lost. A Thief's Pickpocket widens
+ * the window as far as the item's own exit allows: an item slain into a grave leaves a slot any card can fill,
+ * while one played into the crypt only takes another suit — the same suit coming straight back is the loop the
+ * allowance is meant to price, so it has to be rebuilt from a different card instead. The permission rides on
+ * the window, so it outlives the item that opened it.
  */
-function restockTakes(card: Card, window: { suit: Suit; any: boolean }): boolean {
-	return window.any || card.suit === window.suit;
+function restockTakes(card: Card, window: { suit: Suit; takes: RestockTakes }): boolean {
+	if (window.takes === 'any') return true;
+	if (window.takes === 'other') return card.suit !== window.suit;
+	return card.suit === window.suit;
+}
+
+/** The suits that would refill a spent slot, for the search to price a window by and the tests to read it through. */
+export function restockSuits(window: { suit: Suit; takes: RestockTakes }): Suit[] {
+	const suits: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
+	if (window.takes === 'any') return suits;
+	if (window.takes === 'other') return suits.filter((suit) => suit !== window.suit);
+	return [window.suit];
 }
 
 /** Any action other than the feed closes a spent item slot for good. */
@@ -1868,15 +1891,16 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		for (const card of cards) next = bossAura(next, card, 'park');
 	}
 
-		// Pickpocket: an item played out of its slot into a lived-in hallway has gone to the crypt, so the
-	// pocket it emptied waits one action for a card of any suit at all — a different suit turns it
-	// into a different item. The chip holds where it is while that window is open, which is what lets
-	// a Thief work through a pocket's worth of flasks. An empty hallway is set down in the open
-	// instead: no window opens, and the slot converts like a cell-park. It is the item pocket only:
-	// the glyph, class and kin pockets keep their own suit, because a card that could re-roll a
-	// Thief's class mid-crawl is a different character every three moves rather than a thief. A free
-	// cell is the other thing entirely, and the plain trip home still restocks on its own suit
-	// without him.
+				// Pickpocket: an item played out of its slot into a lived-in hallway has gone to the crypt, so the
+		// pocket it emptied waits one action — but only for another suit. The item that just left is the one
+		// card that cannot come straight back: a pocket refilled with its own suit is a free refresh, and the
+		// whole point of the window is that a second item has to be found and spent first. The chip holds
+		// where it is while that window is open, which is what lets a Thief work through a pocket's worth of
+		// flasks. An empty hallway is set down in the open instead: no window opens, and the slot converts
+		// like a cell-park. It is the item pocket only: the glyph, class and kin pockets keep their own suit,
+		// because a card that could re-roll a Thief's class mid-crawl is a different character every three
+		// moves rather than a thief. A free cell is the other thing entirely; there the slot is filled by a
+		// kill, which Pickpocket leaves wide open (see attackWith).
 	const pickpocketed =
 		entry &&
 		source >= 0 &&
@@ -1886,7 +1910,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		!next.game.cells[source] &&
 		CLAUSES.thiefPickpocket &&
 		hasPassive(state, 'Thief')
-		? { cell: source, role: entry.role, suit: entry.suit, any: true }
+		? { cell: source, role: entry.role, suit: entry.suit, takes: 'other' as const }
 		: null;
 
 	next = settle(next, currentLevel(state));
@@ -1943,11 +1967,14 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// closes — the slot is plain from then on, which is what the chip counting it as converted means.
 
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
-	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all,
-	// with a Thief's Pickpocket) restocks the item and the chip stays put. Any other action drops the
-	// window, so the chip steps left and the cell is ordinary from then on.
+	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all, with a
+	// Thief's Pickpocket) restocks the item and the chip stays put. A kill is the exit that earns the wide
+	// window: the item was spent on a blow, so the pocket may be rebuilt from anything. Any other action
+	// drops the window, so the chip steps left and the cell is ordinary from then on.
 	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
-	return cloneWith(settled, { itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, any: pickpocket } });
+	return cloneWith(settled, {
+		itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, takes: pickpocket ? 'any' : 'same' },
+	});
 }
 
 /** Single click movement affordance: the best tableau build, if there is one. */

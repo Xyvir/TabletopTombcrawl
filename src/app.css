@@ -788,6 +788,33 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 	.controls {
 		font-size: 11.5px;
+		gap: calc(var(--gap) * 0.55);
+	}
+
+	.controls .btn {
+		padding: 0.4em 0.6em;
+	}
+
+	/* A phone's footer has one row to spend, so the crawl box and the speaker's word give way: the pill is
+	   the icon, and the number it would take is a desktop convenience. */
+	.controls .seed,
+	.controls .sfx-label {
+		display: none;
+	}
+
+	/* One status line, never two: everything on it is a short number except the tomb's name, which gives
+	   way with an ellipsis rather than pushing the rest of the readings onto a second row. */
+	.tombhud {
+		flex-wrap: nowrap;
+		gap: 0.55rem;
+	}
+
+	.tombhud .tombstag,
+	.tombhud .solve {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }
 
@@ -889,6 +916,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 .slot .pips.any {
 	font-size: calc(var(--col-w) * 0.22);
 	opacity: 0.5;
+}
+
+/* The suit that cannot come back keeps its place in the fan but is not drawn: three suits in the shape
+   of four says "these, not that one" without redrawing the reminder short and off-centre. */
+.slot .pips.any span.barred {
+	visibility: hidden;
 }
 
 .slot .pips.any span:nth-child(1) {
@@ -1579,6 +1612,29 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #eafff2;
 	border-color: rgba(255, 255, 255, 0.38);
 	box-shadow: 0 0 60px rgba(190, 255, 220, 0.34);
+}
+
+/* A General is a king going home under the boss's banner: same shape as a kill, steel instead of gold
+   and a size down, so the boss's death still reads as the bigger of the two. */
+.fanfare.general span {
+	font-size: clamp(1.15rem, 4vw, 2.2rem);
+	color: #d8e6f2;
+	border-color: rgba(200, 220, 240, 0.42);
+	box-shadow: 0 0 34px rgba(170, 205, 240, 0.26);
+}
+
+/* A level up is the smallest beat on the table: it shares the gold of the level flash and clears sooner,
+   because levels come in runs and none of them is news on its own. */
+.fanfare.level {
+	animation-duration: 1300ms;
+}
+.fanfare.level span {
+	font-size: clamp(0.95rem, 2.6vw, 1.45rem);
+	padding: 0.35em 0.9em;
+	letter-spacing: 0.14em;
+	color: #ffe9a8;
+	border-color: rgba(255, 224, 130, 0.42);
+	box-shadow: 0 0 26px rgba(255, 216, 90, 0.22);
 }
 
 @keyframes fanfare-pop {

@@ -22,7 +22,8 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { CLAUSES, TOMB_RULES, FREE_CELL_COUNT, createTombState, type ClauseName, type Difficulty } from '../src/tombcrawl';
-import { solveTomb } from '../src/solver';
+import { ORGANIZE_WEIGHTS, SCORE_WEIGHTS, solveTomb } from '../src/solver';
+import { logRun } from './log-run';
 
 interface Entry {
 	loadout: string;
@@ -172,3 +173,35 @@ for (const variant of variants) {
 
 writeFileSync(out, JSON.stringify({ variants: variants.map((variant) => variant.name), budget, rows }, null, '\t'));
 console.log(`\nwrote ${out}`);
+
+const logged = logRun({
+	tool: 'ab',
+	config: {
+		budget,
+		goal: 'boss',
+		strategy: 'hybrid',
+		beamWidth: 300,
+		depth: 300,
+		shard,
+		shards,
+		limit,
+		keyFilter: keyFilter || null,
+		only: only.length ? only : null,
+		variants: variants.map((variant) => ({
+			name: variant.name,
+			clauses: variant.clauses ?? null,
+			rules: variant.rules ?? null,
+			applies: variant.applies ?? null,
+		})),
+	},
+	weights: { score: { ...SCORE_WEIGHTS }, organize: { ...ORGANIZE_WEIGHTS } },
+	seeds: rows.map((row) => ({
+		seed: row.entry.seed,
+		loadout: row.entry.loadout,
+		difficulty: row.entry.difficulty,
+		boss: row.entry.boss,
+		baseline: row.baseline,
+		arms: row.arms,
+	})),
+});
+console.log(`logged ${rows.length} seeds to ${logged}`);

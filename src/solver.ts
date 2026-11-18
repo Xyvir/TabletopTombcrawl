@@ -8,6 +8,7 @@ import {
 	bossSlain,
 	isBoss,
 	canBuildOn,
+	cardAt,
 	canRevealFaceDown,
 	immobileBoss,
 	cellCardMovable,
@@ -25,6 +26,7 @@ import {
 	moveCapacity,
 	parCleared,
 	pisorfPair,
+	restockSuits,
 	revealFaceDown,
 	bossProtected,
 	tombMove,
@@ -44,7 +46,7 @@ export type Goal = 'clear' | 'boss';
  * than a replacement so the two can be run side by side on the same deal, which is the only honest way to say one is
  * better: `scripts/compare-engines.ts`.
  */
-export type SolverEngine = 'flat' | 'two-phase' | 'fallback' | 'plan';
+export type SolverEngine = 'flat' | 'two-phase' | 'fallback' | 'plan' | 'modes';
 
 /**
  * One legal action, in a form that can be replayed through the real rules. Keeping the action rather
@@ -343,6 +345,12 @@ export interface SolveOptions {
 	 * *ordered* rather than by par, which is not a goal the game has and so is not a `Goal`.
 	 */
 	target?: (state: TombState) => boolean;
+	/**
+	 * Allowed moves inside one pass. The modes driver uses it to fence each phase into its own kind of
+	 * work — homes home, digs heal, sorts arrange — so a sorting phase can never spend the fog a heal
+	 * phase banks on. Flat passes without it behave exactly as before.
+	 */
+	allow?: (action: SolverAction) => boolean;
 	score?: (state: TombState) => number;
 	/** States to examine before giving up. */
 	nodes?: number;
@@ -565,8 +573,9 @@ function itemPull(state: TombState): { potion: number; restock: number } {
 	let restock = 0;
 	const window = state.itemWindow;
 	if (window) {
-		// Everyone else must feed the suit the slot just lost; a Thief takes any card at all.
-		for (const suit of window.any ? SUITS : [window.suit]) {
+		// Everyone else must feed the suit the slot just lost; a Thief who won the pocket with a kill takes any
+		// card at all, though one he emptied into the crypt only takes another suit (see restockSuits).
+		for (const suit of restockSuits(window)) {
 			restock = Math.max(restock, itemWorth(abilityFor(window.role, suit).name, missing));
 		}
 	}
@@ -689,9 +698,11 @@ function hashBoard(state: TombState, withSpent: boolean, withFog: boolean): stri
 		if (state.armed.first) mixText(state.armed.first);
 	}
 	if (state.itemWindow) {
-		mix(state.itemWindow.cell * 32 + (state.itemWindow.any ? 1 : 0));
-		mixText(state.itemWindow.role);
-		mixText(state.itemWindow.suit);
+		const window = state.itemWindow;
+		// The three window widths are different positions: one takes a suit, one any card, one any but a suit.
+		mix(window.cell * 32 + (window.takes === 'any' ? 1 : window.takes === 'other' ? 2 : 0));
+		mixText(window.role);
+		mixText(window.suit);
 	}
 	return `${a.toString(16)}:${b.toString(16)}`;
 }
@@ -764,6 +775,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	if (options.engine === 'two-phase') return solveTwoPhase(options);
 	if (options.engine === 'fallback') return solveFallback(options);
 	if (options.engine === 'plan') return solvePlanned(options);
+	if (options.engine === 'modes') return solveModes(options);
 	const goal: Goal = options.goal ?? 'clear';
 	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
 	const budget = Math.max(1000, options.nodes ?? 200_000);
@@ -775,6 +787,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 	// something the game does not have a word for (an ordered tomb) and stop when the board is organized.
 	const value = options.score ?? ((board: TombState) => scoreOf(board, goal));
 	const reached = options.target ?? ((board: TombState) => isGoal(board, goal));
+	const allow = options.allow;
 
 	// The shipped policy: survey with a beam, then grind with best-first on what is left of the budget.
 	// A beam cracks the deals whose winning line is a long, patient grind (seed 12881 med needs 135
@@ -861,6 +874,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 
 			const children: Node[] = [];
 			for (const move of generateMoves(node.state)) {
+				if (allow && !allow(move.action)) continue;
 				nodes++;
 				const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 				if (reached(move.next)) {
@@ -901,6 +915,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			const children: Node[] = [];
 			for (const node of frontier) {
 				for (const move of generateMoves(node.state)) {
+					if (allow && !allow(move.action)) continue;
 					nodes++;
 					const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 					if (reached(move.next)) {
@@ -948,6 +963,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 		if (node.depth >= depth) continue;
 
 		for (const move of generateMoves(node.state)) {
+			if (allow && !allow(move.action)) continue;
 			nodes++;
 								const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 			if (reached(move.next)) {
@@ -1630,9 +1646,11 @@ function planScore(state: TombState): number {
  * home means the plan is stuck, and the driver stops rather than grinding the same cover forever.
  */
 export function solvePlanned(options: SolveOptions = {}): SolveResult {
-	// The planner only knows the clear: a boss run's objective is one card, and release order says nothing
-	// about it, so that goal keeps the flat driver it was measured with.
-	if ((options.goal ?? 'clear') === 'boss') return solveTomb({ ...options, engine: 'flat' });
+	const goal: Goal = options.goal ?? 'clear';
+	// A boss run's objective is one card, so the due is the boss suit's chain plus whatever lags the level
+	// that prices the kill — the release machinery is the same, but the driver stops at the slay instead of
+	// demanding the bare tomb. That is the whole difference: same phases, narrower due, earlier stop.
+	const bossRun = goal === 'boss';
 	const began = Date.now();
 	const budget = Math.max(10_000, options.nodes ?? 2_000_000);
 	const deadline = options.timeBudgetMs ?? 600_000;
@@ -1643,6 +1661,7 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 	let homesAtUnblockMiss = -1;
 	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
 	const isClear = (state: TombState) => state.game.cards.every((card) => card.location.fixture === 'foundation');
+	const isWon = (state: TombState) => (bossRun ? bossSlain(state) : isClear(state));
 
 	let state = start;
 	const line: SolveStep[] = [];
@@ -1652,9 +1671,9 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 	let timedOut = false;
 
 	for (let phase = 0; phase < 150; phase++) {
-		if (isClear(state)) {
+		if (isWon(state)) {
 			return {
-				goal: 'clear',
+				goal,
 				solved: true,
 				steps: line,
 				best: state,
@@ -1723,7 +1742,11 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		const floor = Math.min(tops.hearts, tops.clubs, tops.diamonds, tops.spades);
 		const lagging = new Set(SUITS.filter((suit) => tops[suit] === floor));
 		const owing = needs.filter((need) => lagging.has(need.suit));
-		const due = owing.length ? owing : needs;
+		const due = bossRun
+			? needs.filter((need) => need.suit === state.bossSuit || lagging.has(need.suit))
+			: owing.length
+				? owing
+				: needs;
 		// A home costs a heart per rank above the level and the track spends every heart but the last, so a
 		// phase that chases a home it cannot pay is a phase that grinds cover for nothing. When nothing owing
 		// is payable, the phase heals instead: a dig is the only unconditional heal, and the track banks it.
@@ -1784,11 +1807,146 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		}
 	}
 
-	const cleared = isClear(state);
+	const cleared = isWon(state);
 	return {
-		goal: 'clear',
+		goal,
 		solved: cleared,
 		steps: cleared ? line : [],
+		best: state,
+		bestSteps: line,
+		plies: line.length,
+		nodes,
+		elapsedMs: Date.now() - began,
+		timedOut,
+	};
+}
+
+/**
+ * The human's cycle as a driver: home what's payable, heal what's hurt, sort what's left — and bank
+ * fog when the tomb runs dry. Each phase is fenced into its own kind of work, so a sorting phase can
+ * never spend the facedown cards a heal phase banks on: digs happen only as heals (one a cycle, while
+ * the track is hurt, never to spend a full bank up front), and arrangement is all tableau moves, parks
+ * and spell lifts. A Purity refog is the midgame bank the plan gradient cannot see — burying a worked
+ * hallway to re-dig it prints hearts — so the heal phases fence in the refog with the redigs, and the
+ * score never has to learn to love fog. Three cycles with no new home or level mean the tomb is stuck,
+ * and the driver stops rather than banking the same hallway forever.
+ */
+export function solveModes(options: SolveOptions = {}): SolveResult {
+	const goal: Goal = options.goal ?? 'clear';
+	const bossRun = goal === 'boss';
+	const began = Date.now();
+	const budget = Math.max(10_000, options.nodes ?? 2_000_000);
+	const deadline = options.timeBudgetMs ?? 600_000;
+	const start = options.state ?? createTombState(options.seed ?? 1, FREE_CELL_COUNT[options.difficulty ?? 'med']);
+	const isWon = (state: TombState) => (bossRun ? bossSlain(state) : state.game.cards.every((card) => card.location.fixture === 'foundation'));
+	const isHome = (action: SolverAction) => action.kind === 'home';
+	const isHeal = (action: SolverAction) => action.kind === 'dig' || action.kind === 'arm';
+	const isBank = (action: SolverAction) => action.kind === 'purity' || action.kind === 'dig';
+	const isSort = (action: SolverAction) => action.kind === 'move' || action.kind === 'pisorf' || action.kind === 'weytwut';
+
+	let state = start;
+	const line: SolveStep[] = [];
+	let nodes = 0;
+	let failures = 0;
+	let timedOut = false;
+	let homes = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
+
+	const take = (move: SolverMove) => {
+		line.push({ action: move.action, label: move.label, state: move.next });
+		state = move.next;
+		nodes += 1;
+	};
+	const bestOf = (moves: SolverMove[]) =>
+		[...moves].sort((a, b) => planScore(b.next) - planScore(a.next))[0];
+	const search = (allow: (action: SolverAction) => boolean, target: ((state: TombState) => boolean) | undefined, phaseNodes: number) => {
+		const result = solveTomb({
+			state,
+			goal,
+			engine: 'flat',
+			strategy: 'best',
+			depth: 90,
+			nodes: Math.min(phaseNodes, Math.max(1000, budget - nodes)),
+			timeBudgetMs: Math.max(2000, deadline - (Date.now() - began)),
+			score: planScore,
+			target,
+			allow,
+		});
+		nodes += result.nodes;
+		timedOut = timedOut || result.timedOut;
+		return result;
+	};
+
+	for (let cycle = 0; cycle < 150; cycle++) {
+		if (isWon(state)) break;
+		if (nodes >= budget || Date.now() - began > deadline) {
+			timedOut = Date.now() - began > deadline;
+			break;
+		}
+		const startHomes = homes;
+		const startLevel = currentLevel(state);
+		// Home everything payable, lagging suits first: the level is read off the lowest grave, so a
+		// home on a leading suit while another lags is how a track climbs to D5/S5 at level 3 with four
+		// wounded cells. Within the lagging band, best board wins — a home never comes back out.
+		for (let guard = 0; guard < 53 && !isWon(state); guard++) {
+			const open = generateMoves(state).filter((move) => isHome(move.action));
+			if (!open.length) break;
+			const tops = planTops(state);
+			const floor = Math.min(tops.hearts, tops.clubs, tops.diamonds, tops.spades);
+			const lagging = open.filter((move) => {
+				const card = move.action.kind === 'home' ? cardAt(state.game, move.action.at) : undefined;
+				return !!card && tops[card.suit] === floor;
+			});
+			take(bestOf(lagging.length ? lagging : open));
+		}
+		homes = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
+		if (isWon(state)) break;
+		// Hurt means heal, and a heal means exactly one dig or drink: fog is the bank, and a full bank
+		// at full hearts stays banked rather than spent. Stuck at full hearts means scout instead: one
+		// greedy dig to reveal what the homes need, because arrangement alone cannot read fog.
+		if (hp(state) < maxHp(state)) {
+			const startHp = hp(state);
+			const found = search(isHeal, (board) => hp(board) > startHp, 2000);
+			if (found.solved) {
+				for (const step of found.steps) line.push(step);
+				state = found.steps[found.steps.length - 1].state;
+			}
+		} else if (homes === startHomes) {
+			const open = generateMoves(state).filter((move) => move.action.kind === 'dig');
+			if (open.length) take(bestOf(open));
+		}
+		// Still hurt with no dig left is what the Purity is for: refog a worked hallway and re-dig it.
+		// The search picks the hallway, and a plain dig wins the race wherever fog is left.
+		if (!isWon(state) && hp(state) < maxHp(state) && !generateMoves(state).some((move) => move.action.kind === 'dig')) {
+			const startHp = hp(state);
+			const found = search(isBank, (board) => hp(board) > startHp, 3000);
+			if (found.solved) {
+				for (const step of found.steps) line.push(step);
+				state = found.steps[found.steps.length - 1].state;
+			}
+		}
+		// Sort with what's left: tableau moves, parks and lifts, never a dig. The best board wins even
+		// when no home comes out of it — arrangement is the move, and the next cycle homes it.
+		if (!isWon(state)) {
+			const found = search(isSort, undefined, 3000);
+			if (found.bestSteps.length) {
+				for (const step of found.bestSteps) line.push(step);
+				state = found.best;
+			}
+		}
+		const progressed =
+			homes > startHomes || currentLevel(state) > startLevel || (bossRun && bossSlain(state));
+		if (progressed) {
+			failures = 0;
+		} else if (++failures >= 3) {
+			break;
+		}
+	}
+
+	const won = isWon(state);
+	return {
+		goal,
+		solved: won,
+		steps: won ? line : [],
 		best: state,
 		bestSteps: line,
 		plies: line.length,

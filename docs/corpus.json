@@ -160,6 +160,37 @@
 			"at": "2026-11-17T06:23:26.581Z"
 		},
 		{
+			"loadout": "cchd",
+			"boss": "spades",
+			"seed": 1200741,
+			"moves": 130,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-18T14:30:52.181Z"
+		},
+		{
 			"loadout": "cchh",
 			"boss": "diamonds",
 			"seed": 2588,
@@ -253,6 +284,68 @@
 			"at": "2026-11-16T03:14:11.668Z"
 		},
 		{
+			"loadout": "ccsd",
+			"boss": "spades",
+			"seed": 1200693,
+			"moves": 108,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-18T14:40:17.355Z"
+		},
+		{
+			"loadout": "ccsh",
+			"boss": "spades",
+			"seed": 1000862,
+			"moves": 127,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-18T13:16:00.884Z"
+		},
+		{
 			"loadout": "ccss",
 			"boss": null,
 			"seed": 1518,
@@ -344,6 +437,37 @@
 				}
 			],
 			"at": "2026-11-17"
+		},
+		{
+			"loadout": "cdds",
+			"boss": null,
+			"seed": 33285,
+			"moves": 102,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-18"
 		},
 		{
 			"loadout": "cdhc",
@@ -778,6 +902,37 @@
 				}
 			],
 			"at": "2026-11-17T11:13:08.847Z"
+		},
+		{
+			"loadout": "chhs",
+			"boss": "clubs",
+			"seed": 1000703,
+			"moves": 116,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-18T13:16:28.655Z"
 		},
 		{
 			"loadout": "chsc",
@@ -1555,6 +1710,37 @@
 			"at": "2026-11-16T03:38:27.912Z"
 		},
 		{
+			"loadout": "dchh",
+			"boss": "diamonds",
+			"seed": 1200874,
+			"moves": 116,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-18T14:40:57.676Z"
+		},
+		{
 			"loadout": "dchs",
 			"boss": "spades",
 			"seed": 205346,
@@ -1708,6 +1894,37 @@
 				}
 			],
 			"at": "2026-11-15"
+		},
+		{
+			"loadout": "dddh",
+			"boss": "diamonds",
+			"seed": 1200321,
+			"moves": 100,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-18T14:32:13.664Z"
 		},
 		{
 			"loadout": "ddds",
@@ -1956,6 +2173,37 @@
 				}
 			],
 			"at": "2026-11-14T13:18:32.026Z"
+		},
+		{
+			"loadout": "dhcs",
+			"boss": "diamonds",
+			"seed": 1200553,
+			"moves": 85,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-18T14:41:19.624Z"
 		},
 		{
 			"loadout": "dhdc",
@@ -2297,6 +2545,37 @@
 				}
 			],
 			"at": "2026-11-16T04:07:06.688Z"
+		},
+		{
+			"loadout": "dscs",
+			"boss": "clubs",
+			"seed": 521,
+			"moves": 150,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-18"
 		},
 		{
 			"loadout": "dsdc",
@@ -2764,6 +3043,37 @@
 			"at": "2026-11-17T13:39:29.781Z"
 		},
 		{
+			"loadout": "hcds",
+			"boss": "diamonds",
+			"seed": 1200155,
+			"moves": 120,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-18T14:34:30.650Z"
+		},
+		{
 			"loadout": "hchc",
 			"boss": "diamonds",
 			"seed": 3181,
@@ -3227,6 +3537,37 @@
 				}
 			],
 			"at": "2026-11-17T11:39:58.466Z"
+		},
+		{
+			"loadout": "hdhh",
+			"boss": "spades",
+			"seed": 1200687,
+			"moves": 130,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-18T14:34:41.143Z"
 		},
 		{
 			"loadout": "hdhs",
@@ -5121,6 +5462,37 @@
 			"at": "2026-11-17T13:45:35.082Z"
 		},
 		{
+			"loadout": "shdc",
+			"boss": "hearts",
+			"seed": 1200203,
+			"moves": 106,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-18T14:36:49.788Z"
+		},
+		{
 			"loadout": "shdd",
 			"boss": "spades",
 			"seed": 600029,
@@ -6000,6 +6372,14 @@
 			"at": "2026-11-17T06:23:26.581Z"
 		},
 		{
+			"loadout": "cchd",
+			"difficulty": "med",
+			"seed": 1200741,
+			"moves": 130,
+			"goal": "boss",
+			"at": "2026-11-18T14:30:52.181Z"
+		},
+		{
 			"loadout": "cchh",
 			"difficulty": "med",
 			"seed": 2588,
@@ -6024,6 +6404,22 @@
 			"at": "2026-11-16T03:14:11.668Z"
 		},
 		{
+			"loadout": "ccsd",
+			"difficulty": "med",
+			"seed": 1200693,
+			"moves": 108,
+			"goal": "boss",
+			"at": "2026-11-18T14:40:17.355Z"
+		},
+		{
+			"loadout": "ccsh",
+			"difficulty": "med",
+			"seed": 1000862,
+			"moves": 127,
+			"goal": "clear",
+			"at": "2026-11-18T13:16:00.884Z"
+		},
+		{
 			"loadout": "ccss",
 			"difficulty": "med",
 			"seed": 1518,
@@ -6046,6 +6442,14 @@
 			"moves": 96,
 			"goal": "clear",
 			"at": "2026-11-17"
+		},
+		{
+			"loadout": "cdds",
+			"difficulty": "med",
+			"seed": 33285,
+			"moves": 102,
+			"goal": "boss",
+			"at": "2026-11-18"
 		},
 		{
 			"loadout": "cdhc",
@@ -6160,6 +6564,14 @@
 			"at": "2026-11-17T11:13:08.847Z"
 		},
 		{
+			"loadout": "chhs",
+			"difficulty": "med",
+			"seed": 1000703,
+			"moves": 116,
+			"goal": "clear",
+			"at": "2026-11-18T13:16:28.655Z"
+		},
+		{
 			"loadout": "chsc",
 			"difficulty": "med",
 			"seed": 400151,
@@ -6205,7 +6617,7 @@
 			"seed": 205799,
 			"moves": 64,
 			"goal": "boss",
-			"at": "2026-11-17T04:47:14.931Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "cscd",
@@ -6317,7 +6729,7 @@
 			"seed": 89047,
 			"moves": 56,
 			"goal": "boss",
-			"at": "2026-11-17T04:15:10.299Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "cssd",
@@ -6400,6 +6812,14 @@
 			"at": "2026-11-16T03:38:27.912Z"
 		},
 		{
+			"loadout": "dchh",
+			"difficulty": "med",
+			"seed": 1200874,
+			"moves": 116,
+			"goal": "boss",
+			"at": "2026-11-18T14:40:57.676Z"
+		},
+		{
 			"loadout": "dchs",
 			"difficulty": "med",
 			"seed": 205346,
@@ -6438,6 +6858,14 @@
 			"moves": 77,
 			"goal": "boss",
 			"at": "2026-11-15"
+		},
+		{
+			"loadout": "dddh",
+			"difficulty": "med",
+			"seed": 1200321,
+			"moves": 100,
+			"goal": "boss",
+			"at": "2026-11-18T14:32:13.664Z"
 		},
 		{
 			"loadout": "ddds",
@@ -6502,6 +6930,14 @@
 			"moves": 77,
 			"goal": "boss",
 			"at": "2026-11-14T13:18:32.026Z"
+		},
+		{
+			"loadout": "dhcs",
+			"difficulty": "med",
+			"seed": 1200553,
+			"moves": 85,
+			"goal": "boss",
+			"at": "2026-11-18T14:41:19.624Z"
 		},
 		{
 			"loadout": "dhdc",
@@ -6590,6 +7026,14 @@
 			"moves": 57,
 			"goal": "boss",
 			"at": "2026-11-16T04:07:06.688Z"
+		},
+		{
+			"loadout": "dscs",
+			"difficulty": "med",
+			"seed": 521,
+			"moves": 150,
+			"goal": "boss",
+			"at": "2026-11-18"
 		},
 		{
 			"loadout": "dsdc",
@@ -6712,6 +7156,14 @@
 			"at": "2026-11-17T13:39:29.781Z"
 		},
 		{
+			"loadout": "hcds",
+			"difficulty": "med",
+			"seed": 1200155,
+			"moves": 120,
+			"goal": "boss",
+			"at": "2026-11-18T14:34:30.650Z"
+		},
+		{
 			"loadout": "hchc",
 			"difficulty": "med",
 			"seed": 3181,
@@ -6731,9 +7183,9 @@
 			"loadout": "hchh",
 			"difficulty": "med",
 			"seed": 154116,
-			"moves": 115,
+			"moves": 131,
 			"goal": "clear",
-			"at": "2026-11-17T10:44:02.836Z"
+			"at": "2026-11-16"
 		},
 		{
 			"loadout": "hchs",
@@ -6830,6 +7282,14 @@
 			"moves": 133,
 			"goal": "clear",
 			"at": "2026-11-17T11:39:58.466Z"
+		},
+		{
+			"loadout": "hdhh",
+			"difficulty": "med",
+			"seed": 1200687,
+			"moves": 130,
+			"goal": "boss",
+			"at": "2026-11-18T14:34:41.143Z"
 		},
 		{
 			"loadout": "hdhs",
@@ -6931,9 +7391,9 @@
 			"loadout": "hhhh",
 			"difficulty": "med",
 			"seed": 2769,
-			"moves": 120,
+			"moves": 144,
 			"goal": "clear",
-			"at": "2026-11-17T10:44:03.829Z"
+			"at": "2026-11-15"
 		},
 		{
 			"loadout": "hhhs",
@@ -7021,7 +7481,7 @@
 			"seed": 154191,
 			"moves": 58,
 			"goal": "boss",
-			"at": "2026-11-14T11:21:42.482Z"
+			"at": "2026-11-14"
 		},
 		{
 			"loadout": "hsdc",
@@ -7029,7 +7489,7 @@
 			"seed": 155071,
 			"moves": 55,
 			"goal": "boss",
-			"at": "2026-11-14T10:42:00.347Z"
+			"at": "2026-11-15"
 		},
 		{
 			"loadout": "hsdd",
@@ -7085,7 +7545,7 @@
 			"seed": 150250,
 			"moves": 50,
 			"goal": "boss",
-			"at": "2026-11-14T07:17:13.457Z"
+			"at": "2026-11-14"
 		},
 		{
 			"loadout": "hshd",
@@ -7101,7 +7561,7 @@
 			"seed": 153210,
 			"moves": 69,
 			"goal": "boss",
-			"at": "2026-11-14T09:12:35.698Z"
+			"at": "2026-11-14"
 		},
 		{
 			"loadout": "hshd",
@@ -7109,7 +7569,7 @@
 			"seed": 154571,
 			"moves": 61,
 			"goal": "boss",
-			"at": "2026-11-14T10:54:43.366Z"
+			"at": "2026-11-14"
 		},
 		{
 			"loadout": "hshh",
@@ -7125,7 +7585,7 @@
 			"seed": 155240,
 			"moves": 56,
 			"goal": "boss",
-			"at": "2026-11-14T11:26:51.424Z"
+			"at": "2026-11-15"
 		},
 		{
 			"loadout": "hshs",
@@ -7325,7 +7785,7 @@
 			"seed": 205422,
 			"moves": 95,
 			"goal": "clear",
-			"at": "2026-11-17T06:41:18.633Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "sdds",
@@ -7365,7 +7825,7 @@
 			"seed": 205160,
 			"moves": 110,
 			"goal": "clear",
-			"at": "2026-11-17T11:11:52.553Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "sdhs",
@@ -7414,6 +7874,14 @@
 			"moves": 110,
 			"goal": "clear",
 			"at": "2026-11-17T13:45:35.082Z"
+		},
+		{
+			"loadout": "shdc",
+			"difficulty": "med",
+			"seed": 1200203,
+			"moves": 106,
+			"goal": "boss",
+			"at": "2026-11-18T14:36:49.788Z"
 		},
 		{
 			"loadout": "shdd",
@@ -7517,7 +7985,7 @@
 			"seed": 470,
 			"moves": 65,
 			"goal": "boss",
-			"at": "2026-11-17T03:53:21.495Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "sscd",
@@ -7573,7 +8041,7 @@
 			"seed": 205182,
 			"moves": 92,
 			"goal": "clear",
-			"at": "2026-11-17T06:44:50.141Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "ssds",
@@ -7613,7 +8081,7 @@
 			"seed": 205029,
 			"moves": 94,
 			"goal": "clear",
-			"at": "2026-11-17T06:44:51.254Z"
+			"at": "2026-11-17"
 		},
 		{
 			"loadout": "sshs",
@@ -7665,649 +8133,67 @@
 		}
 	],
 	"found": {
-		"hscd": {
+		"ccsd": {
 			"med": {
 				"boss": {
-					"seed": 80716,
-					"moves": 43
-				}
-			}
-		},
-		"hsss": {
-			"med": {
-				"boss": {
-					"seed": 80737,
-					"moves": 61
-				}
-			}
-		},
-		"hsch": {
-			"med": {
-				"boss": {
-					"seed": 81319,
-					"moves": 49
-				}
-			}
-		},
-		"hshc": {
-			"med": {
-				"boss": {
-					"seed": 81609,
-					"moves": 49
-				}
-			}
-		},
-		"hscs": {
-			"med": {
-				"boss": {
-					"seed": 82967,
-					"moves": 59
-				}
-			}
-		},
-		"dshd": {
-			"med": {
-				"boss": {
-					"seed": 87147,
-					"moves": 60
-				}
-			}
-		},
-		"cssd": {
-			"med": {
-				"boss": {
-					"seed": 89047,
-					"moves": 56
-				},
-				"clear": {
-					"seed": 205438,
-					"moves": 110
-				}
-			}
-		},
-		"cssh": {
-			"med": {
-				"boss": {
-					"seed": 89526,
-					"moves": 55
-				}
-			}
-		},
-		"hssd": {
-			"hard": {
-				"boss": {
-					"seed": 3054,
-					"moves": 44
-				}
-			},
-			"med": {
-				"boss": {
-					"seed": 3054,
-					"moves": 42
-				}
-			}
-		},
-		"hsdh": {
-			"hard": {
-				"boss": {
-					"seed": 90,
-					"moves": 81
-				}
-			},
-			"med": {
-				"boss": {
-					"seed": 90,
-					"moves": 60
-				}
-			}
-		},
-		"hscc": {
-			"hard": {
-				"boss": {
-					"seed": 40,
-					"moves": 42
-				}
-			},
-			"med": {
-				"boss": {
-					"seed": 40,
-					"moves": 45
-				}
-			}
-		},
-		"dcdd": {
-			"med": {
-				"boss": {
-					"seed": 150098,
-					"moves": 68
-				}
-			}
-		},
-		"sshs": {
-			"med": {
-				"clear": {
-					"seed": 150188,
-					"moves": 96
-				}
-			}
-		},
-		"dhdc": {
-			"med": {
-				"boss": {
-					"seed": 150234,
-					"moves": 81
-				}
-			}
-		},
-		"hshd": {
-			"med": {
-				"boss": {
-					"seed": 150250,
-					"moves": 50
-				}
-			}
-		},
-		"hccc": {
-			"med": {
-				"clear": {
-					"seed": 150309,
-					"moves": 166
-				}
-			}
-		},
-		"ssdc": {
-			"med": {
-				"boss": {
-					"seed": 150415,
-					"moves": 71
-				}
-			}
-		},
-		"ssdh": {
-			"med": {
-				"clear": {
-					"seed": 205182,
-					"moves": 92
-				}
-			}
-		},
-		"hshh": {
-			"med": {
-				"boss": {
-					"seed": 155240,
-					"moves": 56
-				}
-			}
-		},
-		"hsdc": {
-			"med": {
-				"boss": {
-					"seed": 155071,
-					"moves": 55
-				}
-			}
-		},
-		"chhc": {
-			"med": {
-				"clear": {
-					"seed": 152160,
-					"moves": 114
-				}
-			}
-		},
-		"cdss": {
-			"med": {
-				"clear": {
-					"seed": 152200,
-					"moves": 126
-				}
-			}
-		},
-		"ddcc": {
-			"med": {
-				"boss": {
-					"seed": 152440,
-					"moves": 77
-				}
-			}
-		},
-		"hchh": {
-			"med": {
-				"clear": {
-					"seed": 154116,
-					"moves": 115
-				}
-			}
-		},
-		"dhcc": {
-			"med": {
-				"boss": {
-					"seed": 154307,
-					"moves": 79
-				}
-			}
-		},
-		"hcsc": {
-			"med": {
-				"clear": {
-					"seed": 150677,
-					"moves": 120
-				}
-			}
-		},
-		"chsh": {
-			"med": {
-				"boss": {
-					"seed": 153256,
-					"moves": 86
-				}
-			}
-		},
-		"dhsd": {
-			"med": {
-				"boss": {
-					"seed": 152904,
-					"moves": 90
-				}
-			}
-		},
-		"dccd": {
-			"med": {
-				"boss": {
-					"seed": 196638,
-					"moves": 83
-				}
-			}
-		},
-		"dcss": {
-			"med": {
-				"boss": {
-					"seed": 158582,
-					"moves": 91
-				}
-			}
-		},
-		"dhch": {
-			"med": {
-				"boss": {
-					"seed": 158865,
-					"moves": 77
-				}
-			}
-		},
-		"shhc": {
-			"med": {
-				"boss": {
-					"seed": 151067,
-					"moves": 87
-				}
-			}
-		},
-		"ccdd": {
-			"med": {
-				"boss": {
-					"seed": 151265,
-					"moves": 94
-				}
-			}
-		},
-		"sssc": {
-			"med": {
-				"boss": {
-					"seed": 151295,
-					"moves": 71
-				}
-			}
-		},
-		"dhhc": {
-			"med": {
-				"clear": {
-					"seed": 153314,
-					"moves": 114
-				}
-			}
-		},
-		"cdsh": {
-			"med": {
-				"boss": {
-					"seed": 153399,
-					"moves": 91
-				}
-			}
-		},
-		"csch": {
-			"med": {
-				"boss": {
-					"seed": 155187,
-					"moves": 59
-				}
-			}
-		},
-		"dcds": {
-			"med": {
-				"boss": {
-					"seed": 155332,
-					"moves": 74
-				}
-			}
-		},
-		"scsd": {
-			"med": {
-				"clear": {
-					"seed": 151502,
-					"moves": 102
-				}
-			}
-		},
-		"dsdc": {
-			"med": {
-				"boss": {
-					"seed": 151918,
-					"moves": 69
-				}
-			}
-		},
-		"ddds": {
-			"med": {
-				"boss": {
-					"seed": 153579,
-					"moves": 105
-				}
-			}
-		},
-		"cshc": {
-			"med": {
-				"boss": {
-					"seed": 153924,
-					"moves": 69
-				}
-			}
-		},
-		"dcsd": {
-			"med": {
-				"boss": {
-					"seed": 179554,
-					"moves": 74
-				}
-			}
-		},
-		"scss": {
-			"med": {
-				"boss": {
-					"seed": 155600,
+					"seed": 1200693,
 					"moves": 108
 				}
 			}
 		},
-		"dhhd": {
-			"med": {
-				"clear": {
-					"seed": 155695,
-					"moves": 101
-				}
-			}
-		},
-		"sddh": {
-			"med": {
-				"clear": {
-					"seed": 205422,
-					"moves": 95
-				}
-			}
-		},
-		"schc": {
-			"med": {
-				"clear": {
-					"seed": 157876,
-					"moves": 97
-				}
-			}
-		},
-		"scds": {
-			"med": {
-				"clear": {
-					"seed": 161992,
-					"moves": 103
-				}
-			}
-		},
-		"sdhs": {
+		"dchh": {
 			"med": {
 				"boss": {
-					"seed": 36145,
-					"moves": 92
+					"seed": 1200874,
+					"moves": 116
 				}
 			}
 		},
-		"dshs": {
-			"med": {
-				"clear": {
-					"seed": 40211,
-					"moves": 84
-				}
-			}
-		},
-		"dsdh": {
+		"dhcs": {
 			"med": {
 				"boss": {
-					"seed": 44793,
-					"moves": 76
+					"seed": 1200553,
+					"moves": 85
 				}
 			}
 		},
-		"cdhc": {
-			"med": {
-				"clear": {
-					"seed": 44818,
-					"moves": 112
-				}
-			}
-		},
-		"dhhs": {
+		"cchd": {
 			"med": {
 				"boss": {
-					"seed": 49356,
-					"moves": 73
-				},
-				"clear": {
-					"seed": 49356,
-					"moves": 73
-				}
-			}
-		},
-		"dhhh": {
-			"med": {
-				"boss": {
-					"seed": 54118,
-					"moves": 86
-				}
-			}
-		},
-		"hdsh": {
-			"med": {
-				"boss": {
-					"seed": 243,
-					"moves": 140
-				}
-			}
-		},
-		"hhhh": {
-			"med": {
-				"clear": {
-					"seed": 2769,
-					"moves": 120
-				}
-			}
-		},
-		"hssc": {
-			"med": {
-				"boss": {
-					"seed": 332,
-					"moves": 42
-				}
-			}
-		},
-		"cssc": {
-			"med": {
-				"boss": {
-					"seed": 6210,
-					"moves": 60
-				}
-			}
-		},
-		"hhhs": {
-			"med": {
-				"clear": {
-					"seed": 1038,
-					"moves": 118
-				}
-			}
-		},
-		"hchc": {
-			"med": {
-				"boss": {
-					"seed": 3181,
-					"moves": 94
-				}
-			}
-		},
-		"hcsh": {
-			"med": {
-				"clear": {
-					"seed": 219,
-					"moves": 109
-				}
-			}
-		},
-		"hssh": {
-			"med": {
-				"boss": {
-					"seed": 12,
-					"moves": 69
-				},
-				"clear": {
-					"seed": 12,
-					"moves": 69
-				}
-			}
-		},
-		"hchd": {
-			"med": {
-				"boss": {
-					"seed": 2261,
-					"moves": 136
-				}
-			}
-		},
-		"hddd": {
-			"med": {
-				"clear": {
-					"seed": 3191,
-					"moves": 118
-				}
-			}
-		},
-		"hchs": {
-			"med": {
-				"clear": {
-					"seed": 663,
+					"seed": 1200741,
 					"moves": 130
 				}
 			}
 		},
-		"hsdd": {
+		"dddh": {
 			"med": {
 				"boss": {
-					"seed": 86,
-					"moves": 49
+					"seed": 1200321,
+					"moves": 100
 				}
 			}
 		},
-		"hshs": {
+		"hcds": {
 			"med": {
 				"boss": {
-					"seed": 137,
-					"moves": 52
+					"seed": 1200155,
+					"moves": 120
 				}
 			}
 		},
-		"hdhc": {
+		"hdhh": {
 			"med": {
 				"boss": {
-					"seed": 39182,
-					"moves": 86
+					"seed": 1200687,
+					"moves": 130
 				}
 			}
 		},
-		"cddc": {
-			"med": {
-				"clear": {
-					"seed": 30490,
-					"moves": 96
-				}
-			}
-		},
-		"sssh": {
-			"med": {
-				"clear": {
-					"seed": 30516,
-					"moves": 93
-				}
-			}
-		},
-		"hcch": {
-			"med": {
-				"clear": {
-					"seed": 31020,
-					"moves": 143
-				}
-			}
-		},
-		"sdhh": {
-			"med": {
-				"clear": {
-					"seed": 205160,
-					"moves": 110
-				}
-			}
-		},
-		"sshh": {
-			"med": {
-				"clear": {
-					"seed": 205029,
-					"moves": 94
-				}
-			}
-		},
-		"dcsh": {
+		"shdc": {
 			"med": {
 				"boss": {
-					"seed": 1139,
-					"moves": 73
-				}
-			}
-		},
-		"sccc": {
-			"med": {
-				"boss": {
-					"seed": 890,
-					"moves": 107
-				}
-			}
-		},
-		"cdhd": {
-			"med": {
-				"boss": {
-					"seed": 684,
-					"moves": 111
-				}
-			}
-		},
-		"shhs": {
-			"med": {
-				"boss": {
-					"seed": 1007,
-					"moves": 88
+					"seed": 1200203,
+					"moves": 106
 				}
 			}
 		},
@@ -8319,127 +8205,27 @@
 				}
 			}
 		},
-		"chcc": {
-			"med": {
-				"boss": {
-					"seed": 2165,
-					"moves": 79
-				}
-			}
-		},
-		"shcc": {
-			"med": {
-				"boss": {
-					"seed": 438,
-					"moves": 96
-				}
-			}
-		},
-		"shsc": {
-			"med": {
-				"boss": {
-					"seed": 2579,
-					"moves": 99
-				}
-			}
-		},
-		"sshd": {
-			"med": {
-				"boss": {
-					"seed": 1446,
-					"moves": 83
-				}
-			}
-		},
-		"ddhc": {
-			"med": {
-				"boss": {
-					"seed": 299,
-					"moves": 87
-				}
-			}
-		},
-		"ddsh": {
-			"med": {
-				"boss": {
-					"seed": 952,
-					"moves": 98
-				}
-			}
-		},
-		"shsh": {
+		"ccdc": {
 			"med": {
 				"clear": {
-					"seed": 1284,
-					"moves": 117
+					"seed": 400084,
+					"moves": 106
 				}
 			}
 		},
-		"chhd": {
+		"ccdd": {
 			"med": {
 				"boss": {
-					"seed": 1821,
-					"moves": 100
-				}
-			}
-		},
-		"cshs": {
-			"med": {
-				"boss": {
-					"seed": 173,
-					"moves": 70
-				}
-			}
-		},
-		"ddhd": {
-			"med": {
-				"boss": {
-					"seed": 1706,
-					"moves": 120
-				}
-			}
-		},
-		"cscd": {
-			"med": {
-				"boss": {
-					"seed": 339,
-					"moves": 59
-				},
-				"clear": {
-					"seed": 206043,
-					"moves": 96
-				}
-			}
-		},
-		"cshh": {
-			"med": {
-				"clear": {
-					"seed": 205255,
-					"moves": 88
-				}
-			}
-		},
-		"dssd": {
-			"med": {
-				"boss": {
-					"seed": 205537,
-					"moves": 47
-				}
-			}
-		},
-		"hhss": {
-			"med": {
-				"boss": {
-					"seed": 205317,
+					"seed": 151265,
 					"moves": 94
 				}
 			}
 		},
-		"sscd": {
+		"ccdh": {
 			"med": {
-				"boss": {
-					"seed": 470,
-					"moves": 65
+				"clear": {
+					"seed": 600533,
+					"moves": 137
 				}
 			}
 		},
@@ -8451,11 +8237,239 @@
 				}
 			}
 		},
+		"cchh": {
+			"med": {
+				"boss": {
+					"seed": 2588,
+					"moves": 99
+				}
+			}
+		},
+		"cchs": {
+			"med": {
+				"clear": {
+					"seed": 400122,
+					"moves": 141
+				}
+			}
+		},
+		"ccsc": {
+			"med": {
+				"boss": {
+					"seed": 2660,
+					"moves": 87
+				}
+			}
+		},
+		"ccsh": {
+			"med": {
+				"clear": {
+					"seed": 1000862,
+					"moves": 127
+				}
+			}
+		},
+		"ccss": {
+			"med": {
+				"clear": {
+					"seed": 1518,
+					"moves": 107
+				}
+			}
+		},
+		"cdch": {
+			"med": {
+				"clear": {
+					"seed": 400184,
+					"moves": 103
+				}
+			}
+		},
+		"cddc": {
+			"med": {
+				"clear": {
+					"seed": 30490,
+					"moves": 96
+				}
+			}
+		},
+		"cdds": {
+			"med": {
+				"boss": {
+					"seed": 33285,
+					"moves": 102
+				}
+			}
+		},
+		"cdhc": {
+			"med": {
+				"clear": {
+					"seed": 44818,
+					"moves": 112
+				}
+			}
+		},
+		"cdhd": {
+			"med": {
+				"boss": {
+					"seed": 684,
+					"moves": 111
+				}
+			}
+		},
+		"cdhh": {
+			"med": {
+				"clear": {
+					"seed": 205105,
+					"moves": 108
+				}
+			}
+		},
 		"cdhs": {
 			"med": {
 				"clear": {
 					"seed": 205723,
 					"moves": 118
+				}
+			}
+		},
+		"cdsc": {
+			"med": {
+				"clear": {
+					"seed": 600490,
+					"moves": 114
+				}
+			}
+		},
+		"cdsd": {
+			"med": {
+				"clear": {
+					"seed": 600618,
+					"moves": 112
+				}
+			}
+		},
+		"cdsh": {
+			"med": {
+				"boss": {
+					"seed": 153399,
+					"moves": 91
+				}
+			}
+		},
+		"cdss": {
+			"med": {
+				"clear": {
+					"seed": 152200,
+					"moves": 126
+				}
+			}
+		},
+		"chcc": {
+			"med": {
+				"boss": {
+					"seed": 2165,
+					"moves": 79
+				}
+			}
+		},
+		"chdd": {
+			"med": {
+				"clear": {
+					"seed": 800079,
+					"moves": 123
+				}
+			}
+		},
+		"chdh": {
+			"med": {
+				"clear": {
+					"seed": 800125,
+					"moves": 105
+				}
+			}
+		},
+		"chhc": {
+			"med": {
+				"clear": {
+					"seed": 152160,
+					"moves": 114
+				}
+			}
+		},
+		"chhd": {
+			"med": {
+				"boss": {
+					"seed": 1821,
+					"moves": 100
+				}
+			}
+		},
+		"chhh": {
+			"med": {
+				"clear": {
+					"seed": 205545,
+					"moves": 112
+				}
+			}
+		},
+		"chhs": {
+			"med": {
+				"clear": {
+					"seed": 1000703,
+					"moves": 116
+				}
+			}
+		},
+		"chsc": {
+			"med": {
+				"clear": {
+					"seed": 400151,
+					"moves": 100
+				}
+			}
+		},
+		"chsh": {
+			"med": {
+				"boss": {
+					"seed": 153256,
+					"moves": 86
+				}
+			}
+		},
+		"cscc": {
+			"med": {
+				"boss": {
+					"seed": 1351,
+					"moves": 62
+				}
+			}
+		},
+		"cscd": {
+			"med": {
+				"clear": {
+					"seed": 206043,
+					"moves": 96
+				},
+				"boss": {
+					"seed": 339,
+					"moves": 59
+				}
+			}
+		},
+		"csch": {
+			"med": {
+				"boss": {
+					"seed": 155187,
+					"moves": 59
+				}
+			}
+		},
+		"cscs": {
+			"med": {
+				"boss": {
+					"seed": 986,
+					"moves": 58
 				}
 			}
 		},
@@ -8467,11 +8481,215 @@
 				}
 			}
 		},
+		"csdd": {
+			"med": {
+				"boss": {
+					"seed": 397,
+					"moves": 66
+				}
+			}
+		},
+		"csdh": {
+			"med": {
+				"clear": {
+					"seed": 600226,
+					"moves": 102
+				}
+			}
+		},
+		"csds": {
+			"med": {
+				"boss": {
+					"seed": 3902,
+					"moves": 62
+				}
+			}
+		},
+		"cshc": {
+			"med": {
+				"boss": {
+					"seed": 153924,
+					"moves": 69
+				}
+			}
+		},
+		"cshd": {
+			"med": {
+				"boss": {
+					"seed": 2676,
+					"moves": 75
+				}
+			}
+		},
+		"cshh": {
+			"med": {
+				"clear": {
+					"seed": 205255,
+					"moves": 88
+				}
+			}
+		},
+		"cshs": {
+			"med": {
+				"boss": {
+					"seed": 173,
+					"moves": 70
+				}
+			}
+		},
+		"cssc": {
+			"med": {
+				"boss": {
+					"seed": 6210,
+					"moves": 60
+				}
+			}
+		},
+		"cssd": {
+			"med": {
+				"clear": {
+					"seed": 205438,
+					"moves": 110
+				},
+				"boss": {
+					"seed": 89047,
+					"moves": 56
+				}
+			}
+		},
+		"cssh": {
+			"med": {
+				"boss": {
+					"seed": 89526,
+					"moves": 55
+				}
+			}
+		},
+		"csss": {
+			"med": {
+				"boss": {
+					"seed": 215,
+					"moves": 65
+				}
+			}
+		},
+		"dccd": {
+			"med": {
+				"boss": {
+					"seed": 196638,
+					"moves": 83
+				}
+			}
+		},
+		"dcch": {
+			"med": {
+				"boss": {
+					"seed": 205744,
+					"moves": 91
+				}
+			}
+		},
+		"dcdd": {
+			"med": {
+				"boss": {
+					"seed": 150098,
+					"moves": 68
+				}
+			}
+		},
+		"dcdh": {
+			"med": {
+				"clear": {
+					"seed": 400071,
+					"moves": 117
+				}
+			}
+		},
+		"dcds": {
+			"med": {
+				"boss": {
+					"seed": 155332,
+					"moves": 74
+				}
+			}
+		},
 		"dchc": {
 			"med": {
 				"clear": {
 					"seed": 205135,
 					"moves": 116
+				}
+			}
+		},
+		"dchd": {
+			"med": {
+				"boss": {
+					"seed": 2493,
+					"moves": 82
+				}
+			}
+		},
+		"dchs": {
+			"med": {
+				"boss": {
+					"seed": 205346,
+					"moves": 105
+				}
+			}
+		},
+		"dcsd": {
+			"med": {
+				"boss": {
+					"seed": 179554,
+					"moves": 74
+				}
+			}
+		},
+		"dcsh": {
+			"med": {
+				"boss": {
+					"seed": 1139,
+					"moves": 73
+				}
+			}
+		},
+		"dcss": {
+			"med": {
+				"boss": {
+					"seed": 158582,
+					"moves": 91
+				}
+			}
+		},
+		"ddcc": {
+			"med": {
+				"boss": {
+					"seed": 152440,
+					"moves": 77
+				}
+			}
+		},
+		"ddds": {
+			"med": {
+				"boss": {
+					"seed": 153579,
+					"moves": 105
+				}
+			}
+		},
+		"ddhc": {
+			"med": {
+				"boss": {
+					"seed": 299,
+					"moves": 87
+				}
+			}
+		},
+		"ddhd": {
+			"med": {
+				"boss": {
+					"seed": 1706,
+					"moves": 120
 				}
 			}
 		},
@@ -8483,11 +8701,147 @@
 				}
 			}
 		},
+		"ddsh": {
+			"med": {
+				"boss": {
+					"seed": 952,
+					"moves": 98
+				}
+			}
+		},
+		"ddss": {
+			"med": {
+				"clear": {
+					"seed": 800644,
+					"moves": 91
+				}
+			}
+		},
+		"dhcc": {
+			"med": {
+				"boss": {
+					"seed": 154307,
+					"moves": 79
+				}
+			}
+		},
+		"dhch": {
+			"med": {
+				"boss": {
+					"seed": 158865,
+					"moves": 77
+				}
+			}
+		},
+		"dhdc": {
+			"med": {
+				"boss": {
+					"seed": 150234,
+					"moves": 81
+				}
+			}
+		},
+		"dhdd": {
+			"med": {
+				"clear": {
+					"seed": 400066,
+					"moves": 103
+				}
+			}
+		},
+		"dhhc": {
+			"med": {
+				"clear": {
+					"seed": 153314,
+					"moves": 114
+				}
+			}
+		},
+		"dhhd": {
+			"med": {
+				"clear": {
+					"seed": 155695,
+					"moves": 101
+				}
+			}
+		},
+		"dhhh": {
+			"med": {
+				"boss": {
+					"seed": 54118,
+					"moves": 86
+				}
+			}
+		},
+		"dhhs": {
+			"med": {
+				"clear": {
+					"seed": 49356,
+					"moves": 73
+				}
+			}
+		},
+		"dhsd": {
+			"med": {
+				"boss": {
+					"seed": 152904,
+					"moves": 90
+				}
+			}
+		},
 		"dhss": {
 			"med": {
 				"clear": {
 					"seed": 205112,
 					"moves": 95
+				}
+			}
+		},
+		"dscc": {
+			"med": {
+				"boss": {
+					"seed": 1342,
+					"moves": 53
+				}
+			}
+		},
+		"dscd": {
+			"med": {
+				"boss": {
+					"seed": 1535,
+					"moves": 57
+				}
+			}
+		},
+		"dsch": {
+			"med": {
+				"boss": {
+					"seed": 55,
+					"moves": 57
+				}
+			}
+		},
+		"dscs": {
+			"med": {
+				"boss": {
+					"seed": 521,
+					"moves": 150
+				}
+			}
+		},
+		"dsdc": {
+			"med": {
+				"boss": {
+					"seed": 151918,
+					"moves": 69
+				}
+			}
+		},
+		"dsdh": {
+			"med": {
+				"boss": {
+					"seed": 44793,
+					"moves": 76
 				}
 			}
 		},
@@ -8499,11 +8853,195 @@
 				}
 			}
 		},
+		"dshc": {
+			"med": {
+				"boss": {
+					"seed": 205243,
+					"moves": 112
+				}
+			}
+		},
+		"dshd": {
+			"med": {
+				"boss": {
+					"seed": 87147,
+					"moves": 60
+				}
+			}
+		},
+		"dshh": {
+			"med": {
+				"clear": {
+					"seed": 400309,
+					"moves": 88
+				}
+			}
+		},
+		"dshs": {
+			"med": {
+				"clear": {
+					"seed": 40211,
+					"moves": 84
+				}
+			}
+		},
+		"dssd": {
+			"med": {
+				"boss": {
+					"seed": 205537,
+					"moves": 47
+				}
+			}
+		},
+		"dssh": {
+			"med": {
+				"clear": {
+					"seed": 400417,
+					"moves": 87
+				}
+			}
+		},
+		"dsss": {
+			"med": {
+				"boss": {
+					"seed": 1340,
+					"moves": 61
+				}
+			}
+		},
+		"hccc": {
+			"med": {
+				"clear": {
+					"seed": 150309,
+					"moves": 166
+				}
+			}
+		},
+		"hcch": {
+			"med": {
+				"clear": {
+					"seed": 31020,
+					"moves": 143
+				}
+			}
+		},
+		"hcdc": {
+			"med": {
+				"boss": {
+					"seed": 58,
+					"moves": 96
+				}
+			}
+		},
+		"hcdd": {
+			"med": {
+				"clear": {
+					"seed": 400219,
+					"moves": 118
+				}
+			}
+		},
+		"hcdh": {
+			"med": {
+				"clear": {
+					"seed": 600451,
+					"moves": 113
+				}
+			}
+		},
+		"hchc": {
+			"med": {
+				"boss": {
+					"seed": 3181,
+					"moves": 94
+				}
+			}
+		},
+		"hchd": {
+			"med": {
+				"boss": {
+					"seed": 2261,
+					"moves": 136
+				}
+			}
+		},
+		"hchh": {
+			"med": {
+				"clear": {
+					"seed": 154116,
+					"moves": 131
+				}
+			}
+		},
+		"hchs": {
+			"med": {
+				"clear": {
+					"seed": 663,
+					"moves": 130
+				}
+			}
+		},
+		"hcsc": {
+			"med": {
+				"clear": {
+					"seed": 150677,
+					"moves": 120
+				}
+			}
+		},
+		"hcsh": {
+			"med": {
+				"clear": {
+					"seed": 219,
+					"moves": 109
+				}
+			}
+		},
+		"hcss": {
+			"med": {
+				"clear": {
+					"seed": 400334,
+					"moves": 112
+				}
+			}
+		},
+		"hdcd": {
+			"med": {
+				"boss": {
+					"seed": 2435,
+					"moves": 87
+				}
+			}
+		},
 		"hdcs": {
 			"med": {
 				"clear": {
 					"seed": 205353,
 					"moves": 119
+				}
+			}
+		},
+		"hddc": {
+			"med": {
+				"clear": {
+					"seed": 600150,
+					"moves": 94
+				}
+			}
+		},
+		"hddd": {
+			"med": {
+				"clear": {
+					"seed": 3191,
+					"moves": 118
+				}
+			}
+		},
+		"hddh": {
+			"med": {
+				"boss": {
+					"seed": 1088,
+					"moves": 76
 				}
 			}
 		},
@@ -8515,11 +9053,51 @@
 				}
 			}
 		},
+		"hdhc": {
+			"med": {
+				"boss": {
+					"seed": 39182,
+					"moves": 86
+				}
+			}
+		},
+		"hdhd": {
+			"med": {
+				"clear": {
+					"seed": 400180,
+					"moves": 133
+				}
+			}
+		},
+		"hdhs": {
+			"med": {
+				"clear": {
+					"seed": 400126,
+					"moves": 113
+				}
+			}
+		},
+		"hdsc": {
+			"med": {
+				"clear": {
+					"seed": 600545,
+					"moves": 131
+				}
+			}
+		},
 		"hdsd": {
 			"med": {
 				"clear": {
 					"seed": 205280,
 					"moves": 118
+				}
+			}
+		},
+		"hdsh": {
+			"med": {
+				"boss": {
+					"seed": 243,
+					"moves": 140
 				}
 			}
 		},
@@ -8531,10 +9109,74 @@
 				}
 			}
 		},
+		"hhcd": {
+			"med": {
+				"clear": {
+					"seed": 600368,
+					"moves": 104
+				}
+			}
+		},
+		"hhcs": {
+			"med": {
+				"clear": {
+					"seed": 4116,
+					"moves": 112
+				}
+			}
+		},
+		"hhdc": {
+			"med": {
+				"boss": {
+					"seed": 960,
+					"moves": 88
+				}
+			}
+		},
+		"hhdh": {
+			"med": {
+				"clear": {
+					"seed": 600359,
+					"moves": 110
+				}
+			}
+		},
 		"hhds": {
 			"med": {
 				"clear": {
 					"seed": 205074,
+					"moves": 118
+				}
+			}
+		},
+		"hhhc": {
+			"med": {
+				"boss": {
+					"seed": 822,
+					"moves": 74
+				}
+			}
+		},
+		"hhhd": {
+			"med": {
+				"boss": {
+					"seed": 3816,
+					"moves": 85
+				}
+			}
+		},
+		"hhhh": {
+			"med": {
+				"clear": {
+					"seed": 2769,
+					"moves": 144
+				}
+			}
+		},
+		"hhhs": {
+			"med": {
+				"clear": {
+					"seed": 1038,
 					"moves": 118
 				}
 			}
@@ -8547,6 +9189,182 @@
 				}
 			}
 		},
+		"hhsh": {
+			"med": {
+				"clear": {
+					"seed": 600546,
+					"moves": 110
+				}
+			}
+		},
+		"hhss": {
+			"med": {
+				"boss": {
+					"seed": 205317,
+					"moves": 94
+				}
+			}
+		},
+		"hscc": {
+			"med": {
+				"boss": {
+					"seed": 40,
+					"moves": 45
+				}
+			},
+			"hard": {
+				"boss": {
+					"seed": 40,
+					"moves": 42
+				}
+			}
+		},
+		"hscd": {
+			"med": {
+				"boss": {
+					"seed": 80716,
+					"moves": 43
+				}
+			}
+		},
+		"hsch": {
+			"med": {
+				"boss": {
+					"seed": 81319,
+					"moves": 49
+				}
+			}
+		},
+		"hscs": {
+			"med": {
+				"boss": {
+					"seed": 82967,
+					"moves": 59
+				}
+			}
+		},
+		"hsdc": {
+			"med": {
+				"boss": {
+					"seed": 155071,
+					"moves": 55
+				}
+			}
+		},
+		"hsdd": {
+			"med": {
+				"boss": {
+					"seed": 86,
+					"moves": 49
+				}
+			}
+		},
+		"hsdh": {
+			"med": {
+				"boss": {
+					"seed": 90,
+					"moves": 60
+				}
+			},
+			"hard": {
+				"boss": {
+					"seed": 90,
+					"moves": 81
+				}
+			}
+		},
+		"hsds": {
+			"med": {
+				"boss": {
+					"seed": 1532,
+					"moves": 119
+				}
+			},
+			"hard": {
+				"boss": {
+					"seed": 4,
+					"moves": 66
+				}
+			}
+		},
+		"hshc": {
+			"med": {
+				"boss": {
+					"seed": 81609,
+					"moves": 49
+				}
+			}
+		},
+		"hshd": {
+			"med": {
+				"boss": {
+					"seed": 150250,
+					"moves": 50
+				}
+			}
+		},
+		"hshh": {
+			"med": {
+				"boss": {
+					"seed": 155240,
+					"moves": 56
+				}
+			}
+		},
+		"hshs": {
+			"med": {
+				"boss": {
+					"seed": 137,
+					"moves": 52
+				}
+			}
+		},
+		"hssc": {
+			"med": {
+				"boss": {
+					"seed": 332,
+					"moves": 42
+				}
+			}
+		},
+		"hssd": {
+			"med": {
+				"boss": {
+					"seed": 3054,
+					"moves": 42
+				}
+			},
+			"hard": {
+				"boss": {
+					"seed": 3054,
+					"moves": 44
+				}
+			}
+		},
+		"hssh": {
+			"med": {
+				"clear": {
+					"seed": 12,
+					"moves": 69
+				}
+			}
+		},
+		"hsss": {
+			"med": {
+				"boss": {
+					"seed": 80737,
+					"moves": 61
+				}
+			}
+		},
+		"sccc": {
+			"med": {
+				"boss": {
+					"seed": 890,
+					"moves": 107
+				}
+			}
+		},
 		"sccd": {
 			"med": {
 				"clear": {
@@ -8555,11 +9373,131 @@
 				}
 			}
 		},
+		"sccs": {
+			"med": {
+				"clear": {
+					"seed": 400941,
+					"moves": 128
+				}
+			}
+		},
 		"scdd": {
 			"med": {
 				"clear": {
 					"seed": 205350,
 					"moves": 101
+				}
+			}
+		},
+		"scdh": {
+			"med": {
+				"boss": {
+					"seed": 1081,
+					"moves": 101
+				}
+			}
+		},
+		"scds": {
+			"med": {
+				"clear": {
+					"seed": 161992,
+					"moves": 103
+				}
+			}
+		},
+		"schc": {
+			"med": {
+				"clear": {
+					"seed": 157876,
+					"moves": 97
+				}
+			}
+		},
+		"schd": {
+			"med": {
+				"clear": {
+					"seed": 205194,
+					"moves": 102
+				}
+			}
+		},
+		"schh": {
+			"med": {
+				"clear": {
+					"seed": 328,
+					"moves": 102
+				}
+			}
+		},
+		"schs": {
+			"med": {
+				"clear": {
+					"seed": 205388,
+					"moves": 104
+				}
+			}
+		},
+		"scsc": {
+			"med": {
+				"clear": {
+					"seed": 400415,
+					"moves": 114
+				}
+			}
+		},
+		"scsd": {
+			"med": {
+				"clear": {
+					"seed": 151502,
+					"moves": 102
+				}
+			}
+		},
+		"scsh": {
+			"med": {
+				"clear": {
+					"seed": 400017,
+					"moves": 133
+				}
+			}
+		},
+		"scss": {
+			"med": {
+				"boss": {
+					"seed": 155600,
+					"moves": 108
+				}
+			}
+		},
+		"sdcd": {
+			"med": {
+				"boss": {
+					"seed": 889,
+					"moves": 207
+				}
+			}
+		},
+		"sddc": {
+			"med": {
+				"clear": {
+					"seed": 400106,
+					"moves": 105
+				}
+			}
+		},
+		"sddd": {
+			"med": {
+				"clear": {
+					"seed": 600152,
+					"moves": 143
+				}
+			}
+		},
+		"sddh": {
+			"med": {
+				"clear": {
+					"seed": 205422,
+					"moves": 95
 				}
 			}
 		},
@@ -8587,6 +9525,38 @@
 				}
 			}
 		},
+		"sdhh": {
+			"med": {
+				"clear": {
+					"seed": 205160,
+					"moves": 110
+				}
+			}
+		},
+		"sdhs": {
+			"med": {
+				"boss": {
+					"seed": 36145,
+					"moves": 92
+				}
+			}
+		},
+		"sdsd": {
+			"med": {
+				"clear": {
+					"seed": 800103,
+					"moves": 109
+				}
+			}
+		},
+		"sdsh": {
+			"med": {
+				"clear": {
+					"seed": 400455,
+					"moves": 105
+				}
+			}
+		},
 		"sdss": {
 			"med": {
 				"clear": {
@@ -8595,11 +9565,163 @@
 				}
 			}
 		},
+		"shcc": {
+			"med": {
+				"boss": {
+					"seed": 438,
+					"moves": 96
+				}
+			}
+		},
+		"shcs": {
+			"med": {
+				"clear": {
+					"seed": 600045,
+					"moves": 110
+				}
+			}
+		},
+		"shdd": {
+			"med": {
+				"clear": {
+					"seed": 600029,
+					"moves": 104
+				}
+			}
+		},
+		"shdh": {
+			"med": {
+				"clear": {
+					"seed": 600470,
+					"moves": 128
+				}
+			}
+		},
+		"shds": {
+			"med": {
+				"clear": {
+					"seed": 600651,
+					"moves": 119
+				}
+			}
+		},
+		"shhc": {
+			"med": {
+				"boss": {
+					"seed": 151067,
+					"moves": 87
+				}
+			}
+		},
+		"shhd": {
+			"med": {
+				"clear": {
+					"seed": 400616,
+					"moves": 152
+				}
+			}
+		},
+		"shhh": {
+			"med": {
+				"clear": {
+					"seed": 400426,
+					"moves": 112
+				}
+			}
+		},
+		"shhs": {
+			"med": {
+				"boss": {
+					"seed": 1007,
+					"moves": 88
+				}
+			}
+		},
+		"shsc": {
+			"med": {
+				"boss": {
+					"seed": 2579,
+					"moves": 99
+				}
+			}
+		},
+		"shsd": {
+			"med": {
+				"clear": {
+					"seed": 600213,
+					"moves": 116
+				}
+			}
+		},
+		"shsh": {
+			"med": {
+				"clear": {
+					"seed": 1284,
+					"moves": 117
+				}
+			}
+		},
+		"shss": {
+			"med": {
+				"clear": {
+					"seed": 600356,
+					"moves": 118
+				}
+			}
+		},
+		"sscc": {
+			"med": {
+				"boss": {
+					"seed": 23,
+					"moves": 64
+				}
+			}
+		},
+		"sscd": {
+			"med": {
+				"boss": {
+					"seed": 470,
+					"moves": 65
+				}
+			}
+		},
+		"ssch": {
+			"med": {
+				"boss": {
+					"seed": 1274,
+					"moves": 65
+				}
+			}
+		},
 		"sscs": {
 			"med": {
 				"clear": {
 					"seed": 205554,
 					"moves": 124
+				}
+			}
+		},
+		"ssdc": {
+			"med": {
+				"boss": {
+					"seed": 150415,
+					"moves": 71
+				}
+			}
+		},
+		"ssdd": {
+			"med": {
+				"boss": {
+					"seed": 1107,
+					"moves": 62
+				}
+			}
+		},
+		"ssdh": {
+			"med": {
+				"clear": {
+					"seed": 205182,
+					"moves": 92
 				}
 			}
 		},
@@ -8619,6 +9741,38 @@
 				}
 			}
 		},
+		"sshd": {
+			"med": {
+				"boss": {
+					"seed": 1446,
+					"moves": 83
+				}
+			}
+		},
+		"sshh": {
+			"med": {
+				"clear": {
+					"seed": 205029,
+					"moves": 94
+				}
+			}
+		},
+		"sshs": {
+			"med": {
+				"clear": {
+					"seed": 150188,
+					"moves": 96
+				}
+			}
+		},
+		"sssc": {
+			"med": {
+				"boss": {
+					"seed": 151295,
+					"moves": 71
+				}
+			}
+		},
 		"sssd": {
 			"med": {
 				"clear": {
@@ -8627,395 +9781,11 @@
 				}
 			}
 		},
-		"dcch": {
-			"med": {
-				"boss": {
-					"seed": 205744,
-					"moves": 91
-				}
-			}
-		},
-		"dchs": {
-			"med": {
-				"boss": {
-					"seed": 205346,
-					"moves": 105
-				}
-			}
-		},
-		"dshc": {
-			"med": {
-				"boss": {
-					"seed": 205243,
-					"moves": 112
-				}
-			}
-		},
-		"cscc": {
-			"med": {
-				"boss": {
-					"seed": 1351,
-					"moves": 62
-				}
-			}
-		},
-		"dscc": {
-			"med": {
-				"boss": {
-					"seed": 1342,
-					"moves": 53
-				}
-			}
-		},
-		"sscc": {
-			"med": {
-				"boss": {
-					"seed": 23,
-					"moves": 64
-				}
-			}
-		},
-		"ssch": {
-			"med": {
-				"boss": {
-					"seed": 1274,
-					"moves": 65
-				}
-			}
-		},
-		"cscs": {
-			"med": {
-				"boss": {
-					"seed": 986,
-					"moves": 58
-				}
-			}
-		},
-		"csds": {
-			"med": {
-				"boss": {
-					"seed": 3902,
-					"moves": 62
-				}
-			}
-		},
-		"csss": {
-			"med": {
-				"boss": {
-					"seed": 215,
-					"moves": 65
-				}
-			}
-		},
-		"dsss": {
-			"med": {
-				"boss": {
-					"seed": 1340,
-					"moves": 61
-				}
-			}
-		},
-		"sdcd": {
-			"med": {
-				"boss": {
-					"seed": 889,
-					"moves": 207
-				}
-			}
-		},
-		"chhh": {
+		"sssh": {
 			"med": {
 				"clear": {
-					"seed": 205545,
-					"moves": 112
-				}
-			}
-		},
-		"schd": {
-			"med": {
-				"clear": {
-					"seed": 205194,
-					"moves": 102
-				}
-			}
-		},
-		"schs": {
-			"med": {
-				"clear": {
-					"seed": 205388,
-					"moves": 104
-				}
-			}
-		},
-		"cdhh": {
-			"med": {
-				"clear": {
-					"seed": 205105,
-					"moves": 108
-				}
-			}
-		},
-		"cdch": {
-			"med": {
-				"clear": {
-					"seed": 400184,
-					"moves": 103
-				}
-			}
-		},
-		"hcss": {
-			"med": {
-				"clear": {
-					"seed": 400334,
-					"moves": 112
-				}
-			}
-		},
-		"hdhs": {
-			"med": {
-				"clear": {
-					"seed": 400126,
-					"moves": 113
-				}
-			}
-		},
-		"scsc": {
-			"med": {
-				"clear": {
-					"seed": 400415,
-					"moves": 114
-				}
-			}
-		},
-		"sddc": {
-			"med": {
-				"clear": {
-					"seed": 400106,
-					"moves": 105
-				}
-			}
-		},
-		"shhd": {
-			"med": {
-				"clear": {
-					"seed": 400616,
-					"moves": 152
-				}
-			}
-		},
-		"cchs": {
-			"med": {
-				"clear": {
-					"seed": 400122,
-					"moves": 141
-				}
-			}
-		},
-		"dhdd": {
-			"med": {
-				"clear": {
-					"seed": 400066,
-					"moves": 103
-				}
-			}
-		},
-		"scsh": {
-			"med": {
-				"clear": {
-					"seed": 400017,
-					"moves": 133
-				}
-			}
-		},
-		"shhh": {
-			"med": {
-				"clear": {
-					"seed": 400426,
-					"moves": 112
-				}
-			}
-		},
-		"dshh": {
-			"med": {
-				"clear": {
-					"seed": 400309,
-					"moves": 88
-				}
-			}
-		},
-		"hcdd": {
-			"med": {
-				"clear": {
-					"seed": 400219,
-					"moves": 118
-				}
-			}
-		},
-		"ccdc": {
-			"med": {
-				"clear": {
-					"seed": 400084,
-					"moves": 106
-				}
-			}
-		},
-		"chsc": {
-			"med": {
-				"clear": {
-					"seed": 400151,
-					"moves": 100
-				}
-			}
-		},
-		"dcdh": {
-			"med": {
-				"clear": {
-					"seed": 400071,
-					"moves": 117
-				}
-			}
-		},
-		"dssh": {
-			"med": {
-				"clear": {
-					"seed": 400417,
-					"moves": 87
-				}
-			}
-		},
-		"hdhd": {
-			"med": {
-				"clear": {
-					"seed": 400180,
-					"moves": 133
-				}
-			}
-		},
-		"sccs": {
-			"med": {
-				"clear": {
-					"seed": 400941,
-					"moves": 128
-				}
-			}
-		},
-		"sdsh": {
-			"med": {
-				"clear": {
-					"seed": 400455,
-					"moves": 105
-				}
-			}
-		},
-		"hcdh": {
-			"med": {
-				"clear": {
-					"seed": 600451,
-					"moves": 113
-				}
-			}
-		},
-		"hhdh": {
-			"med": {
-				"clear": {
-					"seed": 600359,
-					"moves": 110
-				}
-			}
-		},
-		"shds": {
-			"med": {
-				"clear": {
-					"seed": 600651,
-					"moves": 119
-				}
-			}
-		},
-		"hdsc": {
-			"med": {
-				"clear": {
-					"seed": 600545,
-					"moves": 131
-				}
-			}
-		},
-		"shsd": {
-			"med": {
-				"clear": {
-					"seed": 600213,
-					"moves": 116
-				}
-			}
-		},
-		"cdsc": {
-			"med": {
-				"clear": {
-					"seed": 600490,
-					"moves": 114
-				}
-			}
-		},
-		"csdh": {
-			"med": {
-				"clear": {
-					"seed": 600226,
-					"moves": 102
-				}
-			}
-		},
-		"hhsh": {
-			"med": {
-				"clear": {
-					"seed": 600546,
-					"moves": 110
-				}
-			}
-		},
-		"shcs": {
-			"med": {
-				"clear": {
-					"seed": 600045,
-					"moves": 110
-				}
-			}
-		},
-		"shss": {
-			"med": {
-				"clear": {
-					"seed": 600356,
-					"moves": 118
-				}
-			}
-		},
-		"ccdh": {
-			"med": {
-				"clear": {
-					"seed": 600533,
-					"moves": 137
-				}
-			}
-		},
-		"cdsd": {
-			"med": {
-				"clear": {
-					"seed": 600618,
-					"moves": 112
-				}
-			}
-		},
-		"hhcd": {
-			"med": {
-				"clear": {
-					"seed": 600368,
-					"moves": 104
-				}
-			}
-		},
-		"sddd": {
-			"med": {
-				"clear": {
-					"seed": 600152,
-					"moves": 143
+					"seed": 30516,
+					"moves": 93
 				}
 			}
 		},
@@ -9024,220 +9794,6 @@
 				"clear": {
 					"seed": 600906,
 					"moves": 102
-				}
-			}
-		},
-		"shdd": {
-			"med": {
-				"clear": {
-					"seed": 600029,
-					"moves": 104
-				}
-			}
-		},
-		"hddc": {
-			"med": {
-				"clear": {
-					"seed": 600150,
-					"moves": 94
-				}
-			}
-		},
-		"shdh": {
-			"med": {
-				"clear": {
-					"seed": 600470,
-					"moves": 128
-				}
-			}
-		},
-		"chdh": {
-			"med": {
-				"clear": {
-					"seed": 800125,
-					"moves": 105
-				}
-			}
-		},
-		"sdsd": {
-			"med": {
-				"clear": {
-					"seed": 800103,
-					"moves": 109
-				}
-			}
-		},
-		"ddss": {
-			"med": {
-				"clear": {
-					"seed": 800644,
-					"moves": 91
-				}
-			}
-		},
-		"chdd": {
-			"med": {
-				"clear": {
-					"seed": 800079,
-					"moves": 123
-				}
-			}
-		},
-		"ccss": {
-			"med": {
-				"clear": {
-					"seed": 1518,
-					"moves": 107
-				}
-			}
-		},
-		"schh": {
-			"med": {
-				"clear": {
-					"seed": 328,
-					"moves": 102
-				}
-			}
-		},
-		"hhcs": {
-			"med": {
-				"clear": {
-					"seed": 4116,
-					"moves": 112
-				}
-			}
-		},
-		"hsds": {
-			"med": {
-				"boss": {
-					"seed": 1532,
-					"moves": 119
-				}
-			},
-			"hard": {
-				"boss": {
-					"seed": 4,
-					"moves": 66
-				}
-			}
-		},
-		"hddh": {
-			"med": {
-				"boss": {
-					"seed": 1088,
-					"moves": 76
-				}
-			}
-		},
-		"cchh": {
-			"med": {
-				"boss": {
-					"seed": 2588,
-					"moves": 99
-				}
-			}
-		},
-		"cshd": {
-			"med": {
-				"boss": {
-					"seed": 2676,
-					"moves": 75
-				}
-			}
-		},
-		"hcdc": {
-			"med": {
-				"boss": {
-					"seed": 58,
-					"moves": 96
-				}
-			}
-		},
-		"ccsc": {
-			"med": {
-				"boss": {
-					"seed": 2660,
-					"moves": 87
-				}
-			}
-		},
-		"hdcd": {
-			"med": {
-				"boss": {
-					"seed": 2435,
-					"moves": 87
-				}
-			}
-		},
-		"hhhc": {
-			"med": {
-				"boss": {
-					"seed": 822,
-					"moves": 74
-				}
-			}
-		},
-		"scdh": {
-			"med": {
-				"boss": {
-					"seed": 1081,
-					"moves": 101
-				}
-			}
-		},
-		"dscd": {
-			"med": {
-				"boss": {
-					"seed": 1535,
-					"moves": 57
-				}
-			}
-		},
-		"hhdc": {
-			"med": {
-				"boss": {
-					"seed": 960,
-					"moves": 88
-				}
-			}
-		},
-		"hhhd": {
-			"med": {
-				"boss": {
-					"seed": 3816,
-					"moves": 85
-				}
-			}
-		},
-		"ssdd": {
-			"med": {
-				"boss": {
-					"seed": 1107,
-					"moves": 62
-				}
-			}
-		},
-		"dsch": {
-			"med": {
-				"boss": {
-					"seed": 55,
-					"moves": 57
-				}
-			}
-		},
-		"csdd": {
-			"med": {
-				"boss": {
-					"seed": 397,
-					"moves": 66
-				}
-			}
-		},
-		"dchd": {
-			"med": {
-				"boss": {
-					"seed": 2493,
-					"moves": 82
 				}
 			}
 		}
@@ -9271,13 +9827,6 @@
 				"at": "2026-11-14T09:57:39.688Z"
 			}
 		},
-		"chhs": {
-			"med": {
-				"seed": 46256,
-				"score": null,
-				"at": "2026-11-14"
-			}
-		},
 		"dddc": {
 			"med": {
 				"seed": 542,
@@ -9290,13 +9839,6 @@
 				"seed": 32540,
 				"score": null,
 				"at": "2026-11-12T20:14:07.267Z"
-			}
-		},
-		"cdds": {
-			"med": {
-				"seed": 33285,
-				"score": null,
-				"at": "2026-11-12T16:58:34.238Z"
 			}
 		},
 		"ddcs": {
@@ -9346,13 +9888,6 @@
 				"seed": 153828,
 				"score": null,
 				"at": "2026-11-14T09:38:46.692Z"
-			}
-		},
-		"ccsd": {
-			"med": {
-				"seed": 156336,
-				"score": null,
-				"at": "2026-11-14T12:44:50.347Z"
 			}
 		},
 		"shcd": {
@@ -9481,13 +10016,6 @@
 				"at": "2026-11-14"
 			}
 		},
-		"dddh": {
-			"med": {
-				"seed": 713,
-				"score": null,
-				"at": "2026-11-15T02:07:21.756Z"
-			}
-		},
 		"ddsc": {
 			"med": {
 				"seed": 152068,
@@ -9500,13 +10028,6 @@
 				"seed": 151786,
 				"score": null,
 				"at": "2026-11-14T07:07:56.807Z"
-			}
-		},
-		"cchd": {
-			"med": {
-				"seed": 153118,
-				"score": null,
-				"at": "2026-11-14T08:46:35.597Z"
 			}
 		},
 		"chsd": {
@@ -9558,13 +10079,6 @@
 				"at": "2026-11-14T08:10:32.745Z"
 			}
 		},
-		"ccsh": {
-			"med": {
-				"seed": 124,
-				"score": null,
-				"at": "2026-11-15T01:53:25.660Z"
-			}
-		},
 		"dhcd": {
 			"med": {
 				"seed": 737,
@@ -9579,25 +10093,11 @@
 				"at": "2026-11-13T05:12:00.389Z"
 			}
 		},
-		"hcds": {
-			"med": {
-				"seed": 1116,
-				"score": null,
-				"at": "2026-11-14"
-			}
-		},
 		"dhsh": {
 			"med": {
 				"seed": 152676,
 				"score": null,
 				"at": "2026-11-14T09:14:18.281Z"
-			}
-		},
-		"hdhh": {
-			"med": {
-				"seed": 3278,
-				"score": null,
-				"at": "2026-11-15T23:18:35.530Z"
 			}
 		},
 		"dssc": {
@@ -9628,13 +10128,6 @@
 				"at": "2026-11-14T08:19:51.611Z"
 			}
 		},
-		"dhcs": {
-			"med": {
-				"seed": 156564,
-				"score": null,
-				"at": "2026-11-14T12:22:17.936Z"
-			}
-		},
 		"dcdc": {
 			"med": {
 				"seed": 1571,
@@ -9649,32 +10142,11 @@
 				"at": "2026-11-13T18:42:45.043Z"
 			}
 		},
-		"dchh": {
-			"med": {
-				"seed": 652,
-				"score": null,
-				"at": "2026-11-15T02:06:18.045Z"
-			}
-		},
-		"shdc": {
-			"med": {
-				"seed": 40917,
-				"score": null,
-				"at": "2026-11-14"
-			}
-		},
 		"dhsc": {
 			"med": {
 				"seed": 32713,
 				"score": null,
 				"at": "2026-11-14"
-			}
-		},
-		"dscs": {
-			"med": {
-				"seed": 521,
-				"score": null,
-				"at": "2026-11-15T22:54:54.656Z"
 			}
 		},
 		"cddd": {
@@ -9699,12 +10171,9 @@
 		"hhsd",
 		"hccd",
 		"hccs",
-		"hcds",
 		"hcsd",
-		"hdhh",
 		"hdch",
 		"hdcc",
-		"chhs",
 		"chch",
 		"chcd",
 		"chcs",
@@ -9712,26 +10181,20 @@
 		"chds",
 		"chsd",
 		"chss",
-		"cchd",
 		"cccc",
 		"cccd",
 		"cccs",
 		"ccds",
-		"ccsh",
-		"ccsd",
 		"cdcc",
 		"cdcd",
 		"cdcs",
 		"cddh",
 		"cddd",
-		"cdds",
 		"dhcd",
-		"dhcs",
 		"dhdh",
 		"dhds",
 		"dhsh",
 		"dhsc",
-		"dchh",
 		"dccc",
 		"dccs",
 		"dcdc",
@@ -9740,17 +10203,14 @@
 		"ddch",
 		"ddcd",
 		"ddcs",
-		"dddh",
 		"dddc",
 		"dddd",
 		"ddsc",
 		"ddsd",
-		"dscs",
 		"dsdd",
 		"dssc",
 		"shch",
 		"shcd",
-		"shdc",
 		"scch",
 		"scdc",
 		"sdch",

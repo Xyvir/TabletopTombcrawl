@@ -183,7 +183,7 @@ describe('synthetic loadouts', () => {
 
 		// the item beside the chip goes to the crypt, which is the one trip that restocks its pocket
 		const played = attackWith(state, cell(2))!;
-		expect(played.itemWindow).toEqual({ cell: 2, role: 'consumable', suit: 'clubs', any: true });
+		expect(played.itemWindow).toEqual({ cell: 2, role: 'consumable', suit: 'clubs', takes: 'any' });
 
 		// a diamond fills the pocket, and it becomes the pinned clubs item, not its own suit's
 		const fed = tombMove(played, cascade(0), cell(2))!;
@@ -397,7 +397,7 @@ describe('conversion order', () => {
 		expect(next!.draft.map((entry) => entry.cell)).toEqual([0]);
 		expect(convertibleCell(next!)).toBe(0);
 		// no Thief in the party, so the window still wants the suit it lost
-		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs', any: false });
+		expect(next!.itemWindow).toEqual({ cell: 1, role: 'class', suit: 'clubs', takes: 'same' });
 		expect(chipBoundary(next!)).toBe(2);
 		expect(cellCardMovable(next!, 0)).toBe(true);
 	});
@@ -419,7 +419,7 @@ describe('conversion order', () => {
 
 		// the potion goes home: its slot waits one action, but the chip has not moved yet
 		const played = attackWith(state, cell(3))!;
-		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades', any: false });
+		expect(played.itemWindow).toEqual({ cell: 3, role: 'consumable', suit: 'spades', takes: 'same' });
 		expect(chipBoundary(played)).toBe(4);
 
 		// the refill was missed, so the slot is plain for good and the chip steps one slot left
@@ -436,7 +436,7 @@ describe('conversion order', () => {
 		// the spell goes home for free: the slot waits instead of turning plain straight away
 		const home = attackWith(state, cell(0))!;
 		expect(home.draft).toEqual([]);
-		expect(home.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades', any: false });
+		expect(home.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades', takes: 'same' });
 		expect(chipBoundary(home)).toBe(1);
 
 		// a spade on the next action restocks the slot, so the chip never passes it
@@ -616,7 +616,7 @@ describe('mana burn and mug', () => {
 		});
 		const feeding = {
 			...state,
-			itemWindow: { cell: 0, role: 'consumable' as const, suit: 'clubs' as const, any: true },
+			itemWindow: { cell: 0, role: 'consumable' as const, suit: 'clubs' as const, takes: 'any' as const },
 		};
 
 		const next = tombMove(feeding, cascade(0, 0), cell(0))!;
@@ -2090,7 +2090,7 @@ describe('tombcrawl item refresh', () => {
 		const next = attackWith(base(), cell(0))!;
 		expect(next.draft).toHaveLength(0);
 		expect(next.game.cells[0]).toBe(null);
-		expect(next.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades', any: false });
+		expect(next.itemWindow).toEqual({ cell: 0, role: 'glyph', suit: 'spades', takes: 'same' });
 	});
 
 	test('playing an item out to the board spends it, and opens no window', () => {
@@ -2150,7 +2150,7 @@ describe('tombcrawl item refresh', () => {
 		];
 		// the glyph sits beside the chip, so it is the one that may go home and open its slot
 		const played = attackWith(base(draft, ['5C', '2S', '5S', '6S']), cell(1))!;
-		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', any: false });
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', takes: 'same' });
 
 		// any other action closes the window: the plain move into the third free cell is not a feed
 		const spent = tombMove(played, cascade(0), cell(4))!;
@@ -2166,7 +2166,7 @@ describe('tombcrawl item refresh', () => {
 		// the spades item goes home, then a heart — the other colour entirely — restocks it
 		const played = attackWith(base(draft, ['4C', '2S', '5S', '6S']), cell(1))!;
 
-		expect(played.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'spades', any: true });
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'spades', takes: 'any' });
 
 		const refilled = tombMove(played, cascade(0), cell(1))!;
 		expect(refilled.itemWindow).toBe(null);
@@ -2178,19 +2178,25 @@ describe('tombcrawl item refresh', () => {
 		});
 	});
 
-	test('a Thief playing an item into the crypt opens the same any-suit window', () => {
+	test('a Thief playing an item into the crypt waits for another suit, never the one that left', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: '4C', suit: 'clubs', name: 'Thief', text: '' },
 			{ cell: 1, role: 'consumable', id: '5S', suit: 'spades', name: 'Purity', text: '' },
 		];
 		// the spades item is played out onto the six of diamonds: spent, and the pocket waits one action
-		const state = makeTomb({ columns: [['6D']], cells: ['4C', '5S', '3H', '9D'], foundations: ['4D'], draft });
+		const state = makeTomb({ columns: [['6D']], cells: ['4C', '5S', '3H', '9S'], foundations: ['4D'], draft });
 		const played = tombMove(state, cell(1), cascade(0))!;
 
 		expect(played.draft.find((item) => item.cell === 1)).toBeUndefined();
-		expect(played.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'spades', any: true });
+		expect(played.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'spades', takes: 'other' });
 		// the chip holds where it is while the window waits, so the slot is still draftable
 		expect(chipBoundary(played)).toBe(2);
+
+		// the suit that just left is the loop the window exists to close: it parks in the pocket instead
+		const same = tombMove(played, cell(3), cell(1))!;
+		expect(same.itemWindow).toBe(null);
+		expect(same.draft.find((item) => item.cell === 1)).toBeUndefined();
+		expect(shorthandCard(same.game.cells[1]!)).toBe('9S');
 
 		// a heart, the other colour entirely, restocks it as a heart item
 		const refilled = tombMove(played, cell(2), cell(1))!;
@@ -2224,7 +2230,7 @@ describe('tombcrawl item refresh', () => {
 		];
 		// a glyph sent home waits for its own suit, for a Thief as much as for anyone else
 		const state = makeTomb({ columns: [['6D']], cells: ['4C', 'AS', '3H', '9D'], draft });
-		expect(attackWith(state, cell(1))?.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', any: false });
+		expect(attackWith(state, cell(1))?.itemWindow).toEqual({ cell: 1, role: 'glyph', suit: 'spades', takes: 'same' });
 
 		// so a heart cannot fill it, and parks in the empty pocket instead
 		const played = attackWith(state, cell(1))!;
@@ -2273,7 +2279,7 @@ describe('tombcrawl item refresh', () => {
 		expect(home.draft.find((entry) => entry.cell === 0)).toBeUndefined();
 		expect(home.game.cards.some((card) => shorthandCard(card) === '6D' && card.location.fixture === 'cascade')).toBe(true);
 		// the slot waits for the card the player picks, and the exhausted mark goes with the item
-		expect(home.itemWindow).toEqual({ cell: 0, role: 'consumable', suit: 'diamonds', any: false });
+		expect(home.itemWindow).toEqual({ cell: 0, role: 'consumable', suit: 'diamonds', takes: 'same' });
 		expect(home.exhausted[0]).toBe(false);
 	});
 
@@ -2295,7 +2301,7 @@ describe('tombcrawl item refresh', () => {
 		expect(home.game.cells[1]).toBe(null);
 		expect(home.draft).toHaveLength(1);
 		// and the slot is still waiting for whichever card he does feed it
-		expect(home.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'diamonds', any: true });
+		expect(home.itemWindow).toEqual({ cell: 1, role: 'consumable', suit: 'diamonds', takes: 'any' });
 	});
 });
 
@@ -2335,7 +2341,7 @@ describe('restocking a spent slot', () => {
 		{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
 		{ cell: 3, role: 'consumable', id: '3D', suit: 'diamonds', name: 'Remedy', text: '' },
 	];
-	const window = { cell: 3, role: 'consumable' as const, suit: 'diamonds' as const, any: false };
+	const window = { cell: 3, role: 'consumable' as const, suit: 'diamonds' as const, takes: 'same' as const };
 	const open = (cells: (string | null)[]) => ({
 		...makeTomb({ columns: [['9D']], cells: cells as string[], draft, boss: 'KC' }),
 		itemWindow: window,
