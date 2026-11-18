@@ -18,6 +18,7 @@ import slash2Url from '../audio/slash2.ogg?url';
 import slash3Url from '../audio/slash3.ogg?url';
 import stashUrl from '../audio/stash_move_to_pocket.ogg?url';
 import stepUrl from '../audio/step_move_to_hallway.ogg?url';
+import takeDamageUrl from '../audio/take_damage.ogg?url';
 import useGlyphUrl from '../audio/use_glyph.ogg?url';
 import useItemUrl from '../audio/use_item.ogg?url';
 
@@ -32,6 +33,7 @@ export type SfxName =
 	| 'level'
 	| 'stash'
 	| 'step'
+	| 'takeDamage'
 	| 'useGlyph'
 	| 'useItem';
 
@@ -46,6 +48,7 @@ const URLS: Record<SfxName, string> = {
 	level: levelUrl,
 	stash: stashUrl,
 	step: stepUrl,
+	takeDamage: takeDamageUrl,
 	useGlyph: useGlyphUrl,
 	useItem: useItemUrl,
 };
@@ -91,6 +94,29 @@ export function playSfx(name: SfxName) {
 	out(URLS[name]);
 }
 
+/** Gap between repeated blows, so three wounds read as three hits and not one louder one. */
+const TAKE_DAMAGE_GAP_MS = 200;
+
+function outDelayed(url: string, delayMs: number) {
+	if (!enabled) return;
+	try {
+		setTimeout(() => out(url), delayMs);
+	} catch {
+		// No timers here (SSR): the move already landed.
+	}
+}
+
+/**
+ * Wounds land one blow at a time: three damage is the sound three times, staggered. Each replay
+ * mints its own Audio element like every other play, and `out` re-checks the toggle at fire time,
+ * so switching the speaker off mid-stagger silences the blows still waiting.
+ */
+export function playTakeDamage(times: number) {
+	if (!enabled) return;
+	const n = Math.max(0, Math.floor(times));
+	for (let i = 0; i < n; i++) outDelayed(URLS.takeDamage, i * TAKE_DAMAGE_GAP_MS);
+}
+
 /** A kill: slash1-3, never the same one twice in a row. */
 export function playSlash() {
 	let pick = Math.floor(Math.random() * SLASH_URLS.length);
@@ -105,9 +131,12 @@ export function playSlash() {
  * is exclusive, because a move that does two things should sound like two.
  */
 export interface MoveSfx {
-	/** A card went home. Ranged kills add the bow over (not under) the slash. */
+	/** A card went home. */
 	homed: boolean;
+	/** Elf range used, on a buried kill or a buried dig: the bow plays over the slash or the step. */
 	ranged: boolean;
+	/** The kill's own bill: take_damage replays once per point, staggered. Aura wounds sound only as affliction. */
+	damage: number;
 	/** Fog lifted: the revealed card steps into its hallway. */
 	dug: boolean;
 	/** A card was parked into a pocket. */
@@ -137,10 +166,9 @@ export function playMoveSfx(f: MoveSfx) {
 	if (f.tombEmptied) playSfx('bossClear');
 	if (f.bossFound) playSfx('bossReveal');
 	if (f.leveled) playSfx('level');
-	if (f.homed) {
-		if (f.ranged) playSfx('arrow');
-		playSlash();
-	}
+	if (f.ranged) playSfx('arrow');
+	if (f.homed) playSlash();
+	if (f.damage > 0) playTakeDamage(f.damage);
 	if (f.afflicted) playSfx('affliction');
 	if (f.converted) playSfx('convert');
 	if (f.armed) playSfx('arm');

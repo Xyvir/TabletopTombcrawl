@@ -35,9 +35,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		TOMBS,
 		ROLE_LABEL,
 		ROLE_WORD,
-		abilityFor,
+				abilityFor,
 		abilityUsable,
-	afflictionTargets,
+		afflictionFired,
+		afflictionTargets,
 		armedClick,
 		armedDrop,
 		attackPreview,
@@ -1211,9 +1212,24 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			(card) => card.location.fixture === 'foundation' && wasLoc.get(shorthandCard(card))?.fixture !== 'foundation'
 		);
 		const spent = next.draft.find((entry) => next.exhausted[entry.cell] && !prev.exhausted[entry.cell]);
+		// Take_damage counts the kill's own bill only, read back off the board it was previewed on:
+		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's heart — sound as
+		// affliction and nothing else, even when they land mid-slash.
+		const killDamage = homedPrev.reduce((n, card) => {
+			const at = wasLoc.get(shorthandCard(card));
+			return n + (at ? attackPreview(prev, at).damage : 0);
+		}, 0);
+		// Elf range sounds on every use: a buried kill, or a buried dig. Venom's fog-lift rides on
+		// a kill or a stash, never on a dig, so a dig that lifts fog under the bolt is always his shot.
+		const rangedDig =
+			(label?.startsWith('dig') ?? false) &&
+			revealed.some((id) => {
+				const target = prev.game.cards.find((card) => shorthandCard(card) === id);
+				return !!target && shotAt(prev, target.location);
+			});
 		playMoveSfx({
 			homed: homedPrev.length > 0,
-			ranged: homedPrev.some((card) => shotAt(prev, wasLoc.get(shorthandCard(card)) ?? null)),
+			ranged: homedPrev.some((card) => shotAt(prev, wasLoc.get(shorthandCard(card)) ?? null)) || rangedDig,
 			dug: label?.startsWith('dig') ?? false,
 			parked: label?.startsWith('park') ?? false,
 			stepped: (label?.startsWith('move') ?? false) || (label?.startsWith('swap') ?? false),
@@ -1225,7 +1241,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			bossFound: foundBoss,
 			bossKilled: killedBoss,
 			tombEmptied: emptiedTomb,
-			afflicted: !!power,
+			damage: killDamage,
+			// Sound wants every power the aura priced, not just the ones worth a flash:
+			// a Gorgon kill doubles up with the slash, and a stash sets its power off too.
+			afflicted: afflictionFired(tomb, next),
 		});
 		void recordRun(next);
 		tombHistory = [...tombHistory, tomb];

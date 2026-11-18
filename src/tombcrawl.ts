@@ -1694,6 +1694,46 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 	}
 }
 
+/**
+ * Whether a monster power went off on the move from `before` to `after`, for the speaker.
+ * The flash cannot answer this: it only fires on kills, and never for Stone Gaze, whose extra
+ * rank is already priced into the kill. Sound wants every slay or stash of a carrier the aura
+ * actually priced — including a Gorgon kill, which should double up with the slash.
+ */
+export function afflictionFired(before: TombState, after: TombState): boolean {
+	if (!before.bossSuit || !auraActive(before)) return false;
+	const wasLoc = new Map(before.game.cards.map((card) => [cardId(card), card.location]));
+	const inDraft = new Set(after.draft.map((entry) => entry.id));
+	const moved = after.game.cards.find((card) => {
+		const id = cardId(card);
+		const was = wasLoc.get(id);
+		if (!was || was.fixture !== 'cascade') return false;
+		const now = card.location.fixture;
+		if (now !== 'foundation' && now !== 'cell') return false;
+		// A card fed into a spent item slot becomes that item, which the aura skips.
+		if (inDraft.has(id)) return false;
+		const prior = before.game.cards.find((other) => cardId(other) === id);
+		return !!prior && carriesPower(before, prior);
+	});
+	if (!moved) return false;
+	const prior = before.game.cards.find((other) => cardId(other) === cardId(moved));
+	switch (before.bossSuit) {
+		// Venom and Mug leave evidence: fog lifted without a heal, or the slot converted.
+		case 'hearts':
+			return after.hidden.length < before.hidden.length;
+		case 'spades':
+			return after.draft.length < before.draft.length;
+		// Stone Gaze is priced into every kill and takes a heart off every park.
+		case 'clubs':
+			return true;
+		// Mana Burn needs a glyph standing to drain.
+		case 'diamonds':
+			return !!prior && auraItemOf(before, prior) !== null;
+		default:
+			return false;
+	}
+}
+
 /* --------------------------------------------------------------- actions */
 
 export function tombMove(state: TombState, from: CardLocation, to: CardLocation): TombState | null {
