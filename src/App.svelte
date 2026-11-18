@@ -745,6 +745,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return Number.isFinite(col) && Number.isFinite(index) ? { col, index } : undefined;
 	}
 
+	/**
+	 * The step a stack is actually drawn with, read from the board rather than assumed. The stylesheet
+	 * shortens the step once a column runs out of box, so a flight between two cards in the same
+	 * column has to ask where the neighbours sit or it would land past its place.
+	 */
+	function stackStep(el: HTMLElement): number {
+		const column = el.closest<HTMLElement>('.cascade');
+		const cards = column?.querySelectorAll<HTMLElement>('.card');
+		if (cards && cards.length > 1) return cards[1].offsetTop - cards[0].offsetTop;
+		return el.offsetHeight * 0.26;
+	}
+
 	function cardRects() {
 		const rects = new Map<string, DOMRect>();
 		const home = new Set<string>();
@@ -814,7 +826,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const sits = columnPlace(el);
 			if (was && sits && was.col === sits.col) {
 				dx = 0;
-				dy = (was.index - sits.index) * el.offsetHeight * 0.26;
+				dy = (was.index - sits.index) * stackStep(el);
 			}
 			if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
 
@@ -2186,6 +2198,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				class:empty={cascade.length === 0}
 				class:bossColumn={bossColumn(cascade)}
 				data-drop={`cascade:${col}`}
+				style={`--n:${Math.max(0, cascade.length - 1)}`}
 			>
 				<button
 					class="cascade-hit"

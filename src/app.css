@@ -128,6 +128,8 @@ img {
 	flex: 0 0 var(--col-w);
 	border-radius: var(--radius);
 	background: rgba(0, 0, 0, 0.14);
+	/* The column's last index, written per column: how many steps a stack has to spend its box on. */
+	--n: 0;
 }
 
 .cascade.empty {
@@ -151,8 +153,15 @@ img {
 	left: 0;
 	z-index: 1;
 	width: 100%;
-	/* one source of truth for the stack offset, so long columns stay on screen */
-	top: calc(var(--i) * var(--card-h) * 0.26);
+	/*
+	 * One source of truth for the stack offset, so long columns stay on screen. A stack is read by its
+	 * fifth of a card until the column runs out of box; past that the step gives way to the room that is
+	 * left over, so the deepest card's bottom lands on the column's own edge. Nothing is drawn below the
+	 * field: not through the pills, and not past the bottom of the screen. --n is the column's last index.
+	 */
+	top: calc(
+		var(--i) * max(0px, min(var(--card-h) * 0.26, (100% - var(--card-h)) / max(1, var(--n, 0))))
+	);
 	padding: 0;
 	border: 0;
 	background: none;
@@ -507,6 +516,18 @@ img {
 	pointer-events: auto;
 	cursor: help;
 	z-index: 2;
+	/*
+	 * A conversion shoves the chip one gap along the track, and it only reads as a shove if it travels:
+	 * left is the toy line, so the chip slides to its new gap instead of appearing in it. The overshoot is
+	 * the chip rocking to a stop against the next slot; it runs the other way on an undo for free.
+	 */
+	transition: left 240ms cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cells.tomb .chip {
+		transition: none;
+	}
 }
 
 /* A held card finds its drop by hit-testing the point, so the chip steps out of the way mid-drag. */
@@ -815,6 +836,58 @@ body:has(.card.dragging) .cells.tomb .chip {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+}
+
+/*
+ * A phone on its side has the width to spare and not the height: ten pills under the field push the
+ * deepest columns through them, because the footer is the one strip of felt that cannot move out of the
+ * way. So on a short landscape screen the pills stand up as a rail on the right, beside the field rather
+ * than below it, and the tableau takes the column that is left. The cards are sized to what that column
+ * can hold, so the rail costs the field a little width instead of sitting on top of its cards.
+ */
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 1100px) {
+	:root {
+		/* eight columns, their gaps and the rail decide the card: never wider than the room beside it */
+		--col-w: min(
+			calc((100vw - 118px - 9 * var(--gap)) / 8),
+			11.2vw,
+			104px,
+			max(48px, calc((100dvh - 145px) / 6.9))
+		);
+	}
+
+	.board {
+		/* field on the left, pills on the right: the header and the tableau share the first column and
+		   the rail spans both rows, so no card can ever be dealt into the pills' own space */
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-rows: auto minmax(0, 1fr);
+	}
+
+	.top {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.tableau {
+		grid-column: 1;
+		grid-row: 2;
+	}
+
+	.controls {
+		grid-column: 2;
+		grid-row: 1 / span 2;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		justify-content: center;
+		align-items: stretch;
+	}
+
+	/* a rail is one pill wide, so the crawl box and the speaker's word would only make it wider */
+	.controls .seed,
+	.controls .sfx-label {
+		display: none;
 	}
 }
 
