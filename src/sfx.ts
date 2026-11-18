@@ -148,10 +148,11 @@ export interface MoveSfx {
 	parked: boolean;
 	/** A card stepped down a hallway, or two cards traded places. */
 	stepped: boolean;
-	/** A spell or item was taken in hand. */
+	/** An ability was taken in hand: a glyph and the party's item both answer to arm.ogg. */
 	armed: boolean;
-	/** A glyph was cast; a flask, class or kin item was drunk or spent. */
+	/** The ability left the hand and resolved: a glyph cast, a flask drunk, a Remedy covering its action. */
 	usedGlyph: boolean;
+	/** The same moment, for everything the party carries that is not a glyph. */
 	usedItem: boolean;
 	/** A drafted pocket converted to plain storage. */
 	converted: boolean;

@@ -1252,6 +1252,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			(card) => card.location.fixture === 'foundation' && wasLoc.get(shorthandCard(card))?.fixture !== 'foundation'
 		);
 		const spent = next.draft.find((entry) => next.exhausted[entry.cell] && !prev.exhausted[entry.cell]);
+		// A glyph is exhausted the moment it is taken in hand, so its own arm move is not a use: arm.ogg is
+		// the whole of that moment, for an item and a glyph alike. What a use sounds like is the ability
+		// leaving the hand — a cast that resolved, a Potion or Elixir drunk, a Remedy spent on the action it
+		// covered — and it sounds in the role's own voice.
+		const armedNow = label?.startsWith('arm') ?? false;
+		const resolved = prev.armed && !next.armed && next.exhausted[prev.armed.cell] ? prev.armed : null;
+		const usedRole = resolved
+			? prev.draft.find((entry) => entry.cell === resolved.cell)?.role
+			: armedNow
+				? undefined
+				: spent?.role;
 		// Take_damage counts the kill's clean bill only, read back off the board it was previewed on:
 		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's heart, and Stone
 		// Gaze's extra point on the kill itself — sound as affliction and nothing else, even when
@@ -1279,9 +1290,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			dug: label?.startsWith('dig') ?? false,
 			parked: label?.startsWith('park') ?? false,
 			stepped: (label?.startsWith('move') ?? false) || (label?.startsWith('swap') ?? false),
-			armed: label?.startsWith('arm') ?? false,
-			usedGlyph: spent?.role === 'glyph',
-			usedItem: !!spent && spent.role !== 'glyph',
+			armed: armedNow,
+			usedGlyph: usedRole === 'glyph',
+			usedItem: !!usedRole && usedRole !== 'glyph',
 			converted: next.draft.length < prev.draft.length,
 			leveled,
 			bossFound: foundBoss,
