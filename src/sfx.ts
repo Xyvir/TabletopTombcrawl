@@ -12,6 +12,7 @@ import bossClearUrl from '../audio/boss_kill_dungeon_clear.ogg?url';
 import bossRevealUrl from '../audio/boss_reveal.ogg?url';
 import convertUrl from '../audio/convert_draft.ogg?url';
 import exitUrl from '../audio/exit_crawl.ogg?url';
+import kingDiesUrl from '../audio/king_dies.ogg?url';
 import levelUrl from '../audio/level_up.ogg?url';
 import slash1Url from '../audio/slash1.ogg?url';
 import slash2Url from '../audio/slash2.ogg?url';
@@ -30,6 +31,7 @@ export type SfxName =
 	| 'bossReveal'
 	| 'convert'
 	| 'exit'
+	| 'kingDies'
 	| 'level'
 	| 'stash'
 	| 'step'
@@ -45,6 +47,7 @@ const URLS: Record<SfxName, string> = {
 	bossReveal: bossRevealUrl,
 	convert: convertUrl,
 	exit: exitUrl,
+	kingDies: kingDiesUrl,
 	level: levelUrl,
 	stash: stashUrl,
 	step: stepUrl,
@@ -135,6 +138,8 @@ export interface MoveSfx {
 	homed: boolean;
 	/** Elf range used, on a buried kill or a buried dig: the bow plays over the slash or the step. */
 	ranged: boolean;
+	/** A king went home, general or boss: king_dies plays over the slash. */
+	kingKilled: boolean;
 	/** The kill's own bill: take_damage replays once per point, staggered. Aura wounds sound only as affliction. */
 	damage: number;
 	/** Fog lifted: the revealed card steps into its hallway. */
@@ -168,6 +173,7 @@ export function playMoveSfx(f: MoveSfx) {
 	if (f.leveled) playSfx('level');
 	if (f.ranged) playSfx('arrow');
 	if (f.homed) playSlash();
+	if (f.kingKilled) playSfx('kingDies');
 	if (f.damage > 0) playTakeDamage(f.damage);
 	if (f.afflicted) playSfx('affliction');
 	if (f.converted) playSfx('convert');

@@ -600,6 +600,19 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	});
 	/** The card an aim would slay outright: it wears crossed swords until the pointer leaves. */
 	const slayAt = $derived(!drag && preview?.legal ? aim : null);
+	/** Touch sheets have no hover to ask with, so the tomb names its own kills: every legally
+	 * slayable hallway card wears its mark without being aimed at. Pockets keep the tap-to-see flow,
+	 * so the track stays a control panel rather than a second tomb. */
+	let coarsePointer = $state(false);
+	const slayableIds = $derived.by(() => {
+		if (!tomb || drag || !coarsePointer) return new Set<string>();
+		const ids = new Set<string>();
+		for (const card of tomb.game.cards) {
+			if (card.location.fixture !== 'cascade') continue;
+			if (attackPreview(tomb, card.location).legal) ids.add(key(card.location));
+		}
+		return ids;
+	});
 	/**
 	 * An aim the delver would not survive: `fatal` is exactly "the track cannot pay this bill", whether or
 	 * not filling an empty cell first would make change. The card being hit keeps its swords, because the
@@ -1229,6 +1242,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			});
 		playMoveSfx({
 			homed: homedPrev.length > 0,
+			// Generals are kings too: every king home, not just the boss, dies out loud.
+			kingKilled: homedPrev.some((card) => card.rank === 'king'),
 			ranged: homedPrev.some((card) => shotAt(prev, wasLoc.get(shorthandCard(card)) ?? null)) || rangedDig,
 			dug: label?.startsWith('dig') ?? false,
 			parked: label?.startsWith('park') ?? false,
@@ -1804,6 +1819,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	onMount(warmCardImages);
+	onMount(() => {
+		const mq = window.matchMedia?.('(pointer: coarse)');
+		if (!mq) return;
+		const sync = () => (coarsePointer = mq.matches);
+		sync();
+		mq.addEventListener('change', sync);
+		return () => mq.removeEventListener('change', sync);
+	});
 
 	/**
 	 * Every card on one foundation, bottom to top. Rendering only the top card meant the pile was
@@ -2149,6 +2172,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{@const flipping = flippingIds.includes(shorthandCard(card))}
 					{@const turning = turningDelays[shorthandCard(card)]}
 					{@const slaying = !!slayAt && key(slayAt) === key(card.location)}
+						{@const passiveSlay = slayableIds.has(key(card.location))}
+						{@const marked = slaying || passiveSlay}
+						{@const bolted = marked && shotAt(tomb, card.location)}
 					<button
 						class="card"
 						class:selected={selected.has(key(card.location))}
@@ -2212,11 +2238,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						>
 						<span
 							class="slay"
-							class:on={slaying}
-							class:ranged={slaying && shotAt(tomb, card.location)}
+							class:on={marked}
+							class:ranged={bolted}
 							aria-hidden="true"
 						>
-							{#if slaying && shotAt(tomb, card.location)}{@render bolt()}{:else}{@render swords()}{/if}
+							{#if bolted}{@render bolt()}{:else}{@render swords()}{/if}
 						</span>
 					</button>
 				{/each}
