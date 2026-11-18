@@ -140,7 +140,7 @@ export interface MoveSfx {
 	ranged: boolean;
 	/** A king went home, general or boss: king_dies plays over the slash. */
 	kingKilled: boolean;
-	/** The kill's own bill: take_damage replays once per point, staggered. Aura wounds sound only as affliction. */
+	/** The kill's clean bill: take_damage replays once per point, staggered. Aura wounds — including Stone Gaze's extra point — sound only as affliction. */
 	damage: number;
 	/** Fog lifted: the revealed card steps into its hallway. */
 	dug: boolean;

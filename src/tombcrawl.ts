@@ -1023,6 +1023,34 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 	return { legal: true, reason: '' };
 }
 
+/**
+ * Whether Stone Gaze prices an extra wound onto this kill: a carrier slain while the
+ * clubs aura is live. Sound splits that point out of the kill's bill — it rides with
+ * affliction, never with take_damage — so this is the predicate the speaker reads.
+ */
+export function stoneGazeApplies(state: TombState, card: Card): boolean {
+	return (
+		CLAUSES.stoneGaze && carriesPower(state, card) && state.bossSuit === 'clubs' && auraActive(state)
+	);
+}
+
+/**
+ * The part of a kill's previewed bill that is Stone Gaze: 0 or 1 after the floor, the
+ * damage ceiling and Bloodthirsty are all accounted for, so subtracting it leaves the
+ * clean bill take_damage should replay. A free Orc kill stays free; a capped bill stays capped.
+ */
+export function stoneGazeBonus(state: TombState, card: Card): number {
+	if (!stoneGazeApplies(state, card)) return 0;
+	if (CLAUSES.orcBloodrush && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) return 0;
+	const level = currentLevel(state);
+	const rank = rankOf(card.rank);
+	const without = Math.max(0, rank - level);
+	const withGaze = Math.max(0, rank + 1 - level);
+	const ceiling = damageCapOf(state);
+	if (ceiling > 0) return Math.min(withGaze, ceiling) - Math.min(without, ceiling);
+	return withGaze - without;
+}
+
 export interface AttackPreview {
 	legal: boolean;
 	reason: string;
@@ -1056,7 +1084,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
-	if (CLAUSES.stoneGaze && carriesPower(state, card) && state.bossSuit === 'clubs' && auraActive(state)) {
+	if (stoneGazeApplies(state, card)) {
 		damage = Math.max(0, rankOf(card.rank) + 1 - level);
 	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
