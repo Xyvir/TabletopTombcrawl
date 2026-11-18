@@ -4686,6 +4686,38 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "sdcd",
+			"boss": "clubs",
+			"seed": 889,
+			"moves": 207,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Thief",
+					"suit": "diamonds"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-18",
+			"source": "human"
+		},
+		{
 			"loadout": "sddc",
 			"boss": "hearts",
 			"seed": 400106,
@@ -7256,6 +7288,14 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "sdcd",
+			"difficulty": "med",
+			"seed": 889,
+			"moves": 207,
+			"goal": "boss",
+			"at": "2026-11-18"
+		},
+		{
 			"loadout": "sddc",
 			"difficulty": "med",
 			"seed": 400106,
@@ -8675,6 +8715,14 @@
 				}
 			}
 		},
+		"sdcd": {
+			"med": {
+				"boss": {
+					"seed": 889,
+					"moves": 207
+				}
+			}
+		},
 		"chhh": {
 			"med": {
 				"clear": {
@@ -9328,13 +9376,6 @@
 				"at": "2026-11-14T07:36:05.060Z"
 			}
 		},
-		"sdcd": {
-			"med": {
-				"seed": 889,
-				"score": 300,
-				"at": "2026-11-13T18:43:50.671Z"
-			}
-		},
 		"sdsc": {
 			"med": {
 				"seed": 1803,
@@ -9714,7 +9755,6 @@
 		"scdc",
 		"sdch",
 		"sdcc",
-		"sdcd",
 		"sdcs",
 		"sdsc"
 	]
