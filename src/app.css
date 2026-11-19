@@ -457,6 +457,25 @@ img {
 	font-weight: 600;
 }
 
+/*
+ * The reset prompt stands on the same stage as the reckoning, with a smaller sentence: it is a question
+ * about the next crawl, not a result, so it must not read like one.
+ */
+.win.confirm p {
+	font-size: 1.5rem;
+}
+
+.win.confirm .confirm-note {
+	font-size: 1rem;
+	font-weight: 400;
+	opacity: 0.8;
+}
+
+.confirm-row {
+	display: flex;
+	gap: 10px;
+}
+
 /* ---------- Tabletop Tombcrawl ---------- */
 
 .cells.tomb {

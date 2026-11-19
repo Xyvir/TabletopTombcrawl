@@ -148,6 +148,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let variant = $state<'tomb' | 'vanilla'>('tomb');
 	let tomb = $state<TombState | null>(opening);
 	let tombHistory = $state<TombState[]>([]);
+	/** The reset pill waiting on a yes or no: `new` deals a fresh crawl, `restart` the same one again. */
+	let pendingReset = $state<'new' | 'restart' | null>(null);
 	/**
 	 * The session so far, read back off the undo history: one printed line per move, in the solver's
 	 * vocabulary, so a playtest transcript can be set next to a simulated one. Undo rewinds both.
@@ -539,7 +541,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (alive) progress = saved;
 		})();
 		const onKey = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') layoutOpen = false;
+			if (event.key === 'Escape') {
+				layoutOpen = false;
+				pendingReset = null;
+			}
 		};
 		window.addEventListener('keydown', onKey);
 		return () => {
@@ -1802,6 +1807,30 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		apply(game.undo({ toggleCursor: true }));
 	}
 
+	/**
+	 * Starting over throws a run away, so the two pills ask first once a move has been made. A board still
+	 * on its first position has nothing to lose and goes straight through, which is what makes the pills
+	 * quick at the start of a crawl and deliberate once there is a line to lose.
+	 */
+	function askReset(kind: 'new' | 'restart') {
+		// A queued tap is a move too: settle it before counting, or a fast second tap skips the question.
+		flushPending();
+		const moves = tomb ? tombHistory.length : 0;
+		if (!moves) {
+			if (kind === 'restart') replay();
+			else newDeal();
+			return;
+		}
+		pendingReset = kind;
+	}
+
+	function takeReset() {
+		const kind = pendingReset;
+		pendingReset = null;
+		if (kind === 'restart') replay();
+		else if (kind === 'new') newDeal();
+	}
+
 	function newDeal() {
 		clearClickMemory();
 		const requested = Number.parseInt(seedInput, 10);
@@ -2323,8 +2352,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				bind:value={seedInput}
 			/>
 		</label>
-		<button class="btn primary" onclick={newDeal}>New crawl</button>
-		<button class="btn" onclick={replay}>Restart crawl</button>
+		<button class="btn primary" onclick={() => askReset('new')}>New crawl</button>
+		<button class="btn" onclick={() => askReset('restart')}>Restart crawl</button>
 		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>End crawl</button>
 		<!-- The speaker pill: sound effects, off until this says otherwise. -->
 		<button
@@ -2550,6 +2579,24 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					<span><i class="placeholder"></i>seed, no win yet</span>
 					<span><i class="missing"></i>no seed yet</span>
 				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if pendingReset && tomb}
+		<!-- The run being given up is worth one question: both pills are a single tap on a board holding a layer
+		     of play. The row says how much is at stake rather than asking in the abstract. -->
+		<div class="win confirm" role="dialog" aria-modal="true" aria-labelledby="confirm-ask">
+			<p id="confirm-ask">{pendingReset === 'restart' ? 'Restart this crawl?' : 'Start a new crawl?'}</p>
+			<p class="confirm-note">
+				The {tombHistory.length}
+				{tombHistory.length === 1 ? 'move' : 'moves'} {pendingReset === 'restart'
+					? 'you have made go back to the deal.'
+					: 'you have made go with it.'}
+			</p>
+			<div class="confirm-row">
+				<button class="btn primary" onclick={takeReset}>Yes</button>
+				<button class="btn" onclick={() => (pendingReset = null)}>No</button>
 			</div>
 		</div>
 	{/if}
