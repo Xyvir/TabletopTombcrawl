@@ -1823,11 +1823,14 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 			: null;
 	// Only a run the free cells could not carry spends the sack; a normal stack move leaves it armed.
 	const overfull = cards.length > moveCapacity(state);
-	const sack = state.armed?.kind === 'sack' && overfull;
+	// The boss is the other card no hand can carry, so shifting him is a use of the spell rather than a
+	// stack move that happened to go through: otherwise he is the one card the sack moves for free.
+	const carriesBoss = cards.some((card) => isBoss(state, card));
+	const sack = state.armed?.kind === 'sack' && (overfull || carriesBoss);
 	const bury = cydsteppCanBury(state, cards, to);
 	// CYDSTEPP is the spell that sets the boss down somewhere new, and carrying him is what spends it:
 	// an empty hallway is a plain build, so no hand could ever have reached him for that move.
-	const lift = state.armed?.kind === 'cydstepp' && cards.some((card) => isBoss(state, card));
+	const lift = state.armed?.kind === 'cydstepp' && carriesBoss;
 
 	if (source >= 0 && to.fixture === 'foundation') {
 		// Home is always an option, wounded or not: the chip's conversion order only governs leaving
@@ -2199,7 +2202,13 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 				{ id: cardId(pair[0]), to: { fixture: 'cell', data: [to, 0] } },
 				{ id: cardId(pair[1]), to: { fixture: 'cell', data: [to, 1] } },
 			]);
-			return settle(cloneWith(state, { game, armed: null }), currentLevel(state));
+			let landed = cloneWith(state, { game, armed: null });
+			// A stashed monster sets its power off however it reached the pocket, so the pair PISORF
+			// parks pays it as a one-card park would. The cast is one action, so it owes one trigger:
+			// a lesser king lying on a boss-suit minion is two carriers and still one park.
+			const carrier = CLAUSES.bossAuraPark ? pair.find((member) => carriesPower(landed, member)) : undefined;
+			if (carrier) landed = bossAura(landed, carrier, 'park');
+			return settle(landed, currentLevel(state));
 		}
 		// First click: the head of a proper two-card stack.
 		const pair = pisorfPair(state, location);

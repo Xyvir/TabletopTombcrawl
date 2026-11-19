@@ -1232,6 +1232,10 @@ describe('tombcrawl damage and free-cell HP', () => {
 			const carried = tombMove(primed, cascade(0), cascade(1));
 			expect(carried).not.toBe(null);
 			expect(shorthandCard(carried!.game.tableau[1][0])).toBe('KH');
+			// Carrying the boss is the spell's use even though he rides alone: the arm clears and the
+			// glyph stays spent, so no click afterwards hands it back.
+			expect(carried!.armed).toBe(null);
+			expect(carried!.exhausted[0]).toBe(true);
 			// The spell lifted it out of the way; the foundation stays shut until a king is home.
 			expect(canSendHome(primed, cascade(0)).legal).toBe(false);
 			expect(canSendHome(primed, cascade(0)).reason).toContain('Generals has to fall first');
@@ -1904,6 +1908,18 @@ describe('tombcrawl PISORF stacks', () => {
 		const second = revealFaceDown(first, cascade(4))!; // 5D
 		expect(second.wounded[1]).toBe(0);
 		expect(hp(second)).toBe(3);
+	});
+
+	test('a parked pair sets off the power of either card, once for the cast', () => {
+		// A Gorgon's tomb: a red king is a lesser gorgon and he is lying on a club queen, one of his own
+		// minions, so both cards carry Stone Gaze — and the pair still costs the single heart a park costs.
+		const gorgon = makeTomb({ columns: [['KH', 'QC'], ['KC'], ['9D'], ['4H']], cells: ['5C'], boss: 'KC', draft: glyph });
+		const armed = useAbility(gorgon, 0)!;
+		const parked = armedClick(armedClick(armed, cascade(0, 0))!, cell(1))!;
+
+		expect(cellCards(parked, 1).map(shorthandCard)).toEqual(['KH', 'QC']);
+		expect(parked.wounded[1]).toBe(1);
+		expect(woundedCards(parked, 1)).toHaveLength(1); // one heart for the pair, not one apiece
 	});
 
 	test('PISORF needs an open free cell and a proper pair', () => {
