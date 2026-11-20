@@ -99,6 +99,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		type Difficulty,
 		type TombState,
 	} from './tombcrawl';
+	import { decodeBoard } from './boardstate';
 
 	const CELL_COUNT = 4;
 	const CASCADE_COUNT = 8;
@@ -292,6 +293,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 		// Only a run that has started: the opening deal is a seed nobody chose to play yet.
 		if (!recordedSteps.length) return;
+		// A pasted board without a crawl number is a puzzle: there is no deal behind it for the search
+		// to read, and an answer about seed 0 would be an answer about a different board.
+		if (!deal.seed) return;
 		if (key === probedKey) return;
 		probedKey = key;
 		// The seed list already holds the proof for its own deals, solved to their par: re-deriving a
@@ -1937,6 +1941,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		pendingExit = false;
 		const requested = Number.parseInt(seedInput, 10);
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
+		// A boardstring is a position rather than a deal: pasting one sets the crawl down on a board
+		// somebody already reached, which is how a debug state or a hand-played line is continued.
+		const pasted = variant === 'tomb' ? decodeBoard(seedInput) : null;
 		seedInput = '';
 		if (variant === 'tomb') {
 			// New crawl clears the solver reading even when the same deal comes back: the player has
@@ -1945,6 +1952,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			tombHistory = [];
 			tombSelected = null;
 			tombLast = null;
+			if (pasted) {
+				// Nobody dealt this board, so no square on the sheet is its own.
+				tomb = pasted;
+				dealLayout = '';
+				game = pasted.game;
+				return;
+			}
 			tomb = createTombState(valid ? requested : undefined, FREE_CELL_COUNT[difficulty]);
 			// A new deal leaves the sheet alone: a random seed is nobody's corpus square, and a typed one is
 			// only a square if the corpus actually holds that deal.
@@ -2463,7 +2477,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span>Crawl #</span>
 			<input
 				type="text"
-				inputmode="numeric"
+				title="A crawl number, or a pasted boardstring to set the board"
+				autocapitalize="off"
+				spellcheck="false"
 				placeholder={seed ? String(seed) : 'random'}
 				bind:value={seedInput}
 			/>

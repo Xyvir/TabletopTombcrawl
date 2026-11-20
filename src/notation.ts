@@ -64,16 +64,6 @@ export function describeStep(before: TombState, after: TombState): string | null
 	if (homed.length === 1) return homeLabel(homed[0]);
 	if (homed.length > 1) return `home  ${homed.map(cardName).join(' ')} -> ${homed[0].suit} foundations`;
 
-	// Fog lifting off a card.
-	const dug = [...now.values()].filter(
-		(card) => before.hidden.includes(shorthandCard(card)) && !after.hidden.includes(shorthandCard(card))
-	);
-	if (dug.length) {
-		const card = dug[0];
-		const at = old(card)?.location ?? card.location;
-		return digLabel(card, at);
-	}
-
 	// Cards that changed pile: a park into a cell, a build, a bury, a swap. This comes before the
 	// armed slot, because a move made under an armed item changes that slot too: the Remedy covering
 	// a park is spent by the park, and a bury spends the IMAWAL that allowed it. The line has to say
@@ -100,6 +90,18 @@ export function describeStep(before: TombState, after: TombState): string | null
 		if (first.location.fixture === 'cell' && from.fixture === 'cascade')
 			return parkLabel(first, from, first.location);
 		return moveLabel(moved, from, first.location, buried);
+	}
+
+	// Fog lifting off a card with nothing else on the board changing is a dig. It is read after the move
+	// branches because a tomb's affliction can lift fog on a park or a build too: printing that as a dig
+	// dropped the card that actually moved, and the transcript then could not be replayed.
+	const dug = [...now.values()].filter(
+		(card) => before.hidden.includes(shorthandCard(card)) && !after.hidden.includes(shorthandCard(card))
+	);
+	if (dug.length) {
+		const card = dug[0];
+		const at = old(card)?.location ?? card.location;
+		return digLabel(card, at);
 	}
 
 	// Aiming Purity at a hallway turns every card in it to fog: nothing moves and the spell is spent, so

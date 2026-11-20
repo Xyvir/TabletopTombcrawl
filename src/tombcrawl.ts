@@ -239,7 +239,8 @@ export function abilityFor(role: DraftRole, suit: Suit): Ability {
 	return ABILITY_TABLE[role][suit];
 }
 
-const ROLES_BY_DRAW_ORDER: DraftRole[] = ['kin', 'class', 'glyph', 'consumable'];
+/** The four roles in draw order: the party's cells, left to right. */
+export const ROLES_BY_DRAW_ORDER: DraftRole[] = ['kin', 'class', 'glyph', 'consumable'];
 
 export interface DraftCard {
 	/** Free cell index, 0-3 by draw order. */
