@@ -151,6 +151,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let pendingReset = $state<'new' | 'restart' | null>(null);
 	/** The fatal blow waiting on a yes or no: the card the player double-clicked, if taking it ends the crawl. */
 	let pendingDeath = $state<CardLocation | null>(null);
+	/** The end-crawl pill waiting on a yes or no: leaving is a decision, and one tap should not make it. */
+	let pendingExit = $state(false);
 	/**
 	 * The session so far, read back off the undo history: one printed line per move, in the solver's
 	 * vocabulary, so a playtest transcript can be set next to a simulated one. Undo rewinds both.
@@ -546,6 +548,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				layoutOpen = false;
 				pendingReset = null;
 				pendingDeath = null;
+				pendingExit = false;
 			}
 		};
 		window.addEventListener('keydown', onKey);
@@ -1539,6 +1542,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombSelected = card.location;
 	}
 
+	/** Eyes on the panel before the tomb is given up: the pill is one tap on a board holding a whole crawl. */
+	function askExit() {
+		if (!tomb || tomb.won) return;
+		pendingExit = true;
+	}
+
+	function takeExit() {
+		pendingExit = false;
+		exitTomb();
+	}
+
 	function exitTomb() {
 		if (!tomb) return;
 		const exited = tombExit(tomb);
@@ -1856,6 +1870,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function newDeal() {
 		clearClickMemory();
 		pendingDeath = null;
+		pendingExit = false;
 		const requested = Number.parseInt(seedInput, 10);
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
 		seedInput = '';
@@ -1879,6 +1894,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function replay() {
 		flushPending();
 		pendingDeath = null;
+		pendingExit = false;
 		if (tomb) {
 			// Measured before the deal is put back, so every card has somewhere to fly home from.
 			const before = cardRects();
@@ -2379,7 +2395,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<button class="btn primary" onclick={() => askReset('new')}>New crawl</button>
 		<button class="btn" onclick={() => askReset('restart')}>Restart crawl</button>
 		<!-- Leaving is the player's call at any point: the panel is the reckoning of the crawl so far, boss or no boss. -->
-		<button class="btn" disabled={!tomb || tomb.won} onclick={exitTomb}>End crawl</button>
+		<button class="btn" disabled={!tomb || tomb.won} onclick={askExit}>End crawl</button>
 		<!-- The speaker pill: sound effects, off until this says otherwise. -->
 		<button
 			class="btn"
@@ -2634,6 +2650,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<div class="confirm-row">
 				<button class="btn primary" onclick={takeDeath}>Yes</button>
 				<button class="btn" onclick={() => (pendingDeath = null)}>No</button>
+			</div>
+		</div>
+	{/if}
+
+	{#if pendingExit && tomb}
+		<!-- Leaving early is a decision like the fatal blow: the reckoning is whatever the crawl earned. -->
+		<div class="win confirm" role="dialog" aria-modal="true" aria-labelledby="exit-ask">
+			<p id="exit-ask">End this crawl?</p>
+			<p class="confirm-note">You leave with what you have taken; the tomb keeps the rest.</p>
+			<div class="confirm-row">
+				<button class="btn primary" onclick={takeExit}>Yes</button>
+				<button class="btn" onclick={() => (pendingExit = false)}>No</button>
 			</div>
 		</div>
 	{/if}
