@@ -67,6 +67,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		goldValue,
 		tombGold,
 		reserveCell,
+		draftAbility,
+		stoneCell,
 		trueBossKill,
 		trueClear,
 		disarm,
@@ -2129,6 +2131,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{#each game.cells as card, i}
 				{@const location = { fixture: 'cell' as const, data: [i] }}
 				{@const entry = tomb ? draftAt(tomb, i) : undefined}
+				{@const stone = !!tomb && stoneCell(tomb, i)}
+				{@const live = tomb && entry ? draftAbility(tomb, entry) : undefined}
 				{@const pending = tomb?.itemWindow && tomb.itemWindow.cell === i ? tomb.itemWindow : undefined}
 				{@const stack = tomb ? cellCards(tomb, i) : card ? [card] : []}
 				{@const down = tomb ? Math.min(stack.length, tomb.wounded[i]) : 0}
@@ -2146,6 +2150,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					// gold, and once that window closes the chip stepping down says the item is gone.
 					class:exhausted={!!tomb && tomb.exhausted[i] && !!entry}
 								class:stacked={stack.length > 1}
+					class:stone={stone}
 					class:wounded={!!wounded}
 					// the stain follows a boss-suit card into a free cell as well as down its column
 					class:boss={!!card && !!tomb && isBoss(tomb, card)}
@@ -2164,7 +2169,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:empty={!card}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
-					data-role={entry ? entry.role : undefined}						title={tomb && !card && i === reserveCell(tomb) && tomb.reserveHeld
+					data-role={entry ? entry.role : undefined}						title={stone
+						// Stout is off, so the pocket is shut for as long as he is face down. A card in it is still a
+						// heart and still plays out; nothing new moves in until the wound heals.
+						? `Stone pocket — Stout is off while the Dwarf is face down.${
+								card ? ' The card in it still plays out, but nothing can move into the pocket.' : ''
+							}`
+						: tomb && !card && i === reserveCell(tomb) && tomb.reserveHeld
 						// The starred pocket says nothing about gold or multipliers: it is a riddle, and the answer is
 						// the word "true" in the end-of-crawl line.
 						? 'Keep this pocket empty, and the tomb tells the truth.'
@@ -2175,13 +2186,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										: 'Heal it face up before you can use it.'
 								}${tomb ? `\n${goldNote(tomb, wounded)}` : ''}`
 						: entry
-							? `${entry.name} — ${ROLE_LABEL[entry.role]}.\n${entry.text}${
+							? `${(live ?? entry).name} — ${ROLE_LABEL[entry.role]}.\n								${(live ?? entry).text}${
 									tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''
 								}`
 							: pending
 								? itemSlotHint(tomb, pending.suit)
 								: undefined}
-					aria-label={`pocket ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${ROLE_WORD[entry.role]}: ${entry.name}` : ''}`}
+					aria-label={`pocket ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${entry ? `, ${ROLE_WORD[entry.role]}: ${(live ?? entry).name}` : ''}${stone ? ', stone' : ''}`}
 					onclick={(event) => (card ? tapCard(event, card) : emptyCellClick(event, location))}
 					onpointerdown={(event) => card && onCardPointerDown(event, card)}
 					onpointerenter={() => {
@@ -2263,14 +2274,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					>
 						{#if slaying && shotAt(tomb, location)}{@render bolt()}{:else}{@render swords()}{/if}
 					</span>
-					{#if tomb && i === reserveCell(tomb) && tomb.reserveHeld}
+					{#if tomb && i === reserveCell(tomb) && tomb.reserveHeld && !stone}
 						<!-- The reserve pocket: the optional third win, and nothing more. It goes out the moment a card
 						     sits here, and it never comes back. -->
 						<span class="reserve" aria-hidden="true"></span>
 					{/if}
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
-						<span class="role">{entry.name}</span>
+						<span class="role">{(live ?? entry).name}</span>
 					{/if}
 				</button>
 			{/each}

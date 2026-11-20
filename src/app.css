@@ -1080,6 +1080,31 @@ body:has(.card.dragging) .cells.tomb .chip {
 	background-color: rgba(120, 24, 24, 0.35);
 }
 
+/*
+ * A pocket turned to stone: the extra cell Stout opened, while the Dwarf is face down. Grey granite
+ * rather than the spent slot's red, because nothing was spent — the pocket itself is out of the track
+ * until the wound heals. A card left in it wears the same grey, so it reads as buried in stone.
+ *
+ * `.cells.tomb .slot` draws the wound track's red cross as a background image, and three classes beat
+ * two, so this has to be scoped the same way to be seen at all: a stone pocket is not a heart to fill,
+ * and it wears two grains of its own instead of that cross.
+ */
+.cells.tomb .slot.stone {
+	background-color: rgba(92, 96, 103, 0.7);
+	background-image:
+		repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0 2px, transparent 2px 7px),
+		repeating-linear-gradient(45deg, rgba(12, 14, 18, 0.24) 0 1px, transparent 1px 9px);
+	border-color: rgba(206, 210, 216, 0.42);
+	box-shadow:
+		inset 0 0 0 1px rgba(214, 218, 224, 0.26),
+		inset 0 0 16px rgba(8, 10, 14, 0.55);
+}
+
+/* The card itself is the pocket's prisoner: grey, flat and a shade darker than the card beside it. */
+.cells.tomb .slot.stone img:not(.peek) {
+	filter: saturate(0.12) brightness(0.62);
+}
+
 /* the spent item leans and dims; a face-down wound's own face is left alone so it cannot show */
 .slot.exhausted img:not(.peek) {
 	transform: rotate(90deg) scale(0.7);

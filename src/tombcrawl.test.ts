@@ -18,6 +18,7 @@ import {
 	healPreview,
 	bossSlain,
 	bossUnlocked,
+	canBuildOn,
 	canSendHome,
 	carriesPower,
 	cellCardMovable,		cellTopWounded,
@@ -35,6 +36,8 @@ import {
 	emptyCells,
 	hp,
 	cellCards,
+	draftAbility,
+	stoneCell,
 	maxHp,
 	moveCapacity,
 	woundedCards,
@@ -46,6 +49,7 @@ import {
 	playerLevel,
 	tombExit,
 	tombMove,
+	tombTapTargets,
 	GOLD_TOTAL,
 	goldMultiplier,
 	goldScore,
@@ -74,6 +78,8 @@ interface Setup {
 	boss?: string;
 	/** Size of the deal: 7 pockets on the baseline, 6 on a legacy hard deal. */
 	cellCount?: number;
+	/** The extra pocket Stout opened: the deal was dealt one wider than the track. */
+	stout?: boolean;
 }
 
 function makeTomb({
@@ -86,6 +92,7 @@ function makeTomb({
 	wounded = [],
 	boss,
 	cellCount = TOMB_CELL_COUNT,
+	stout = false,
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
 	const byId = new Map<string, Card>();
@@ -119,6 +126,7 @@ function makeTomb({
 		wounded: Array.from({ length: cellCount }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
 		died: false,
+		stout,
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
@@ -207,6 +215,9 @@ describe("the wizard's affinity", () => {
 			draft,
 			exhausted: [1],
 			hidden: ['5H'],
+			// Arcana is off while the Wizard is face down, so the pocket is the Elixir it was dealt as
+			// rather than the clubs spell his standing turns it into
+			wounded: [0],
 		});
 		const refreshed = useAbility(state, 2)!;
 		expect(refreshed.exhausted[1]).toBe(false);
@@ -3062,6 +3073,132 @@ describe('the affliction preview', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({ columns: [['5S'], ['7H']], cells: ['TC', null], boss: 'KS', draft });
 		expect(afflictionTargets(state, cardIn(state, '7H'))).toEqual([]);
+	});
+});
+
+describe('a stoned wizard’s arcana turns back into an item', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'kin', id: '5H', suit: 'hearts', name: 'Human', text: '' },
+		{ cell: 1, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
+		{ cell: 2, role: 'glyph', id: '3H', suit: 'hearts', name: 'CYDSTEPP', text: '' },
+		// a spade in the item slot: BYSSEPS while he stands, Purity the moment he is face down
+		{ cell: 3, role: 'consumable', id: 'AS', suit: 'spades', name: 'BYSSEPS', text: '' },
+	];
+	const board = (extra: Partial<Setup> = {}) =>
+		makeTomb({ columns: [['2H']], cells: ['5H', 'KC', '3H', 'AS'], draft, ...extra });
+
+	test('spells while he stands, and is the item again while he is face down', () => {
+		const standing = board();
+		expect(draftAbility(standing, draft[3]).name).toBe('BYSSEPS');
+		expect(hasGlyph(standing, 'BYSSEPS')).toBe(true);
+		expect(useAbility(standing, 3)!.armed).toMatchObject({ kind: 'sack' });
+
+		const stoned = board({ wounded: [1] });
+		expect(draftAbility(stoned, draft[3]).name).toBe('Purity');
+		expect(hasGlyph(stoned, 'BYSSEPS')).toBe(false);
+		expect(useAbility(stoned, 3)!.armed).toMatchObject({ kind: 'purity' });
+	});
+
+	test('keeps the exhaustion it had, and spells again once his wound is healed', () => {
+		const spent = board({ wounded: [1], exhausted: [3] });
+		expect(abilityUsable(spent, 3)).toBe(false);
+
+		// the wizard is the leftmost wound on the track, so the first dig mends him and the pocket spells again
+		const stoned = makeTomb({
+			columns: [['2H']],
+			cells: ['5H', 'KC', '3H', 'AS'],
+			hidden: ['2H'],
+			draft,
+			wounded: [1],
+		});
+		expect(draftAbility(stoned, draft[3]).name).toBe('Purity');
+
+		const dug = revealFaceDown(stoned, cascade(0))!;
+		expect(dug.wounded[1]).toBe(0);
+		expect(draftAbility(dug, draft[3]).name).toBe('BYSSEPS');
+	});
+});
+
+describe('a stoned dwarf’s stout pocket closes', () => {
+	const draft: DraftCard[] = [
+		{ cell: 0, role: 'kin', id: 'KS', suit: 'spades', name: 'Dwarf', text: '' },
+		{ cell: 1, role: 'class', id: 'QC', suit: 'clubs', name: 'Wizard', text: '' },
+	];
+	const held = (state: TombState, id: string) => state.game.cards.find((card) => shorthandCard(card) === id)!;
+
+	test('a gaze on the kin shoves the extra card out to the first free pocket to its left', () => {
+		const state = makeTomb({
+			columns: [['4C'], ['8S']],
+			cells: ['KS', null, null, null, null, null, null, '8D'],
+			boss: 'KC',
+			draft,
+			cellCount: 8,
+			stout: true,
+		});
+		expect(stoneCell(state, 7)).toBe(false);
+
+		// a club minion stashed in a free cell stones the kin, and the pocket he opened closes
+		const parked = tombMove(state, cascade(0, 0), cell(5))!;
+		expect(parked.wounded[0]).toBe(1);
+		expect(stoneCell(parked, 7)).toBe(true);
+		expect(cellCards(parked, 7)).toHaveLength(0);
+		expect(shorthandCard(cellCards(parked, 6)[0])).toBe('8D');
+		// the pocket is out of the track: not a free cell, and nothing builds into it
+		expect(emptyCells(parked)).toEqual([1, 2, 3, 4]);
+		expect(canBuildOn(parked, [held(parked, 'QC')], cell(7))).toBe(false);
+	});
+
+	test('with nowhere to go it stays, a heart still in play, until the wound heals', () => {
+		const state = makeTomb({
+			columns: [['AC'], ['8S'], ['2H']],
+			cells: ['KS', '4H', '2H', '3H', '5H', '6H', '7H', 'AD'],
+			hidden: ['8S'],
+			boss: 'JC',
+			draft,
+			cellCount: 8,
+			stout: true,
+		});
+		// an ace of clubs wears the Gorgon's gaze, and a level-one ace is a free kill: no wounds to pay first
+		const stoned = attackWith(state, cascade(0))!;
+		expect(stoned.wounded[0]).toBe(1);
+		expect(stoneCell(stoned, 7)).toBe(true);
+		expect(shorthandCard(cellCards(stoned, 7)[0])).toBe('AD');
+		// the pocket is one-way: the card plays out like any other, and only the pocket itself is shut
+		expect(cellCardMovable(stoned, 7)).toBe(true);
+		expect(tombTapTargets(stoned, cell(7))).toContainEqual(cascade(2));
+		expect(tombMove(stoned, cell(7), cascade(2))).not.toBeNull();
+		expect(canSendHome(stoned, cell(7)).legal).toBe(true);
+		expect(canBuildOn(stoned, [held(stoned, 'KS')], cell(7))).toBe(false);
+
+		// the dig mends the kin, and the pocket opens back up with the card still in it
+		const healed = revealFaceDown(stoned, cascade(1, 0))!;
+		expect(healed.wounded[0]).toBe(0);
+		expect(stoneCell(healed, 7)).toBe(false);
+		expect(cellCardMovable(healed, 7)).toBe(true);
+	});
+
+	test('and it can still be played into a spent item pocket that wants it', () => {
+		const state = makeTomb({
+			columns: [['5H']],
+			cells: ['KS', 'QC', '4S', null, null, null, null, 'AD'],
+			boss: 'JC',
+			draft,
+			cellCount: 8,
+			stout: true,
+			// already face down, so the pocket is stone before the move rather than by it
+			wounded: [0],
+		});
+		expect(stoneCell(state, 7)).toBe(true);
+		// the item pocket beside the chip emptied on the last action and waits one more for a feed
+		const waiting: TombState = {
+			...state,
+			itemWindow: { cell: 3, role: 'consumable', suit: 'diamonds', takes: 'same' },
+		};
+		const fed = tombMove(waiting, cell(7), cell(3))!;
+
+		expect(fed.draft.find((entry) => entry.cell === 3)).toMatchObject({ id: 'AD', role: 'consumable' });
+		expect(stoneCell(fed, 7)).toBe(true);
+		expect(cellCards(fed, 7)).toHaveLength(0);
 	});
 });
 

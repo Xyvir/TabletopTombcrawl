@@ -140,7 +140,7 @@ export const ROLE_WORD: Record<DraftRole, string> = {
 	consumable: 'item',
 };
 
-interface Ability {
+export interface Ability {
 	name: string;
 	text: string;
 }
@@ -271,6 +271,12 @@ export interface TombState {
 	draft: DraftCard[];
 	bossId: string | null;
 	bossSuit: Suit | null;
+	/**
+	 * The deal opened the Dwarf's extra pocket: the right-most free cell. It stands only while the Dwarf is
+	 * face up, so a wound on him turns it to stone (see `stoneCell`) and healing him opens it again — the one
+	 * pocket an affliction can take off the track.
+	 */
+	stout: boolean;
 	/** An exhausted cell: its ability is spent and the card lies on its side. Still counts as HP. */
 	exhausted: boolean[];
 	/**
@@ -442,6 +448,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
+		stout,
 		armed: null,
 		itemWindow: null,
 		synthetic: null,
@@ -518,9 +525,30 @@ export function isArcanaItem(state: TombState, entry: DraftCard): boolean {
 	return CLAUSES.wizardArcana && entry.role === 'consumable' && hasPassive(state, 'Wizard');
 }
 
+/**
+ * What a drafted slot answers to right now. Arcana is a live reading of the party rather than something
+ * baked into the draft when it was dealt: the moment the Wizard is stoned his pocket is an item again,
+ * carrying whatever exhaustion it already had, and it spells again the moment his wound is healed. Every
+ * reader of a slot's ability — the board, the arm, the glyph checks — goes through here, so the name and
+ * the rules cannot disagree.
+ */
+export function draftAbility(state: TombState, entry: DraftCard): Ability {
+	if (entry.role !== 'consumable' || !CLAUSES.wizardArcana) return entry;
+	const item = CONSUMABLES[entry.suit];
+	const glyph = GLYPHS[entry.suit];
+	// A slot is stored under the name the deal gave it — the glyph's while a Wizard stood, the item's
+	// otherwise — so those two names are the pair this pocket can answer to, and Arcana says which of
+	// them it is right now. A party built by hand may name any item on any suit; that name is what it is.
+	if (entry.name !== item.name && entry.name !== glyph.name) return entry;
+	return isArcanaItem(state, entry) ? glyph : item;
+}
+
 export function hasGlyph(state: TombState, name: string): boolean {
 	return state.draft.some(
-		(entry) => entry.name === name && (entry.role === 'glyph' || isArcanaItem(state, entry)) && !state.wounded[entry.cell]
+		(entry) =>
+			(entry.role === 'glyph' || isArcanaItem(state, entry)) &&
+			!state.wounded[entry.cell] &&
+			draftAbility(state, entry).name === name
 	);
 }
 
@@ -729,7 +757,9 @@ export function maxHp(state: TombState): number {
 }
 
 export function emptyCells(state: TombState): number[] {
-	return state.game.cells.map((card, index) => (card ? -1 : index)).filter((index) => index >= 0);
+	return state.game.cells
+		.map((card, index) => (card ? -1 : index))
+		.filter((index) => index >= 0 && !stoneCell(state, index));
 }
 
 export function hp(state: TombState): number {
@@ -921,6 +951,9 @@ export function convertibleCell(state: TombState): number {
  */
 export function cellCardMovable(state: TombState, cell: number): boolean {
 	const card = state.game.cells[cell];
+	// Stout's pocket is one-way while the Dwarf is down: the card in it still plays out like any other —
+	// a build, another pocket, a restock, its grave — and only the pocket itself is shut. What refuses
+	// new cards is `canBuildOn` and `emptyCells`, not this.
 	// Only a wound locks a cell: a spent card can still be picked up and played.
 	if (!card || cellTopWounded(state, cell)) return false;
 	if (!draftAt(state, cell)) return true;
@@ -973,7 +1006,8 @@ export function pisorfCanStack(state: TombState, from: CardLocation, cell: numbe
 export function canBuildOn(state: TombState, cards: Card[], to: CardLocation): boolean {
 	if (!cards.length) return false;
 	if (to.fixture === 'cell') {
-		return cards.length === 1 && !state.game.cells[to.data[0]];
+		// A stone pocket takes nothing in: it is not a free cell while the Dwarf is face down.
+		return cards.length === 1 && !state.game.cells[to.data[0]] && !stoneCell(state, to.data[0]);
 	}
 	if (to.fixture !== 'cascade') return false;
 	const column = state.game.tableau[to.data[0]] ?? [];
@@ -1373,12 +1407,52 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	// Nothing ends a run on its own any more: once the boss king is down the exit is on offer,
 	// and the dungeon is only left when the player takes it.
-	return noteReserve(noteTrueBoss(next));
+	return closeStout(noteReserve(noteTrueBoss(next)));
+}
+
+/**
+ * Stout closes with the Dwarf: when a wound turns him down, the card left in the pocket he opened is
+ * shoved out to the first free pocket along the row, the mirror of the bandit's Mug. With every pocket
+ * to its left full it stays where it is — still a heart, still able to be played out — and the pocket
+ * stays stone until he is healed, which is the counterplay to losing the pocket entirely. A stack moves
+ * together: what it leaves is a pocket, and one pocket is what it needs.
+ */
+function closeStout(state: TombState): TombState {
+	const cell = state.game.cells.length - 1;
+	if (!stoneCell(state, cell)) return state;
+	const held = cellCards(state, cell);
+	if (!held.length) return state;
+	let to = -1;
+	for (let index = cell - 1; index >= 0; index--) {
+		if (!state.game.cells[index] && !stoneCell(state, index)) {
+			to = index;
+			break;
+		}
+	}
+	if (to < 0) return state;
+	return cloneWith(state, {
+		game: relocate(
+			state,
+			held.map((card, depth) => ({ id: cardId(card), to: { fixture: 'cell' as const, data: [to, depth] } }))
+		),
+	});
 }
 
 /** The right-most free cell: the reserve pocket the star sits over, and where the Dwarf's extra cell lands. */
 export function reserveCell(state: TombState): number {
 	return state.game.cells.length - 1;
+}
+
+/**
+ * A pocket Stout opened and a wound has closed: stone for as long as the Dwarf is face down. It is the
+ * right-most cell of a deal that opened one wider than the track, so it is also the reserve pocket, and
+ * the crawl is the track's own size again while he is stoned. Nothing else in the game can close a
+ * pocket, which is what makes this the Dwarf's whole off-switch. The stone is one-way on purpose: the
+ * pocket takes nothing in, while a card already lying in it is played out like any other — otherwise a
+ * full row would bury that card for the rest of the crawl and the affliction would read as a bug.
+ */
+export function stoneCell(state: TombState, cell: number): boolean {
+	return state.stout && cell === state.game.cells.length - 1 && !hasPassive(state, 'Dwarf');
 }
 
 /**
@@ -1605,7 +1679,7 @@ function mugSlot(state: TombState): TombState {
 	// practice this walks past the rest of the party into the plain pockets.
 	let target = -1;
 	for (let cell = slot + 1; cell < state.game.cells.length; cell++) {
-		if (!state.game.cells[cell]) {
+		if (!state.game.cells[cell] && !stoneCell(state, cell)) {
 			target = cell;
 			break;
 		}
@@ -2060,12 +2134,15 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
+	// Arcana is read live rather than off the draft: a stoned Wizard's pocket is an item again, so the
+	// name that decides what this cast does is the one the party reads right now.
+	const ability = draftAbility(state, entry);
 	const exhausted = [...state.exhausted];
 	// A Remedy is not spent by arming it: the action it covers is what exhausts it.
-	if (entry.name !== 'Remedy') exhausted[cell] = true;
+	if (ability.name !== 'Remedy') exhausted[cell] = true;
 
 	let next = cloneWith(state, { exhausted });
-	switch (entry.name) {
+	switch (ability.name) {
 		case 'Potion':
 			// The Potion drinks for the whole track at once instead of being aimed at one wound.
 			next = cloneWith(next, { wounded: next.wounded.map(() => 0) });
@@ -2089,7 +2166,7 @@ export function useAbility(state: TombState, cell: number): TombState | null {
 		case 'BURNDAYRAZ':
 		case 'PISORF':
 		case 'WEYTWUT': {
-			const kind = entry.name === 'BURNDAYRAZ' ? 'burndayraz' : entry.name === 'PISORF' ? 'pisorf' : 'weytwut';
+			const kind = ability.name === 'BURNDAYRAZ' ? 'burndayraz' : ability.name === 'PISORF' ? 'pisorf' : 'weytwut';
 			next = cloneWith(next, { armed: { kind, cell } });
 			break;
 		}
