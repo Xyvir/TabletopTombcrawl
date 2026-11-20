@@ -1606,6 +1606,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Eyes on the panel before the tomb is given up: the pill is one tap on a board holding a whole crawl. */
 	function askExit() {
 		if (!tomb || tomb.won) return;
+		// A bare tomb has nothing left to give up: every card is home, so the pill banks the crawl on one
+		// tap rather than asking about a board that no longer holds a decision.
+		if (tombPar(tomb) === 0) return void exitTomb();
 		pendingExit = true;
 	}
 
