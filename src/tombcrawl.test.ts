@@ -1399,6 +1399,31 @@ describe('tombcrawl progression rules', () => {
 		expect(canSendHome(without, cascade(0)).legal).toBe(false);
 	});
 
+	test('consecutive drafted cards pass the pile over the whole run', () => {
+		// seed 1803's party: a dwarf four and a BYSSEPS three above a spade two, with the five lying
+		// free in the tableau. Neither draft can ever come home, so the pile waits on the five.
+		const party: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '4S', suit: 'spades', name: 'Dwarf', text: '' },
+			{ cell: 2, role: 'glyph', id: '3S', suit: 'spades', name: 'BYSSEPS', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5S'], ['KS']],
+			cells: ['4S', null, '3S'],
+			foundations: ['2S'],
+			draft: party,
+		});
+		expect(canSendHome(state, cascade(0)).legal).toBe(true);
+
+		// the run stops at the first rank no draft occupies: the six is still out of reach
+		const six = makeTomb({
+			columns: [['6S'], ['KS']],
+			cells: ['4S', null, '3S'],
+			foundations: ['2S'],
+			draft: party,
+		});
+		expect(canSendHome(six, cascade(0)).legal).toBe(false);
+	});
+
 	test('two drafted cards of one suit pass the pile over both, lowest first', () => {
 		const party: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '3C', suit: 'clubs', name: 'Elf', text: '' },

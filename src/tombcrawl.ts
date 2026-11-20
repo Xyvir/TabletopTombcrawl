@@ -863,40 +863,40 @@ export function leadingFoundation(state: TombState, suit: Suit): boolean {
 
 /**
  * Phantom rank: a drafted card still sitting in a free cell counts as already home, so the next
- * rank of that suit may be built even though the drafted card never touched the foundation.
+ * rank of that suit may be built even though the drafted card never touched the foundation. A
+ * drafted card never comes home, so the pile has to pass over it, and it passes over a *run* of
+ * them: with a drafted three and a drafted four above a two, it is waiting for the five. Two
+ * drafted cards that are not consecutive are not a run — above a two, a drafted three and five
+ * still leave the four as the card the pile waits for.
  */
-export function phantomCard(state: TombState, suit: Suit, ignore?: string): Card | null {
-	// A drafted card never comes home, so the pile has to pass over it. Two drafted cards can share a
-	// suit and the pile meets the lower one first, so that is the card it is waiting for: with a
-	// drafted three and five, the four opens over the three, and the six opens over the five once the
-	// four is home. Taking the higher card here would leave the pile stuck on the two forever.
-	const top = foundationTopRank(state, suit);
-	let next: Card | null = null;
-	for (const entry of state.draft) {
-		if (entry.suit !== suit || entry.id === ignore) continue;
+export function phantomRank(state: TombState, suit: Suit, ignore?: string): number {
+	const drafted = state.draft.flatMap((entry) => {
+		if (entry.suit !== suit || entry.id === ignore) return [];
 		const card = state.game.cards.find((candidate) => cardId(candidate) === entry.id);
-		if (!card || rankOf(card.rank) <= top) continue;
-		if (!next || rankOf(card.rank) < rankOf(next.rank)) next = card;
-	}
-	return next;
+		return card ? [rankOf(card.rank)] : [];
+	});
+	let rank = foundationTopRank(state, suit);
+	while (drafted.includes(rank + 1)) rank += 1;
+	return rank;
 }
 
-export function phantomRank(state: TombState, suit: Suit, ignore?: string): number {
-	const card = phantomCard(state, suit, ignore);
-	return card ? rankOf(card.rank) : 0;
+export function phantomCard(state: TombState, suit: Suit, ignore?: string): Card | null {
+	const rank = phantomRank(state, suit, ignore);
+	if (rank <= foundationTopRank(state, suit)) return null;
+	return state.game.cards.find((card) => card.suit === suit && rankOf(card.rank) === rank) ?? null;
 }
 
 /**
  * How high this grave can be landed on in one card. Anyone may slide a lower card under a pile, and a
- * Fighter may open the rank above a gap, so a landing can come as high as `top + gap`; when the tomb holds
- * the very rank this pile is waiting for, that card can never come home and the rank above it comes
- * home instead. The pile reads its highest card, so this is also the rank it would be read at.
+ * Fighter may open the rank above a gap, so a landing can come as high as `top + gap`; the run of
+ * drafted cards the pile has passed over moves the landing up with it, because those ranks can never
+ * come home. The pile reads its highest card, so this is also the rank it would be read at.
  */
 export function graveReach(state: TombState, suit: Suit, ignore?: string): number {
 	const top = foundationTopRank(state, suit);
+	const passed = phantomRank(state, suit, ignore) - top;
 	const gap = hasPassive(state, 'Fighter') ? 2 : 1;
-	const skip = phantomRank(state, suit, ignore) === top + gap ? 1 : 0;
-	return Math.min(13, top + gap + skip);
+	return Math.min(13, top + passed + gap);
 }
 
 /* ------------------------------------------------------------ move rules */
