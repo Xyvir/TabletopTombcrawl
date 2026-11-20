@@ -2706,10 +2706,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<div class="win confirm" role="dialog" aria-modal="true" aria-labelledby="confirm-ask">
 			<p id="confirm-ask">{pendingReset === 'restart' ? 'Restart this crawl?' : 'Start a new crawl?'}</p>
 			<p class="confirm-note">
-				The {tombHistory.length}
-				{tombHistory.length === 1 ? 'move' : 'moves'} {pendingReset === 'restart'
-					? 'you have made go back to the deal.'
-					: 'you have made go with it.'}
+				You will lose your current progress of {tombHistory.length}
+				{tombHistory.length === 1 ? 'move' : 'moves'}.
 			</p>
 			<div class="confirm-row">
 				<button class="btn primary" onclick={takeReset}>Yes</button>
@@ -2722,7 +2720,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<!-- The one move that ends the crawl on purpose: the blow still lands, and the reckoning says how. -->
 		<div class="win confirm" role="dialog" aria-modal="true" aria-labelledby="death-ask">
 			<p id="death-ask">You will die, are you sure?</p>
-			<p class="confirm-note">The blow takes every heart you have left, and the crawl ends with it.</p>
+			<p class="confirm-note">
+				You will lose your current progress of {tombHistory.length}
+				{tombHistory.length === 1 ? 'move' : 'moves'}.
+			</p>
 			<div class="confirm-row">
 				<button class="btn primary" onclick={takeDeath}>Yes</button>
 				<button class="btn" onclick={() => (pendingDeath = null)}>No</button>
@@ -2734,7 +2735,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		<!-- Leaving early is a decision like the fatal blow: the reckoning is whatever the crawl earned. -->
 		<div class="win confirm" role="dialog" aria-modal="true" aria-labelledby="exit-ask">
 			<p id="exit-ask">End this crawl?</p>
-			<p class="confirm-note">You leave with what you have taken; the tomb keeps the rest.</p>
+			<p class="confirm-note">
+				You will lose your current progress of {tombHistory.length}
+				{tombHistory.length === 1 ? 'move' : 'moves'}.
+			</p>
 			<div class="confirm-row">
 				<button class="btn primary" onclick={takeExit}>Yes</button>
 				<button class="btn" onclick={() => (pendingExit = false)}>No</button>
