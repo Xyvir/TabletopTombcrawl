@@ -2671,6 +2671,37 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "dsdd",
+			"boss": "spades",
+			"seed": 151247,
+			"moves": 143,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-20"
+		},
+		{
 			"loadout": "dsdh",
 			"boss": "diamonds",
 			"seed": 44793,
@@ -7091,6 +7122,14 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "dsdd",
+			"difficulty": "med",
+			"seed": 151247,
+			"moves": 143,
+			"goal": "clear",
+			"at": "2026-11-20"
+		},
+		{
 			"loadout": "dsdh",
 			"difficulty": "med",
 			"seed": 44793,
@@ -8447,6 +8486,14 @@
 				"boss": {
 					"seed": 151067,
 					"moves": 87
+				}
+			}
+		},
+		"dsdd": {
+			"med": {
+				"clear": {
+					"seed": 151247,
+					"moves": 143
 				}
 			}
 		},
@@ -10151,13 +10198,6 @@
 				"at": "2026-11-13T18:45:41.030Z"
 			}
 		},
-		"dsdd": {
-			"med": {
-				"seed": 151247,
-				"score": null,
-				"at": "2026-11-14T07:13:32.723Z"
-			}
-		},
 		"dhdh": {
 			"med": {
 				"seed": 153562,
@@ -10250,7 +10290,6 @@
 		"dddd",
 		"ddsc",
 		"ddsd",
-		"dsdd",
 		"dssc",
 		"shch",
 		"shcd",
