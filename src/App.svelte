@@ -83,7 +83,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		bossSlain,
 		bossProtected,
 		kingsHome,
-		stoneGazeBonus,
 		revealFaceDown,
 		tombExit,
 		tombFirstCell,
@@ -150,6 +149,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let tombHistory = $state<TombState[]>([]);
 	/** The reset pill waiting on a yes or no: `new` deals a fresh crawl, `restart` the same one again. */
 	let pendingReset = $state<'new' | 'restart' | null>(null);
+	/** The fatal blow waiting on a yes or no: the card the player double-clicked, if taking it ends the crawl. */
+	let pendingDeath = $state<CardLocation | null>(null);
 	/**
 	 * The session so far, read back off the undo history: one printed line per move, in the solver's
 	 * vocabulary, so a playtest transcript can be set next to a simulated one. Undo rewinds both.
@@ -544,6 +545,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (event.key === 'Escape') {
 				layoutOpen = false;
 				pendingReset = null;
+				pendingDeath = null;
 			}
 		};
 		window.addEventListener('keydown', onKey);
@@ -602,9 +604,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
 	/**
 	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
-	 * Bandit would empty, the heart a Gorgon's rank would take, the glyphs a Wraith would spend. An armed
-	 * Remedy turns the whole aura off, and the warning goes with it, since the move it covers would not do
-	 * any of it.
+	 * Bandit would empty, the kin and class a Gorgon would turn down, the glyphs a Wraith would spend. An
+	 * armed Remedy turns the whole aura off, and the warning goes with it, since the move it covers would
+	 * not do any of it.
 	 */
 	const afflictionIds = $derived.by(() => {
 		if (!tomb || !tombHover) return new Set<string>();
@@ -673,6 +675,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The optional third win: the same result with the reserve pocket never used. */
 	const endTrueClear = $derived(tomb ? trueClear(tomb) : false);
 	const endTrueBoss = $derived(tomb ? trueBossKill(tomb) : false);
+	/** The crawl ended on a blow the party could not afford: the reckoning says how the delver went. */
+	const endDied = $derived(tomb ? tomb.died : false);
 	// The crawl only deals one track: reading it off the board miskeys Dwarf crawls the same way the
 	// progress mark did, and the end panel would compare against the wrong tier.
 	const endTrack: Difficulty = layoutDifficulty;
@@ -1269,15 +1273,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				? undefined
 				: spent?.role;
 		// Take_damage counts the kill's clean bill only, read back off the board it was previewed on:
-		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's heart, and Stone
-		// Gaze's extra point on the kill itself — sound as affliction and nothing else, even when
-		// they land mid-slash.
+		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's gaze on the kin and
+		// class — sound as affliction and nothing else, even when they land mid-slash.
 		const killDamage = homedPrev.reduce((n, card) => {
 			const at = wasLoc.get(shorthandCard(card));
 			if (!at) return n;
-			const prior = prev.game.cards.find((other) => shorthandCard(other) === shorthandCard(card));
-			const preview = attackPreview(prev, at).damage;
-			return n + preview - (prior ? stoneGazeBonus(prev, prior) : 0);
+			return n + attackPreview(prev, at).damage;
 		}, 0);
 		// Elf range sounds on every use: a buried kill, or a buried dig. Venom's fog-lift rides on
 		// a kill or a stash, never on a dig, so a dig that lifts fog under the bolt is always his shot.
@@ -1469,6 +1470,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (card.location.fixture === 'cell') {
 			const index = card.location.data[0];
 			if (double) {
+				if (attackPreview(state, card.location).fatal) return void askDeath(card.location);
 				const home = attackWith(state, card.location);
 				if (home) return void commit(home);
 				// The mirror of a tableau card falling back to a free cell: a plain cell's card goes to the
@@ -1507,6 +1509,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 
 		if (double) {
+			// A kill the party cannot afford is offered rather than refused: the confirm is the last move.
+			if (attackPreview(state, card.location).fatal) return void askDeath(card.location);
 			const home = attackWith(state, card.location);
 			if (home) return void commit(home);
 			const target = tombFirstCell(state);
@@ -1831,8 +1835,27 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		else if (kind === 'new') newDeal();
 	}
 
+	/**
+	 * A blow the party cannot afford is not simply refused: double-clicking it offers the last move of
+	 * the crawl behind a yes or no, and taking it lands the card while the delver falls.
+	 */
+	function askDeath(location: CardLocation) {
+		if (!tomb || tomb.won) return;
+		if (!attackPreview(tomb, location).fatal) return;
+		pendingDeath = location;
+	}
+
+	function takeDeath() {
+		const at = pendingDeath;
+		pendingDeath = null;
+		if (!tomb || !at) return;
+		const next = attackWith(tomb, at, false, true);
+		if (next) commit(next);
+	}
+
 	function newDeal() {
 		clearClickMemory();
+		pendingDeath = null;
 		const requested = Number.parseInt(seedInput, 10);
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
 		seedInput = '';
@@ -1855,6 +1878,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	function replay() {
 		flushPending();
+		pendingDeath = null;
 		if (tomb) {
 			// Measured before the deal is put back, so every card has somewhere to fly home from.
 			const before = cardRects();
@@ -2207,12 +2231,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			<span
 									class="score"
 					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss twenty-five whether or not it has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tomb && !tomb.bossId ? ' The boss king is still under the fog, so the tomb\'s suit is unknown and no card is priced yet: the count reads ? until it is uncovered.' : ''}${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
-				>Gold {tombGoldShown}/{GOLD_TOTAL}{#if tombMult > 1}<span class="mult">×{tombMult}</span> {tombScoreNow}%{/if}</span
+				>Gold {tombGoldShown}<span class="out-of">/{GOLD_TOTAL}</span>{#if tombMult > 1}<span class="mult">×{tombMult}</span><span class="pct"> {tombScoreNow}%</span>{/if}</span
 				>
 			{#if bossNoted && bossSlain(tomb)}
 				<span
 					class="bossnote"
-					title="The boss is home, so the exit will let you leave with whatever the tomb still owes."
+					title="The boss is home. End the crawl whenever you want the reckoning, or keep going for the rest of the tomb."
 					>Boss slain</span
 				>
 			{/if}
@@ -2354,7 +2378,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		</label>
 		<button class="btn primary" onclick={() => askReset('new')}>New crawl</button>
 		<button class="btn" onclick={() => askReset('restart')}>Restart crawl</button>
-		<button class="btn" disabled={!tomb || !bossSlain(tomb) || tomb.won} onclick={exitTomb}>End crawl</button>
+		<!-- Leaving is the player's call at any point: the panel is the reckoning of the crawl so far, boss or no boss. -->
+		<button class="btn" disabled={!tomb || tomb.won} onclick={exitTomb}>End crawl</button>
 		<!-- The speaker pill: sound effects, off until this says otherwise. -->
 		<button
 			class="btn"
@@ -2601,43 +2626,65 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		</div>
 	{/if}
 
+	{#if pendingDeath && tomb}
+		<!-- The one move that ends the crawl on purpose: the blow still lands, and the reckoning says how. -->
+		<div class="win confirm" role="dialog" aria-modal="true" aria-labelledby="death-ask">
+			<p id="death-ask">You will die, are you sure?</p>
+			<p class="confirm-note">The blow takes every heart you have left, and the crawl ends with it.</p>
+			<div class="confirm-row">
+				<button class="btn primary" onclick={takeDeath}>Yes</button>
+				<button class="btn" onclick={() => (pendingDeath = null)}>No</button>
+			</div>
+		</div>
+	{/if}
+
 	{#if (tomb && tomb.won) || (!tomb && game.win)}
 		<div class="win">
 			{#if tomb}
-				<p>{endCleared ? 'All Gold Retrieved!' : 'You Escape Alive.'}</p>
-				<p class="win-earned">you earned <span class="gold">{endGold}</span> gold in <span class="steps">{endMoves}</span> steps.</p>
+				<p>{endDied ? 'You Died Fighting' : endCleared ? 'All Gold Retrieved!' : 'You Escape Alive.'}</p>
+				<!-- The reckoning: the two numbers are the headline, their words sit underneath, and the
+				     sentence around them stays small. -->
+				<div class="win-earned">
+					<span class="said">you earned</span>
+					<span class="fig gold"><span class="n">{endGold}</span><span class="k">gold</span></span>
+					<span class="said">in</span>
+					<span class="fig steps"><span class="n">{endMoves}</span><span class="k">moves</span></span>
+				</div>
 				{#if endMult > 1}
 					<div class="win-figures">
 						<div class="fig"><span class="n">×{endMult}</span><span class="k">{endPercent}% score</span></div>
 					</div>
 				{/if}
-				<p class="win-note">
-					{endCleared
-						? endTrueClear
-							? 'true clear tomb'
-							: 'tomb cleared'
-						: endBoss
-							? endTrueBoss
-								? 'true boss kill'
-								: 'boss slain'
-							: 'no boss kill'}
-				</p>
-				{#if endCorpus || endProbe}
-					<!-- One benchmark line only: a recorded crawl outranks the live search, which is not even run
-					     when the seed sheet already holds an answer. -->
-					<p class="win-bench">
-						<span class="who">benchmark</span>
-						{#if endCorpus}
-							{#if endCorpus.seed !== tomb.seed}seed {endCorpus.seed} · {/if}{endCorpus.moves} steps, {endCorpus.goal ===
-							'clear'
-								? 'tomb cleared'
-								: 'boss slain'} — {againstTheirs(endCorpus.moves)}
-						{:else if endProbe}
-							solver · {endProbe.solved
-								? `${endProbe.moves} steps, tomb cleared — ${againstTheirs(endProbe.moves)}`
-								: `no line in ${endProbe.nodes.toLocaleString()} states`}
-						{/if}
+				{#if !endDied}
+					<!-- A death has no result to label and no line to compare: the numbers above are the reckoning. -->
+					<p class="win-note">
+						{endCleared
+							? endTrueClear
+								? 'true clear tomb'
+								: 'tomb cleared'
+							: endBoss
+								? endTrueBoss
+									? 'true boss kill'
+									: 'boss slain'
+								: 'no boss kill'}
 					</p>
+					{#if endCorpus || endProbe}
+						<!-- One benchmark line only: a recorded crawl outranks the live search, which is not even run
+						     when the seed sheet already holds an answer. -->
+						<p class="win-bench">
+							<span class="who">benchmark</span>
+							{#if endCorpus}
+								{#if endCorpus.seed !== tomb.seed}seed {endCorpus.seed} · {/if}{endCorpus.moves} steps, {endCorpus.goal ===
+								'clear'
+									? 'tomb cleared'
+									: 'boss slain'} — {againstTheirs(endCorpus.moves)}
+							{:else if endProbe}
+								solver · {endProbe.solved
+									? `${endProbe.moves} steps, tomb cleared — ${againstTheirs(endProbe.moves)}`
+									: `no line in ${endProbe.nodes.toLocaleString()} states`}
+							{/if}
+						</p>
+					{/if}
 				{/if}
 			{:else}
 				<p>You won!</p>

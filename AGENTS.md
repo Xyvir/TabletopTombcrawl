@@ -281,10 +281,11 @@ holding neither were untouched. The 359 dead lines went to `solutions/archive/`,
 The four monster powers now price four different things, where two of them used to price the same thing in
 different slots. **Mug** (spades, Bandit) pushes the card in your item slot into the first free pocket to its
 right, on a slay or a park, exactly as playing it out would: the slot converts, the chip steps past it, and
-nothing waits to remake the item. **Stone Gaze** (clubs, Gorgon) is the old Weakness shape — a boss-suit minion
-costs one rank more than its card says, and a park takes a heart — moved to the other suit. Venom (hearts) stays
-knowledge and Mana Burn (diamonds) stays the glyphs, so the four currencies are hearts, space, spell slots and
-knowledge instead of two of them being the item and two being the glyph.
+nothing waits to remake the item. **Stone Gaze** (clubs, Gorgon) turns the party's kin and class face down, one
+card each from the left, and stops at the class — its window is the party's own two passives, and a cell already
+wounded has nothing left to give. Venom (hearts) stays knowledge and Mana Burn (diamonds) stays the glyphs, so the
+four currencies are hearts, space, spell slots and knowledge instead of two of them being the item and two being
+the glyph.
 
 The monsters are the Bandit, the Viper, the Gorgon and the Wraith — the heart one was the Serpent until the
 Venom rename. The status bar names the tombs they fill rather than the bosses: Barrow of Bandits (♠), Cairn of
@@ -302,9 +303,9 @@ is dodged are filling the row to its right (no free pocket, no shove) and arrivi
 
 The board warns on what an affliction is aimed at: `afflictionTargets()` names the cards, and the interface draws a
 see-through purple `!` on each while a carrier is under the pointer — the fog a Viper would lift, the card in the
-slot a Bandit would shove out, the card a Gorgon's rank would turn down, the glyphs a Wraith would spend. The Gorgon
-one rides on the card the red glow already marks, which reinforces that the extra rank is the gaze's doing, and it
-is the only warning a stashed gorgon gets: a park has no attack preview to show the heart it costs. A fogged
+slot a Bandit would shove out, the kin and class a Gorgon would turn down, the glyphs a Wraith would spend. The
+Gorgon's two targets are the party's own passives, read in draw order until the class, and it is the only warning a
+stashed gorgon gets: a park has no attack preview to show the hearts it costs. A fogged
 target gets a violet rim light around the card instead of a wash over the back, because the back is a drawing of
 its own and swallows a tint. The mark itself is a dark purple outline with a faint white halo — pale violet
 disappeared on a card already wearing the boss suit's lavender. An armed Remedy switches the aura off, so the

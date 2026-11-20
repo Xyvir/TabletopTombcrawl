@@ -71,7 +71,7 @@ export const CLAUSES = {
 	thiefPickpocket: true,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
-	/** Stone Gaze: a boss-suit minion costs one rank more than its card says. */
+	/** Stone Gaze: a boss-suit minion turns the party's kin and class to stone instead of adding a rank. */
 	stoneGaze: true,
 	/**
 	 * Mug: a bandit slays or stashes your item out of its slot into the next free pocket along, spending it the
@@ -279,6 +279,8 @@ export interface TombState {
 	 */
 	wounded: number[];
 	won: boolean;
+	/** The crawl ended on a blow the party could not afford: the card still went home, the delver did not. */
+	died: boolean;
 	/**
 	 * The reserve pocket — the right-most free cell — has never been occupied this deal. Set false the first time
 	 * any card sits in it and never set true again. It changes no rule: it is the optional third win, read off the
@@ -436,6 +438,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		exhausted: new Array(cellCount).fill(false),
 		wounded: new Array(cellCount).fill(0),
 		won: false,
+		died: false,
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
@@ -617,7 +620,7 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		boss: 'Medusa',
 		blurb: 'A gorgon whose gaze weighs down the living.',
 		power: 'Stone Gaze',
-		text: 'inflict one extra wound.',
+		text: 'slaying or stashing this turns your kin and class face down, one card each from the left, and stops at the class.',
 	},
 	diamonds: {
 		name: 'Wraith',
@@ -1034,31 +1037,14 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 }
 
 /**
- * Whether Stone Gaze prices an extra wound onto this kill: a carrier slain while the
- * clubs aura is live. Sound splits that point out of the kill's bill — it rides with
- * affliction, never with take_damage — so this is the predicate the speaker reads.
+ * Whether Stone Gaze is live: a carrier slain or stashed while the clubs aura is up. The gaze no
+ * longer prices a rank onto the blow; it stones the party instead, so this is the predicate the
+ * aura and the warning both read rather than a number the bill adds.
  */
 export function stoneGazeApplies(state: TombState, card: Card): boolean {
 	return (
 		CLAUSES.stoneGaze && carriesPower(state, card) && state.bossSuit === 'clubs' && auraActive(state)
 	);
-}
-
-/**
- * The part of a kill's previewed bill that is Stone Gaze: 0 or 1 after the floor, the
- * damage ceiling and Bloodthirsty are all accounted for, so subtracting it leaves the
- * clean bill take_damage should replay. A free Orc kill stays free; a capped bill stays capped.
- */
-export function stoneGazeBonus(state: TombState, card: Card): number {
-	if (!stoneGazeApplies(state, card)) return 0;
-	if (CLAUSES.orcBloodrush && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) return 0;
-	const level = currentLevel(state);
-	const rank = rankOf(card.rank);
-	const without = Math.max(0, rank - level);
-	const withGaze = Math.max(0, rank + 1 - level);
-	const ceiling = damageCapOf(state);
-	if (ceiling > 0) return Math.min(withGaze, ceiling) - Math.min(without, ceiling);
-	return withGaze - without;
 }
 
 export interface AttackPreview {
@@ -1094,9 +1080,6 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 
 	const level = currentLevel(state);
 	let damage = Math.max(0, rankOf(card.rank) - level);
-	if (stoneGazeApplies(state, card)) {
-		damage = Math.max(0, rankOf(card.rank) + 1 - level);
-	}
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	const ceiling = damageCapOf(state);
 	if (ceiling > 0) damage = Math.min(damage, ceiling);
@@ -1105,7 +1088,16 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	if (CLAUSES.orcBloodrush && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) damage = 0;
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
 	const itemCells = auraItemWound(state, card, from);
-	const total = damage + itemCells.length;
+	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
+	const afterWounds = wound(afterItem, damage);
+	const struck = cloneWith(state, { wounded: afterWounds.wounded });
+	// Stone Gaze is paid by the party, not the blow: the kin and the class turn face down after the
+	// kill's own wounds, so each one it actually takes is a heart on the bill.
+	const afterGaze = stoneGaze(struck, card);
+	const gazes = afterGaze.wounded.flatMap((count, cell) =>
+		count > (afterWounds.wounded[cell] ?? 0) ? [cell] : []
+	);
+	const total = damage + itemCells.length + gazes.length;
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
@@ -1114,9 +1106,12 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const short = Math.max(0, total - free + (total > 0 ? 1 : 0));
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
-	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
-	const afterWounds = wound(afterItem, damage);
-	const locks = legal ? Array.from(new Set([...itemCells, ...afterWounds.locks])) : [];
+	const locks = legal ? Array.from(new Set([...itemCells, ...afterWounds.locks, ...gazes])) : [];
+	const gazeWounds = gazes.flatMap((cell) => {
+		const stack = cellCards(struck, cell);
+		const card = stack[afterWounds.wounded[cell] ?? 0];
+		return card ? [shorthandCard(card)] : [];
+	});
 	return {
 		legal,
 		reason: legal ? '' : `needs ${total} wounds and one to spare, you have ${free}`,
@@ -1124,7 +1119,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		locks,
 		need,
 		fatal: short > 0,
-		wounds: legal ? woundCardIds(state, afterItem, itemCells, afterWounds.wounded) : [],
+		wounds: legal ? [...woundCardIds(state, afterItem, itemCells, afterWounds.wounded), ...gazeWounds] : [],
 	};
 }
 
@@ -1338,9 +1333,12 @@ export function tombScore(state: TombState): number {
 		.reduce((sum, card) => sum + Math.min(rankOf(card.rank), 10), 0);
 }
 
-/** Leave the dungeon: only on offer once the boss king is home. */
+/**
+ * Leave the dungeon: available at any time, boss or no boss. The score is whatever the tomb still
+ * owes, so an early exit reads as the crawl it was rather than as a lost run.
+ */
 export function tombExit(state: TombState): TombState | null {
-	if (state.won || !bossSlain(state)) return null;
+	if (state.won) return null;
 	return cloneWith(state, { won: true, score: tombScore(state) });
 }
 
@@ -1661,10 +1659,34 @@ export function woundTarget(state: TombState): Card | null {
 }
 
 /**
+ * The party cells Stone Gaze can reach: the kin and the class, left to right, each one still short of
+ * face down. The gaze stops at the class, so the glyph and the item to its right never turn — and a
+ * cell already face down has nothing left to take, which is the window the party can play around by
+ * converting a passive away or leaving one wounded before the next gorgon falls.
+ */
+function gazeCells(state: TombState): number[] {
+	return [...state.draft]
+		.sort((a, b) => a.cell - b.cell)
+		.filter((entry) => entry.role === 'kin' || entry.role === 'class')
+		.map((entry) => entry.cell)
+		.filter((cell) => (state.wounded[cell] ?? 0) < cellCards(state, cell).length);
+}
+
+/** Stone Gaze: the kin and the class turn face down, one card each, left to right. */
+function stoneGaze(state: TombState, card: Card): TombState {
+	if (!stoneGazeApplies(state, card)) return state;
+	const cells = gazeCells(state);
+	if (!cells.length) return state;
+	const wounded = [...state.wounded];
+	cells.forEach((cell) => (wounded[cell] += 1));
+	return cloneWith(state, { wounded });
+}
+
+/**
  * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the fog Venom would lift, the card in the slot Mug would shove out of the party, the card Stone
- * Gaze would turn down, the glyphs Mana Burn would spend. An armed Remedy turns the whole aura off, so it
- * warns on nothing at all: nothing would happen.
+ * pointer: the fog Venom would lift, the card in the slot Mug would shove out of the party, the kin and
+ * class Stone Gaze would turn down, the glyphs Mana Burn would spend. An armed Remedy turns the whole aura
+ * off, so it warns on nothing at all: nothing would happen.
  */
 export function afflictionTargets(state: TombState, card: Card): string[] {
 	if (!carriesPower(state, card) || !auraActive(state)) return [];
@@ -1681,13 +1703,14 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 			if (!entry || cellTopWounded(state, slot)) return [];
 			return [entry.id];
 		}
-		case 'clubs': {
-			// Stone Gaze's extra rank is a wound like any other, paid off the track's right edge — the card
-			// the blow's own price would take first. A stashed gorgon has no attack preview to show its
-			// heart, so this is the only warning that route gets.
-			const hit = woundTarget(state);
-			return hit ? [cardId(hit)] : [];
-		}
+		case 'clubs':
+			// Stone Gaze turns the party's kin and class face down, left to right, and stops at the class.
+			// A cell already face down has nothing left to take, so it is not warned on. A stashed gorgon
+			// has no attack preview to show its hearts, so this is the only warning that route gets.
+			return gazeCells(state).flatMap((cell) => {
+				const hit = cellCards(state, cell)[state.wounded[cell] ?? 0];
+				return hit ? [cardId(hit)] : [];
+			});
 		case 'diamonds':
 			return auraCells(state).flatMap((cell) => {
 				const up = faceUp(state, cell);
@@ -1720,13 +1743,11 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 			// next free one along, and it does it whether the bandit went down to a blade or was only
 			// stashed. Nothing is priced into the kill for this, so both routes land here.
 			return CLAUSES.banditMug ? mugSlot(state) : state;
-		case 'clubs': {
-			// Stone Gaze is already priced into the kill — the attack adds the rank back on — so a kill
-			// owes nothing here. A gorgon parked in a cell has no bill to add to, so it takes the same
-			// single heart off the track instead.
-			if (by !== 'park') return state;
-			return dropKnockedArm(cloneWith(state, { wounded: wound(state, 1).wounded }));
-		}
+		case 'clubs':
+			// Stone Gaze turns the party's kin and class face down, left to right, and stops at the class.
+			// A kill pays its own wounds first and then gazes (see `attackWith`); a park has no bill to
+			// pay first, so it gazes here.
+			return by === 'park' ? stoneGaze(state, card) : state;
 		case 'diamonds': {
 			// Mana Burn takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
 			// Arcana leaves two glyphs standing, and a Wraith takes them both.
@@ -1747,9 +1768,9 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 
 /**
  * Whether a monster power went off on the move from `before` to `after`, for the speaker.
- * The flash cannot answer this: it only fires on kills, and never for Stone Gaze, whose extra
- * rank is already priced into the kill. Sound wants every slay or stash of a carrier the aura
- * actually priced — including a Gorgon kill, which should double up with the slash.
+ * The flash cannot answer this: it only fires on kills, and Stone Gaze leaves no card on the
+ * foundation to see. Sound wants every slay or stash of a carrier the aura actually priced —
+ * including a Gorgon kill, which should double up with the slash.
  */
 export function afflictionFired(before: TombState, after: TombState): boolean {
 	if (!before.bossSuit || !auraActive(before)) return false;
@@ -1774,9 +1795,9 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 			return after.hidden.length < before.hidden.length;
 		case 'spades':
 			return after.draft.length < before.draft.length;
-		// Stone Gaze is priced into every kill and takes a heart off every park.
+		// Stone Gaze leaves the party face down when it has anything left to stone.
 		case 'clubs':
-			return true;
+			return gazeCells(before).length > 0;
 		// Mana Burn needs a glyph standing to drain.
 		case 'diamonds':
 			return !!prior && auraItemOf(before, prior) !== null;
@@ -1922,10 +1943,21 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	return spendArmedItem(next);
 }
 
-/** Send a card home, paying the HP cost and applying the boss aura. */
-export function attackWith(state: TombState, from: CardLocation, reachThroughCover = false): TombState | null {
+/**
+ * Send a card home, paying the HP cost and applying the boss aura.
+ *
+ * `allowFatal` is the confirm behind a blow the party cannot afford: the card still goes home, and the
+ * crawl ends with it if the bill takes every heart. It never opens any other refused kill — the boss
+ * gate, a face-down card and a grave out of reach are still refused outright.
+ */
+export function attackWith(
+	state: TombState,
+	from: CardLocation,
+	reachThroughCover = false,
+	allowFatal = false
+): TombState | null {
 	const preview = attackPreview(state, from, reachThroughCover);
-	if (!preview.legal) return null;
+	if (!preview.legal && !(allowFatal && preview.fatal)) return null;
 	const card = cardAt(state.game, from);
 	if (!card) return null;
 
@@ -1965,11 +1997,19 @@ export function attackWith(state: TombState, from: CardLocation, reachThroughCov
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
 
+	// Stone Gaze follows the blow: the kin and the class turn face down, left to right, stopping at
+	// the class. Anything the kill's own wounds already turned over is left as it is.
+	next = stoneGaze(next, card);
+
 	// A spent item going home leaves its slot empty and waiting: the restock is the player's pick on the
 	// very next action, and nothing is pulled off the board for them. Miss that action and the window
 	// closes — the slot is plain from then on, which is what the chip counting it as converted means.
 
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
+	// The last heart is gone: the crawl ends here. Read off the board rather than the preview, so a
+	// killing blow that levels up is saved by the heal it earns, exactly like any other blow.
+	if (preview.fatal && hp(settled) === 0)
+		return cloneWith(settled, { won: true, died: true, score: tombScore(settled) });
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all, with a
 	// Thief's Pickpocket) restocks the item and the chip stays put. A kill is the exit that earns the wide
 	// window: the item was spent on a blow, so the pocket may be rebuilt from anything. Any other action

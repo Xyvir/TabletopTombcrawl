@@ -842,20 +842,6 @@ body:has(.card.dragging) .cells.tomb .chip {
 		display: none;
 	}
 
-	/* One status line, never two: everything on it is a short number except the tomb's name, which gives
-	   way with an ellipsis rather than pushing the rest of the readings onto a second row. */
-	.tombhud {
-		flex-wrap: nowrap;
-		gap: 0.55rem;
-	}
-
-	.tombhud .tombstag,
-	.tombhud .solve {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
 }
 
 /*
@@ -1542,10 +1528,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 	opacity: 0.5;
 }
 
-/* Score: what the dungeon has yielded so far, so it should only ever climb. */
+/* Score: what the dungeon has yielded so far, so it should only ever climb. Its sentence is one
+   unbreakable reading: a wrapped score reads as a warped status line, not as a second line. */
 .tombhud .score {
 	color: #ffd95e;
 	font-weight: 700;
+	white-space: nowrap;
 }
 
 /* The multiplier is a badge beside the number, not part of it: the gold stays the gold, ×2 says what it pays. */
@@ -1555,6 +1543,48 @@ body:has(.card.dragging) .cells.tomb .chip {
 	border-radius: 3px;
 	background: rgba(255, 217, 94, 0.2);
 	font-size: 0.88em;
+}
+
+/*
+ * A phone's status line is one row, never two.
+ *
+ * These rules sit beside the base `.tombhud` rather than up with the layout media queries on purpose: they
+ * have the same specificity as the base rule, so a copy declared earlier in the file loses to it and the
+ * line wraps — which is exactly the warp a long gold reading used to cause. Everything on the line is a
+ * short number except the tomb's name, which gives way with an ellipsis instead of pushing the rest of
+ * the readings onto a second row.
+ */
+@media (max-width: 620px) {
+	.tombhud {
+		flex-wrap: nowrap;
+		gap: 0.55rem;
+		min-width: 0;
+		white-space: nowrap;
+		/* A last-resort guard: if a future reading still cannot fit beside the others, cut it at the
+		   row's edge instead of letting it widen the felt and warp the board. `clip` rather than
+		   `hidden` so the raised open-cell superscript is not cropped, and no scrollbar appears. */
+		overflow-x: clip;
+	}
+
+	.tombhud .tombstag,
+	.tombhud .solve {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/* Gold is the one reading that grows as the crawl pays out, so it keeps its own width and its badge
+	   on one line. The /100 and the percentage repeat the same figure — a desktop convenience — and give
+	   way here so the number itself never has to. */
+	.tombhud .score {
+		flex: 0 0 auto;
+	}
+
+	.tombhud .score .out-of,
+	.tombhud .score .pct {
+		display: none;
+	}
 }
 
 /* the parenthetical is a reading of the same number, not a second score */
@@ -1832,21 +1862,51 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: rgba(255, 255, 255, 0.5);
 }
 
-/* The delver's reckoning in one line: gold reads yellow, steps read blue. */
+/*
+ * The delver's reckoning: two big numbers with their words underneath, and the sentence's own words
+ * kept small between them. Gold reads yellow and moves read blue, the colours the status bar uses.
+ */
 .win .win-earned {
-	margin: 0.35rem 0 0;
-	font-size: 1.2rem;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem 0.85rem;
+	margin-top: 0.55rem;
 }
 
-.win .win-earned .gold {
+.win .win-earned .said {
+	font-size: 0.95rem;
+	font-weight: 400;
+	opacity: 0.72;
+}
+
+.win .win-earned .fig {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.1rem;
+}
+
+.win .win-earned .n {
+	font-size: clamp(2.2rem, 8vw, 3.2rem);
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+.win .win-earned .fig.gold .n {
 	color: #ffd95e;
-	font-weight: 700;
-	font-variant-numeric: tabular-nums;
 }
 
-.win .win-earned .steps {
+.win .win-earned .fig.steps .n {
 	color: #8fb4ff;
-	font-weight: 700;
-	font-variant-numeric: tabular-nums;
+}
+
+.win .win-earned .k {
+	font-size: 0.62rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	opacity: 0.6;
 }
 

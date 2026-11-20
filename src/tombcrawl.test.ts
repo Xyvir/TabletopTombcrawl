@@ -118,6 +118,7 @@ function makeTomb({
 		exhausted: Array.from({ length: cellCount }, (_, i) => exhausted.includes(i)),
 		wounded: Array.from({ length: cellCount }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
+		died: false,
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
@@ -575,19 +576,29 @@ describe('mana burn and mug', () => {
 		expect(hp(next)).toBe(1);
 	});
 
-	test('parking a Gorgon in a free cell costs one heart, and leaves the item alone', () => {
-		const state = board({ boss: 'KC', columns: [['4C']] });
+	test('parking a Gorgon in a free cell stones the kin and class, and leaves the item alone', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+			{ cell: 2, role: 'glyph', id: '5S', suit: 'spades', name: 'BYSSEPS', text: '' },
+			{ cell: 3, role: 'consumable', id: '6S', suit: 'spades', name: 'Potion', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['4C']],
+			cells: ['2C', '3C', '5S', '6S', '7C', '8C', null],
+			boss: 'KC',
+			draft,
+		});
 		const before = hp(state);
-		const next = tombMove(state, cascade(0, 0), cell(4))!;
+		const next = tombMove(state, cascade(0, 0), cell(6))!;
 
-		expect(shorthandCard(next.game.cells[4]!)).toBe('4C');
-		expect(next.exhausted[0]).toBe(false);
-		expect(next.wounded[0]).toBe(0);
-		expect(next.draft).toHaveLength(2);
-		// the card was not killed, so the power's one wound is the whole bill: the parked card is a
-		// fresh heart and the gaze takes it straight back
-		expect(hp(next)).toBe(before);
-		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(1);
+		expect(shorthandCard(next.game.cells[6]!)).toBe('4C');
+		expect(next.exhausted[3]).toBe(false);
+		expect(next.draft).toHaveLength(4);
+		// the gaze reaches the kin and the class, left to right, and leaves the glyph and item alone
+		expect(next.wounded).toEqual([1, 1, 0, 0, 0, 0, 0]);
+		// the parked card is a fresh heart and the gaze takes the two passives with it
+		expect(hp(next)).toBe(before - 1);
 	});
 
 	test('parking a Wraith in a free cell burns the Glyph too', () => {
@@ -1095,18 +1106,74 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(hp(otherParked)).toBe(6);
 	});
 
-	test('stone gaze charges a rank more than the card is worth', () => {
-		// level four, so a four of clubs is free and the gaze makes it cost one
+	test('stone gaze stones the kin and class instead of adding a rank to the kill', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Dwarf', text: '' },
+			{ cell: 1, role: 'class', id: '2H', suit: 'hearts', name: 'Priest', text: '' },
+			{ cell: 2, role: 'glyph', id: '2D', suit: 'diamonds', name: 'CYDSTEPP', text: '' },
+			{ cell: 3, role: 'consumable', id: '2C', suit: 'clubs', name: 'Elixir', text: '' },
+		];
+		// level four, so a four of clubs is free and the gaze adds nothing to the blow
 		const state = makeTomb({
 			columns: [['4C'], ['4H']],
-			cells: ['2C', '3C', '5C', '6C', '7C', '8C', null],
+			cells: ['2S', '2H', '2D', '2C', '7C', '8C', null],
 			foundations: ['3S', '3H', '3D', '3C'],
 			boss: 'KC',
+			draft,
 		});
 		expect(currentLevel(state)).toBe(4);
-		expect(attackPreview(state, cascade(0)).damage).toBe(1);
+		expect(attackPreview(state, cascade(0)).damage).toBe(0);
 		// the same rank in another suit costs nothing at all
 		expect(attackPreview(state, cascade(1)).damage).toBe(0);
+
+		// the kill's own bill is free, and the gaze turns the two passives, stopping at the class
+		const next = attackWith(state, cascade(0))!;
+		expect(next.wounded).toEqual([1, 1, 0, 0, 0, 0, 0]);
+		expect(hasPassive(next, 'Dwarf')).toBe(false);
+		expect(hasPassive(next, 'Priest')).toBe(false);
+	});
+
+	test('a gaze is paid like any other wound: no spare heart, no kill', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5C']],
+			cells: ['2C', '3C'],
+			foundations: ['4S', '4H', '4D', '4C'],
+			boss: 'KC',
+			draft,
+		});
+		expect(hp(state)).toBe(2);
+		const preview = attackPreview(state, cascade(0, 0));
+		// the blow is free at level five, but the gaze turns both passives and needs one to spare
+		expect(preview.damage).toBe(0);
+		expect(preview.legal).toBe(false);
+		expect(preview.reason).toContain('needs 2 wounds');
+		expect(attackWith(state, cascade(0, 0))).toBe(null);
+	});
+
+	test('a gaze has nothing to take from a party already wounded', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5C'], ['6H']],
+			cells: ['2C', '3C', '9C', '7C', '8C'],
+			foundations: ['4S', '4H', '4D', '4C'],
+			boss: 'KC',
+			draft,
+			wounded: [0, 1],
+		});
+		expect(hp(state)).toBe(3);
+		const preview = attackPreview(state, cascade(0));
+		expect(preview.damage).toBe(0);
+		expect(preview.wounds).toEqual([]);
+		// the window is spent: the gaze has no card left to turn, so the free kill is free
+		expect(preview.legal).toBe(true);
+		expect(attackWith(state, cascade(0))!.wounded).toEqual([1, 1, 0, 0, 0, 0, 0]);
 	});
 
 	test('a kill preview names the cards it would turn face-down', () => {
@@ -1609,16 +1676,24 @@ describe('tombcrawl progression rules', () => {
 		expect(difficultyOf(createTombState(1, FREE_CELL_COUNT.hard))).toBe('hard');
 	});
 
-	test('an off-suit king is weak in a club tomb, where the boss suit costs a rank more', () => {
+	test('an off-suit king carries the club tomb’s gaze', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+		];
 		const state = makeTomb({
 			columns: [['KH']],
 			cells: ['2C', '3C', '4C', '6C', '7C', '8C', null],
 			foundations: ['QH', 'QS', 'QD', 'QC'],
 			boss: 'KC',
+			draft,
 		});
 		const level = currentLevel(state);
-		// Stone Gaze charges a rank more than the card is worth: 13 + 1 - level, not 13 - level
-		expect(attackPreview(state, cascade(0)).damage).toBe(Math.max(0, 14 - level));
+		// no extra rank: the king costs 13 - level like any other, and the gaze stones the party
+		expect(attackPreview(state, cascade(0)).damage).toBe(Math.max(0, 13 - level));
+
+		const next = attackWith(state, cascade(0))!;
+		expect(next.wounded.slice(0, 3)).toEqual([1, 1, 0]);
 	});
 
 	test('an off-suit king mugs the consumable in a spade tomb', () => {
@@ -1910,16 +1985,26 @@ describe('tombcrawl PISORF stacks', () => {
 		expect(hp(second)).toBe(3);
 	});
 
-	test('a parked pair sets off the power of either card, once for the cast', () => {
+	test('a parked pair sets off the gaze, once for the cast', () => {
 		// A Gorgon's tomb: a red king is a lesser gorgon and he is lying on a club queen, one of his own
-		// minions, so both cards carry Stone Gaze — and the pair still costs the single heart a park costs.
-		const gorgon = makeTomb({ columns: [['KH', 'QC'], ['KC'], ['9D'], ['4H']], cells: ['5C'], boss: 'KC', draft: glyph });
+		// minions, so both cards carry Stone Gaze — and the pair still stones the party once, not twice.
+		const party: DraftCard[] = [
+			{ cell: 0, role: 'glyph', id: '5C', suit: 'clubs', name: 'PISORF', text: '' },
+			{ cell: 1, role: 'kin', id: '7C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 2, role: 'class', id: '8C', suit: 'clubs', name: 'Wizard', text: '' },
+		];
+		const gorgon = makeTomb({
+			columns: [['KH', 'QC'], ['KC'], ['9D'], ['4H']],
+			cells: ['5C', '7C', '8C', '9C'],
+			boss: 'KC',
+			draft: party,
+		});
 		const armed = useAbility(gorgon, 0)!;
-		const parked = armedClick(armedClick(armed, cascade(0, 0))!, cell(1))!;
+		const parked = armedClick(armedClick(armed, cascade(0, 0))!, cell(4))!;
 
-		expect(cellCards(parked, 1).map(shorthandCard)).toEqual(['KH', 'QC']);
-		expect(parked.wounded[1]).toBe(1);
-		expect(woundedCards(parked, 1)).toHaveLength(1); // one heart for the pair, not one apiece
+		expect(cellCards(parked, 4).map(shorthandCard)).toEqual(['KH', 'QC']);
+		// one wound on the kin and one on the class: a second carrier in the pair adds nothing
+		expect(parked.wounded).toEqual([0, 1, 1, 0, 0, 0, 0]);
 	});
 
 	test('PISORF needs an open free cell and a proper pair', () => {
@@ -2347,8 +2432,9 @@ describe('tombcrawl boss protection', () => {
 			boss: 'KC',
 			draft,
 		});
-		// Stone Gaze still adds a rank: 9 + 1 - 9
-		expect(attackPreview(dwarf, cascade(0, 0)).damage).toBe(1);
+		// Stone Gaze adds no rank of its own: the gaze turns the dwarf's own card face down
+		expect(attackPreview(dwarf, cascade(0, 0)).damage).toBe(0);
+		expect(attackWith(dwarf, cascade(0, 0))!.wounded[0]).toBe(1);
 	});
 });
 
@@ -2463,8 +2549,42 @@ describe('tombcrawl endgame', () => {
 		expect(bossSlain(next)).toBe(false);
 		expect(next.won).toBe(false);
 		expect(next.score).toBe(null);
-		// the boss is still standing, so there is no way out yet
-		expect(tombExit(next)).toBe(null);
+		// leaving is the player's own call now, boss or no boss: the exit only records it
+		const exit = tombExit(next)!;
+		expect(exit.won).toBe(true);
+		expect(exit.score).toBe(tombScore(next));
+	});
+
+	test('a blow the party cannot afford can be taken, and the delver dies of it', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+		];
+		const state = makeTomb({
+			columns: [['5C']],
+			cells: ['2C', '3C'],
+			foundations: ['4S', '4H', '4D', '4C'],
+			boss: 'KC',
+			draft,
+		});
+		expect(hp(state)).toBe(2);
+		expect(attackPreview(state, cascade(0)).fatal).toBe(true);
+		// an ordinary double click is still refused: the blow costs more than the track can spare
+		expect(attackWith(state, cascade(0))).toBe(null);
+
+		// taken deliberately, the card goes home and the party does not
+		const died = attackWith(state, cascade(0), false, true)!;
+		expect(died.won).toBe(true);
+		expect(died.died).toBe(true);
+		expect(hp(died)).toBe(0);
+		expect(died.score).toBe(tombScore(died));
+	});
+
+	test('the confirm opens no kill but the one the bill refuses', () => {
+		// the boss itself, still shielded by its Generals: nothing to do with hearts
+		const state = makeTomb({ columns: [['KC']], cells: ['2C', '3C'], boss: 'KC' });
+		expect(attackPreview(state, cascade(0)).fatal).toBe(false);
+		expect(attackWith(state, cascade(0), false, true)).toBe(null);
 	});
 
 	test('the boss kill ends the game and scores the leftovers', () => {
@@ -2905,13 +3025,18 @@ describe('the affliction preview', () => {
 		expect(afflictionTargets(spent, cardIn(spent, '5D'))).toEqual([]);
 	});
 
-	test('a gorgon warns on the heart its rank costs: the card the next wound would turn down', () => {
-		const state = makeTomb({ columns: [['5C']], cells: ['2C', '3C', '4C'], boss: 'KC' });
-		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual(['4C']);
+	test('a gorgon warns on the kin and class it would stone, and stops at the class', () => {
+		const draft: DraftCard[] = [
+			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+			{ cell: 2, role: 'glyph', id: '4C', suit: 'clubs', name: 'BURNDAYRAZ', text: '' },
+		];
+		const state = makeTomb({ columns: [['5C']], cells: ['2C', '3C', '4C'], boss: 'KC', draft });
+		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual(['2C', '3C']);
 
-		// the track is wholly face down: the gaze has no heart left to take, and says so
-		const spent = makeTomb({ columns: [['5C']], cells: ['2C'], boss: 'KC', wounded: [0] });
-		expect(afflictionTargets(spent, cardIn(spent, '5C'))).toEqual([]);
+		// a cell already face down has nothing left to take, so the gaze only warns on the class
+		const spent = makeTomb({ columns: [['5C']], cells: ['2C', '3C', '4C'], boss: 'KC', draft, wounded: [0] });
+		expect(afflictionTargets(spent, cardIn(spent, '5C'))).toEqual(['3C']);
 	});
 
 	test('an armed Remedy silences the warning, since the blow would not set the power off', () => {
