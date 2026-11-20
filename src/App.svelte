@@ -1545,8 +1545,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (abilityUsable(state, index)) {
 				const used = useAbility(state, index);
 				if (used) {
-					tombArmed = { id, location: card.location, before: state, after: used };
-					return void commit(used);
+					commit(used);
+					// `$state` hands back a proxy, so the board the next click reads is not the object built
+					// here: record the proxy the component will see, or the double's identity check can never
+					// match and a target spell only ever disarms itself.
+					tombArmed = { id, location: card.location, before: state, after: tomb ?? used };
+					return;
 				}
 			}
 			if (!cellCardMovable(state, index)) {
