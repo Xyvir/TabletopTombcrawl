@@ -554,6 +554,44 @@ body:has(.card.dragging) .cells.tomb .chip {
 	pointer-events: none;
 }
 
+/*
+ * The chip's own warning, in the same dark-purple stroke the afflictions wear: a card in hand with no grave
+ * open to it leaves its slot by being played out, and that leaving is the conversion the chip is counting.
+ * It is sized to the token rather than to a card, so the mark overhangs the chip the way a card's sits on a
+ * face — the chip itself is what is at stake here, not the card under the pointer.
+ */
+.cells.tomb .chip .alert {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-size: calc(var(--gap) * 3.2);
+	font-weight: 800;
+	line-height: 1;
+	color: rgba(52, 16, 92, 0.12);
+	-webkit-text-stroke: 2px rgba(52, 16, 92, 1);
+	filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+	pointer-events: none;
+	/*
+	 * The bang's ink sits low in its em box, so a line box centred on the token leaves the mark hanging
+	 * under the middle. It rides up half a gap instead — the same proportion the chip is sized from, so the
+	 * mark stays centred when the board shrinks.
+	 */
+	transform: translateY(calc(var(--gap) * -0.5));
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.cells.tomb .chip .alert.on {
+	opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cells.tomb .chip .alert {
+		transition: none;
+	}
+}
+
 /* the table's name in bare type, sized to the corner it stands in */
 .titlecard {
 	flex: 0 0 auto;
@@ -1806,22 +1844,16 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
-/* the fanfare's echo: it sits at the end of the status bar for the rest of the run */
-.tombhud .bossnote {
-	color: #ffd95e;
-	font-weight: 700;
-	animation: bossnote-in 420ms ease-out both;
-}
-
-@keyframes bossnote-in {
-	from {
-		opacity: 0;
-		transform: translateY(-3px);
-	}
-	to {
-		opacity: 1;
-		transform: none;
-	}
+/*
+ * The fanfare's echo, worn by the name rather than parked beside it: once the boss is home the tomb's own
+ * name is struck through, so the bar says the same thing without growing by a label — which is the reading
+ * a phone's status line can least afford. The gold stroke is the note's old colour; the name keeps its
+ * lavender, so it still reads as the tomb rather than as a finished thing.
+ */
+.tombhud .tombstag.fallen {
+	text-decoration: line-through;
+	text-decoration-color: #ffd95e;
+	text-decoration-thickness: 0.1em;
 }
 
 .win .win-note {

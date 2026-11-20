@@ -53,6 +53,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		cellCards,
 		cardAt,
 		chipBoundary,
+		CLAUSES,
 		convertibleCell,
 		newlyHealed,
 		newlyWounded,
@@ -183,6 +184,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The card under the pointer: a kill you are aiming at shows what it would cost first. */
 	let tombHover = $state<CardLocation | null>(null);
 	let tombLast: { id: string; time: number } | null = null;
+	/**
+	 * The ability the last click took in hand, so the second click of a double can take it back: a glyph or
+	 * item answers a single click by arming (or drinking), and a quick pair would otherwise only arm and
+	 * then disarm. The record is kept even for a Potion, which resolves without ever setting `armed`, so
+	 * every card in hand can answer a double the way a tableau card does.
+	 */
+	let tombArmed: { id: string; location: CardLocation; before: TombState; after: TombState } | null = null;
 	/** The last card a tomb tap moved, so a second click at the same spot can rewind it. */
 	let tombMoved: { id: string; from: CardLocation; before: TombState; rect: DOMRect; time: number } | null = null;
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
@@ -651,6 +659,24 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const openSlots = $derived(tomb ? emptyCells(tomb).length : 0);
 	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
+	/**
+	 * The conversion a drag would spend, marked on the chip itself: a card in hand with no grave open to it
+	 * has only one way out of its slot, and that way is a conversion — the slot goes plain and the chip walks
+	 * a step left. Only the card the chip has reached can leave at all, so the ones behind it (locked by the
+	 * conversion order) say nothing at all, and a Thief's Pickpocket is the exception: he plays the item into
+	 * a hallway and the slot waits on its refill instead, so the chip stays put and has nothing to warn about.
+	 */
+	const conversionPreview = $derived.by(() => {
+		if (!tomb || !aim || aim.fixture !== 'cell') return false;
+		const cell = aim.data[0];
+		const entry = draftAt(tomb, cell);
+		if (!entry || cell !== convertibleCell(tomb)) return false;
+		// a card with no gap over it can neither be picked up nor played out: there is no price to warn about
+		if ((tomb.wounded[cell] ?? 0) > 0) return false;
+		// a card with a grave open to it is a home, not a slot spent
+		if (attackPreview(tomb, aim).legal) return false;
+		return !(CLAUSES.thiefPickpocket && entry.role === 'consumable' && hasPassive(tomb, 'Thief'));
+	});
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
 	const tombGoldNow = $derived(tomb ? tombGold(tomb) : 0);
@@ -962,6 +988,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		lastTap = null;
 		lastMove = null;
 		tombMoved = null;
+		tombArmed = null;
 	}
 
 	function flushPending() {
@@ -1457,6 +1484,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const double = tombLast?.id === id && now - tombLast.time < DOUBLE_CLICK_MS;
 		tombLast = double ? null : { id, time: now };
 
+		// A card in hand answers a quick pair with the send-home a tableau card's double is: the first
+		// click armed the glyph or drank the item, and this takes that click back, so the pair reads as one
+		// action and the card goes home unspent. A card with no home keeps the click it already spent: the
+		// second falls through to the ordinary armed click, which disarms.
+		if (double && tombArmed?.id === id && state === tombArmed.after) {
+			const arm = tombArmed;
+			tombArmed = null;
+			const home = attackWith(arm.before, arm.location);
+			if (home) {
+				commit(home);
+				// the arm was never a move: undo goes back past the pair, not to its first click
+				tombHistory = tombHistory.slice(0, -1);
+				return;
+			}
+		}
+
 		if (state.armed) {
 			const armed = armedClick(state, card.location);
 			if (armed) {
@@ -1501,7 +1544,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			}
 			if (abilityUsable(state, index)) {
 				const used = useAbility(state, index);
-				if (used) return void commit(used);
+				if (used) {
+					tombArmed = { id, location: card.location, before: state, after: used };
+					return void commit(used);
+				}
 			}
 			if (!cellCardMovable(state, index)) {
 				shake(el);
@@ -2228,8 +2274,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<span
 					class="chip"
 					style={`--chip-index:${chipAt}`}
-					title="Conversion tracker: the item slots to its left are your live abilities, and the free cells to its right are plain — they only hold a card. Each conversion walks the chip one slot left."
-				></span>
+					title={conversionPreview
+						? 'Playing this card out converts its slot: the chip walks one step left.'
+						: 'Conversion tracker: the item slots to its left are your live abilities, and the free cells to its right are plain — they only hold a card. Each conversion walks the chip one slot left.'}
+				>
+					<!-- The conversion a card in hand would spend. Mounted always, so it fades like an affliction's mark
+					     rather than popping in on the pointer. -->
+					<span class="alert" class:on={conversionPreview} aria-hidden="true">!</span>
+				</span>
 			{/if}
 		</div>
 
@@ -2243,7 +2295,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				title={`${tombHp} hearts left over ${filledPockets} filled pocket${filledPockets === 1 ? '' : 's'}${openSlots ? ` · ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each` : ''}`}
 			>HP {tombHp}/{filledPockets}{#if openSlots}<sup class="open"> +{openSlots}</sup>{/if}</span
 			>
-			<span class="tombstag" title={bossTitle(tomb)}><span class="tomb-full">{tombFullTitle(tomb)}</span><span
+			<span class="tombstag" class:fallen={bossNoted && bossSlain(tomb)} title={bossTitle(tomb)}><span class="tomb-full">{tombFullTitle(tomb)}</span><span
 					class="tomb-short"
 				>{tombTitle(tomb)}</span
 				></span
@@ -2262,13 +2314,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					title={`Gold: every card that goes home pays a flat price — a rat one, a boss-suit minion two, a General five, and the boss twenty-five whether or not it has been uncovered. A bare tomb is exactly a hundred, so the gold is also the percentage cleared.${tomb && !tomb.bossId ? ' The boss king is still under the fog, so the tomb\'s suit is unknown and no card is priced yet: the count reads ? until it is uncovered.' : ''}${tombMult > 1 ? ` A true boss kill pays ×${tombMult === 3 ? 3 : 2}, kept for the rest of the crawl; this one scores ${tombScoreNow}%.` : ' Leave the reserve pocket — the starred cell — untouched all deal to earn a true boss kill at ×2, and a true clear of the tomb at ×3.'}`}
 				>Gold {tombGoldShown}<span class="out-of">/{GOLD_TOTAL}</span>{#if tombMult > 1}<span class="mult">×{tombMult}</span><span class="pct"> {tombScoreNow}%</span>{/if}</span
 				>
-			{#if bossNoted && bossSlain(tomb)}
-				<span
-					class="bossnote"
-					title="The boss is home. End the crawl whenever you want the reckoning, or keep going for the rest of the tomb."
-					>Boss slain</span
-				>
-			{/if}
 			{#if probe}
 				<span
 					class="solve"

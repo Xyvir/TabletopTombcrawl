@@ -219,7 +219,7 @@ const CONSUMABLES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Elixir',
-		text: 'Arm to refresh your spell glyph and heal one wound.',
+		text: "Spend to refresh and heal your glyph — the glyph's own wound, not another card's.",
 	},
 	diamonds: {
 		name: 'Remedy',
