@@ -1516,6 +1516,23 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #c79bff;
 }
 
+/* The bar names the tomb in full — "Cairn of Vipers (♥)" — wherever the line has the room for it. A
+   phone's status line is a third of the width and the name is a phrase, so the narrow screens fall back
+   to the monster's own name; the tooltip carries the boss's title either way. */
+.tombhud .tomb-short {
+	display: none;
+}
+
+@media (max-width: 700px) {
+	.tombhud .tomb-full {
+		display: none;
+	}
+
+	.tombhud .tomb-short {
+		display: inline;
+	}
+}
+
 /* The background check: a lower bound on the deal, said quietly until it has one to give. It follows
    the score in the bar's own flow, so it reads as one more reading off the same line rather than a
    label stranded at the far edge of a wide screen. */

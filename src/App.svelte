@@ -32,6 +32,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import titleMark from './assets/title.svg?raw';
 	import {
 		MONSTERS,
+		TOMBS,
 		ROLE_LABEL,
 		ROLE_WORD,
 				abilityFor,
@@ -607,7 +608,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
 	/**
 	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
-	 * Bandit would empty, the kin and class a Gorgon would turn down, the glyphs a Wraith would spend. An
+	 * Bandit would empty, the card a Gorgon would turn down, the glyphs a Wraith would spend. An
 	 * armed Remedy turns the whole aura off, and the warning goes with it, since the move it covers would
 	 * not do any of it.
 	 */
@@ -1131,9 +1132,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return `${monster.boss}, ${monster.name} Boss of ${suit[0].toUpperCase()}${suit.slice(1)}`;
 	}
 
+	/** The tomb's full name, for a status line with the room for it: "Cairn of Vipers (♥)". */
+	function tombFullTitle(state: TombState): string {
+		const suit = state.bossSuit;
+		if (!suit) return 'Tomb (?)';
+		return `${TOMBS[suit]} (${SUIT_GLYPH[suit]})`;
+	}
+
 	/**
-	 * The bar names the tomb by its monster alone: "Viper (♥)". "Cairn of Vipers" is a better name and a third
-	 * of a phone's status line, and the full title is still on the tooltip.
+	 * The same name by its monster alone, "Viper (♥)": a phone's status line is a third of the width and the
+	 * full name is a phrase, so the stylesheet swaps to this one on the narrow screens. Both carry the boss's
+	 * own title in the tooltip.
 	 */
 	function tombTitle(state: TombState): string {
 		const suit = state.bossSuit;
@@ -1276,7 +1285,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				? undefined
 				: spent?.role;
 		// Take_damage counts the kill's clean bill only, read back off the board it was previewed on:
-		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's gaze on the kin and
+		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's gaze on the first passive
 		// class — sound as affliction and nothing else, even when they land mid-slash.
 		const killDamage = homedPrev.reduce((n, card) => {
 			const at = wasLoc.get(shorthandCard(card));
@@ -2234,7 +2243,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				title={`${tombHp} hearts left over ${filledPockets} filled pocket${filledPockets === 1 ? '' : 's'}${openSlots ? ` · ${openSlots} empty pocket${openSlots === 1 ? '' : 's'} worth a heart each` : ''}`}
 			>HP {tombHp}/{filledPockets}{#if openSlots}<sup class="open"> +{openSlots}</sup>{/if}</span
 			>
-			<span class="tombstag" title={bossTitle(tomb)}>{tombTitle(tomb)}</span>
+			<span class="tombstag" title={bossTitle(tomb)}><span class="tomb-full">{tombFullTitle(tomb)}</span><span
+					class="tomb-short"
+				>{tombTitle(tomb)}</span
+				></span
+			>
 			<!-- Status in dress, a button in fact: the move count is still the copy shortcut. -->
 			<button
 				class="moves"

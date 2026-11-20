@@ -576,7 +576,7 @@ describe('mana burn and mug', () => {
 		expect(hp(next)).toBe(1);
 	});
 
-	test('parking a Gorgon in a free cell stones the kin and class, and leaves the item alone', () => {
+	test('parking a Gorgon in a free cell stones the kin, and leaves the class and item alone', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
 			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
@@ -595,10 +595,10 @@ describe('mana burn and mug', () => {
 		expect(shorthandCard(next.game.cells[6]!)).toBe('4C');
 		expect(next.exhausted[3]).toBe(false);
 		expect(next.draft).toHaveLength(4);
-		// the gaze reaches the kin and the class, left to right, and leaves the glyph and item alone
-		expect(next.wounded).toEqual([1, 1, 0, 0, 0, 0, 0]);
-		// the parked card is a fresh heart and the gaze takes the two passives with it
-		expect(hp(next)).toBe(before - 1);
+		// one affliction takes one card: the kin turns, and the class waits for the next gorgon
+		expect(next.wounded).toEqual([1, 0, 0, 0, 0, 0, 0]);
+		// the parked card is a fresh heart and the gaze spends it again
+		expect(hp(next)).toBe(before);
 	});
 
 	test('parking a Wraith in a free cell burns the Glyph too', () => {
@@ -1106,7 +1106,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(hp(otherParked)).toBe(6);
 	});
 
-	test('stone gaze stones the kin and class instead of adding a rank to the kill', () => {
+	test('stone gaze stones the kin instead of adding a rank to the kill', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Dwarf', text: '' },
 			{ cell: 1, role: 'class', id: '2H', suit: 'hearts', name: 'Priest', text: '' },
@@ -1126,11 +1126,14 @@ describe('tombcrawl damage and free-cell HP', () => {
 		// the same rank in another suit costs nothing at all
 		expect(attackPreview(state, cascade(1)).damage).toBe(0);
 
-		// the kill's own bill is free, and the gaze turns the two passives, stopping at the class
+		// the gaze is one card and not a wound on the blow: the kin turns, and the red preview says nothing
+		expect(attackPreview(state, cascade(0)).wounds).toEqual([]);
+
+		// the kill's own bill is free, and one passive turns: the kin, stopping short of the class
 		const next = attackWith(state, cascade(0))!;
-		expect(next.wounded).toEqual([1, 1, 0, 0, 0, 0, 0]);
+		expect(next.wounded).toEqual([1, 0, 0, 0, 0, 0, 0]);
 		expect(hasPassive(next, 'Dwarf')).toBe(false);
-		expect(hasPassive(next, 'Priest')).toBe(false);
+		expect(hasPassive(next, 'Priest')).toBe(true);
 	});
 
 	test('a gaze is paid like any other wound: no spare heart, no kill', () => {
@@ -1144,13 +1147,14 @@ describe('tombcrawl damage and free-cell HP', () => {
 			foundations: ['4S', '4H', '4D', '4C'],
 			boss: 'KC',
 			draft,
+			wounded: [0],
 		});
-		expect(hp(state)).toBe(2);
+		expect(hp(state)).toBe(1);
 		const preview = attackPreview(state, cascade(0, 0));
-		// the blow is free at level five, but the gaze turns both passives and needs one to spare
+		// the blow is free at level five, but the gaze takes the last passive standing and needs one to spare
 		expect(preview.damage).toBe(0);
 		expect(preview.legal).toBe(false);
-		expect(preview.reason).toContain('needs 2 wounds');
+		expect(preview.reason).toContain('needs 1 wounds');
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 
@@ -1693,7 +1697,7 @@ describe('tombcrawl progression rules', () => {
 		expect(attackPreview(state, cascade(0)).damage).toBe(Math.max(0, 13 - level));
 
 		const next = attackWith(state, cascade(0))!;
-		expect(next.wounded.slice(0, 3)).toEqual([1, 1, 0]);
+		expect(next.wounded.slice(0, 3)).toEqual([1, 0, 0]);
 	});
 
 	test('an off-suit king mugs the consumable in a spade tomb', () => {
@@ -2003,8 +2007,8 @@ describe('tombcrawl PISORF stacks', () => {
 		const parked = armedClick(armedClick(armed, cascade(0, 0))!, cell(4))!;
 
 		expect(cellCards(parked, 4).map(shorthandCard)).toEqual(['KH', 'QC']);
-		// one wound on the kin and one on the class: a second carrier in the pair adds nothing
-		expect(parked.wounded).toEqual([0, 1, 1, 0, 0, 0, 0]);
+		// one wound, on the kin: a second carrier in the pair adds nothing, and the class waits its turn
+		expect(parked.wounded).toEqual([0, 1, 0, 0, 0, 0, 0]);
 	});
 
 	test('PISORF needs an open free cell and a proper pair', () => {
@@ -2558,16 +2562,17 @@ describe('tombcrawl endgame', () => {
 	test('a blow the party cannot afford can be taken, and the delver dies of it', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
-			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
+			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Fighter', text: '' },
 		];
 		const state = makeTomb({
-			columns: [['5C']],
+			columns: [['6C']],
 			cells: ['2C', '3C'],
 			foundations: ['4S', '4H', '4D', '4C'],
 			boss: 'KC',
 			draft,
 		});
 		expect(hp(state)).toBe(2);
+		// the blow is a heart, the gaze another, and one still has to be left standing
 		expect(attackPreview(state, cascade(0)).fatal).toBe(true);
 		// an ordinary double click is still refused: the blow costs more than the track can spare
 		expect(attackWith(state, cascade(0))).toBe(null);
@@ -3025,14 +3030,15 @@ describe('the affliction preview', () => {
 		expect(afflictionTargets(spent, cardIn(spent, '5D'))).toEqual([]);
 	});
 
-	test('a gorgon warns on the kin and class it would stone, and stops at the class', () => {
+	test('a gorgon warns on the one card it would stone, and stops at the class', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
 			{ cell: 1, role: 'class', id: '3C', suit: 'clubs', name: 'Wizard', text: '' },
 			{ cell: 2, role: 'glyph', id: '4C', suit: 'clubs', name: 'BURNDAYRAZ', text: '' },
 		];
 		const state = makeTomb({ columns: [['5C']], cells: ['2C', '3C', '4C'], boss: 'KC', draft });
-		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual(['2C', '3C']);
+		// one affliction, one card: the kin answers for it, and the class is only next
+		expect(afflictionTargets(state, cardIn(state, '5C'))).toEqual(['2C']);
 
 		// a cell already face down has nothing left to take, so the gaze only warns on the class
 		const spent = makeTomb({ columns: [['5C']], cells: ['2C', '3C', '4C'], boss: 'KC', draft, wounded: [0] });

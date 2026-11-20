@@ -1091,8 +1091,9 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
 	const afterWounds = wound(afterItem, damage);
 	const struck = cloneWith(state, { wounded: afterWounds.wounded });
-	// Stone Gaze is paid by the party, not the blow: the kin and the class turn face down after the
-	// kill's own wounds, so each one it actually takes is a heart on the bill.
+	// Stone Gaze is paid by the party, not the blow: one passive turns face down after the kill's own
+	// wounds, and that heart is on the bill. The card it turns is an affliction, not a wound, so the
+	// preview leaves it off `wounds` (the board's ! mark) rather than painting it as damage.
 	const afterGaze = stoneGaze(struck, card);
 	const gazes = afterGaze.wounded.flatMap((count, cell) =>
 		count > (afterWounds.wounded[cell] ?? 0) ? [cell] : []
@@ -1107,11 +1108,6 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
 	const locks = legal ? Array.from(new Set([...itemCells, ...afterWounds.locks, ...gazes])) : [];
-	const gazeWounds = gazes.flatMap((cell) => {
-		const stack = cellCards(struck, cell);
-		const card = stack[afterWounds.wounded[cell] ?? 0];
-		return card ? [shorthandCard(card)] : [];
-	});
 	return {
 		legal,
 		reason: legal ? '' : `needs ${total} wounds and one to spare, you have ${free}`,
@@ -1119,7 +1115,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		locks,
 		need,
 		fatal: short > 0,
-		wounds: legal ? [...woundCardIds(state, afterItem, itemCells, afterWounds.wounded), ...gazeWounds] : [],
+		wounds: legal ? woundCardIds(state, afterItem, itemCells, afterWounds.wounded) : [],
 	};
 }
 
@@ -1659,26 +1655,30 @@ export function woundTarget(state: TombState): Card | null {
 }
 
 /**
- * The party cells Stone Gaze can reach: the kin and the class, left to right, each one still short of
- * face down. The gaze stops at the class, so the glyph and the item to its right never turn — and a
- * cell already face down has nothing left to take, which is the window the party can play around by
- * converting a passive away or leaving one wounded before the next gorgon falls.
+ * The one card a single Stone Gaze turns: the leftmost of the party's kin and class that is still face
+ * up. An affliction takes one card, so the kin turns first and the class is what the next gorgon finds;
+ * the gaze stops at the class, so the glyph and the item to its right never turn. A cell already face
+ * down has nothing left to take, which is the window the party can play around by converting a passive
+ * away or leaving one wounded before the next gorgon falls.
  */
-function gazeCells(state: TombState): number[] {
-	return [...state.draft]
+function gazeCell(state: TombState): number | null {
+	const entry = [...state.draft]
 		.sort((a, b) => a.cell - b.cell)
-		.filter((entry) => entry.role === 'kin' || entry.role === 'class')
-		.map((entry) => entry.cell)
-		.filter((cell) => (state.wounded[cell] ?? 0) < cellCards(state, cell).length);
+		.find(
+			(row) =>
+				(row.role === 'kin' || row.role === 'class') &&
+				(state.wounded[row.cell] ?? 0) < cellCards(state, row.cell).length
+		);
+	return entry ? entry.cell : null;
 }
 
-/** Stone Gaze: the kin and the class turn face down, one card each, left to right. */
+/** Stone Gaze: one card turns face down, the leftmost passive still standing. */
 function stoneGaze(state: TombState, card: Card): TombState {
 	if (!stoneGazeApplies(state, card)) return state;
-	const cells = gazeCells(state);
-	if (!cells.length) return state;
+	const cell = gazeCell(state);
+	if (cell === null) return state;
 	const wounded = [...state.wounded];
-	cells.forEach((cell) => (wounded[cell] += 1));
+	wounded[cell] += 1;
 	return cloneWith(state, { wounded });
 }
 
@@ -1703,14 +1703,14 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 			if (!entry || cellTopWounded(state, slot)) return [];
 			return [entry.id];
 		}
-		case 'clubs':
-			// Stone Gaze turns the party's kin and class face down, left to right, and stops at the class.
-			// A cell already face down has nothing left to take, so it is not warned on. A stashed gorgon
-			// has no attack preview to show its hearts, so this is the only warning that route gets.
-			return gazeCells(state).flatMap((cell) => {
-				const hit = cellCards(state, cell)[state.wounded[cell] ?? 0];
-				return hit ? [cardId(hit)] : [];
-			});
+		case 'clubs': {
+			// Stone Gaze turns one card, the leftmost passive still face up: the kin first, then the class
+			// once the kin is wounded. A stashed gorgon has no attack preview to show its heart, so this is
+			// the only warning that route gets.
+			const cell = gazeCell(state);
+			const hit = cell === null ? undefined : cellCards(state, cell)[state.wounded[cell] ?? 0];
+			return hit ? [cardId(hit)] : [];
+		}
 		case 'diamonds':
 			return auraCells(state).flatMap((cell) => {
 				const up = faceUp(state, cell);
@@ -1795,9 +1795,9 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 			return after.hidden.length < before.hidden.length;
 		case 'spades':
 			return after.draft.length < before.draft.length;
-		// Stone Gaze leaves the party face down when it has anything left to stone.
+		// Stone Gaze leaves a passive face down when it has one left to stone.
 		case 'clubs':
-			return gazeCells(before).length > 0;
+			return gazeCell(before) !== null;
 		// Mana Burn needs a glyph standing to drain.
 		case 'diamonds':
 			return !!prior && auraItemOf(before, prior) !== null;
