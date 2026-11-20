@@ -966,6 +966,37 @@
 			"at": "2026-11-17T11:36:30.020Z"
 		},
 		{
+			"loadout": "chsd",
+			"boss": "hearts",
+			"seed": 1000075,
+			"moves": 103,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-20T02:13:19.032Z"
+		},
+		{
 			"loadout": "chsh",
 			"boss": "hearts",
 			"seed": 152565,
@@ -2423,6 +2454,37 @@
 			"at": "2026-11-14T10:10:41.253Z"
 		},
 		{
+			"loadout": "dhsh",
+			"boss": "diamonds",
+			"seed": 1000031,
+			"moves": 113,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Potion",
+					"suit": "hearts"
+				}
+			],
+			"at": "2026-11-20T02:15:02.883Z"
+		},
+		{
 			"loadout": "dhss",
 			"boss": "spades",
 			"seed": 205112,
@@ -3816,6 +3878,37 @@
 				}
 			],
 			"at": "2026-11-17T13:39:38.077Z"
+		},
+		{
+			"loadout": "hhds",
+			"boss": "hearts",
+			"seed": 1000799,
+			"moves": 109,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "Purity",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-20T02:16:23.638Z"
 		},
 		{
 			"loadout": "hhhc",
@@ -6518,6 +6611,14 @@
 			"at": "2026-11-17T11:36:30.020Z"
 		},
 		{
+			"loadout": "chsd",
+			"difficulty": "med",
+			"seed": 1000075,
+			"moves": 103,
+			"goal": "clear",
+			"at": "2026-11-20T02:13:19.032Z"
+		},
+		{
 			"loadout": "chsh",
 			"difficulty": "med",
 			"seed": 152565,
@@ -6934,6 +7035,14 @@
 			"at": "2026-11-14T10:10:41.253Z"
 		},
 		{
+			"loadout": "dhsh",
+			"difficulty": "med",
+			"seed": 1000031,
+			"moves": 113,
+			"goal": "clear",
+			"at": "2026-11-20T02:15:02.883Z"
+		},
+		{
 			"loadout": "dhss",
 			"difficulty": "med",
 			"seed": 205112,
@@ -7292,6 +7401,14 @@
 			"moves": 110,
 			"goal": "clear",
 			"at": "2026-11-17T13:39:38.077Z"
+		},
+		{
+			"loadout": "hhds",
+			"difficulty": "med",
+			"seed": 1000799,
+			"moves": 109,
+			"goal": "clear",
+			"at": "2026-11-20T02:16:23.638Z"
 		},
 		{
 			"loadout": "hhhc",
@@ -9037,6 +9154,30 @@
 				}
 			}
 		},
+		"chsd": {
+			"med": {
+				"clear": {
+					"seed": 1000075,
+					"moves": 103
+				}
+			}
+		},
+		"dhsh": {
+			"med": {
+				"clear": {
+					"seed": 1000031,
+					"moves": 113
+				}
+			}
+		},
+		"hhds": {
+			"med": {
+				"clear": {
+					"seed": 1000799,
+					"moves": 109
+				}
+			}
+		},
 		"ccsh": {
 			"med": {
 				"clear": {
@@ -9940,13 +10081,6 @@
 				"at": "2026-11-14T07:07:56.807Z"
 			}
 		},
-		"chsd": {
-			"med": {
-				"seed": 151973,
-				"score": null,
-				"at": "2026-11-14T07:52:41.475Z"
-			}
-		},
 		"sdcc": {
 			"med": {
 				"seed": 153528,
@@ -10001,13 +10135,6 @@
 				"seed": 37004,
 				"score": null,
 				"at": "2026-11-13T05:12:00.389Z"
-			}
-		},
-		"dhsh": {
-			"med": {
-				"seed": 152676,
-				"score": null,
-				"at": "2026-11-14T09:14:18.281Z"
 			}
 		},
 		"dssc": {
@@ -10079,20 +10206,12 @@
 				"score": null,
 				"at": "2026-11-17T11:35:00.038Z"
 			}
-		},
-		"hhds": {
-			"med": {
-				"seed": 205074,
-				"score": null,
-				"at": "2026-11-17T06:37:45.914Z"
-			}
 		}
 	},
 	"missing": [
 		"hhch",
 		"hhcc",
 		"hhdd",
-		"hhds",
 		"hhsd",
 		"hccd",
 		"hccs",
@@ -10105,7 +10224,6 @@
 		"chcs",
 		"chdc",
 		"chds",
-		"chsd",
 		"chss",
 		"cccc",
 		"cccd",
@@ -10119,7 +10237,6 @@
 		"dhcd",
 		"dhdh",
 		"dhds",
-		"dhsh",
 		"dhsc",
 		"dccc",
 		"dccs",
