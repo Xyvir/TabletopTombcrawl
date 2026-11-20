@@ -2888,6 +2888,37 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "dssc",
+			"boss": "clubs",
+			"seed": 151415,
+			"moves": 133,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Fighter",
+					"suit": "spades"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-20"
+		},
+		{
 			"loadout": "dssd",
 			"boss": "hearts",
 			"seed": 205537,
@@ -7178,6 +7209,14 @@
 			"at": "2026-11-15"
 		},
 		{
+			"loadout": "dssc",
+			"difficulty": "med",
+			"seed": 151415,
+			"moves": 133,
+			"goal": "clear",
+			"at": "2026-11-20"
+		},
+		{
 			"loadout": "dssd",
 			"difficulty": "med",
 			"seed": 205537,
@@ -8510,6 +8549,14 @@
 				"boss": {
 					"seed": 151295,
 					"moves": 71
+				}
+			}
+		},
+		"dssc": {
+			"med": {
+				"clear": {
+					"seed": 151415,
+					"moves": 133
 				}
 			}
 		},
@@ -10184,13 +10231,6 @@
 				"at": "2026-11-13T05:12:00.389Z"
 			}
 		},
-		"dssc": {
-			"med": {
-				"seed": 151415,
-				"score": null,
-				"at": "2026-11-14T07:54:02.827Z"
-			}
-		},
 		"dhds": {
 			"med": {
 				"seed": 1984,
@@ -10290,7 +10330,6 @@
 		"dddd",
 		"ddsc",
 		"ddsd",
-		"dssc",
 		"shch",
 		"shcd",
 		"scch",
