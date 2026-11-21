@@ -13,7 +13,7 @@
 	"boss": "clubs king",
 	"found": "2026-11-19",
 	"source": "human",
-	"note": "boss kill only: the clubs king falls on move 110 and the line ends at par 77. Played before the Stone Gaze: under today's rules step 11 (home 2S, skipping the missing Ace on Fighter's Strength) is illegal because the gaze has already turned the Fighter down. Even without the gaze the line stops at step 70, so it is not a live baseline.",
+	"note": "boss kill only: the clubs king falls on move 110 and the line ends at par 77. Played before the Stone Gaze: under today's rules step 11 (home 2S, skipping the missing Ace on Fighter's Powerstrike) is illegal because the gaze has already turned the Fighter down. Even without the gaze the line stops at step 70, so it is not a live baseline.",
 	"lines": [
 		"park 3S col 2 -> cell 5",
 		"home 2C -> clubs foundation",

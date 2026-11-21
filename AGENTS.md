@@ -263,6 +263,17 @@ rows whose party holds a Potion — 51 of the 204 published entries, and 17 of t
 item — comparing wins, move counts, and "wounds healed per use" read off the lines. Watch the Orc/Potion pair
 specifically: Bloodthirsty makes the trigger cost nothing.
 
+## The ability rename (adopted)
+
+The four kin traits and four class skills were renamed as one symmetric set: each is a single noun, with the
+kin side naming the delver's nature and the class side naming their craft. Orc **Aggression** (was
+Bloodthirsty), Elf **Perception** (Hawkeyed), Dwarf **Constitution** (Stout), Human **Intuition** (Adept),
+Fighter **Powerstrike** (Strength), Wizard **Dualcast** (Arcana), Priest **Bloodgift** (Vigil), Thief
+**Pickpocket** (unchanged). Nothing mechanical moved: the same eight abilities sit on the same suits in the
+same roles, so no card's behaviour changed and no line was re-measured. The rename supersedes the
+noun/adjective split the Fighter/Human swap leaned on — both halves are nouns now — and the clause keys
+follow the new names (`orcAggression`, `wizardDualcast`, `dwarfConstitution`).
+
 ## The Fighter/Human swap (adopted)
 
 The two class/kin passives traded places, because each was doing the other's job. A Fighter who ignores his

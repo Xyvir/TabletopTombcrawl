@@ -52,8 +52,8 @@ are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affli
 
 | Source | The thing it gives | When it works | Example |
 | --- | --- | --- | --- |
-| Kin | **trait** | always on, while the card is unwounded | Adept |
-| Class | **skill** | always on, while the card is unwounded | Strength |
+| Kin | **trait** | always on, while the card is unwounded | Intuition |
+| Class | **skill** | always on, while the card is unwounded | Powerstrike |
 | Monster | **affliction** | the deal's one, worn by the court and the kings | Mana Burn |
 | Glyph | **spell** | armed, spent by the action it is armed for, refreshed on a level up | PISORF |
 | Item | **effect** | spent once, then restocked after it is slain | Potion |
@@ -61,11 +61,10 @@ are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affli
 The role labels on the pockets carry the same four words, so a hover teaches the pairing without a rules
 page: *Kin trait*, *Class skill*, *Glyph spell*, *Item effect*.
 
-The passive words follow grammar too, which keeps the convention from having to be rehearsed every time. A
-**class skill** is a noun naming the thing the delver does — Pickpocket, Vigil, Arcana, Strength. A **kin
-trait** is an adjective describing the delver — Hawkeyed, Stout, Adept, Bloodthirsty — and every kin word is
-one, so the convention holds without an exception to remember.
-new kin trait should be one.
+The passive words are symmetrical, which keeps the convention from having to be rehearsed every time. A
+**kin trait** is one noun naming the delver's nature — Aggression, Perception, Constitution, Intuition — and
+a **class skill** is one noun naming their craft — Powerstrike, Dualcast, Bloodgift, Pickpocket. Every ability
+word is a single noun, one per suit, so there is no exception to remember.
 
 **The boss** wears two shields, and they lift separately. *Invulnerable* keeps it out of any grave until one of
 its Generals falls first; once one does, a blade reaches it. *Indomitable* never lifts: no hand moves it for the
@@ -146,7 +145,7 @@ Copy that still uses the standard name, each a one-line change:
   becomes `hallway 3, 5 cards`.
 - The exhausted pocket: "Exhausted item slot — play a ♣ card here… Miss it and this is an ordinary free
   cell." — becomes restock/convert: "Play a ♣ card here to restock it. Anything else converts this pocket."
-- Elf's Hawkeyed and the Viper's power still say `column` — become hallway.
+- Elf's Perception and the Viper's power still say `column` — become hallway.
 - The frozen boss: "the foundation stays shut until one other king is home" — becomes "the graveyard stays
   shut until another king lies in it".
 - Every "send home" and "played home" — becomes slay. Every "free cell" — becomes pocket.
@@ -180,7 +179,7 @@ Copy that still uses the standard name, each a one-line change:
   rule (is a small Gorgon as weak as a small rat?) and left a rat "large" next to a "lesser" Gorgon. Two
   ladders over the same three ranges: the court is *Lesser* / bare / *Greater*, the rats are *Small* /
   *Medium* / *Large*.
-- Listing exceptions in per-card copy (Priest's Vigil on every fogged card, the Remedy clause on every affliction
+- Listing exceptions in per-card copy (Priest's Bloodgift on every fogged card, the Remedy clause on every affliction
   line) — the tooltip answers one question, not every edge case.
 
 ---

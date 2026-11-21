@@ -87,13 +87,13 @@ export const CLAUSES = {
 	kingPowers: true,
 	/**
 	 * Orc: a kill into the leading grave is free. A finished grave still leads — nothing out-ranks a
-	 * king — so the first suit to go all the way home ends Bloodthirsty for the rest of the run.
+	 * king — so the first suit to go all the way home ends Aggression for the rest of the run.
 	 */
-	orcBloodrush: true,
+	orcAggression: true,
 	/** Wizard: the item slot becomes a second glyph slot, spelling from its own suit. */
-	wizardArcana: true,
+	wizardDualcast: true,
 	/** Dwarf: the crawl opens one pocket wider than the track allows. */
-	dwarfStout: true,
+	dwarfConstitution: true,
 	/** A free cell holding two cards is worth two hearts rather than one. */
 	pisorfStack: true,
 	/**
@@ -154,34 +154,34 @@ export interface Ability {
 const KIN: Record<Suit, Ability> = {
 	hearts: {
 		name: 'Human',
-		text: 'Adept: ignore your lowest grave when calculating your level.',
+		text: 'Intuition: ignore your lowest grave when calculating your level.',
 	},
 	clubs: {
 		name: 'Orc',
-		text: 'Bloodthirsty: slaying into the fullest grave inflicts no wounds.',
+		text: 'Aggression: slaying into the fullest grave inflicts no wounds.',
 	},
 	diamonds: {
 		name: 'Elf',
-		text: 'Hawkeyed: slay or reveal any card in a hallway whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
+		text: 'Perception: slay or reveal any card in a hallway whose cover is nothing but exposed number cards. Fog and face cards turn the shot aside.',
 	},
 	spades: {
 		name: 'Dwarf',
-		text: 'Stout: the crawl opens with one pocket more than the track allows.',
+		text: 'Constitution: the crawl opens with one pocket more than the track allows.',
 	},
 };
 
 const CLASSES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Fighter',
-		text: 'Strength: send a card home skipping one missing rank.',
+		text: 'Powerstrike: send a card home skipping one missing rank.',
 	},
 	hearts: {
 		name: 'Priest',
-		text: 'Vigil: every dig and every level up heals two wounds instead of one.',
+		text: 'Bloodgift: every dig and every level up heals two wounds instead of one.',
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Arcana: the item slot holds a second glyph in place of an item, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
+		text: 'Dualcast: the item slot holds a second glyph in place of an item, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -277,7 +277,7 @@ export interface TombState {
 	 * face up, so a wound on him turns it to stone (see `stoneCell`) and healing him opens it again — the one
 	 * pocket an affliction can take off the track.
 	 */
-	stout: boolean;
+	constitution: boolean;
 	/** An exhausted cell: its ability is spent and the card lies on its side. Still counts as HP. */
 	exhausted: boolean[];
 	/**
@@ -401,9 +401,9 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 	});
 
 	const cards = [...picks, ...rest];
-	// A Dwarf's Stout opens the crawl one pocket wider than the track allows.
-	const stout = CLAUSES.dwarfStout && ABILITY_TABLE.kin[picks[0].suit].name === 'Dwarf';
-	const cellCount = DRAFT_CELL_COUNT + freeCells + (stout ? 1 : 0);
+	// A Dwarf's Constitution opens the crawl one pocket wider than the track allows.
+	const constitution = CLAUSES.dwarfConstitution && ABILITY_TABLE.kin[picks[0].suit].name === 'Dwarf';
+	const cellCount = DRAFT_CELL_COUNT + freeCells + (constitution ? 1 : 0);
 	const game = new FreeCell({ cellCount, cascadeCount: TOMB_CASCADE_COUNT, cards });
 
 	// Fog of war: row 1 (the bottom of each column, the row you can actually touch) is face up.
@@ -424,9 +424,9 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		const ability = ABILITY_TABLE[role][card.suit];
 		return { cell: i, role, id: cardId(card), suit: card.suit, name: ability.name, text: ability.text };
 	});
-	// A Wizard's Arcana makes the item slot a second glyph: it spells from its own suit, so it wears
+	// A Wizard's Dualcast makes the item slot a second glyph: it spells from its own suit, so it wears
 	// the glyph's name on the board rather than an item's.
-	if (CLAUSES.wizardArcana && draft.some((entry) => entry.role === 'class' && entry.name === 'Wizard')) {
+	if (CLAUSES.wizardDualcast && draft.some((entry) => entry.role === 'class' && entry.name === 'Wizard')) {
 		const item = draft.find((entry) => entry.role === 'consumable');
 		if (item) {
 			const glyph = GLYPHS[item.suit];
@@ -449,7 +449,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
-		stout,
+		constitution,
 		armed: null,
 		itemWindow: null,
 		synthetic: null,
@@ -493,7 +493,7 @@ export function withSyntheticLoadout(state: TombState, loadout: string): TombSta
 	// Pinning a Wizard's class makes the item slot a glyph, and pinning it away makes it an item again.
 	const settled = draft.map((entry) => {
 		if (entry.role !== 'consumable') return entry;
-		const spell = CLAUSES.wizardArcana && draft.some((other) => other.role === 'class' && other.name === 'Wizard');
+		const spell = CLAUSES.wizardDualcast && draft.some((other) => other.role === 'class' && other.name === 'Wizard');
 		const ability = spell ? GLYPHS[entry.suit] : ABILITY_TABLE.consumable[entry.suit];
 		return { ...entry, name: ability.name, text: ability.text };
 	});
@@ -518,36 +518,36 @@ export function hasPassive(state: TombState, name: string): boolean {
 }
 
 /**
- * A Wizard's Arcana: the item slot is a second glyph, holding the spell of the card's own suit. Both
+ * A Wizard's Dualcast: the item slot is a second glyph, holding the spell of the card's own suit. Both
  * refresh on a level up and both are drained by a Wraith, so everything that reads "the glyph" reads
  * this pair of slots.
  */
-export function isArcanaItem(state: TombState, entry: DraftCard): boolean {
-	return CLAUSES.wizardArcana && entry.role === 'consumable' && hasPassive(state, 'Wizard');
+export function isDualcastItem(state: TombState, entry: DraftCard): boolean {
+	return CLAUSES.wizardDualcast && entry.role === 'consumable' && hasPassive(state, 'Wizard');
 }
 
 /**
- * What a drafted slot answers to right now. Arcana is a live reading of the party rather than something
+ * What a drafted slot answers to right now. Dualcast is a live reading of the party rather than something
  * baked into the draft when it was dealt: the moment the Wizard is stoned his pocket is an item again,
  * carrying whatever exhaustion it already had, and it spells again the moment his wound is healed. Every
  * reader of a slot's ability — the board, the arm, the glyph checks — goes through here, so the name and
  * the rules cannot disagree.
  */
 export function draftAbility(state: TombState, entry: DraftCard): Ability {
-	if (entry.role !== 'consumable' || !CLAUSES.wizardArcana) return entry;
+	if (entry.role !== 'consumable' || !CLAUSES.wizardDualcast) return entry;
 	const item = CONSUMABLES[entry.suit];
 	const glyph = GLYPHS[entry.suit];
 	// A slot is stored under the name the deal gave it — the glyph's while a Wizard stood, the item's
-	// otherwise — so those two names are the pair this pocket can answer to, and Arcana says which of
+	// otherwise — so those two names are the pair this pocket can answer to, and Dualcast says which of
 	// them it is right now. A party built by hand may name any item on any suit; that name is what it is.
 	if (entry.name !== item.name && entry.name !== glyph.name) return entry;
-	return isArcanaItem(state, entry) ? glyph : item;
+	return isDualcastItem(state, entry) ? glyph : item;
 }
 
 export function hasGlyph(state: TombState, name: string): boolean {
 	return state.draft.some(
 		(entry) =>
-			(entry.role === 'glyph' || isArcanaItem(state, entry)) &&
+			(entry.role === 'glyph' || isDualcastItem(state, entry)) &&
 			!state.wounded[entry.cell] &&
 			draftAbility(state, entry).name === name
 	);
@@ -730,7 +730,7 @@ export function newlyHealed(before: TombState, after: TombState): string[] {
  */
 export function healPreview(state: TombState, from: CardLocation): string[] {
 	if (!canRevealFaceDown(state, from)) return [];
-	// A Priest's Vigil mends two cells a dig; anyone else mends one.
+	// A Priest's Bloodgift mends two cells a dig; anyone else mends one.
 	const { wounded } = heal(state, hasPassive(state, 'Priest') ? 2 : 1);
 	return newlyHealed(state, cloneWith(state, { wounded }));
 }
@@ -849,7 +849,7 @@ export function foundationIndexOf(game: FreeCell, suit: Suit): number {
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
 			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0);
 	}/**
- * The one pile Bloodthirsty pays for: it has to be the outright highest, so a tie is not a lead. A
+ * The one pile Aggression pays for: it has to be the outright highest, so a tie is not a lead. A
  * finished pile (a king on top) still leads, so the first suit home ends the passive for the run:
  * there is no exception for a grave that is already full.
  */
@@ -952,7 +952,7 @@ export function convertibleCell(state: TombState): number {
  */
 export function cellCardMovable(state: TombState, cell: number): boolean {
 	const card = state.game.cells[cell];
-	// Stout's pocket is one-way while the Dwarf is down: the card in it still plays out like any other —
+	// Constitution's pocket is one-way while the Dwarf is down: the card in it still plays out like any other —
 	// a build, another pocket, a restock, its grave — and only the pocket itself is shut. What refuses
 	// new cards is `canBuildOn` and `emptyCells`, not this.
 	// Only a wound locks a cell: a spent card can still be picked up and played.
@@ -1118,9 +1118,9 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	const ceiling = damageCapOf(state);
 	if (ceiling > 0) damage = Math.min(damage, ceiling);
-	// Bloodthirsty only pays for the pile you have pushed furthest: dumping a high card into a suit you
+	// Aggression only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
-	if (CLAUSES.orcBloodrush && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) damage = 0;
+	if (CLAUSES.orcAggression && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) damage = 0;
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
 	const itemCells = auraItemWound(state, card, from);
 	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
@@ -1280,8 +1280,8 @@ function healGlyph(state: TombState): TombState {
 }
 
 function refreshGlyphs(state: TombState): TombState {
-	// Arcana puts a spell in the item slot, so a level up brings both back.
-	const glyphs = state.draft.filter((entry) => entry.role === 'glyph' || isArcanaItem(state, entry));
+	// Dualcast puts a spell in the item slot, so a level up brings both back.
+	const glyphs = state.draft.filter((entry) => entry.role === 'glyph' || isDualcastItem(state, entry));
 	if (!glyphs.length) return state;
 	const exhausted = [...state.exhausted];
 	glyphs.forEach((entry) => {
@@ -1398,7 +1398,7 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	const level = currentLevel(next);
 	if (level > levelBefore) {
-		// Vigil mends two at a time, a dig and a level up alike.
+		// Bloodgift mends two at a time, a dig and a level up alike.
 		const result = heal(next, TOMB_RULES.levelUpHeal + (hasPassive(next, 'Priest') ? 1 : 0));
 		next = cloneWith(next, {
 			wounded: result.wounded,
@@ -1408,17 +1408,17 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	// Nothing ends a run on its own any more: once the boss king is down the exit is on offer,
 	// and the dungeon is only left when the player takes it.
-	return closeStout(noteReserve(noteTrueBoss(next)));
+	return closeConstitution(noteReserve(noteTrueBoss(next)));
 }
 
 /**
- * Stout closes with the Dwarf: when a wound turns him down, the card left in the pocket he opened is
+ * Constitution closes with the Dwarf: when a wound turns him down, the card left in the pocket he opened is
  * shoved out to the first free pocket along the row, the mirror of the bandit's Mug. With every pocket
  * to its left full it stays where it is — still a heart, still able to be played out — and the pocket
  * stays stone until he is healed, which is the counterplay to losing the pocket entirely. A stack moves
  * together: what it leaves is a pocket, and one pocket is what it needs.
  */
-function closeStout(state: TombState): TombState {
+function closeConstitution(state: TombState): TombState {
 	const cell = state.game.cells.length - 1;
 	if (!stoneCell(state, cell)) return state;
 	const held = cellCards(state, cell);
@@ -1445,7 +1445,7 @@ export function reserveCell(state: TombState): number {
 }
 
 /**
- * A pocket Stout opened and a wound has closed: stone for as long as the Dwarf is face down. It is the
+ * A pocket Constitution opened and a wound has closed: stone for as long as the Dwarf is face down. It is the
  * right-most cell of a deal that opened one wider than the track, so it is also the reserve pocket, and
  * the crawl is the track's own size again while he is stoned. Nothing else in the game can close a
  * pocket, which is what makes this the Dwarf's whole off-switch. The stone is one-way on purpose: the
@@ -1453,7 +1453,7 @@ export function reserveCell(state: TombState): number {
  * full row would bury that card for the rest of the crawl and the affliction would read as a bug.
  */
 export function stoneCell(state: TombState, cell: number): boolean {
-	return state.stout && cell === state.game.cells.length - 1 && !hasPassive(state, 'Dwarf');
+	return state.constitution && cell === state.game.cells.length - 1 && !hasPassive(state, 'Dwarf');
 }
 
 /**
@@ -1606,12 +1606,12 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 
 /**
  * The cells a monster power drains: the item under a Gorgon, the Glyph under a Wraith — and with a
- * Wizard's Arcana the item slot spells too, so a Wraith bites both glyphs.
+ * Wizard's Dualcast the item slot spells too, so a Wraith bites both glyphs.
  */
 /**
  * The cells Mana Burn drains. The item used to share this list — one affliction for each spent slot — but the
  * item is Mug's now: a bandit moves the card out of its pocket rather than spending it, so this list is the
- * Wraith's alone. The glyphs are its own, and a Wizard's Arcana makes the item slot one of them.
+ * Wraith's alone. The glyphs are its own, and a Wizard's Dualcast makes the item slot one of them.
  */
 function auraCells(state: TombState): number[] {
 	if (state.bossSuit !== 'diamonds') return [];
@@ -1621,7 +1621,7 @@ function auraCells(state: TombState): number[] {
 		return slot >= 0 && slot < state.game.cells.length ? [slot] : [];
 	}
 	return state.draft
-		.filter((entry) => entry.role === 'glyph' || isArcanaItem(state, entry))
+		.filter((entry) => entry.role === 'glyph' || isDualcastItem(state, entry))
 		.map((entry) => entry.cell);
 }
 
@@ -1662,7 +1662,7 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
  * chip steps past it and nothing waits to remake the item — a restock answers an item you spent, not one that
  * was taken off you. With every pocket to the right already full the bandit has nowhere to put it and the item
  * stays where it is, which is the counterplay: keep the row behind the slot busy. A wound lying over the slot
- * keeps the card where it is too. The slot is the item slot whatever it holds, so a Wizard's Arcana glyph is
+ * keeps the card where it is too. The slot is the item slot whatever it holds, so a Wizard's Dualcast glyph is
  * mugged exactly like a flask, and a card merely resting on top of a drafted item is not the item.
  */
 function mugSlot(state: TombState): TombState {
@@ -1825,7 +1825,7 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 			return by === 'park' ? stoneGaze(state, card) : state;
 		case 'diamonds': {
 			// Mana Burn takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
-			// Arcana leaves two glyphs standing, and a Wraith takes them both.
+			// Dualcast leaves two glyphs standing, and a Wraith takes them both.
 			const cells = auraCells(state);
 			if (!cells.length) return state;
 			return dropKnockedArm(
@@ -2135,7 +2135,7 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 export function useAbility(state: TombState, cell: number): TombState | null {
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
-	// Arcana is read live rather than off the draft: a stoned Wizard's pocket is an item again, so the
+	// Dualcast is read live rather than off the draft: a stoned Wizard's pocket is an item again, so the
 	// name that decides what this cast does is the one the party reads right now.
 	const ability = draftAbility(state, entry);
 	const exhausted = [...state.exhausted];

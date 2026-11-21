@@ -13,7 +13,7 @@
 	"boss": "clubs king",
 	"found": "2026-11-20",
 	"source": "human",
-	"note": "played by hand to a bare tomb; replays on today's rules, and it lifts 2S on Fighter Strength at move 58 — the same home that stalls the retired 111-move boss line in solutions/archive/151415-gaze.json at its step 11",
+	"note": "played by hand to a bare tomb; replays on today's rules, and it lifts 2S on Fighter Powerstrike at move 58 — the same home that stalls the retired 111-move boss line in solutions/archive/151415-gaze.json at its step 11",
 	"lines": [
 		"home 2C -> clubs foundation",
 		"dig 9D col 5 row 5",

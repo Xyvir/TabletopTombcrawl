@@ -2187,9 +2187,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
 					data-role={entry ? entry.role : undefined}						title={stone
-						// Stout is off, so the pocket is shut for as long as he is face down. A card in it is still a
+						// Constitution is off, so the pocket is shut for as long as he is face down. A card in it is still a
 						// heart and still plays out; nothing new moves in until the wound heals.
-						? `Stone pocket — Stout is off while the Dwarf is face down.${
+						? `Stone pocket — Constitution is off while the Dwarf is face down.${
 								card ? ' The card in it still plays out, but nothing can move into the pocket.' : ''
 							}`
 						: tomb && !card && i === reserveCell(tomb) && tomb.reserveHeld
@@ -2602,7 +2602,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/each}
 						{#each SUITS as cls, clsIndex (cls)}
 							<!--
-								A Wizard's Arcana makes the item slot a second glyph, spelling from the suit of the card in it, so
+								A Wizard's Dualcast makes the item slot a second glyph, spelling from the suit of the card in it, so
 								his block's four columns are four glyphs rather than four items: the bottom margin says what they are
 								in his column, the way the side margin already names the first one.
 							-->

@@ -260,8 +260,8 @@ export function decodeBoard(text: string): TombState | null {
 			text: ability.text,
 		});
 	});
-	// A Wizard's Arcana gives the item slot a glyph's name at the deal, so a rebuilt board says the same.
-	if (CLAUSES.wizardArcana && draft.some((entry) => entry.role === 'class' && entry.name === 'Wizard')) {
+	// A Wizard's Dualcast gives the item slot a glyph's name at the deal, so a rebuilt board says the same.
+	if (CLAUSES.wizardDualcast && draft.some((entry) => entry.role === 'class' && entry.name === 'Wizard')) {
 		const item = draft.find((entry) => entry.role === 'consumable');
 		if (item) {
 			const glyph = abilityFor('glyph', item.suit);
@@ -271,10 +271,10 @@ export function decodeBoard(text: string): TombState | null {
 	}
 
 	const kin = draft.find((entry) => entry.role === 'kin');
-	// Stout is a property of the deal, and the pocket it opened is the one thing the deal is missing:
+	// Constitution is a property of the deal, and the pocket it opened is the one thing the deal is missing:
 	// a Dwarf on a track's own row is a Dwarf whose extra pocket was dealt.
-	const stout =
-		CLAUSES.dwarfStout &&
+	const constitution =
+		CLAUSES.dwarfConstitution &&
 		kin?.name === 'Dwarf' &&
 		game.cells.length >= DRAFT_CELL_COUNT + FREE_CELL_COUNT.med;
 	const reserveHeld = !game.cells[game.cells.length - 1];
@@ -286,7 +286,7 @@ export function decodeBoard(text: string): TombState | null {
 		draft,
 		bossId: boss ? shorthandCard(boss) : null,
 		bossSuit: boss ? boss.suit : null,
-		stout,
+		constitution,
 		exhausted,
 		wounded,
 		won: false,

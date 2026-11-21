@@ -78,8 +78,8 @@ interface Setup {
 	boss?: string;
 	/** Size of the deal: 7 pockets on the baseline, 6 on a legacy hard deal. */
 	cellCount?: number;
-	/** The extra pocket Stout opened: the deal was dealt one wider than the track. */
-	stout?: boolean;
+	/** The extra pocket Constitution opened: the deal was dealt one wider than the track. */
+	constitution?: boolean;
 }
 
 function makeTomb({
@@ -92,7 +92,7 @@ function makeTomb({
 	wounded = [],
 	boss,
 	cellCount = TOMB_CELL_COUNT,
-	stout = false,
+	constitution = false,
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
 	const byId = new Map<string, Card>();
@@ -126,7 +126,7 @@ function makeTomb({
 		wounded: Array.from({ length: cellCount }, (_, i) => (wounded.includes(i) ? 1 : 0)),
 		won: false,
 		died: false,
-		stout,
+		constitution,
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
@@ -201,7 +201,7 @@ describe('synthetic loadouts', () => {
 });
 
 describe("the wizard's affinity", () => {
-	// Arcana superseded it: the item pocket spells from its own suit now, so a free cast after a refresh
+	// Dualcast superseded it: the item pocket spells from its own suit now, so a free cast after a refresh
 	// was the same grant twice over, and it was the one rule the card never said out loud.
 	test('a refresh mends the glyph and gives nothing else', () => {
 		const draft: DraftCard[] = [
@@ -215,7 +215,7 @@ describe("the wizard's affinity", () => {
 			draft,
 			exhausted: [1],
 			hidden: ['5H'],
-			// Arcana is off while the Wizard is face down, so the pocket is the Elixir it was dealt as
+			// Dualcast is off while the Wizard is face down, so the pocket is the Elixir it was dealt as
 			// rather than the clubs spell his standing turns it into
 			wounded: [0],
 		});
@@ -717,7 +717,7 @@ describe('mana burn and mug', () => {
 		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
 	});
 
-	test('a Wizard\'s Arcana glyph is mugged out of the item slot like an item', () => {
+	test('a Wizard\'s Dualcast glyph is mugged out of the item slot like an item', () => {
 		// the class card sits left of the item, so the item slot is still the slot beside the chip
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: 'TD', suit: 'diamonds', name: 'Wizard', text: '' },
@@ -1211,7 +1211,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 	});
 
 	test('no party reaches the boss king before another king is home', () => {
-		// A Dwarf used to be the exception; Stout is his pocket now, so the Generals shield the boss too.
+		// A Dwarf used to be the exception; Constitution is his pocket now, so the Generals shield the boss too.
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Dwarf', text: '' }];
 		const early = makeTomb({ columns: [['KH']], cells: ['2D'], foundations: ['QH'], draft, boss: 'KH' });
 
@@ -1223,7 +1223,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(face, cascade(0)).damage).toBe(10);
 	});
 
-	test('bloodthirsty pays only for a kill into the leading grave', () => {
+	test('aggression pays only for a kill into the leading grave', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 		// hearts leads, so the 5 of hearts is worth the bounty
 		const leading = makeTomb({ columns: [['5H']], foundations: ['4H', '3S'], draft });
@@ -1234,7 +1234,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackPreview(behind, cascade(0)).damage).toBe(4);
 	});
 
-	test('bloodthirsty needs the outright lead, and a finished grave still leads', () => {
+	test('aggression needs the outright lead, and a finished grave still leads', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 
 		// level with spades is not a lead: the tie pays the four
@@ -2717,7 +2717,7 @@ describe('par', () => {
 });
 
 describe('tombcrawl a kill that costs nothing', () => {
-	// The Orc's Bloodthirsty pays for the pile leading the board, so this kill is free and the track is bare.
+	// The Orc's Aggression pays for the pile leading the board, so this kill is free and the track is bare.
 	const orc = (): DraftCard[] => [{ cell: 0, role: 'kin', id: '2D', suit: 'diamonds', name: 'Orc', text: '' }];
 
 	test('a free kill does not owe the spare heart', () => {
@@ -2833,7 +2833,7 @@ describe('an item coming back without a level up', () => {
 	});
 });
 
-describe('the wizard’s arcana', () => {
+describe('the wizard’s dualcast', () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
 		{ cell: 1, role: 'glyph', id: '3S', suit: 'spades', name: 'BYSSEPS', text: '' },
@@ -2876,7 +2876,7 @@ describe('the wizard’s arcana', () => {
 	});
 });
 
-describe('the dwarf’s stout', () => {
+describe('the dwarf’s constitution', () => {
 	test('the crawl opens with one pocket more than the track allows', () => {
 		const deals = Array.from({ length: 200 }, (_, index) => createTombState(index + 1, FREE_CELL_COUNT.med));
 		const dwarf = deals.find((state) => state.draft[0].name === 'Dwarf')!;
@@ -3101,7 +3101,7 @@ describe('the affliction preview', () => {
 	});
 });
 
-describe('a stoned wizard’s arcana turns back into an item', () => {
+describe('a stoned wizard’s dualcast turns back into an item', () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'kin', id: '5H', suit: 'hearts', name: 'Human', text: '' },
 		{ cell: 1, role: 'class', id: 'KC', suit: 'clubs', name: 'Wizard', text: '' },
@@ -3144,7 +3144,7 @@ describe('a stoned wizard’s arcana turns back into an item', () => {
 	});
 });
 
-describe('a stoned dwarf’s stout pocket closes', () => {
+describe('a stoned dwarf’s constitution pocket closes', () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'kin', id: 'KS', suit: 'spades', name: 'Dwarf', text: '' },
 		{ cell: 1, role: 'class', id: 'QC', suit: 'clubs', name: 'Wizard', text: '' },
@@ -3158,7 +3158,7 @@ describe('a stoned dwarf’s stout pocket closes', () => {
 			boss: 'KC',
 			draft,
 			cellCount: 8,
-			stout: true,
+			constitution: true,
 		});
 		expect(stoneCell(state, 7)).toBe(false);
 
@@ -3181,7 +3181,7 @@ describe('a stoned dwarf’s stout pocket closes', () => {
 			boss: 'JC',
 			draft,
 			cellCount: 8,
-			stout: true,
+			constitution: true,
 		});
 		// an ace of clubs wears the Gorgon's gaze, and a level-one ace is a free kill: no wounds to pay first
 		const stoned = attackWith(state, cascade(0))!;
@@ -3209,7 +3209,7 @@ describe('a stoned dwarf’s stout pocket closes', () => {
 			boss: 'JC',
 			draft,
 			cellCount: 8,
-			stout: true,
+			constitution: true,
 			// already face down, so the pocket is stone before the move rather than by it
 			wounded: [0],
 		});

@@ -1081,7 +1081,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * A pocket turned to stone: the extra cell Stout opened, while the Dwarf is face down. Grey granite
+ * A pocket turned to stone: the extra cell Constitution opened, while the Dwarf is face down. Grey granite
  * rather than the spent slot's red, because nothing was spent — the pocket itself is out of the track
  * until the wound heals. A card left in it wears the same grey, so it reads as buried in stone.
  *
