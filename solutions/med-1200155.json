@@ -5,14 +5,11 @@
 	"moves": 120,
 	"loadout": "hcds",
 	"party": [
-		"Human",
-		"Wizard",
-		"WEYTWUT",
-		"BYSSEPS"
+		"Human"
 	],
-	"found": "2026-11-18",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 8,167 states",
+	"note": "rescued from the level-cap break, 160 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"dig AD col 1 row 5",
@@ -132,7 +129,7 @@
 		"home QH -> hearts foundation",
 		"home QC -> clubs foundation",
 		"home KC -> clubs foundation",
-		"home KS -> spades foundation",
+		"park KS col 8 -> cell 2",
 		"home KD -> diamonds foundation"
 	],
 	"actions": [
@@ -1610,12 +1607,18 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					7,
 					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
 				]
 			}
 		},

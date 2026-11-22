@@ -1,18 +1,13 @@
 {
 	"seed": 44818,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 112,
+	"goal": "boss",
+	"moves": 111,
 	"loadout": "cdhc",
-	"party": [
-		"Orc",
-		"Thief",
-		"CYDSTEPP",
-		"Elixir"
-	],
-	"found": "2026-11-17",
+	"party": [],
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 1,950 states",
+	"note": "rescued from the level-cap break, 20 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"home AH -> hearts foundation",
@@ -123,9 +118,8 @@
 		"home QD -> diamonds foundation",
 		"home QH -> hearts foundation",
 		"home QC -> clubs foundation",
-		"home KD -> diamonds foundation",
-		"home KH -> hearts foundation",
-		"home KC -> clubs foundation"
+		"park KH col 2 -> cell 2",
+		"home KD -> diamonds foundation"
 	],
 	"actions": [
 		{
@@ -1414,30 +1408,27 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					1,
 					0
 				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
 			}
 		},
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
+					4,
 					0
 				]
 			}

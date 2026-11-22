@@ -1,18 +1,15 @@
 {
 	"seed": 600545,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 131,
+	"goal": "boss",
+	"moves": 128,
 	"loadout": "hdsc",
 	"party": [
-		"Human",
-		"Thief",
-		"BYSSEPS",
-		"Elixir"
+		"Human"
 	],
-	"found": "2026-11-17",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 16,729 states",
+	"note": "rescued from the level-cap break, 78 states",
 	"lines": [
 		"home AC -> clubs foundation",
 		"park 8C col 1 -> cell 7",
@@ -138,13 +135,10 @@
 		"home QC -> clubs foundation",
 		"home QD -> diamonds foundation",
 		"home KC -> clubs foundation",
-		"home KD -> diamonds foundation",
-		"dig JH col 1 row 1",
-		"home JH -> hearts foundation",
-		"home QH -> hearts foundation",
-		"home KS -> spades foundation",
-		"home KH -> hearts foundation",
-		"home 6H -> hearts foundation"
+		"park QH col 2 -> cell 2",
+		"park KS col 2 -> cell 3",
+		"park KH col 7 -> cell 4",
+		"home KD -> diamonds foundation"
 	],
 	"actions": [
 		{
@@ -1746,71 +1740,60 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					1
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					1,
 					1
 				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					1,
 					0
 				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					2
+				]
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					6,
 					0
 				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					3
+				]
 			}
 		},
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					0
+					0,
+					1
 				]
 			}
 		}

@@ -2,7 +2,7 @@
 	"seed": 80716,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 43,
+	"moves": 51,
 	"loadout": "hscd",
 	"party": [
 		"Human",
@@ -10,9 +10,9 @@
 		"PISORF",
 		"Remedy"
 	],
-	"found": "2026-11-16",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "scan 80296-100000, best, 83,926 states",
+	"note": "rescued from the level-cap break, 134 states",
 	"lines": [
 		"home 2C -> clubs foundation",
 		"home 2S -> spades foundation",
@@ -50,12 +50,20 @@
 		"dig 9C col 3 row 1",
 		"home 9C -> clubs foundation",
 		"home 9S -> spades foundation",
-		"home QC -> clubs foundation",
+		"home QH -> hearts foundation",
+		"home 5D -> diamonds foundation",
+		"move QC col 7 -> col 3",
+		"home 6D -> diamonds foundation",
 		"dig JS col 1 row 1",
 		"home JS -> spades foundation",
-		"home QH -> hearts foundation",
+		"dig 8H col 2 row 1",
+		"home 8H -> hearts foundation",
+		"dig JH col 5 row 3",
 		"home KH -> hearts foundation",
 		"move QD col 4 -> col 1",
+		"move JH col 5 -> col 2",
+		"home TC -> clubs foundation",
+		"home QC -> clubs foundation",
 		"home KS -> spades foundation"
 	],
 	"actions": [
@@ -454,8 +462,45 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
+					4,
+					3
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					7,
+					5
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
 					6,
 					4
+				]
+			},
+			"to": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					3
 				]
 			}
 		},
@@ -480,12 +525,32 @@
 			}
 		},
 		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					0
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
 				"data": [
+					1,
+					0
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
 					4,
-					3
+					2
 				]
 			}
 		},
@@ -512,6 +577,43 @@
 				"fixture": "cascade",
 				"data": [
 					0,
+					0
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					2
+				]
+			},
+			"to": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					2,
 					0
 				]
 			}

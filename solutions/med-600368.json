@@ -1,8 +1,8 @@
 {
 	"seed": 600368,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 104,
+	"goal": "boss",
+	"moves": 99,
 	"loadout": "hhcd",
 	"party": [
 		"Human",
@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-17",
 	"source": "solver",
-	"note": "plan fill, best, plan, 8,805 states",
+	"note": "plan fill, best, plan, 8,805 states · cut to the boss kill (current rules)",
 	"lines": [
 		"home AH -> hearts foundation",
 		"home AC -> clubs foundation",
@@ -112,12 +112,7 @@
 		"home QC -> clubs foundation",
 		"home QH -> hearts foundation",
 		"home KH -> hearts foundation",
-		"home KD -> diamonds foundation",
-		"home KS -> spades foundation",
-		"dig KC col 8 row 1",
-		"home KC -> clubs foundation",
-		"home 3H -> hearts foundation",
-		"home 9H -> hearts foundation"
+		"home KD -> diamonds foundation"
 	],
 	"actions": [
 		{
@@ -1276,53 +1271,6 @@
 				"data": [
 					7,
 					1
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					6
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					1
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					0
 				]
 			}
 		}

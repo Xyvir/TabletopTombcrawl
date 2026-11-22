@@ -1,18 +1,17 @@
 {
 	"seed": 600651,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 119,
+	"goal": "boss",
+	"moves": 110,
 	"loadout": "shds",
 	"party": [
 		"Dwarf",
 		"Priest",
-		"WEYTWUT",
-		"Purity"
+		"WEYTWUT"
 	],
-	"found": "2026-11-17",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 17,493 states",
+	"note": "rescued from the level-cap break, 19 states",
 	"lines": [
 		"home AC -> clubs foundation",
 		"move TD col 6 -> col 2",
@@ -122,17 +121,8 @@
 		"home JS -> spades foundation",
 		"home JH -> hearts foundation",
 		"home KH -> hearts foundation",
-		"home QS -> spades foundation",
 		"home QD -> diamonds foundation",
-		"home KD -> diamonds foundation",
-		"dig QC col 6 row 1",
-		"home QC -> clubs foundation",
-		"home KS -> spades foundation",
-		"dig KC col 2 row 1",
-		"home KC -> clubs foundation",
-		"home 8D -> diamonds foundation",
-		"home QH -> hearts foundation",
-		"home 2S -> spades foundation"
+		"home KD -> diamonds foundation"
 	],
 	"actions": [
 		{
@@ -1492,15 +1482,6 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
-				"data": [
-					6
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
 				"fixture": "cascade",
 				"data": [
 					2,
@@ -1515,83 +1496,6 @@
 				"data": [
 					5,
 					1
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					5,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					5,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					2,
-					0
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					1
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					0
 				]
 			}
 		}

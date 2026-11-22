@@ -2,17 +2,16 @@
 	"seed": 3902,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 62,
+	"moves": 71,
 	"loadout": "csds",
 	"party": [
 		"Orc",
 		"Fighter",
-		"WEYTWUT",
-		"Purity"
+		"WEYTWUT"
 	],
-	"found": "2026-11-15",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, 200,255 states",
+	"note": "rescued from the level-cap break, 124 states",
 	"lines": [
 		"home AC -> clubs foundation",
 		"home 3C -> clubs foundation",
@@ -75,6 +74,15 @@
 		"home 9H -> hearts foundation",
 		"home TC -> clubs foundation",
 		"home TD -> diamonds foundation",
+		"home JH -> hearts foundation",
+		"home QH -> hearts foundation",
+		"home QD -> diamonds foundation",
+		"home 7C -> clubs foundation",
+		"dig KH col 3 row 1",
+		"home TS -> spades foundation",
+		"home 9C -> clubs foundation",
+		"dig JC col 5 row 1",
+		"home JC -> clubs foundation",
 		"home KD -> diamonds foundation"
 	],
 	"actions": [
@@ -741,6 +749,93 @@
 				"fixture": "cascade",
 				"data": [
 					3,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					3
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					2
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					5,
+					1
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					0
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					0
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					4,
 					0
 				]
 			}

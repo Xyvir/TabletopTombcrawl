@@ -1,18 +1,15 @@
 {
 	"seed": 205255,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 88,
+	"goal": "boss",
+	"moves": 82,
 	"loadout": "cshh",
 	"party": [
-		"Orc",
-		"Fighter",
-		"CYDSTEPP",
-		"Potion"
+		"Orc"
 	],
-	"found": "2026-11-17",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 964 states",
+	"note": "rescued from the level-cap break, 193 states",
 	"lines": [
 		"park 3S col 2 -> cell 5",
 		"dig AH col 2 row 5",
@@ -83,25 +80,19 @@
 		"home QS -> spades foundation",
 		"home 9S -> spades foundation",
 		"dig KS col 8 row 1",
-		"home KS -> spades foundation",
-		"home KD -> diamonds foundation",
-		"dig KC col 1 row 5",
-		"home KC -> clubs foundation",
-		"home KH -> hearts foundation",
 		"home TC -> clubs foundation",
 		"home 2H -> hearts foundation",
-		"dig 2D col 7 row 1",
-		"home 2D -> diamonds foundation",
-		"dig JD col 1 row 3",
-		"home JD -> diamonds foundation",
-		"home TH -> hearts foundation",
-		"dig 5D col 1 row 1",
-		"home 5D -> diamonds foundation",
+		"park KS col 8 -> cell 1",
 		"dig 2C col 6 row 3",
 		"home 2C -> clubs foundation",
 		"home AS -> spades foundation",
 		"dig 7C col 6 row 1",
-		"home 7C -> clubs foundation"
+		"home 7C -> clubs foundation",
+		"dig KC col 1 row 5",
+		"park KC col 1 -> cell 2",
+		"home KH -> hearts foundation",
+		"dig JD col 1 row 3",
+		"home KD -> diamonds foundation"
 	],
 	"actions": [
 		{
@@ -862,56 +853,6 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cascade",
-				"data": [
-					7,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
-					1
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					4
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					4
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					3
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
 				"fixture": "cell",
 				"data": [
 					0
@@ -929,71 +870,17 @@
 			}
 		},
 		{
-			"kind": "dig",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
-					6,
+					7,
 					0
 				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
+			},
+			"to": {
+				"fixture": "cell",
 				"data": [
-					6,
-					0
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					1
-				]
-			}
-		},
-		{
-			"kind": "dig",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					0,
 					0
 				]
 			}
@@ -1045,6 +932,62 @@
 				"data": [
 					5,
 					0
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					4
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					4
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					3
+				]
+			}
+		},
+		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					2
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					1
 				]
 			}
 		}

@@ -1,18 +1,13 @@
 {
 	"seed": 205105,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 108,
+	"goal": "boss",
+	"moves": 106,
 	"loadout": "cdhh",
-	"party": [
-		"Orc",
-		"Thief",
-		"CYDSTEPP",
-		"Potion"
-	],
-	"found": "2026-11-17",
+	"party": [],
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 2,213 states",
+	"note": "rescued from the level-cap break, 13 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"arm CYDSTEPP (cell 3)",
@@ -118,10 +113,8 @@
 		"dig QS col 8 row 1",
 		"home QS -> spades foundation",
 		"home KD -> diamonds foundation",
-		"home KS -> spades foundation",
 		"dig KH col 2 row 1",
-		"home KH -> hearts foundation",
-		"home 5C -> clubs foundation"
+		"home KS -> spades foundation"
 	],
 	"actions": [
 		{
@@ -1354,15 +1347,6 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					4
-				]
-			}
-		},
-		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
@@ -1375,19 +1359,9 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
 				"fixture": "cell",
 				"data": [
-					2
+					4
 				]
 			}
 		}

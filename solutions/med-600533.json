@@ -1,18 +1,13 @@
 {
 	"seed": 600533,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 137,
+	"goal": "boss",
+	"moves": 135,
 	"loadout": "ccdh",
-	"party": [
-		"Orc",
-		"Wizard",
-		"WEYTWUT",
-		"CYDSTEPP"
-	],
-	"found": "2026-11-17",
+	"party": [],
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 19,514 states",
+	"note": "rescued from the level-cap break, 19 states",
 	"lines": [
 		"park 6D col 3 -> cell 5",
 		"arm CYDSTEPP (cell 4)",
@@ -147,10 +142,8 @@
 		"home QS -> spades foundation",
 		"home QH -> hearts foundation",
 		"home KH -> hearts foundation",
-		"home KS -> spades foundation",
-		"home KC -> clubs foundation",
-		"home KD -> diamonds foundation",
-		"home 3C -> clubs foundation"
+		"park KD col 7 -> cell 1",
+		"home KS -> spades foundation"
 	],
 	"actions": [
 		{
@@ -1847,40 +1840,28 @@
 			}
 		},
 		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					0
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
 				"data": [
 					3,
 					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					1
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					2
 				]
 			}
 		}

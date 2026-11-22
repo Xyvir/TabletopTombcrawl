@@ -444,17 +444,16 @@ if (mode === 'merge') {
 	// The move counts any line on the seed actually played: a row already matching one of them is accurate
 	// and keeps its own numbers, so a solver's shorter line on a hand-won seed does not rewrite the hand's
 	// row (nor the reverse). Only a stale guess — a count no line on disk plays — takes the facts.
-	const lineCounts = new Map<string, Set<number>>();
-	for (const row of solutionRows) {
-		const key = `${row.difficulty ?? 'med'}|${row.seed}`;
-		if (!lineCounts.has(key)) lineCounts.set(key, new Set());
-		lineCounts.get(key)!.add(row.moves);
-	}
+	//
+	// The count alone is not enough: a row also has to agree with the *goal* that line was played for, or a
+	// retired clear label rides along on a number some other line happens to share (seed 12 advertised a
+	// 69-move clear when the 69-move line on disk is a boss kill).
+	const lineClaims = new Set(solutionRows.map((row) => `${row.difficulty ?? 'med'}|${row.seed}|${row.moves}|${row.goal}`));
 	for (const entry of all) {
 		const key = `${entry.difficulty ?? 'med'}|${entry.seed}`;
-		if (lineCounts.get(key)?.has(entry.moves)) continue;
 		const facts = lineFacts.get(key);
 		if (!facts) continue;
+		if (lineClaims.has(`${key}|${entry.moves}|${entry.goal}`)) continue;
 		const moved = entry.moves !== facts.moves || entry.goal !== facts.goal;
 		entry.moves = facts.moves;
 		entry.goal = facts.goal;

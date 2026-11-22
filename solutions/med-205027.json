@@ -1,18 +1,13 @@
 {
 	"seed": 205027,
 	"difficulty": "med",
-	"goal": "clear",
+	"goal": "boss",
 	"moves": 128,
 	"loadout": "hdds",
-	"party": [
-		"Human",
-		"Thief",
-		"WEYTWUT",
-		"Purity"
-	],
-	"found": "2026-11-17",
+	"party": [],
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 6,495 states",
+	"note": "rescued from the level-cap break, 55 states",
 	"lines": [
 		"park 4H col 2 -> cell 5",
 		"dig AD col 2 row 5",
@@ -137,11 +132,11 @@
 		"park KD col 4 -> cell 1",
 		"dig QH col 5 row 1",
 		"home QH -> hearts foundation",
+		"park KC col 8 -> cell 2",
 		"home KD -> diamonds foundation",
-		"home KC -> clubs foundation",
-		"home KS -> spades foundation",
 		"dig KH col 7 row 1",
-		"home KH -> hearts foundation"
+		"park KH col 7 -> cell 1",
+		"home KS -> spades foundation"
 	],
 	"actions": [
 		{
@@ -1709,30 +1704,26 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					7,
 					0
 				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
 			}
 		},
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cascade",
+				"fixture": "cell",
 				"data": [
-					5,
 					0
 				]
 			}
@@ -1748,11 +1739,27 @@
 			}
 		},
 		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					0
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					6,
+					5,
 					0
 				]
 			}

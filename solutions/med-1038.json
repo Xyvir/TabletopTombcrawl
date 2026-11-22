@@ -1,18 +1,16 @@
 {
 	"seed": 1038,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 105,
+	"goal": "boss",
+	"moves": 103,
 	"loadout": "hhhs",
 	"party": [
 		"Human",
-		"Priest",
-		"CYDSTEPP",
-		"Purity"
+		"Priest"
 	],
-	"found": "2026-11-20",
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "deep resolve under Stone Gaze, fallback, 485,219 states",
+	"note": "rescued from the level-cap break, 166 states",
 	"lines": [
 		"home AH -> hearts foundation",
 		"home AC -> clubs foundation",
@@ -113,12 +111,10 @@
 		"home QC -> clubs foundation",
 		"home JS -> spades foundation",
 		"home QS -> spades foundation",
-		"home 5H -> hearts foundation",
-		"home KC -> clubs foundation",
 		"home QH -> hearts foundation",
-		"home TH -> hearts foundation",
-		"home KS -> spades foundation",
-		"home KH -> hearts foundation"
+		"park KS col 3 -> cell 3",
+		"park KH col 7 -> cell 4",
+		"home KC -> clubs foundation"
 	],
 	"actions": [
 		{
@@ -1276,7 +1272,39 @@
 			"at": {
 				"fixture": "cell",
 				"data": [
-					1
+					4
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					2
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					6,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					3
 				]
 			}
 		},
@@ -1286,44 +1314,6 @@
 				"fixture": "cascade",
 				"data": [
 					0,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					4
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					2,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
 					0
 				]
 			}

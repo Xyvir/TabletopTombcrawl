@@ -1,8 +1,8 @@
 {
 	"seed": 205506,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 109,
+	"goal": "boss",
+	"moves": 106,
 	"loadout": "ddhh",
 	"party": [
 		"Elf",
@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-17",
 	"source": "solver",
-	"note": "plan fill, best, plan, 15,611 states",
+	"note": "plan fill, best, plan, 15,611 states · cut to the boss kill (current rules)",
 	"lines": [
 		"home AC -> clubs foundation",
 		"park 6H col 4 -> cell 6",
@@ -119,10 +119,7 @@
 		"home QS -> spades foundation",
 		"home QH -> hearts foundation",
 		"home KC -> clubs foundation",
-		"home KS -> spades foundation",
-		"home KD -> diamonds foundation",
-		"home KH -> hearts foundation",
-		"home 5D -> diamonds foundation"
+		"home KS -> spades foundation"
 	],
 	"actions": [
 		{
@@ -1374,34 +1371,6 @@
 				"fixture": "cell",
 				"data": [
 					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					3
 				]
 			}
 		}

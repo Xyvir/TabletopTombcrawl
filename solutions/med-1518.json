@@ -1,18 +1,13 @@
 {
 	"seed": 1518,
 	"difficulty": "med",
-	"goal": "clear",
+	"goal": "boss",
 	"moves": 107,
 	"loadout": "ccss",
-	"party": [
-		"Orc",
-		"Wizard",
-		"BYSSEPS",
-		"BYSSEPS"
-	],
-	"found": "2026-11-17",
+	"party": [],
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 5,179 states",
+	"note": "rescued from the level-cap break, 53 states",
 	"lines": [
 		"home AH -> hearts foundation",
 		"home AC -> clubs foundation",
@@ -116,11 +111,11 @@
 		"home QS -> spades foundation",
 		"home QH -> hearts foundation",
 		"home QD -> diamonds foundation",
+		"park KD col 5 -> cell 1",
 		"home KH -> hearts foundation",
-		"home KS -> spades foundation",
-		"home KD -> diamonds foundation",
 		"dig KC col 8 row 1",
-		"home KC -> clubs foundation"
+		"park KC col 8 -> cell 2",
+		"home KS -> spades foundation"
 	],
 	"actions": [
 		{
@@ -1332,31 +1327,27 @@
 			}
 		},
 		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					4,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					0
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cell",
 				"data": [
 					2
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					4,
-					0
 				]
 			}
 		},
@@ -1371,11 +1362,27 @@
 			}
 		},
 		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					7,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					7,
+					6,
 					0
 				]
 			}

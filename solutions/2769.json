@@ -1,8 +1,8 @@
 {
 	"seed": 2769,
 	"difficulty": "med",
-	"goal": "clear",
-	"moves": 144,
+	"goal": "boss",
+	"moves": 132,
 	"loadout": "hhhh",
 	"party": [
 		"Human",
@@ -12,7 +12,7 @@
 	],
 	"found": "2026-11-15",
 	"source": "human",
-	"note": "played by hand in the app; the first line in the corpus that sets the boss king down with CYDSTEPP. The disarm logged after that carry is gone from the transcript: the carry spends the spell now, so the click was a no-op",
+	"note": "played by hand in the app; the first line in the corpus that sets the boss king down with CYDSTEPP. The disarm logged after that carry is gone from the transcript: the carry spends the spell now, so the click was a no-op · cut to the boss kill (current rules)",
 	"lines": [
 		"home AC -> clubs foundation",
 		"home 2C -> clubs foundation",
@@ -145,18 +145,6 @@
 		"home KC -> clubs foundation",
 		"home KD -> diamonds foundation",
 		"move KS col 5 -> col 1",
-		"home QS -> spades foundation",
-		"home KS -> spades foundation",
-		"home 5H -> hearts foundation",
-		"arm CYDSTEPP (cell 3)",
-		"drop CYDSTEPP (cell 3)",
-		"arm CYDSTEPP (cell 3)",
-		"drop CYDSTEPP (cell 3)",
-		"arm CYDSTEPP (cell 3)",
-		"move 9H cell 3 -> col 4",
-		"move AH cell 2 -> col 3",
-		"home 9H -> hearts foundation",
-		"home AH -> hearts foundation",
-		"home KH -> hearts foundation"
+		"home QS -> spades foundation"
 	]
 }

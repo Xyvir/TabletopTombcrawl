@@ -1,18 +1,13 @@
 {
 	"seed": 1000031,
 	"difficulty": "med",
-	"goal": "clear",
+	"goal": "boss",
 	"moves": 113,
 	"loadout": "dhsh",
-	"party": [
-		"Elf",
-		"Priest",
-		"BYSSEPS",
-		"Potion"
-	],
-	"found": "2026-11-20",
+	"party": [],
+	"found": "2026-11-22",
 	"source": "solver",
-	"note": "plan fill, best, plan, 15,645 states",
+	"note": "rescued from the level-cap break, 108 states",
 	"lines": [
 		"home AH -> hearts foundation",
 		"park 8S col 7 -> cell 4",
@@ -124,9 +119,9 @@
 		"dig QH col 2 row 1",
 		"home QH -> hearts foundation",
 		"home KS -> spades foundation",
-		"home KD -> diamonds foundation",
 		"dig KH col 3 row 1",
-		"home KH -> hearts foundation"
+		"park KH col 3 -> cell 2",
+		"home KD -> diamonds foundation"
 	],
 	"actions": [
 		{
@@ -1451,15 +1446,6 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					3
-				]
-			}
-		},
-		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
@@ -1470,12 +1456,27 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
 				"fixture": "cascade",
 				"data": [
 					2,
 					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					3
 				]
 			}
 		}
