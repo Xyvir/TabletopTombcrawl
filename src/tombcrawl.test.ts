@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, test } from 'vitest';
-import { initializeDeckOfCards, shorthandCard, type Card } from './game/card/card';
+import { BOARD_ALPHABET, decodeBoard } from './boardstate';
+import { applyAction } from './solver';
+import {
+	getRankForCompare,
+	getSuitForCompare,
+	initializeDeckOfCards,
+	parseShorthandCard,
+	shorthandCard,
+	type Card,
+} from './game/card/card';
 import { FreeCell } from './game/game';
 import {
 	CLAUSES,
@@ -848,6 +857,69 @@ describe('the level cap', () => {
 		const state = board({ wounded: [1] });
 		const homed = attackWith(state, cascade(1))!;
 		expect(homed.wounded[1]).toBe(1);
+	});
+
+	/**
+	 * The endgame as a boardstring: one card per column (bottom first), then the pockets, and every card
+	 * not written down is already home. So the queens are home, the level is the cap's twelve, and the four
+	 * kings are the whole of what the tomb still owes. A leading `^` marks the dungeon's boss.
+	 */
+	const pileText = (ids: string[]) =>
+		ids
+			.map((id) => {
+				const boss = id.startsWith('^');
+				const card = parseShorthandCard(boss ? id.slice(1) : id);
+				if (!card) return '';
+				const letter = BOARD_ALPHABET[getRankForCompare(card.rank) * 4 + getSuitForCompare(card.suit)];
+				return boss ? `^${letter}` : letter;
+			})
+			.join('.');
+	const endgame = (columns: string[], pockets: string[], pocketCount = 7) =>
+		decodeBoard(`${pileText(columns)}/${pileText([...pockets, ...Array.from({ length: pocketCount - pockets.length }, () => '')])}`)!;
+	const KINGS = ['KC', 'KD', 'KS', '^KH'];
+	const QUEENS = ['QC', 'QD', 'QS', 'QH'];
+	const spread = (ids: string[]) => [...ids, ...Array.from({ length: 8 - ids.length }, () => '')];
+	/** Human · Fighter · BYSSEPS · Remedy: no heal of any kind, which is the point here. */
+	const NO_HEAL = ['3H', '3S', '3C', '3D'];
+
+	test('the last four kings owe four hearts the endgame does not have', () => {
+		const state = endgame(spread(KINGS), NO_HEAL);
+		expect(currentLevel(state)).toBe(12);
+		// the four party cards are the only hearts on the track: empty pockets are not hearts
+		expect(hp(state)).toBe(4);
+		for (const column of [0, 1, 2]) expect(attackPreview(state, cascade(column))).toMatchObject({ legal: true, damage: 1 });
+
+		// three Generals fall for three hearts, and then the boss wants two it does not have
+		let board = state;
+		for (const column of [0, 1, 2]) board = attackWith(board, cascade(column))!;
+		expect(hp(board)).toBe(1);
+		expect(attackPreview(board, cascade(3))).toMatchObject({ legal: false, damage: 1, fatal: true });
+	});
+
+	test("a Dwarf's fourth pocket is exactly enough for the cap's endgame", () => {
+		// Dwarf · Fighter · BYSSEPS · Potion, and the queens still out: the Fighter skips a king past its
+		// missing queen, so the four queens can be parked as a wound bank while the kings come home.
+		const state = endgame([...KINGS, ...QUEENS], ['3S', '4S', '3C', 'AH'], 8);
+		expect(currentLevel(state)).toBe(12);
+		expect(emptyCells(state)).toHaveLength(4);
+		// the shipped track has three, which is one wound fewer than the four kings cost
+		expect(emptyCells(endgame(spread(KINGS), NO_HEAL))).toHaveLength(3);
+
+		let board = state;
+		for (const column of [4, 5, 6, 7]) board = applyAction(board, { kind: 'move', from: cascade(column), to: cell(column) })!;
+		expect(hp(board)).toBe(8);
+
+		// four hearts of kings land on the four parked queens, and a queen is free at twelve
+		for (const column of [0, 1, 2, 3]) board = applyAction(board, { kind: 'home', at: cascade(column) })!;
+		expect(hp(board)).toBe(4);
+
+		// one drink heals every wound at once, and the rest of the tomb has nothing left to pay
+		board = applyAction(board, { kind: 'arm', cell: 3 })!;
+		expect(hp(board)).toBe(8);
+		// the queens first: homing the Dwarf closes the pocket its last queen is sitting in
+		for (const slot of [4, 5, 6, 7, 3, 2, 1, 0]) board = applyAction(board, { kind: 'home', at: cell(slot) })!;
+		expect(board.game.cards.every((card) => card.location.fixture === 'foundation')).toBe(true);
+		expect(tombPar(board)).toBe(0);
 	});
 });
 

@@ -424,3 +424,34 @@ held back as the next notch if the finish still reads as light.
 
 The banner says the number it reached, and MAX on the capped one, so the endgame reads as a progress bar
 with a last rung rather than an open-ended climb.
+
+### The cap's endgame arithmetic (measured)
+
+A clear ends with the track empty of cards and of wounds, so the hearts a crawl spends are gone for good — and a
+card killed *out of a pocket* costs two, not one: it leaves the track and the blow wounds what is left. A park
+hands one back, so a parked card is worth nothing across the run. Rearranged, the healing a clear still needs is
+
+    needed = Σ damage(remaining) + (0-damage cards in pockets) − hp
+
+The last four kings at cap 12 are four damage against the four party cards that are the track's only hearts, so
+the endgame is short by exactly four heals. Uncapped the same board is level 13 and a formality: twelve moves
+(queens home, then the kings, then the party) run par 0 to bare, and capped the same twelve refuse move 8 — the
+boss, holding one heart. Park-and-kill loops do not rescue it, because the park is exactly what the kill takes back.
+
+Measured over custom boards (`corpus/state-probe.ts`, gitignored — one card per column, everything else home):
+
+- **kings only, no potion, shipped track:** no clear. The search finds none in 200k states, and it cannot: four
+  are owed and the endgame has no heal at all (the Elixir mends its glyph for one, the Purity has no fog).
+- **kings only with a Potion:** still none, off by exactly one. The flask is the rightmost party card, so it can
+  only bank the wounds that land in the pockets to its right — three — and it locks the moment a wound reaches it.
+- **clubs (Stone Gaze), diamonds (Mana Burn), spades (Mug):** no better. The Gaze and the Burn add hearts to the
+  bill; Mug shoves the flask out of its slot before it can be drunk.
+- **the one window that wins:** a Dwarf (fourth pocket), a Fighter (so a king is homeable while its queen still
+  sits in a pocket) and a Potion. Seventeen moves: park the four queens as a wound bank, kill the four kings into
+  them, drink, then walk everything home against an empty bill. A clubs tomb closes it — the Gaze stones the Dwarf
+  and the fourth pocket goes with him. Both ends of this are pinned in `src/tombcrawl.test.ts` under "the level
+  cap": the four-heart bill, and the Dwarf's clear.
+
+Neither engine finds any of these lines (`flat` and `plan`, 200k–400k states, including the trivially winnable
+uncapped board): they cannot see "clear the queens first to lift the level" or "park as a wound bank". The clear
+above is a hand-built line the rules verified, which is the same blind spot the two human lines show.
