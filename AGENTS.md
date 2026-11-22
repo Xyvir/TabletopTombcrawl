@@ -406,3 +406,21 @@ boss's Indomitable shield outlast his Generals cost 37 more, since those lines m
 home. A re-solve of those squares won 18 of them back — 13 at 400k, 5 at 1M best-first — and a plan-driven sweep
 that tried each stubborn loadout's *other* dealt seeds won 16 more at 200k, which is the cheaper lever: a new seed
 is a different deal, so it does not have to carry the plan the old line did.
+
+## The level cap (adopted)
+
+The delver's level tops out at **12** (`TOMB_RULES.levelCap`), so the last eight cards of a crawl are paid
+in hearts rather than waved through: at 12 a queen costs nothing and a king one, the boss included, and the
+level-up at the 48th card is gone along with the two above it. Nothing in the midgame moves — level 12 needs
+all four jacks home — and the only rule a table has to remember is "the level stops at twelve". Damage
+arithmetic, level-up heals and glyph refreshes are unchanged; a capped level simply stops supplying them.
+
+Measured before it shipped, over the 112 published lines that still replay at all: 54 still win, and every
+one of the 58 that break does so within ten moves of the end, holding 0.81 hearts on average. The change is
+entirely the finish. A boss kill stays cheap (87% of the old boss lines survive; the General and the boss are
+two hearts), while a clear now has to carry four hearts — or a dig — into the last four kings. Cap 11 prices
+the court at two a card, which makes the boss and its General four hearts and a clear eleven more; it was
+held back as the next notch if the finish still reads as light.
+
+The banner says the number it reached, and MAX on the capped one, so the endgame reads as a progress bar
+with a last rung rather than an open-ended climb.

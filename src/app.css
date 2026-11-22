@@ -1341,7 +1341,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * Purity turns a whole hallway over, card by card. The delay rides a custom property so the wrapper
+ * Purity turns the mouth of a hallway over, card by card. The delay rides a custom property so the wrapper
  * and the back image start together. Only the back keeps its backwards fill — invisible while its
  * turn waits — while the wrapper fills forwards alone: a card still waiting must sit upright with
  * its face showing, not lean early into a turn it has not begun.
@@ -1829,6 +1829,7 @@ body:has(.card.dragging) .cells.tomb .chip {
    because levels come in runs and none of them is news on its own. */
 .fanfare.level {
 	animation-duration: 1300ms;
+	align-content: center;
 }
 .fanfare.level span {
 	font-size: clamp(0.95rem, 2.6vw, 1.45rem);
@@ -1837,6 +1838,19 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #ffe9a8;
 	border-color: rgba(255, 224, 130, 0.42);
 	box-shadow: 0 0 26px rgba(255, 216, 90, 0.22);
+}
+
+/* The level itself, or MAX on the last one, sits under the words at banner size: the number is the
+   read, and "Level Up!" only says what to look at. It pops a beat later so the two land in order. */
+.fanfare.level .lvl {
+	margin-top: 0.12em;
+	font-size: clamp(3rem, 11vw, 6.5rem);
+	font-weight: 800;
+	line-height: 0.95;
+	letter-spacing: 0.02em;
+	color: #ffe27a;
+	text-shadow: 0 2px 22px rgba(0, 0, 0, 0.75);
+	animation: fanfare-pop 900ms cubic-bezier(0.2, 0.9, 0.2, 1) 80ms both;
 }
 
 @keyframes fanfare-pop {

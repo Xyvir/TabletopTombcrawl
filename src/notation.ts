@@ -104,7 +104,7 @@ export function describeStep(before: TombState, after: TombState): string | null
 		return digLabel(card, at);
 	}
 
-	// Aiming Purity at a hallway turns every card in it to fog: nothing moves and the spell is spent, so
+	// Aiming Purity at a hallway turns its mouth cards to fog: nothing moves and the spell is spent, so
 	// without its own print the cast would read as putting the spell away unspent.
 	const arm = before.armed;
 	const fogged = after.hidden.filter((id) => !before.hidden.includes(id));

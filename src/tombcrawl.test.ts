@@ -779,7 +779,7 @@ describe('purity', () => {
 	const board = () =>
 		makeTomb({ columns: [['5C', '4C'], ['9D'], ['KH', '4D']], cells: ['9S', '2D', '3D'], draft, boss: 'KH' });
 
-	test('turns a whole hallway to fog, and the boss is not a card it can touch', () => {
+	test('buries the three cards at the mouth, and the boss is not a card it can touch', () => {
 		const state = board();
 		const primed = useAbility(state, 0)!;
 		expect(primed.armed).toMatchObject({ kind: 'purity' });
@@ -789,10 +789,31 @@ describe('purity', () => {
 		expect(fogged.hidden).toEqual(expect.arrayContaining(['5C', '4C']));
 		expect(fogged.exhausted[0]).toBe(true);
 
-		// the boss keeps his face, and only the card above him turns
+		// the boss keeps his face, and only the card covering him turns
 		const bossHall = armedClick(useAbility(board(), 0)!, cascade(2))!;
 		expect(bossHall.hidden).toContain('4D');
 		expect(bossHall.hidden).not.toContain('KH');
+	});
+
+	test('a hallway longer than the spell keeps its deep end face up', () => {
+		const state = makeTomb({ columns: [['2C', '3C', '4C', '5C', '6C']], cells: ['9S'], draft });
+		const fogged = armedClick(useAbility(state, 0)!, cascade(0))!;
+		// the mouth card and the two covered cards behind it; 2C and 3C stay dug
+		expect([...fogged.hidden].sort()).toEqual(['4C', '5C', '6C']);
+		expect(fogged.exhausted[0]).toBe(true);
+	});
+
+	test('fog already in the hallway does not eat one of the three', () => {
+		// the mouth card and one in the middle are already face down: the spell reaches past both
+		const state = makeTomb({
+			columns: [['2C', '3C', '4C', '5C', '6C']],
+			cells: ['9S'],
+			draft,
+			hidden: ['6C', '4C'],
+		});
+		const fogged = armedClick(useAbility(state, 0)!, cascade(0))!;
+		// three more go down: 5C, then past the fogged 4C to 3C, then the deep 2C
+		expect([...fogged.hidden].sort()).toEqual(['2C', '3C', '4C', '5C', '6C']);
 	});
 
 	test('a hallway that is already fog pays nothing and is refused', () => {
@@ -800,6 +821,36 @@ describe('purity', () => {
 		expect(armedClick(useAbility(state, 0)!, cascade(0))).toBe(null);
 	});
 });
+describe('the level cap', () => {
+	// all four queens home is a level 13 read on the old rules; the cap holds it at 12
+	const crowned = () =>
+		makeTomb({ columns: [['KD']], cells: ['2D', '3D'], foundations: ['QS', 'QH', 'QC', 'QD'] });
+	// three queens and a jack: homing the last queen is the level up the cap refuses
+	const board = (overrides: Partial<Setup> = {}) =>
+		makeTomb({
+			columns: [['KD'], ['QD']],
+			cells: ['2D', '3D'],
+			foundations: ['QS', 'QH', 'QC', 'JD'],
+			...overrides,
+		});
+
+	test('twelve is the top, so a king still costs a heart', () => {
+		expect(currentLevel(crowned())).toBe(12);
+		expect(attackPreview(crowned(), cascade(0))).toMatchObject({ legal: true, damage: 1 });
+	});
+
+	test('a grave that would lift the level past the cap is no level up', () => {
+		expect(levelUpGraves(crowned())).toEqual([]);
+		expect(levelUpGraves(board())).toEqual([]);
+	});
+
+	test('the last queen takes no level up, so its heal never comes', () => {
+		const state = board({ wounded: [1] });
+		const homed = attackWith(state, cascade(1))!;
+		expect(homed.wounded[1]).toBe(1);
+	});
+});
+
 describe('the bysseps glyph', () => {
 	test('arms the stack carry from a glyph slot, which level up refreshes', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '5S', suit: 'spades', name: 'BYSSEPS', text: '' }];

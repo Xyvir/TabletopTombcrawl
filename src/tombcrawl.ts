@@ -47,6 +47,25 @@ export const TOMB_RULES = {
 	 */
 	levelDamageCap: 0,
 	/**
+	 * The highest level the delver can read, or 0 for no ceiling. A cap stops the level-ups above it (and
+	 * the heals and glyph refreshes they carry), so the cards ranked over the cap keep charging damage.
+	 *
+	 * Twelve ships: level 12 needs all four jacks home, so the cap prices only the last eight cards of a
+	 * crawl — a queen is free, a king costs one — and the endgame stops being a formality without moving
+	 * a single midgame blow. Set 0 to play the old uncapped game.
+	 */
+	levelCap: 12,
+	/**
+	 * The highest level a blow reads, or 0 for no ceiling. Unlike `levelCap`, the delver keeps levelling:
+	 * the heals and glyph refreshes are untouched, and only the damage reduction stops here.
+	 */
+	damageLevelCap: 0,
+	/**
+	 * Minimum damage a court card (jack, queen, king) deals however high the level climbs, or 0 for none.
+	 * Applied before Aggression, so a free kill stays free.
+	 */
+	courtFloor: 0,
+	/**
 	 * Whether a movement glyph may carry the boss king: no hand ever shifts him, but a spell can lift him
 	 * out of the way, which frees the column he was sitting on. Killing him is a separate gate (his
 	 * Generals), so a fallen General opens the blade and leaves the hand shut.
@@ -208,10 +227,13 @@ const GLYPHS: Record<Suit, Ability> = {
 	},
 };
 
+/** Purity buries the mouth of a hallway rather than the whole lane: three heals, not a hallway's bank. */
+const PURITY_REFOG_CARDS = 3;
+
 const CONSUMABLES: Record<Suit, Ability> = {
 	spades: {
 		name: 'Purity',
-		text: 'Arm, then turn a whole hallway to fog: every card in it goes face down again. The boss is not a card the spell can touch.',
+		text: 'Arm, then turn the three bottommost unfogged cards of a hallway to fog. Fog already there does not count against the three, and the boss is not a card the spell can touch.',
 	},
 	hearts: {
 		name: 'Potion',
@@ -553,6 +575,11 @@ export function hasGlyph(state: TombState, name: string): boolean {
 	);
 }
 
+/** The level the rules allow: a cap keeps the high cards biting, and 0 means no ceiling at all. */
+function cappedLevel(level: number): number {
+	return TOMB_RULES.levelCap > 0 ? Math.min(level, TOMB_RULES.levelCap) : level;
+}
+
 export function playerLevel(game: FreeCell): number {
 	// The delver starts at level 1, and the level is one above the rank every suit has reached. A pile
 	// is read by its highest card, since any delver can slide a lower one underneath, and an empty pile
@@ -563,7 +590,7 @@ export function playerLevel(game: FreeCell): number {
 			.filter((card) => card.location.fixture === 'foundation' && card.suit === suit)
 			.reduce((top, card) => Math.max(top, rankOf(card.rank)), 0)
 	);
-	return 1 + Math.min(...ranks);
+	return cappedLevel(1 + Math.min(...ranks));
 }
 
 export function currentLevel(state: TombState): number {
@@ -573,7 +600,7 @@ export function currentLevel(state: TombState): number {
 	// ahead of the slowest one, he is a level higher than anyone else would be.
 	const ranks = (['spades', 'hearts', 'clubs', 'diamonds'] as Suit[]).map((suit) => foundationTopRank(state, suit));
 	const sorted = ranks.sort((a, b) => a - b);
-	return 1 + (sorted[1] ?? 0);
+	return cappedLevel(1 + (sorted[1] ?? 0));
 }
 
 /**
@@ -589,7 +616,7 @@ export function levelUpGraves(state: TombState): Suit[] {
 	const human = CLAUSES.humanLevel && hasPassive(state, 'Human');
 	const levelOf = (values: number[]) => {
 		const sorted = [...values].sort((a, b) => a - b);
-		return 1 + (human ? (sorted[1] ?? 0) : (sorted[0] ?? 0));
+		return cappedLevel(1 + (human ? (sorted[1] ?? 0) : (sorted[0] ?? 0)));
 	};
 	const level = levelOf(ranks);
 	return suits.filter((_, index) => {
@@ -1114,10 +1141,16 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		return { legal: false, reason: check.reason, damage: 0, locks: [], need: [], fatal: false, wounds: [] };
 
 	const level = currentLevel(state);
-	let damage = Math.max(0, rankOf(card.rank) - level);
+	// A damage floor on the level keeps the court priced while the level keeps healing.
+	const blowLevel = TOMB_RULES.damageLevelCap > 0 ? Math.min(level, TOMB_RULES.damageLevelCap) : level;
+	let damage = Math.max(0, rankOf(card.rank) - blowLevel);
 	// The ceiling is applied before Bounty, so a free kill stays free.
 	const ceiling = damageCapOf(state);
 	if (ceiling > 0) damage = Math.min(damage, ceiling);
+	// A court floor is applied before Bounty too, so an Aggression kill is still free.
+	if (TOMB_RULES.courtFloor > 0 && getRankForCompare(card.rank) >= getRankForCompare('jack')) {
+		damage = Math.max(damage, TOMB_RULES.courtFloor);
+	}
 	// Aggression only pays for the pile you have pushed furthest: dumping a high card into a suit you
 	// never touched still costs its full damage.
 	if (CLAUSES.orcAggression && hasPassive(state, 'Orc') && leadingFoundation(state, card.suit)) damage = 0;
@@ -2266,18 +2299,21 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 	// The sack is a state rather than a target: it waits for the next stack move to carry.
 	if (armed.kind === 'sack') return null;
 
-	// Purity names a hallway rather than a card: every card in it turns to fog, the boss aside.
+	// Purity names a hallway rather than a card: its three bottommost unfogged cards turn to fog, the boss aside.
 	if (armed.kind === 'purity') {
 		if (location.fixture !== 'cascade') return null;
 		const column = state.game.tableau[location.data[0]] ?? [];
 		const hidden = [...state.hidden];
 		let turned = 0;
-		for (const card of column) {
-			const id = cardId(card);
+		// The mouth is the last card of the pile, so the sweep starts there and walks into the deep
+		// end only as far as the spell reaches.
+		for (let index = column.length - 1; index >= 0 && turned < PURITY_REFOG_CARDS; index--) {
+			const id = cardId(column[index]!);
 			// The boss is not a card the spell can touch, and fog already there is already fog.
 			if (id === state.bossId || hidden.includes(id)) continue;
 			hidden.push(id);
 			turned += 1;
+			if (turned === PURITY_REFOG_CARDS) break;
 		}
 		if (!turned) return null;
 		return cloneWith(state, { hidden, armed: null });

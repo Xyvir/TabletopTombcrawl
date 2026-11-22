@@ -61,6 +61,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		currentLevel,
 		DRAFT_CELL_COUNT,
 		FREE_CELL_COUNT,
+		TOMB_RULES,
 		GOLD_TOTAL,
 		goldMultiplier,
 		goldScore,
@@ -140,7 +141,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const FOUNDATION_FLIGHT_MS = 250;
 	/** A card coming out of the fog squashes, shows its face, then opens back out. */
 	const FLIP_MS = 210;
-	/** Purity turns a whole hallway over, so each card waits this long for the one above it. */
+	/** Purity turns the mouth of a hallway over, so each card waits this long for the one before it. */
 	const TURN_STAGGER_MS = 70;
 	/** How long a banner holds the screen before it clears. */
 	const FANFARE_MS = 2200;
@@ -180,7 +181,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let healingIds = $state<string[]>([]);
 	/**
 	 * Cards a spell just turned face down, and how long each waits before it turns. A fogged hallway
-	 * turns over from the unburied card downwards, so the sweep reads as one gesture rather than five.
+	 * turns over from the unburied card downwards, so the sweep reads as one gesture rather than a shuffle.
 	 */
 	let turningDelays = $state<Record<string, number>>({});
 	let tombSelected = $state<CardLocation | null>(null);
@@ -215,7 +216,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		general: 'General Slain!',
 		level: 'Level Up!',
 	};
-	let fanfare = $state<{ kind: FanfareKind; id: number } | null>(null);
+	let fanfare = $state<{ kind: FanfareKind; id: number; level?: number } | null>(null);
 	/** The boss note joins the status bar once its banner has cleared, so the two never talk at once. */
 	let bossNoted = $state(false);
 	let game = $state<FreeCell>(opening.game);
@@ -921,7 +922,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		);
 	}
 
-	function startFanfare(kind: FanfareKind, noteBoss = kind === 'boss') {
+	function startFanfare(kind: FanfareKind, noteBoss = kind === 'boss', level?: number) {
 		const done = () => {
 			if (fanfare?.kind === kind) fanfare = null;
 			if (noteBoss) bossNoted = true;
@@ -931,7 +932,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (noteBoss) bossNoted = true;
 			return;
 		}
-		fanfare = { kind, id: (fanfare?.id ?? 0) + 1 };
+		fanfare = { kind, id: (fanfare?.id ?? 0) + 1, level };
 		setTimeout(done, kind === 'level' ? LESSER_FANFARE_MS : FANFARE_MS);
 	}
 
@@ -1296,7 +1297,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		else if (killedBoss) startFanfare('boss');
 		else if (slainGeneral) startFanfare('general');
 		else if (foundBoss) startFanfare('reveal');
-		else if (leveled) startFanfare('level');
+		else if (leveled) startFanfare('level', false, currentLevel(next));
 		// Sound, read off the same two boards as the flashes and banners above. Every true flag
 		// plays, because a move that does two things should sound like two.
 		const prev = tomb;
@@ -2510,6 +2511,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		{#key fanfare.id}
 			<div class="fanfare {fanfare.kind}" role="status">
 				<span>{FANFARE_TEXT[fanfare.kind]}</span>
+				{#if fanfare.kind === 'level' && fanfare.level}
+					<strong class="lvl">
+						{TOMB_RULES.levelCap > 0 && fanfare.level >= TOMB_RULES.levelCap ? 'MAX' : fanfare.level}
+					</strong>
+				{/if}
 			</div>
 		{/key}
 	{/if}

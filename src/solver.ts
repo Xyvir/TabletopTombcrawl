@@ -1826,8 +1826,8 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
  * fog when the tomb runs dry. Each phase is fenced into its own kind of work, so a sorting phase can
  * never spend the facedown cards a heal phase banks on: digs happen only as heals (one a cycle, while
  * the track is hurt, never to spend a full bank up front), and arrangement is all tableau moves, parks
- * and spell lifts. A Purity refog is the midgame bank the plan gradient cannot see — burying a worked
- * hallway to re-dig it prints hearts — so the heal phases fence in the refog with the redigs, and the
+ * and spell lifts. A Purity refog is the midgame bank the plan gradient cannot see — burying a hallway's
+ * mouth to re-dig it prints hearts — so the heal phases fence in the refog with the redigs, and the
  * score never has to learn to love fog. Three cycles with no new home or level mean the tomb is stuck,
  * and the driver stops rather than banking the same hallway forever.
  */
