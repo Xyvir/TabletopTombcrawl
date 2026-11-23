@@ -3136,6 +3136,37 @@
 			"at": "2026-11-16T15:41:16.188Z"
 		},
 		{
+			"loadout": "scss",
+			"boss": "diamonds",
+			"seed": 519,
+			"moves": 133,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				}
+			],
+			"at": "2026-11-23"
+		},
+		{
 			"loadout": "sdcc",
 			"boss": null,
 			"seed": 155769,
@@ -4242,6 +4273,14 @@
 			"at": "2026-11-16T15:41:16.188Z"
 		},
 		{
+			"loadout": "scss",
+			"difficulty": "med",
+			"seed": 519,
+			"moves": 133,
+			"goal": "boss",
+			"at": "2026-11-23"
+		},
+		{
 			"loadout": "sdcc",
 			"difficulty": "med",
 			"seed": 155769,
@@ -5198,6 +5237,14 @@
 					"moves": 106
 				}
 			}
+		},
+		"scss": {
+			"med": {
+				"boss": {
+					"seed": 519,
+					"moves": 133
+				}
+			}
 		}
 	},
 	"placeholders": {
@@ -5936,13 +5983,6 @@
 				"at": "2026-11-17T11:36:04.961Z"
 			}
 		},
-		"scss": {
-			"med": {
-				"seed": 519,
-				"score": 185,
-				"at": "2026-11-13T18:41:55.914Z"
-			}
-		},
 		"dhhd": {
 			"med": {
 				"seed": 155695,
@@ -6351,7 +6391,6 @@
 		"scsh",
 		"scsc",
 		"scsd",
-		"scss",
 		"sdhh",
 		"sdhc",
 		"sdhd",
