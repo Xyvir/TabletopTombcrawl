@@ -3,6 +3,7 @@ import {
 	CLAUSES,
 	FREE_CELL_COUNT,
 	abilityUsable,
+	cellTopWounded,
 	armedClick,
 	attackWith,
 	bossSlain,
@@ -1685,6 +1686,22 @@ function planScore(state: TombState): number {
 }
 
 /**
+ * A need whose card sits wounded in a pocket: the wound has to be healed face up first, so no
+ * cover-clearing makes it payable — only a heal unlocks it. Cascade fog is not a lock (a dig reads
+ * it); a wounded pocket is, until something mends it. Phases that demand a locked lagging grave burn
+ * doubled budget chasing an illegal home and quit with budget unspent: seed 822 sits 91 moves in at
+ * par 453 with 92k of 200k spent, S4 wounded in its cell while H5 and C5 lie exposed, because the
+ * lagging-only end condition cannot see the homes it is allowed to take.
+ */
+function needWoundLocked(state: TombState, need: PlanNeed): boolean {
+	const card = state.game.cards.find(
+		(candidate) => candidate.suit === need.suit && planRank(candidate) === need.rank && candidate.location.fixture !== 'foundation',
+	);
+	if (!card || card.location.fixture !== 'cell') return false;
+	return cellTopWounded(state, card.location.data[0]);
+}
+
+/**
  * Free the cheapest home, then look again. Each phase is a short best-first search scored by release cost
  * and stopping the moment any needed card goes home or the boss falls. Three phases in a row with no new
  * home means the plan is stuck, and the driver stops rather than grinding the same cover forever.
@@ -1786,15 +1803,23 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		const floor = Math.min(tops.hearts, tops.clubs, tops.diamonds, tops.spades);
 		const lagging = new Set(SUITS.filter((suit) => tops[suit] === floor));
 		const owing = needs.filter((need) => lagging.has(need.suit));
-		const due = bossRun
+		const lagDue = bossRun
 			? needs.filter((need) => need.suit === state.bossSuit || lagging.has(need.suit))
 			: owing.length
 				? owing
 				: needs;
+		// A lagging grave that is entirely wound-locked cannot move no matter what the cover does: broaden
+		// the phase to every need, so the exposed homes it is allowed to take still end the phase instead
+		// of missing against an illegal one. Boards with an actionable lagging grave read exactly as before.
+		const due = lagDue.length && lagDue.every((need) => needWoundLocked(state, need)) ? needs : lagDue;
 		// A home costs a heart per rank above the level and the track spends every heart but the last, so a
 		// phase that chases a home it cannot pay is a phase that grinds cover for nothing. When nothing owing
 		// is payable, the phase heals instead: a dig is the only unconditional heal, and the track banks it.
 		const affordable = due.filter((need) => Math.max(0, need.rank - startLevel) <= startHp - 1);
+		// A wound-locked need reads affordable — its price is fine — but no heal short of the wound mending
+		// makes it legal. Gate the heal target on what is actually actionable, so a phase stuck behind a
+		// locked pocket may bank a convert, dig or park instead of missing with the heal on the board.
+		const actionable = affordable.filter((need) => !needWoundLocked(state, need));
 		const target = (board: TombState) =>
 			due.some((need) => {
 				const card = board.game.cards.find(
@@ -1815,7 +1840,7 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 			// finish. A phase that will not end on them stops at 40 homes with twelve one-movers on the
 			// board; ending on any home mops them up, and homes never come back out.
 			(due.length === 0 && board.game.cards.filter((card) => card.location.fixture === 'foundation').length > startHomes) ||
-			(!affordable.length && hp(board) > startHp);
+			(!actionable.length && hp(board) > startHp);
 		const pass = solveTomb({
 			state,
 			goal: 'clear',
@@ -1838,7 +1863,7 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		const now = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
 		// A heal with no home is still progress — it banks what the next expensive home spends — but only the
 		// affordable-gated phases may claim it, so a track at full hearts cannot spin on it forever.
-		const healed = !affordable.length && hp(state) > startHp;
+		const healed = !actionable.length && hp(state) > startHp;
 		const progressed = pass.solved || now > homes || (bossAlive && bossSlain(state)) || healed;
 		if (progressed) {
 			failures = 0;
