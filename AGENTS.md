@@ -28,6 +28,13 @@ has not produced, which makes it a baseline to refine the solver against, not ju
 2. Check the seed really deals that party before recording anything:
    `createTombState(seed, FREE_CELL_COUNT[track])` and read the four drafted suits. A log played under
    older rules may deal a different board now, and the corpus is keyed by what the seed deals today.
+   The header's `free cells` is `cells.length - DRAFT_CELL_COUNT`, and a **Dwarf kin** opens the crawl one
+   pocket wider than the track allows (Constitution), so a med Dwarf log prints **4 free cells over 8
+   pockets** instead of 3 over 7. That is the deal being right, not a rule mismatch: `createTombState(seed,
+   FREE_CELL_COUNT[track])` adds the pocket itself, so replay at the track's own count and expect the wider
+   board. Hard stays the six-pocket deal, so any wider board still reads med. Seed 519's Dwarf clear is the
+   case that raised it — a 4-free-cell header, 8 pockets in the deal, every move replayed at
+   `FREE_CELL_COUNT.med` — and reading the count as the track's 3 would have called a correct line broken.
 3. Add the row to `corpus/shard-human.json` — the merge reads every `scan-*`/`shard-*` file in `corpus/`,
    so one array holds every hand-played win. Give it the full row (`loadout`, `boss`, `seed`, `moves`,
    `difficulty`, `goal`, `party`, `at`) plus `"source": "human"`.
