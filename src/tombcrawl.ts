@@ -37,6 +37,11 @@ export const TOMB_RULES = {
 	/** Hearts a level up mends. The card game this borrows from healed fully. */
 	levelUpHeal: 1,
 	/**
+	 * Wounds one conversion mends. One is the whole of the endgame's supply: four party cards, four kings,
+	 * four hearts of bill, and no slack at all — the spare has to come from fog the crawl held on purpose.
+	 */
+	conversionHeal: 1,
+	/**
 	 * The most hearts one kill may cost, or 0 for no ceiling. Damage is rank minus level, so the
 	 * ceiling only ever bites at low levels, where a single high card would otherwise end the run.
 	 *
@@ -86,8 +91,10 @@ export const CLAUSES = {
 	/**
 	 * Thief: a spent item slot restocked after its card was slain into a grave takes any card, while one
 	 * restocked after its card was played into the crypt takes another suit — never the suit that left.
+	 * Retired with the explicit conversion: the level-up swap below is the ability now. The clause stays
+	 * so the old window can still be switched back on in a test, and nothing in the shipped game reads it.
 	 */
-	thiefPickpocket: true,
+	thiefPickpocket: false,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
 	/** Stone Gaze: a boss-suit minion turns the party's kin and class to stone instead of adding a rank. */
@@ -135,6 +142,20 @@ export const CLAUSES = {
 	 * past is still bitten instead of going quiet.
 	 */
 	wraithSlot: false,
+	/**
+	 * The conversion is explicit: clicking the chip is the only way a party card ever leaves its slot. It
+	 * spends the ability for good, leaves the card lying in the pocket as a plain card, walks the chip one
+	 * step left and mends a wound. A drafted card is never picked up, parked, played out or sent home, and
+	 * no refill window opens — the chip is the conversion, not a tracker for one made somewhere else.
+	 * Switched off, the old rules come back: a card beside the chip could be played out for free.
+	 */
+	explicitConversion: true,
+	/**
+	 * Pickpocket, rewritten for the explicit conversion: a level up opens a one-action window in which the
+	 * item pocket trades its card with an exposed card of the tableau. It replaces the retired refill
+	 * window, so the two abilities are switched together.
+	 */
+	pickpocketSwap: true,
 };
 
 export type ClauseName = keyof typeof CLAUSES;
@@ -204,7 +225,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Pickpocket: an item slain into a grave can be restocked by any card; one played into the crypt only by another suit.',
+		text: 'Pickpocket: a level up opens a one-action window. Arm the item pocket, then click an exposed card: the two trade places, and the card you took becomes the item, spelling from its own suit. A spent item comes back fresh, because exhaustion does not exist on the tableau.',
 	},
 };
 
@@ -275,7 +296,7 @@ export interface DraftCard {
 }
 
 export type ArmedAbility = {
-	kind: 'burndayraz' | 'cydstepp' | 'pisorf' | 'weytwut' | 'remedy' | 'purity' | 'sack';
+	kind: 'burndayraz' | 'cydstepp' | 'pisorf' | 'weytwut' | 'remedy' | 'purity' | 'sack' | 'pickpocket';
 	cell: number;
 	first?: string;
 };
@@ -333,6 +354,11 @@ export interface TombState {
 	 * card itself being replaced.
 	 */
 	itemWindow: { cell: number; role: DraftRole; suit: Suit; takes: RestockTakes } | null;
+	/**
+	 * Pickpocket's window: the item pocket a level up just opened, or null. It lasts one action — the swap
+	 * is the only thing that spends it — and it is set by `settle`, cleared at every action's door.
+	 */
+	pickpocket: number | null;
 	/**
 	 * A balance harness pin, set only by `withSyntheticLoadout`: the suits the party is pinned to, for
 	 * whatever roles were named. Null in every real game, and never read by the deal itself.
@@ -443,7 +469,7 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 
 	const draft: DraftCard[] = picks.map((card, i) => {
 		const role = ROLES_BY_DRAW_ORDER[i];
-		const ability = ABILITY_TABLE[role][card.suit];
+		const ability = abilityFor(role, card.suit);
 		return { cell: i, role, id: cardId(card), suit: card.suit, name: ability.name, text: ability.text };
 	});
 	// A Wizard's Dualcast makes the item slot a second glyph: it spells from its own suit, so it wears
@@ -472,9 +498,10 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		trueBoss: false,
 		score: null,
 		constitution,
-		armed: null,
-		itemWindow: null,
-		synthetic: null,
+					armed: null,
+			itemWindow: null,
+			pickpocket: null,
+			synthetic: null,
 	};
 }
 
@@ -971,6 +998,63 @@ export function convertibleCell(state: TombState): number {
 	return state.draft.reduce((highest, entry) => Math.max(highest, entry.cell), -1);
 }
 
+/** The drafted card the chip has reached: the one a conversion would spend. */
+export function conversionTarget(state: TombState): DraftCard | undefined {
+	const cell = convertibleCell(state);
+	return cell >= 0 ? draftAt(state, cell) : undefined;
+}
+
+/** Whether the chip itself can be clicked: a live party card beside it, under the explicit rule. */
+export function canConvert(state: TombState): boolean {
+	if (!CLAUSES.explicitConversion || state.won || state.itemWindow) return false;
+	const cell = convertibleCell(state);
+	return cell >= 0 && !!state.game.cells[cell];
+}
+
+/** Any action other than the conversion closes Pickpocket's one-turn window. */
+function closePickpocket(state: TombState): TombState {
+	return state.pickpocket === null ? state : cloneWith(state, { pickpocket: null });
+}
+
+/**
+ * The conversion, made by hand: click the chip and the card beside it is spent for good. Its ability is
+ * gone, the slot turns plain, the chip walks one step left and the track mends one wound. The card stays
+ * where it lies — a plain card in the pocket, free to go home like any other — so the price is always an
+ * ability, never a heart.
+ */
+/**
+ * The cards a conversion would turn face up, so the board can price the chip before it is clicked —
+ * the same courtesy a dig's hover gets.
+ */
+export function conversionHeals(state: TombState): string[] {
+	if (!canConvert(state)) return [];
+	const { wounded } = heal(state, TOMB_RULES.conversionHeal);
+	return newlyHealed(state, cloneWith(state, { wounded }));
+}
+
+export function convertChip(state: TombState): TombState | null {
+	if (!canConvert(state)) return null;
+	const entry = conversionTarget(state)!;
+	const cell = entry.cell;
+	const exhausted = [...state.exhausted];
+	exhausted[cell] = false;
+	const { wounded } = heal(state, TOMB_RULES.conversionHeal);
+	// Nothing goes home, so no level can lift here; settle still runs because it is where the party's own
+	// state is read once the slot is gone — a converted Dwarf closes the pocket his Constitution opened.
+	const next = settle(
+		cloneWith(state, {
+			draft: consumeDraft(state, cell),
+			exhausted,
+			wounded,
+			armed: state.armed?.cell === cell ? null : state.armed,
+			itemWindow: null,
+			pickpocket: null,
+		}),
+		currentLevel(state)
+	);
+	return spendArmedItem(next);
+}
+
 /**
  * A plain scratch cell (to the right of the chip) hands its card back like FreeCell does: it builds
  * onto a column, waits in another cell, or goes home. A drafted item may leave only once the chip
@@ -985,6 +1069,9 @@ export function cellCardMovable(state: TombState, cell: number): boolean {
 	// Only a wound locks a cell: a spent card can still be picked up and played.
 	if (!card || cellTopWounded(state, cell)) return false;
 	if (!draftAt(state, cell)) return true;
+	// The explicit conversion: a party card is not a card you can pick up at all. Click the chip, and the
+	// plain card it leaves behind moves like every other card on the track.
+	if (CLAUSES.explicitConversion) return false;
 	return cell === convertibleCell(state);
 }
 
@@ -1063,6 +1150,10 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 		// out: the wound has to be healed face up first.
 		if (cellTopWounded(state, from.data[0]) && !woundedCanGoHome(state)) {
 			return { legal: false, reason: 'wounded' };
+		}
+		// The party leaves only through the chip: a drafted card cannot reach its grave on its own.
+		if (draftAt(state, from.data[0]) && CLAUSES.explicitConversion) {
+			return { legal: false, reason: 'convert it through the chip first' };
 		}
 		// Conversion runs in order: only the drafted item beside the chip may leave its slot.
 		if (draftAt(state, from.data[0]) && from.data[0] !== convertibleCell(state)) {
@@ -1437,6 +1528,14 @@ function settle(state: TombState, levelBefore: number): TombState {
 			wounded: result.wounded,
 		});
 		next = refreshGlyphs(next);
+		// Pickpocket: the level opens a one-action window on the item pocket while it still holds a live,
+		// unwounded card. A spent one is fair game, because exhaustion does not travel to the tableau.
+		if (CLAUSES.pickpocketSwap && hasPassive(next, 'Thief')) {
+			const item = next.draft.find((entry) => entry.role === 'consumable');
+			if (item && next.game.cells[item.cell] && !next.wounded[item.cell]) {
+				next = cloneWith(next, { pickpocket: item.cell });
+			}
+		}
 	}
 
 	// Nothing ends a run on its own any more: once the boss king is down the exit is on offer,
@@ -1577,6 +1676,7 @@ export function canRevealFaceDown(state: TombState, location: CardLocation): boo
 
 /** Reveal one face-down card as an exploration: it heals from the left edge of the track. */
 export function revealFaceDown(state: TombState, location: CardLocation): TombState | null {
+	state = closePickpocket(state);
 	if (!canRevealFaceDown(state, location)) return null;
 	const card = cardAt(state.game, location)!;
 
@@ -1918,6 +2018,7 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 
 export function tombMove(state: TombState, from: CardLocation, to: CardLocation): TombState | null {
 	if (state.won) return null;
+	state = closePickpocket(state);
 	const cards = tombRun(state, from);
 	if (!cards.length) return null;
 	if (from.fixture === 'cascade' && !runReachesBottom(state, from, cards)) return null;
@@ -1929,6 +2030,9 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	const entry = source >= 0 ? draftAt(state, source) : undefined;
 	// An item only leaves its slot when it is the one beside the chip: conversions run in order.
 	if (entry && source !== convertibleCell(state)) return null;
+	// The explicit conversion: a drafted card is not played out, parked or buried on the fog — the chip
+	// is the only door, and it is one click rather than a drag.
+	if (entry && CLAUSES.explicitConversion) return null;
 	// An item may still be played out of its slot — a card is a card — and the play spends it. Played
 	// into a free cell it is the conversion the chip counts: the slot turns plain and the chip steps
 	// past it. Played into a hallway it has gone to the crypt, which is the one trip a Thief's
@@ -2002,8 +2106,8 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 
 	if (feed) {
 		// A pinned party keeps its suit even when a card of another one fills the slot.
-		const suit = state.synthetic?.[feed.role] ?? cards[0].suit;
-		const ability = ABILITY_TABLE[feed.role][suit];
+					const suit = state.synthetic?.[feed.role] ?? cards[0].suit;
+			const ability = abilityFor(feed.role, suit);
 		const exhausted = [...next.exhausted];
 		exhausted[feed.cell] = false;
 		next = cloneWith(next, {
@@ -2064,6 +2168,7 @@ export function attackWith(
 	reachThroughCover = false,
 	allowFatal = false
 ): TombState | null {
+	state = closePickpocket(state);
 	const preview = attackPreview(state, from, reachThroughCover);
 	if (!preview.legal && !(allowFatal && preview.fatal)) return null;
 	const card = cardAt(state.game, from);
@@ -2122,6 +2227,9 @@ export function attackWith(
 	// Thief's Pickpocket) restocks the item and the chip stays put. A kill is the exit that earns the wide
 	// window: the item was spent on a blow, so the pocket may be rebuilt from anything. Any other action
 	// drops the window, so the chip steps left and the cell is ordinary from then on.
+	// The explicit conversion retired the refill window: a party card leaves its slot through the chip,
+	// so nothing is ever waiting to be fed and the chip never holds for one action.
+	if (CLAUSES.explicitConversion) return settled;
 	if (!entry || !itemCard || settled.game.cells[cellIndex]) return settled;
 	return cloneWith(settled, {
 		itemWindow: { cell: cellIndex, role: entry.role, suit: entry.suit, takes: pickpocket ? 'any' : 'same' },
@@ -2165,7 +2273,60 @@ export function abilityUsable(state: TombState, cell: number): boolean {
 	);
 }
 
+/** Whether Pickpocket's window is open on this pocket and can be armed right now. */
+export function pickpocketUsable(state: TombState, cell: number): boolean {
+	if (!CLAUSES.pickpocketSwap || state.pickpocket !== cell) return false;
+	const entry = draftAt(state, cell);
+	return (
+		!!entry &&
+		!!state.game.cells[cell] &&
+		!state.wounded[cell] &&
+		!state.armed &&
+		!state.won
+	);
+}
+
+/**
+ * The swap itself: the pocket's card and an exposed tableau card trade places. The stolen card becomes
+ * the item — its suit picks the ability, and it counts as drafted for its grave the way every party card
+ * does — while the old item card lands on the column as a plain card, free to go home.
+ */
+export function swapPickpocket(state: TombState, cell: number, target: Card): TombState | null {
+	const entry = draftAt(state, cell);
+	const held = state.game.cells[cell];
+	if (!entry || !held || state.wounded[cell]) return null;
+	if (isBoss(state, target) || immobileBoss(state, target)) return null;
+	const from = target.location;
+	const game = relocate(cloneWith(state, { armed: null }), [
+		{ id: cardId(target), to: { fixture: 'cell', data: [cell] } },
+		{ id: cardId(held), to: from },
+	]);
+	const exhausted = [...state.exhausted];
+	exhausted[cell] = false;
+	const ability = abilityFor(entry.role, target.suit);
+	return settle(
+		cloneWith(state, {
+			game,
+			armed: null,
+			exhausted,
+			pickpocket: null,
+			draft: [
+				...state.draft.filter((existing) => existing.cell !== cell),
+				{ cell, role: entry.role, id: cardId(target), suit: target.suit, name: ability.name, text: ability.text },
+			],
+		}),
+		currentLevel(state)
+	);
+}
+
 export function useAbility(state: TombState, cell: number): TombState | null {
+	if (pickpocketUsable(state, cell)) {
+		// Arming leaves the window lit: the pocket is the button and the swap is the click that spends it,
+		// so putting the arm down again (the disarm every other ability allows) costs nothing. Anything
+		// that is not the swap closes it at that action's own door.
+		return cloneWith(state, { armed: { kind: 'pickpocket', cell } });
+	}
+	state = closePickpocket(state);
 	if (!abilityUsable(state, cell)) return null;
 	const entry = draftAt(state, cell)!;
 	// Dualcast is read live rather than off the draft: a stoned Wizard's pocket is an item again, so the
@@ -2369,6 +2530,15 @@ export function armedClick(state: TombState, location: CardLocation): TombState 
 		const head = cardAt(state.game, location);
 		if (!pair || !head) return null;
 		return cloneWith(state, { armed: { ...armed, first: cardId(head) } });
+	}
+
+	if (armed.kind === 'pickpocket') {
+		// The one target a stolen card can have: the exposed top of a hallway. The boss is no hand's to take.
+		if (location.fixture !== 'cascade') return null;
+		const target = cardAt(state.game, location);
+		const pile = state.game.tableau[location.data[0]] ?? [];
+		if (!target || isFaceDown(state, target) || pile[pile.length - 1] !== target) return null;
+		return swapPickpocket(state, armed.cell, target);
 	}
 
 	// A draft card in its cell is never a target: an ability only aims at the board.

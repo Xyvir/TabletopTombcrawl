@@ -11,8 +11,11 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import {
+	CLAUSES,
 	FREE_CELL_COUNT,
+	TOMB_RULES,
 	armedClick,
+	convertChip,
 	armedDrop,
 	attackWith,
 	bossSlain,
@@ -53,6 +56,20 @@ interface Solution {
 	 * a cached machine solution checkable rather than merely readable.
 	 */
 	actions?: SolverAction[];
+}
+
+/**
+ * VARIANT=variants/conversions.json replays the stored lines under rules that are not shipped, so a
+ * proposed change can be priced in keys before anybody commits to it.
+ */
+const variantFile = process.env.VARIANT;
+if (variantFile) {
+	const variant = JSON.parse(readFileSync(variantFile, 'utf8')) as {
+		clauses?: Record<string, boolean>;
+		rules?: Record<string, unknown>;
+	};
+	Object.assign(CLAUSES, variant.clauses ?? {});
+	Object.assign(TOMB_RULES, variant.rules ?? {});
 }
 
 const column = (index: number, row = 0): CardLocation => ({ fixture: 'cascade', data: [index, row] });
@@ -112,6 +129,8 @@ export function step(state: TombState, text: string): TombState | null {
 		if (cast?.kind !== 'purity' || cast.cell !== Number(m[2]) - 1) throw new Error(`no Purity armed in cell ${m[2]}`);
 		return armedClick(state, column(Number(m[3]) - 1));
 	}
+	// convert Remedy (cell 4) — the chip, clicked: the party card beside it is spent for one wound
+	if ((m = /^convert (\w+) \(cell (\d+)\)$/.exec(text))) return convertChip(state);
 	// arm   PISORF (cell 3)   /   drop  PISORF (cell 3)
 	if ((m = /^arm (\w+) \(cell (\d+)\)$/.exec(text))) return useAbility(state, Number(m[2]) - 1);
 	// use   Potion (cell 4)   — an item whose effect lands as it is used, rather than one left armed

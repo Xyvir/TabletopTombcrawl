@@ -26,6 +26,10 @@ import {
 	moveCapacity,
 	parCleared,
 	pisorfPair,
+	canConvert,
+	conversionTarget,
+	convertChip,
+	pickpocketUsable,
 	restockSuits,
 	revealFaceDown,
 	bossProtected,
@@ -36,7 +40,17 @@ import {
 	type Difficulty,
 	type TombState,
 } from './tombcrawl';
-import { armLabel, cardName, digLabel, homeLabel, moveLabel, parkLabel, where } from './notation';
+import {
+	armLabel,
+	cardName,
+	convertLabel,
+	digLabel,
+	homeLabel,
+	moveLabel,
+	parkLabel,
+	pickpocketLabel,
+	where,
+} from './notation';
 
 export type Goal = 'clear' | 'boss';
 
@@ -66,7 +80,11 @@ export type SolverAction =
 	| { kind: 'pisorf'; cell: number; from: CardLocation; to: number }
 	| { kind: 'weytwut'; cell: number; a: CardLocation; b: CardLocation }
 	/** Purity aims at a hallway rather than a card, so its arm and its aim are one action too. */
-	| { kind: 'purity'; cell: number; column: number };
+	| { kind: 'purity'; cell: number; column: number }
+	/** The chip, clicked: one party card spent for one wound. */
+	| { kind: 'convert' }
+	/** Pickpocket, armed on the item pocket and aimed at an exposed card. */
+	| { kind: 'pickpocket'; cell: number; at: CardLocation };
 
 export interface SolverMove {
 	action: SolverAction;
@@ -104,6 +122,13 @@ export function applyAction(state: TombState, action: SolverAction): TombState |
 			const armed = useAbility(state, action.cell);
 			if (!armed) return null;
 			return armedClick(armed, { fixture: 'cascade', data: [action.column, 0] });
+		}
+		case 'convert':
+			return convertChip(state);
+		case 'pickpocket': {
+			const armed = useAbility(state, action.cell);
+			if (!armed) return null;
+			return armedClick(armed, action.at);
 		}
 	}
 }
@@ -221,6 +246,25 @@ export function generateMoves(state: TombState): SolverMove[] {
 				moveLabel([card], cell(slot), target, buried),
 				tombMove(state, cell(slot), target)
 			);
+		}
+	}
+
+	// The explicit conversion: the chip spends the party card beside it for one wound.
+	if (canConvert(state)) {
+		const entry = conversionTarget(state);
+		if (entry) add({ kind: 'convert' }, convertLabel(entry.name, entry.cell), convertChip(state));
+	}
+
+	// Pickpocket's window: the item pocket trades with any exposed card of the tableau.
+	if (state.pickpocket !== null && pickpocketUsable(state, state.pickpocket)) {
+		const slot = state.pickpocket;
+		for (let c = 0; c < state.game.tableau.length; c++) {
+			const pile = state.game.tableau[c] ?? [];
+			const top = pile[pile.length - 1];
+			if (!top || isFaceDown(state, top)) continue;
+			const at = column(c, pile.length - 1);
+			const action = { kind: 'pickpocket' as const, cell: slot, at };
+			add(action, pickpocketLabel(top, at), applyAction(state, action));
 		}
 	}
 

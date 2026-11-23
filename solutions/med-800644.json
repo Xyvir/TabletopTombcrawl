@@ -2,7 +2,7 @@
 	"seed": 800644,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 87,
+	"moves": 85,
 	"loadout": "ddss",
 	"party": [
 		"Elf",
@@ -10,9 +10,9 @@
 		"BYSSEPS",
 		"Purity"
 	],
-	"found": "2026-11-17",
+	"found": "2026-11-23",
 	"source": "solver",
-	"note": "plan fill, best, plan, 1,125 states · cut to the boss kill (current rules)",
+	"note": "branched at step 80, where the old line spends a party card the conversion now refuses, 15 states",
 	"lines": [
 		"dig AH col 2 row 5",
 		"range AH col 2 row 5",
@@ -93,14 +93,12 @@
 		"home JH -> hearts foundation",
 		"home JC -> clubs foundation",
 		"home JD -> diamonds foundation",
-		"home JS -> spades foundation",
+		"home QS -> spades foundation",
 		"home QC -> clubs foundation",
 		"home QD -> diamonds foundation",
-		"home QS -> spades foundation",
 		"home QH -> hearts foundation",
 		"home KC -> clubs foundation",
-		"home KH -> hearts foundation",
-		"home KS -> spades foundation"
+		"home KH -> hearts foundation"
 	],
 	"actions": [
 		{
@@ -1001,7 +999,7 @@
 			"at": {
 				"fixture": "cell",
 				"data": [
-					3
+					6
 				]
 			}
 		},
@@ -1022,15 +1020,6 @@
 				"data": [
 					6,
 					1
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					6
 				]
 			}
 		},
@@ -1060,16 +1049,6 @@
 				"fixture": "cascade",
 				"data": [
 					3,
-					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					6,
 					0
 				]
 			}

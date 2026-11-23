@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { BOARD_ALPHABET, decodeBoard } from './boardstate';
 import { applyAction } from './solver';
 import {
@@ -32,7 +32,10 @@ import {
 	carriesPower,
 	cellCardMovable,		cellTopWounded,
 	chipBoundary,
+	canConvert,
+	convertChip,
 	convertibleCell,
+	pickpocketUsable,
 	withSyntheticLoadout,
 	hasGlyph,
 	hasPassive,
@@ -141,12 +144,22 @@ function makeTomb({
 		score: null,
 		armed: null,
 		itemWindow: null,
+		pickpocket: null,
 		synthetic: null,
 	};
 }
 
 const cascade = (column: number, card = 0) => ({ fixture: 'cascade' as const, data: [column, card] });
 const cell = (index: number) => ({ fixture: 'cell' as const, data: [index] });
+
+/**
+ * The rules the explicit conversion retired. A test that pins the old door switches these back on for its
+ * own body and the next test gets the shipped rules again — the old window is a clause away, not a mystery,
+ * and deleting its tests would delete the only description of what the clause still does.
+ */
+const LEGACY_CLAUSES = { explicitConversion: false, thiefPickpocket: true, pickpocketSwap: false };
+const SHIPPED_CLAUSES = { ...CLAUSES };
+afterEach(() => Object.assign(CLAUSES, SHIPPED_CLAUSES));
 
 describe('synthetic loadouts', () => {
 	const deal = (state: TombState) =>
@@ -188,6 +201,7 @@ describe('synthetic loadouts', () => {
 	});
 
 	test('a restocked slot keeps the pinned suit rather than the fed card’s', () => {
+		Object.assign(CLAUSES, LEGACY_CLAUSES);
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: '3H', suit: 'hearts', name: 'Priest', text: '' },
 			{ cell: 2, role: 'consumable', id: '2C', suit: 'clubs', name: 'Elixir', text: '' },
@@ -388,6 +402,9 @@ describe('monster damage on the way home', () => {
 });
 
 describe('conversion order', () => {
+	// The order the old door ran in: the item beside the chip played out, its slot waited one action.
+	beforeEach(() => Object.assign(CLAUSES, LEGACY_CLAUSES));
+
 	test('the chip starts between the party and the plain free cells', () => {
 		const med = createTombState(4242, FREE_CELL_COUNT.med);
 		const hard = createTombState(4242, FREE_CELL_COUNT.hard);
@@ -897,6 +914,8 @@ describe('the level cap', () => {
 	});
 
 	test("a Dwarf's fourth pocket is exactly enough for the cap's endgame", () => {
+		// The old line plays cards out of the party to bank its wounds; the conversion is priced below.
+		Object.assign(CLAUSES, LEGACY_CLAUSES);
 		// Dwarf · Fighter · BYSSEPS · Potion, and the queens still out: the Fighter skips a king past its
 		// missing queen, so the four queens can be parked as a wound bank while the kings come home.
 		const state = endgame([...KINGS, ...QUEENS], ['3S', '4S', '3C', 'AH'], 8);
@@ -920,6 +939,115 @@ describe('the level cap', () => {
 		for (const slot of [4, 5, 6, 7, 3, 2, 1, 0]) board = applyAction(board, { kind: 'home', at: cell(slot) })!;
 		expect(board.game.cards.every((card) => card.location.fixture === 'foundation')).toBe(true);
 		expect(tombPar(board)).toBe(0);
+	});
+
+	describe('the explicit conversion', () => {
+		const shipped = { ...CLAUSES };
+		const variant = <T>(fn: () => T): T => {
+			try {
+				Object.assign(CLAUSES, { explicitConversion: true, thiefPickpocket: false, pickpocketSwap: true });
+				return fn();
+			} finally {
+				Object.assign(CLAUSES, shipped);
+			}
+		};
+
+		test('the chip spends the card beside it, mends one wound, and leaves the card plain', () => {
+			variant(() => {
+				const state = endgame(spread(KINGS), NO_HEAL);
+				expect(canConvert(state)).toBe(true);
+				// a king first, so there is a wound for the conversion to mend
+				const hurt = applyAction(state, { kind: 'home', at: cascade(0) })!;
+				expect(hp(hurt)).toBe(3);
+				expect(hurt.wounded[3]).toBe(1);
+
+				const converted = convertChip(hurt)!;
+				expect(converted.draft.map((entry) => entry.cell)).toEqual([0, 1, 2]);
+				expect(hp(converted)).toBe(4);
+				// the card never left its pocket: it is a plain card now, and it can be sent home
+				expect(shorthandCard(converted.game.cells[3]!)).toBe('3D');
+				expect(cellCardMovable(converted, 3)).toBe(true);
+			});
+		});
+
+		test('a drafted card can neither be picked up nor sent home', () => {
+			variant(() => {
+				const state = endgame(spread(KINGS), NO_HEAL);
+				expect(cellCardMovable(state, 3)).toBe(false);
+				expect(canSendHome(state, cell(3))).toMatchObject({ legal: false });
+				expect(attackWith(state, cell(3))).toBeNull();
+			});
+		});
+
+		test('a wounded card can still be spent: the conversion is the way out of that lock', () => {
+			variant(() => {
+				const hurt = applyAction(endgame(spread(KINGS), NO_HEAL), { kind: 'home', at: cascade(0) })!;
+				expect(cellTopWounded(hurt, 3)).toBe(true);
+				const converted = convertChip(hurt)!;
+				expect(converted.wounded[3]).toBe(0);
+			});
+		});
+
+		test('four conversions pay the four kings, and the party walks home plain', () => {
+			variant(() => {
+				let board = endgame(spread(KINGS), NO_HEAL);
+				board = applyAction(board, { kind: 'home', at: cascade(0) })!;
+				board = applyAction(board, { kind: 'home', at: cascade(1) })!;
+				board = convertChip(board)!;
+				board = applyAction(board, { kind: 'home', at: cascade(2) })!;
+				board = applyAction(board, { kind: 'home', at: cascade(3) })!;
+				while (canConvert(board)) board = convertChip(board)!;
+				expect(board.draft).toHaveLength(0);
+				for (const slot of [3, 2, 1, 0]) board = applyAction(board, { kind: 'home', at: cell(slot) })!;
+				expect(board.game.cards.every((card) => card.location.fixture === 'foundation')).toBe(true);
+				expect(tombPar(board)).toBe(0);
+			});
+		});
+
+		test('Pickpocket trades the item pocket with an exposed card on its level-up window', () => {
+			variant(() => {
+				const draft = [
+					{ cell: 0, role: 'class' as const, id: 'TD', suit: 'diamonds' as const, name: 'Thief', text: '' },
+					{ cell: 1, role: 'consumable' as const, id: '5C', suit: 'clubs' as const, name: 'Elixir', text: '' },
+				];
+				const state = makeTomb({ columns: [['7H']], cells: ['TD', '5C'], draft });
+				const open = { ...state, pickpocket: 1 };
+				expect(pickpocketUsable(open, 1)).toBe(true);
+
+				const armed = useAbility(open, 1)!;
+				expect(armed.armed).toMatchObject({ kind: 'pickpocket', cell: 1 });
+				// The pocket stays lit through the arm: the swap is the click that spends the window, so a
+				// second click on the pocket puts the arm down unspent instead of burning the level up.
+				expect(armed.pickpocket).toBe(1);
+
+				// A spent item cannot be cast, and it is exactly the pocket the window refills — the click
+				// gate has to ask the pick as well as the cast, or that item could never be armed.
+				const spent = { ...open, exhausted: [false, true] };
+				expect(abilityUsable(spent, 1)).toBe(false);
+				expect(pickpocketUsable(spent, 1)).toBe(true);
+
+				const putDown = armedClick(armed, cell(1))!;
+				expect(putDown.armed).toBeNull();
+				expect(putDown.pickpocket).toBe(1);
+
+				const swapped = armedClick(useAbility(putDown, 1)!, cascade(0))!;
+				expect(shorthandCard(swapped.game.cells[1]!)).toBe('7H');
+				expect(shorthandCard(swapped.game.tableau[0]![0]!)).toBe('5C');
+				expect(swapped.draft.find((entry) => entry.cell === 1)).toMatchObject({ suit: 'hearts', name: 'Potion' });
+				expect(swapped.exhausted[1]).toBe(false);
+			});
+		});
+
+		test('the shipped rules are the conversion: the chip is the only door', () => {
+			expect(CLAUSES.explicitConversion).toBe(true);
+			expect(CLAUSES.thiefPickpocket).toBe(false);
+			const state = endgame(spread(KINGS), NO_HEAL);
+			expect(canConvert(state)).toBe(true);
+			// The party's own cards leave through the chip alone: no grave, no pocket, no hand.
+			expect(canSendHome(state, cell(3)).legal).toBe(false);
+			expect(cellCardMovable(state, 0)).toBe(false);
+			expect(tombMove(state, cell(3), cell(4))).toBeNull();
+		});
 	});
 });
 
@@ -1005,6 +1133,7 @@ describe('the remedy', () => {
 	});
 
 	test('a plain card parked on an item slot goes home without refilling the item', () => {
+		Object.assign(CLAUSES, LEGACY_CLAUSES);
 		// the diamond in the column is the card the old bookkeeping would have dragged into the slot
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'consumable', id: 'TD', suit: 'diamonds', name: 'Remedy', text: '' },
@@ -1876,6 +2005,7 @@ describe('tombcrawl progression rules', () => {
 	});
 
 	test('a drafted card played out to the board is spent for good', () => {
+		Object.assign(CLAUSES, LEGACY_CLAUSES);
 		const draft: DraftCard[] = [{ cell: 0, role: 'glyph', id: '8C', suit: 'clubs', name: 'PISORF', text: '' }];
 		const state = makeTomb({ columns: [['9H'], ['7S']], cells: ['8C'], draft });
 		const next = tombMove(state, cell(0), cascade(0))!;
@@ -2343,6 +2473,9 @@ describe('tombcrawl the the sack', () => {
 });
 
 describe('tombcrawl item refresh', () => {
+	// The refill window the explicit conversion retired: switched back on here, it still works as described.
+	beforeEach(() => Object.assign(CLAUSES, LEGACY_CLAUSES));
+
 	const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: '2S', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
 	// The ace home lets the card beside the chip go home, which is the exit that restocks its slot.
 	// Four cards on the track, so the single point that kill costs lands on the right edge and leaves
@@ -2602,6 +2735,9 @@ describe('tombcrawl boss protection', () => {
 });
 
 describe('restocking a spent slot', () => {
+	// The window the explicit conversion retired: switched back on here, it still works as described.
+	beforeEach(() => Object.assign(CLAUSES, LEGACY_CLAUSES));
+
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'kin', id: '2C', suit: 'clubs', name: 'Orc', text: '' },
 		{ cell: 3, role: 'consumable', id: '3D', suit: 'diamonds', name: 'Remedy', text: '' },

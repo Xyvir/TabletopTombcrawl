@@ -10,9 +10,9 @@
 		"CYDSTEPP",
 		"PISORF"
 	],
-	"found": "2026-11-22",
+	"found": "2026-11-23",
 	"source": "solver",
-	"note": "plan fill, best, plan, 4,893 states",
+	"note": "branched at step 104, where the old line spends a party card the conversion now refuses, 68 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"arm CYDSTEPP (cell 3)",
@@ -117,11 +117,11 @@
 		"home JD -> diamonds foundation",
 		"home JH -> hearts foundation",
 		"home QC -> clubs foundation",
-		"home KC -> clubs foundation",
 		"dig JS col 1 row 1",
 		"home JS -> spades foundation",
 		"home QS -> spades foundation",
 		"home QH -> hearts foundation",
+		"home KH -> hearts foundation",
 		"home KS -> spades foundation"
 	],
 	"actions": [
@@ -1396,15 +1396,6 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					1
-				]
-			}
-		},
-		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
@@ -1440,6 +1431,16 @@
 				"fixture": "cell",
 				"data": [
 					6
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					0
 				]
 			}
 		},

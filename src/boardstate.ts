@@ -296,6 +296,7 @@ export function decodeBoard(text: string): TombState | null {
 		score: null,
 		armed: null,
 		itemWindow: null,
+		pickpocket: null,
 		synthetic: null,
 	};
 	return { ...state, trueBoss: reserveHeld && bossSlain(state) };

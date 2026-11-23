@@ -27,7 +27,8 @@ export interface FoundLine {
 	moves: number;
 	party: SolutionParty[];
 	lines: string[];
-	actions: unknown[];
+	/** The solver's moves, when the producer has them: a line played by hand has only its text. */
+	actions?: unknown[];
 	nodes: number;
 	/** What found it: the re-prover and the scanner are different questions about the same seed. */
 	note: string;
@@ -46,7 +47,7 @@ export function writeSolution(found: FoundLine) {
 		source: 'solver',
 		note: `${found.note}, ${found.nodes.toLocaleString()} states`,
 		lines: found.lines,
-		actions: found.actions,
+		...(found.actions ? { actions: found.actions } : {}),
 	};
 	writeFileSync(
 		`solutions/${found.difficulty}-${found.seed}.json`,

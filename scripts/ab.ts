@@ -21,7 +21,15 @@
  * as a suit name.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { CLAUSES, TOMB_RULES, FREE_CELL_COUNT, createTombState, type ClauseName, type Difficulty } from '../src/tombcrawl';
+import {
+	CLAUSES,
+	TOMB_RULES,
+	FREE_CELL_COUNT,
+	createTombState,
+	type ClauseName,
+	type Difficulty,
+} from '../src/tombcrawl';
+import type { Goal, SolverEngine } from '../src/solver';
 import { ORGANIZE_WEIGHTS, SCORE_WEIGHTS, solveTomb } from '../src/solver';
 import { logRun } from './log-run';
 
@@ -68,6 +76,10 @@ const budget = Number(process.env.BUDGET ?? 300_000);
 const keyFilter = process.env.SKEY ?? '';
 const limit = Number(process.env.LIMIT ?? 0);
 const out = process.env.OUT ?? 'corpus/ab.json';
+/** Boss by default (the corpus is all boss kills); GOAL=clear measures the other objective. */
+const goal = (process.env.GOAL ?? 'boss') as Goal;
+/** ENGINE=plan is the arm that can find a clear; the default keeps the hybrid the corpus used. */
+const engine = (process.env.ENGINE ?? '') as SolverEngine | '';
 
 const variants: Variant[] = (process.env.VARIANTS ?? '')
 	.split(',')
@@ -91,7 +103,8 @@ function play(entry: Entry): Arm {
 	const state = createTombState(entry.seed, FREE_CELL_COUNT[difficulty] ?? FREE_CELL_COUNT.med);
 	const result = solveTomb({
 		state,
-		goal: 'boss',
+		goal,
+		...(engine ? { engine } : {}),
 		strategy: 'hybrid',
 		beamWidth: 300,
 		depth: 300,
@@ -178,7 +191,7 @@ const logged = logRun({
 	tool: 'ab',
 	config: {
 		budget,
-		goal: 'boss',
+		goal,
 		strategy: 'hybrid',
 		beamWidth: 300,
 		depth: 300,

@@ -33,6 +33,9 @@ export const parkLabel = (card: Card, from: CardLocation, to: CardLocation) =>
 export const armLabel = (name: string, slot: number) => `arm   ${name} (cell ${slot + 1})`;
 export const disarmLabel = (name: string, slot: number) => `drop  ${name} (cell ${slot + 1})`;
 export const useLabel = (name: string, slot: number) => `use   ${name} (cell ${slot + 1})`;
+export const convertLabel = (name: string, slot: number) => `convert ${name} (cell ${slot + 1})`;
+export const pickpocketLabel = (card: Card, at: CardLocation) =>
+	`steal ${cardName(card)} ${where(at)} -> item`;
 
 export function moveLabel(cards: Card[], from: CardLocation, to: CardLocation, buried: boolean): string {
 	const what = cards.map(cardName).join(' ');
@@ -78,6 +81,12 @@ export function describeStep(before: TombState, after: TombState): string | null
 		const fromB = old(b)?.location;
 		if (fromA && fromB && sameLocation(fromA, b.location) && sameLocation(fromB, a.location))
 			return `swap  ${cardName(a)} ${where(fromA)} <-> ${cardName(b)} ${where(fromB)}`;
+	}
+	if (!moved.length) {
+		// A conversion: a party card leaves the draft without moving anywhere, and the chip steps. Nothing
+		// else on the board changes, so this is the only line that can describe it.
+		const converted = before.draft.find((entry) => !after.draft.some((now) => now.cell === entry.cell));
+		if (converted) return convertLabel(converted.name, converted.cell);
 	}
 	if (moved.length) {
 		const first = moved[0];

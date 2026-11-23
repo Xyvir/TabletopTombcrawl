@@ -2,7 +2,7 @@
 	"seed": 154307,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 79,
+	"moves": 81,
 	"loadout": "dhcc",
 	"party": [
 		"Elf",
@@ -10,9 +10,9 @@
 		"PISORF",
 		"Elixir"
 	],
-	"found": "2026-11-14",
+	"found": "2026-11-23",
 	"source": "solver",
-	"note": "re-proved best-first by scripts/verify.ts, 308,690 states",
+	"note": "branched at step 76, where the old line spends a party card the conversion now refuses, 33 states",
 	"lines": [
 		"home AH -> hearts foundation",
 		"dig AC col 5 row 5",
@@ -89,8 +89,10 @@
 		"home JH -> hearts foundation",
 		"home TC -> clubs foundation",
 		"home QD -> diamonds foundation",
-		"home JC -> clubs foundation",
+		"dig QC col 8 row 1",
+		"home QC -> clubs foundation",
 		"home QS -> spades foundation",
+		"home QH -> hearts foundation",
 		"home KS -> spades foundation",
 		"home KD -> diamonds foundation"
 	],
@@ -942,11 +944,22 @@
 			}
 		},
 		{
+			"kind": "dig",
+			"at": {
+				"fixture": "cascade",
+				"data": [
+					7,
+					0
+				]
+			}
+		},
+		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					3
+					7,
+					0
 				]
 			}
 		},
@@ -956,6 +969,15 @@
 				"fixture": "cell",
 				"data": [
 					5
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					6
 				]
 			}
 		},

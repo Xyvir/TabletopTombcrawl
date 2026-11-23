@@ -37,6 +37,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		ROLE_WORD,
 				abilityFor,
 		abilityUsable,
+		pickpocketUsable,
 		afflictionFired,
 		afflictionTargets,
 		armedClick,
@@ -52,7 +53,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		cellCardMovable,
 		cellCards,
 		cardAt,
+		canConvert,
 		chipBoundary,
+		conversionHeals,
+		conversionTarget,
+		convertChip,
 		CLAUSES,
 		convertibleCell,
 		newlyHealed,
@@ -620,7 +625,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The track cards an aimed kill would turn face-down, marked red before the blow lands. */
 	const woundPreview = $derived(new Set(preview?.wounds ?? []));
 	/** The track cards digging the hovered fog would turn back up, marked green before it is spent. */
-	const healNext = $derived(new Set(tomb && tombHover ? healPreview(tomb, tombHover) : []));
+	/** The chip is hovered: its pending mending is drawn on the track. */
+	let chipHover = $state(false);
+	const healNext = $derived(
+		new Set([
+			...(tomb && tombHover ? healPreview(tomb, tombHover) : []),
+			// Hovering the chip prices the conversion the same way hovering the fog prices a dig.
+			...(tomb && chipHover && canConvert(tomb) ? conversionHeals(tomb) : []),
+		])
+	);
 	/**
 	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
 	 * Bandit would empty, the card a Gorgon would turn down, the glyphs a Wraith would spend. An
@@ -1264,6 +1277,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return 'mana';
 	}
 
+	/** The chip, clicked: the one conversion in the game, once the explicit rule is switched on. */
+	function convertChipClick() {
+		if (!tomb) return;
+		const next = convertChip(tomb);
+		if (next) commit(next);
+	}
+
 	function commit(next: TombState, before?: Map<string, DOMRect>) {
 		if (!tomb) return;
 		const wasHidden = new Set(tomb.hidden);
@@ -1549,7 +1569,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				shake(el);
 				return;
 			}
-			if (abilityUsable(state, index)) {
+			// The window is the one thing a spent pocket can still offer — Pickpocket refills from the
+			// tableau — so the pick is asked beside the cast, or a spent item could never be armed.
+			if (abilityUsable(state, index) || pickpocketUsable(state, index)) {
 				const used = useAbility(state, index);
 				if (used) {
 					commit(used);
@@ -2182,6 +2204,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						(!entry || convertibleCell(tomb) === i)}
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
+					class:pickpocket={!!tomb && tomb.pickpocket === i}
 					class:locking={!!preview?.locks.includes(i)}
 					class:need={!!preview?.need.includes(i)}
 					class:empty={!card}
@@ -2304,17 +2327,27 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				</button>
 			{/each}
 			{#if !!tomb && chipAt > 0}
-				<span
+				{@const ready = canConvert(tomb)}
+				{@const chipCard = conversionTarget(tomb)}
+				<button
+					type="button"
 					class="chip"
+					class:ready
 					style={`--chip-index:${chipAt}`}
-					title={conversionPreview
-						? 'Playing this card out converts its slot: the chip walks one step left.'
-						: 'Conversion tracker: the item slots to its left are your live abilities, and the free cells to its right are plain — they only hold a card. Each conversion walks the chip one slot left.'}
+					disabled={!ready}
+					title={ready
+						? `Convert ${chipCard?.name ?? 'the card'}: give up its ability for good and mend one wound. The card stays in its pocket as a plain card, free to go home.`
+						: conversionPreview
+							? 'Playing this card out converts its slot: the chip walks one step left.'
+							: 'Conversion tracker: the item slots to its left are your live abilities, and the free cells to its right are plain — they only hold a card. Each conversion walks the chip one slot left.'}
+					onclick={convertChipClick}
+					onpointerenter={() => (chipHover = true)}
+					onpointerleave={() => (chipHover = false)}
 				>
 					<!-- The conversion a card in hand would spend. Mounted always, so it fades like an affliction's mark
 					     rather than popping in on the pointer. -->
 					<span class="alert" class:on={conversionPreview} aria-hidden="true">!</span>
-				</span>
+				</button>
 			{/if}
 		</div>
 

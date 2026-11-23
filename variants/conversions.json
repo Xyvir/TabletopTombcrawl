@@ -1,0 +1,7 @@
+{
+	"clauses": {
+		"explicitConversion": true,
+		"thiefPickpocket": false,
+		"pickpocketSwap": true
+	}
+}
