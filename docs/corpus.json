@@ -1493,6 +1493,39 @@
 			"at": "2026-11-16T05:09:26.796Z"
 		},
 		{
+			"loadout": "hhhc",
+			"boss": "hearts",
+			"seed": 822,
+			"moves": 161,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "CYDSTEPP",
+					"suit": "hearts"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-23",
+			"source": "human",
+			"note": "bare-tomb clear; endgame converts Elixir, CYDSTEPP, Priest, Human in sequence to pay the last four kings at the level-12 cap"
+		},
+		{
 			"loadout": "hhhd",
 			"boss": "diamonds",
 			"seed": 3816,
@@ -2344,6 +2377,14 @@
 			"at": "2026-11-16T05:09:26.796Z"
 		},
 		{
+			"loadout": "hhhc",
+			"difficulty": "med",
+			"seed": 822,
+			"moves": 161,
+			"goal": "clear",
+			"at": "2026-11-23"
+		},
+		{
 			"loadout": "hhhd",
 			"difficulty": "med",
 			"seed": 3816,
@@ -2850,6 +2891,14 @@
 				"boss": {
 					"seed": 3902,
 					"moves": 60
+				}
+			}
+		},
+		"hhhc": {
+			"med": {
+				"clear": {
+					"seed": 822,
+					"moves": 161
 				}
 			}
 		},
@@ -4105,13 +4154,6 @@
 				"at": "2026-11-22"
 			}
 		},
-		"hhhc": {
-			"med": {
-				"seed": 822,
-				"score": null,
-				"at": "2026-11-16T05:08:54.812Z"
-			}
-		},
 		"hchh": {
 			"med": {
 				"seed": 154116,
@@ -4352,7 +4394,6 @@
 		}
 	},
 	"missing": [
-		"hhhc",
 		"hhhs",
 		"hhch",
 		"hhcc",
