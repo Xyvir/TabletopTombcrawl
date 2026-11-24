@@ -526,9 +526,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombHistory = [];
 		tombSelected = null;
 		tombLast = null;
-		tomb = createTombState(filler.seed, FREE_CELL_COUNT[layoutDifficulty]);
+					tomb = createTombState(filler.seed, FREE_CELL_COUNT[layoutDifficulty]);
 		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
+		void tick().then(() => startDeal());
 	}
 
 	/** Start the corpus deal for a party: the same rules the corpus was solved under. */
@@ -542,6 +543,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tomb = createTombState(entry.seed, FREE_CELL_COUNT[layoutDifficulty]);
 		dealLayout = loadoutOf(tomb);
 		game = tomb.game;
+		void tick().then(() => startDeal());
 	}
 
 	/**
@@ -1984,6 +1986,181 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (next) commit(next);
 	}
 
+	/*
+	 * The deal. Every card in the crawl starts as a back stacked on the title mark and is flung to the square
+	 * it will occupy, which is the one moment the whole board can be read at once: four party cards, eight
+	 * hallways, and how deep the fog runs. It is a flourish, not a reader — the board underneath is laid out
+	 * and only hidden, so the flight lands on the exact rectangles the cards will keep, and a click anywhere
+	 * ends it on the spot.
+	 *
+	 * The cards are dealt on a running stagger rather than one at a time: the next card leaves the mark while
+	 * the one before it is still in the air, which is what makes fifty-two of them read as a deal and not as a
+	 * queue. A card that will be known at the end of it — a hallway's bottom card, a party aspect — turns over
+	 * as it lands, with the same turn the fogger uses when it puts a back on a card, run backwards.
+	 */
+	const DEAL_STAGGER_MS = 34;
+	const DEAL_FLIGHT_MS = 560;
+	const DEAL_TURN_MS = 210;
+	/** Where in the flight a readable card starts to turn: far enough in to be nearly home, early enough to land face-up. */
+	const DEAL_TURN_AT = 0.6;
+	let dealing = $state(false);
+	let dealLayer: HTMLDivElement | null = null;
+	let dealAnimations: Animation[] = [];
+	let dealTimers: number[] = [];
+
+	/** Ends the deal wherever it stands: every card snaps to the square it was flying to. */
+	function endDeal() {
+		for (const timer of dealTimers) clearTimeout(timer);
+		dealTimers = [];
+		for (const animation of dealAnimations) animation.cancel();
+		dealAnimations = [];
+		dealLayer?.remove();
+		dealLayer = null;
+		dealing = false;
+	}
+
+	/**
+	 * Hands the board over. The dealt cards are the same pictures the board's own cards are about to show, so
+	 * the layer is not taken away but dissolved over the top of them: the labels, the chip and the boss-suit
+	 * stains come up underneath while the flights still cover them, and what the player sees is the deal
+	 * settling rather than a second board being switched on.
+	 */
+	function settleDeal() {
+		const layer = dealLayer;
+		if (!layer) {
+			endDeal();
+			return;
+		}
+		for (const timer of dealTimers) clearTimeout(timer);
+		dealTimers = [];
+		// the board is allowed to draw a frame before the layer goes translucent over it
+		dealing = false;
+		layer.style.pointerEvents = 'none';
+		layer.removeEventListener('pointerdown', endDeal);
+		for (const el of document.querySelectorAll<HTMLElement>(
+			'.board .slot .kind, .board .slot .sash, .board .cells .chip'
+		)) {
+			el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' });
+		}
+		const fade = layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-out' });
+		fade.finished.then(
+			() => dealLayer === layer && endDeal(),
+			() => undefined // a cancelled fade was a dismissal, which has already cleared the layer
+		);
+	}
+
+	function startDeal() {
+		endDeal();
+		if (!board || !tomb) return;
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+		// the logo itself, not the button it sits in: the title card is a grid cell as wide as the header,
+		// so measuring it would start every card from the middle of the page
+		const mark =
+			document.querySelector<HTMLElement>('.titlecard .titlemark svg') ??
+			document.querySelector<HTMLElement>('.titlecard svg') ??
+			document.querySelector<HTMLElement>('.titlecard .titlemark') ??
+			document.querySelector<HTMLElement>('.titlecard');
+		if (!mark) return;
+		const origin = mark.getBoundingClientRect();
+		const fogged = new Set(tomb.hidden);
+		// measured before the board is hidden, on the rects the cards will actually keep
+		const measured = [...board.querySelectorAll<HTMLElement>('[data-card]')]
+			.map((el) => ({ id: el.dataset.card ?? '', rect: visualRect(el) }))
+			.filter((spot) => spot.id && spot.rect.width > 0)
+			.sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left);
+		if (!measured.length) return;
+		/*
+		 * Dealt across rows, not down columns. A row of the layout is not a row of the screen: the pockets,
+		 * the party and each hallway open at their own height, so the cards are banded by their top first —
+		 * anything within a third of a card's height of the band's first card belongs to that band — and read
+		 * left to right inside it. A fan is dealt along the hallway rather than one hallway at a time, and the
+		 * deal sweeps the table the way the eye reads it.
+		 */
+		const bandTolerance = measured[0].rect.height * 0.32;
+		const banded: { spot: (typeof measured)[number]; band: number }[] = [];
+		let band = Number.NEGATIVE_INFINITY;
+		for (const spot of measured) {
+			if (spot.rect.top - band > bandTolerance) band = spot.rect.top;
+			banded.push({ spot, band });
+		}
+		banded.sort((a, b) => a.band - b.band || a.spot.rect.left - b.spot.rect.left);
+		const spots = banded.map((entry) => entry.spot);
+
+		const layer = document.createElement('div');
+		layer.className = 'deal';
+		layer.addEventListener('pointerdown', endDeal);
+		const middle = [origin.left + origin.width / 2, origin.top + origin.height / 2];
+		const started = performance.now();
+		spots.forEach((spot, index) => {
+			const item = document.createElement('div');
+			item.className = 'deal-card';
+			item.style.left = `${spot.rect.left}px`;
+			item.style.top = `${spot.rect.top}px`;
+			item.style.width = `${spot.rect.width}px`;
+			item.style.height = `${spot.rect.height}px`;
+			const picture = document.createElement('img');
+			picture.src = `${BASE}images/back.svg`;
+			picture.alt = '';
+			picture.draggable = false;
+			item.appendChild(picture);
+			layer.appendChild(item);
+
+			const dx = middle[0] - (spot.rect.left + spot.rect.width / 2);
+			const dy = middle[1] - (spot.rect.top + spot.rect.height / 2);
+			const delay = index * DEAL_STAGGER_MS;
+			dealAnimations.push(
+				item.animate(
+					[
+						// no scaling anywhere: a card leaves the mark at the size it will be played at, so the
+						// flight is a move and not a grow
+						{ transform: `translate(${dx}px, ${dy}px) rotate(-9deg)`, opacity: 0.3 },
+						{
+							transform: `translate(${dx * 0.45}px, ${dy * 0.32}px) rotate(5deg)`,
+							opacity: 1,
+							offset: 0.45,
+						},
+						{ transform: 'none', opacity: 1 },
+					],
+					{ duration: DEAL_FLIGHT_MS, delay, easing: 'cubic-bezier(.24,.68,.3,1)', fill: 'both' }
+				)
+			);
+
+			/*
+			 * A card that will be readable when the dust settles turns over on the way in, not after it has
+			 * landed: the turn starts around the last three fifths of the flight and is finished before the
+			 * card settles, so it arrives face-up rather than sitting still and then flipping. The turn is
+			 * scaled on the picture inside the flying card, because the card itself is already using its own
+			 * transform for the flight and a second transform animation there would fight it.
+			 */
+			const face = `${BASE}images/${spot.id[0]}${spot.id[1].toLowerCase()}.png`;
+			if (!fogged.has(spot.id)) {
+				dealTimers.push(
+					window.setTimeout(() => {
+						dealAnimations.push(
+							picture.animate(
+								[
+									{ transform: 'none' },
+									{ transform: 'scaleX(0.04)', offset: 0.5 },
+									{ transform: 'none' },
+								],
+								{ duration: DEAL_TURN_MS, easing: 'ease-in-out' }
+							)
+						);
+						// the face is swapped at the edge-on frame, where a card would show neither side
+						dealTimers.push(window.setTimeout(() => (picture.src = face), DEAL_TURN_MS / 2));
+					}, delay + DEAL_FLIGHT_MS * DEAL_TURN_AT)
+				);
+			}
+		});
+
+		dealLayer = layer;
+		document.body.appendChild(layer);
+		dealing = true;
+		// the last card's flight, its turn, and a beat to look at the board before it is handed over
+		const total = performance.now() - started + (spots.length - 1) * DEAL_STAGGER_MS + DEAL_FLIGHT_MS + 150;
+		dealTimers.push(window.setTimeout(settleDeal, total));
+	}
+
 	function newDeal() {
 		clearClickMemory();
 		pendingDeath = null;
@@ -2013,6 +2190,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			// only a square if the corpus actually holds that deal.
 			dealLayout = layoutForSeed(tomb.seed);
 			game = tomb.game;
+			void tick().then(() => startDeal());
 			return;
 		}
 		apply(deal(valid ? requested : undefined));
@@ -2080,13 +2258,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function warmCardImages() {
 		for (const name of CARD_IMAGES) {
 			const image = new Image();
-			image.src = `${BASE}images/${name}.png`;
+			// the back is its own drawing rather than a face, and it is a vector: warm the file the board
+			// actually asks for, or the deal's first frame is a broken picture waiting on a 404
+			image.src = name === 'back' ? `${BASE}images/back.svg` : `${BASE}images/${name}.png`;
 			// decode() resolves once the bitmap itself is ready; a failure only costs a late picture
 			void image.decode?.().catch(() => {});
 		}
 	}
 
 	onMount(warmCardImages);
+	// the opening deal: the board is already laid out under the flight, so this only has to look at it
+	onMount(() => {
+		void tick().then(() => startDeal());
+		return endDeal;
+	});
 	onMount(() => {
 		const mq = window.matchMedia?.('(pointer: coarse)');
 		if (!mq) return;
@@ -2144,6 +2329,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 <div
 	class="board"
 	class:tomb={!!tomb}
+	class:dealing
 	bind:this={board}
 	role="application"
 	aria-label="FreeCell board"

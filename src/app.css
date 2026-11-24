@@ -338,6 +338,50 @@ img {
 	transform: scale(1.1);
 }
 
+/*
+ * The deal. The board is laid out and merely hidden while fifty-two backs fly off the title mark, so every
+ * flight lands on the exact rectangle its card will keep and the handover at the end is invisible. The layer
+ * is the click target as well as the picture: a pointerdown on it ends the deal, so the same click cannot
+ * also be read as a move on the board underneath.
+ */
+.board.dealing [data-card] {
+	visibility: hidden;
+}
+
+/* the labels and the chip are furniture with their cards: they wait for the deal to land beside them */
+.board.dealing .slot .kind,
+.board.dealing .slot .sash,
+.board.dealing .cells.tomb .chip {
+	visibility: hidden;
+}
+
+.deal {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	cursor: pointer;
+}
+
+.deal-card {
+	position: fixed;
+	pointer-events: none;
+	/* the flight bends the card through a lean, and it should hinge near its foot like a card in a hand */
+	transform-origin: 50% 78%;
+	will-change: transform, opacity;
+	/*
+	 * No shadow on a dealt card. For a moment every card in the pack is lying in the same place, and
+	 * fifty-two stacked drop shadows read as one dark smear under the mark rather than as a deck; the
+	 * board's own cards carry no shadow either, so the handover at the end stays invisible.
+	 */
+}
+
+.deal-card img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border-radius: var(--radius);
+}
+
 /* controls */
 .controls {
 	display: flex;
