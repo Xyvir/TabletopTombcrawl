@@ -2020,16 +2020,23 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * queue. A card that will be known at the end of it — a hallway's bottom card, a party aspect — turns over
 	 * as it lands, with the same turn the fogger uses when it puts a back on a card, run backwards.
 	 */
+	/*
+	 * The pace is set to the sound. `deal.ogg` runs 1.49 s, and a deal that outlasts it reads as two things
+	 * happening rather than one, so the whole schedule is sized to land the last card and hand the board over
+	 * as the shuffle finishes: 45 card-slots of stagger, six row gaps and one flight come to about 1.43 s.
+	 */
 	/** Card to card inside a row: one hallway's cards follow each other into the air. */
-	const DEAL_STAGGER_MS = 30;
+	const DEAL_STAGGER_MS = 16;
 	/**
 	 * Row to row: a beat after the last card of a row has been dealt before the next row starts. Short enough that
 	 * the rows still overlap in the air (a row's last card is barely off the mark when the next row opens), long
 	 * enough that the rows are read as rows instead of one continuous diagonal stream of cards.
 	 */
-	const DEAL_ROW_GAP_MS = 120;
-	const DEAL_FLIGHT_MS = 560;
-	const DEAL_TURN_MS = 220;
+	const DEAL_ROW_GAP_MS = 64;
+	const DEAL_FLIGHT_MS = 330;
+	const DEAL_TURN_MS = 120;
+	/** The beat between the last card landing and the layer dissolving: just enough to see the board arrive. */
+	const DEAL_HANDOVER_MS = 60;
 	/**
 	 * Where in the flight a readable card starts to turn. Placed by the distance still to go rather than by clock
 	 * time: the flight speeds up through its middle, so a turn timed at the halfway mark finds the card almost
@@ -2110,7 +2117,26 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const fogged = new Set(tomb.hidden);
 		// measured before the board is hidden, on the rects the cards will actually keep
 		const measured = [...board.querySelectorAll<HTMLElement>('[data-card]')]
-			.map((el) => ({ id: el.dataset.card ?? '', rect: visualRect(el) }))
+			.map((el) => {
+				const rect = visualRect(el);
+				/*
+				 * Dealt at the size the tableau lays a card out, not the size it happens to be drawn at: the boss
+				 * king wears a 10% upsize, and a blow-up that only one card in the deck has would fly larger than
+				 * the rest and settle back down as it lands. The layout box ignores the transform; the centre of
+				 * the drawn rect keeps the card landing where the board will hold it.
+				 */
+				const width = el.offsetWidth || rect.width;
+				const height = el.offsetHeight || rect.height;
+				return {
+					id: el.dataset.card ?? '',
+					rect: {
+						left: rect.left + (rect.width - width) / 2,
+						top: rect.top + (rect.height - height) / 2,
+						width,
+						height,
+					},
+				};
+			})
 			.filter((spot) => spot.id && spot.rect.width > 0)
 			.sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left);
 		if (!measured.length) return endDeal();
@@ -2241,7 +2267,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		document.body.appendChild(layer);
 		dealing = true;
 		// the last card's flight, its turn, and a beat to look at the board before it is handed over
-		const total = performance.now() - started + rowDelays[rowDelays.length - 1] + DEAL_FLIGHT_MS + 150;
+		const total = performance.now() - started + rowDelays[rowDelays.length - 1] + DEAL_FLIGHT_MS + DEAL_HANDOVER_MS;
 		dealTimers.push(window.setTimeout(settleDeal, total));
 	}
 
