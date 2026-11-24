@@ -85,6 +85,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		emptyCells,
 		unpick,
 		hasPassive,
+		foundationTopRank,
+		phantomRank,
 		isBoss,
 		levelUpGraves,
 		isBossMinion,
@@ -2164,6 +2166,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					values="0.58 0 0 0 0.2471 0 0.58 0 0 0.0988 0 0 0.58 0 0.42 0 0 0 1 0"
 				/>
 			</filter>
+			<!--
+				Pickpocket's window: the item card is washed the blue the interface keeps for a card that can still be
+				somewhere it is not. Same shape as the tomb stains — a matrix on the artwork, so it turns and scales with
+				the float — but pulled the other way: red comes down, blue goes up, and the pips stay dark against it.
+			-->
+			<filter id="tombStolen" color-interpolation-filters="sRGB">
+				<feColorMatrix
+					type="matrix"
+					values="0.46 0 0 0 0.13 0 0.6 0 0 0.15 0 0 0.78 0 0.32 0 0 0 1 0"
+				/>
+			</filter>
 		</defs>
 	</svg>
 
@@ -2187,20 +2200,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const lifts = !!card && levelUp.has(card.suit)}
 				<!-- thirteen cards is every rank of the suit: the pile has no gaps and nothing can follow -->
 				{@const full = stack.length === 13}
+				<!--
+					The ranks this pile has passed over because the party holds them: a drafted card never comes
+					home, so the grave builds above it, and the pile is further along than its face says.
+				-->
+				{@const skips = tomb && card && !full ? phantomRank(tomb, card.suit) - foundationTopRank(tomb, card.suit) : 0}
 				<button
 					class="slot"
 					class:empty={!stack.length}
 					class:levelup={lifts}
 					class:full
 					data-drop={`foundation:${i}`}
-					title={full
-						? 'This grave is full: every rank of this suit is home'
-						: lifts
-							? 'A card home here takes you to the next level'
-							: undefined}
+					title={[
+						full ? 'This grave is full: every rank of this suit is home' : null,
+						!full && lifts ? 'A card home here takes you to the next level' : null,
+						!full && skips
+							? `${skips === 1 ? 'The next rank is' : `The next ${skips} ranks are`} held by the party, so this grave builds above ${skips === 1 ? 'it' : 'them'}`
+							: null,
+					]
+						.filter(Boolean)
+						.join('. ') || undefined}
 					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${
 						full ? ', full' : lifts ? ', the next card here levels you up' : ''
-					}`}
+					}${skips ? `, skipping ${skips} rank${skips === 1 ? '' : 's'} the party holds` : ''}`}
 					onclick={() => tap(location)}
 				>
 					{#if stack.length}
@@ -2212,6 +2234,19 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/if}
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
+					{/if}
+					<!--
+						Two chevrons, not the level-up arrow: this grave is not about to lift you a level, it has
+						climbed past ranks the party is holding. Drawn on the slot rather than on the card, so no
+						boss-suit wash can tint it, the way the affliction marks sit over the face and not in it.
+					-->
+					{#if skips}
+						<span class="phantoms" aria-hidden="true">
+							<svg viewBox="0 0 14 18" fill="none" stroke="#7cc0ff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M2 7.6 7 2.6 12 7.6" />
+								<path d="M2 15.2 7 10.2 12 15.2" />
+							</svg>
+						</span>
 					{/if}
 				</button>
 			{/each}
@@ -2370,7 +2405,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{/if}
 					{#if entry}
 						<span class="kind">{ROLE_WORD[entry.role]}</span>
-						<span class="role">{(live ?? entry).name}</span>
+						<!--
+							The party's name is a ribbon tied round the card: the band is drawn wider than the face
+							and the wrapper clips it, so its ends run into the card's own edges instead of past them.
+						-->
+						<span class="sash"><span class="role">{(live ?? entry).name}</span></span>
 					{/if}
 				</button>
 			{/each}

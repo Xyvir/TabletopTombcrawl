@@ -575,14 +575,14 @@ img {
 	cursor: help;
 }
 
-/* Pickpocket's one-turn window: the item pocket is a button for exactly one action. */
-.slot.pickpocket {
-	box-shadow: 0 0 0 2px rgba(255, 217, 94, 0.9), 0 0 14px rgba(255, 200, 80, 0.5);
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.cells.tomb .chip {
 		transition: none;
+	}
+
+	/* the card keeps its blue wash and rim, and only the drift goes */
+	.slot.pickpocket img.held {
+		animation: none;
 	}
 }
 
@@ -732,6 +732,31 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
+ * A grave the party has built past. Drafted cards never come home, so a pile with a drafted two above its
+ * ace is really waiting on the three, and the board says so with two chevrons rather than the level-up
+ * arrow: a climb, not a lift. It sits on the slot, never on the card, so the boss-suit wash can no more
+ * tint it than it tints an affliction's mark — the same rule that keeps the purple `!` purple.
+ */
+.foundations .slot .phantoms {
+	position: absolute;
+	top: 4%;
+	right: 6%;
+	width: 30%;
+	aspect-ratio: 14 / 18;
+	z-index: 6;
+	pointer-events: none;
+	filter:
+		drop-shadow(0 0 3px rgba(0, 0, 0, 0.85)),
+		drop-shadow(0 0 7px rgba(92, 166, 255, 0.6));
+}
+
+.foundations .slot .phantoms svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/*
  * A grave holding all thirteen ranks turns face down: the pile is done, and a back reads as "nothing
  * follows this" more clearly than a king does. It leans the way a card turned over on a stack leans,
  * so the corners of the king under it stay in view and the pile's suit is never lost.
@@ -762,6 +787,18 @@ body:has(.card.dragging) .cells.tomb .chip {
 .slot.draft {
 	border-color: rgba(185, 139, 255, 0.85);
 	box-shadow: 0 0 8px rgba(150, 90, 240, 0.35);
+}
+
+/*
+ * Pickpocket's one-turn window: the item pocket is a button for exactly one action, so the slot is lit in the
+ * blue the card itself wears (see the float below). It has to be written on the draft slot rather than beside
+ * the chip's own ring, because the pocket is drafted and `.slot.draft` sets a box-shadow of its own — the gold
+ * window ring this rule replaces sat *above* that rule at the same specificity, so it never showed on the one
+ * slot it existed for. A class more, and the window's blue wins wherever the two rules end up.
+ */
+.slot.draft.pickpocket {
+	border-color: rgba(120, 190, 255, 0.95);
+	box-shadow: 0 0 0 2px rgba(120, 190, 255, 0.9), 0 0 14px rgba(96, 170, 255, 0.5);
 }
 
 /*
@@ -1313,18 +1350,51 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
+/*
+ * The party's name is a ribbon tied round the card, not a footer strip: it runs from below the corner pip
+ * down to the lower right, so it reads as something laid across the face rather than printed on it. An
+ * aspect is never a card that can go home — the chip is the only way one is spent — so the band is the
+ * `this one is yours` mark, and it is worth the room.
+ *
+ * The wrap is the wrapper's job: `.sash` is exactly the face, with the card's radius and its own overflow,
+ * and the band inside is drawn wider than the face so both ends are cut by the card's edge. A band that
+ * simply stopped short of the corners would read as a sticker lying on the card.
+ */
+.slot .sash {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	border-radius: inherit;
+	/* under the afflictions' mark, so the `!` still lands on top of the ribbon */
+	z-index: 2;
+	pointer-events: none;
+}
+
 .slot .role {
 	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 3px;
-	/* above a hovered wound's peek, so the party band stays readable while you look at the card */
-	z-index: 4;
-	font-size: 0.5rem;
-	letter-spacing: 0.04em;
+	/* wider than the face, so the rotation never leaves a gap at either end */
+	left: -14%;
+	right: -14%;
+	/* its middle sits a whisker above the card's own middle: that puts the left end under the pip and
+	   the right end low, which is the tilt a ribbon takes when it is tied on */
+	top: 47%;
+	transform: translateY(-50%) rotate(20deg);
+	font-size: clamp(0.56rem, calc(var(--col-w) * 0.115), 0.72rem);
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: 0.07em;
+	text-align: center;
 	text-transform: uppercase;
-	color: #f4e9ff;
-	background: rgba(60, 20, 90, 0.85);
+	color: #f8f1ff;
+	/* a narrow card would otherwise spill the longest name along the ribbon */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0.3em 0 0.32em;
+	background: linear-gradient(180deg, rgba(76, 30, 111, 0.94), rgba(47, 16, 74, 0.94));
+	box-shadow:
+		0 2px 4px rgba(0, 0, 0, 0.55),
+		0 0 0 1px rgba(24, 8, 40, 0.55) inset;
 	pointer-events: none;
 }
 
@@ -1462,6 +1532,65 @@ body:has(.card.dragging) .cells.tomb .chip {
 .slot.boss:not(.selected) img:not(.flip-back) {
 	outline: 2px solid #c79bff;
 	outline-offset: -2px;
+}
+
+/*
+ * Pickpocket, on the card rather than the pocket: a level up opens one action in which the item pocket is a
+ * trade — its card for any face-up, unburied card in the tomb — and the card the eye has to find is the one
+ * sitting in that pocket. So it lifts off the row and rocks, unevenly: a slow drift with no beat to it, because
+ * a steady pulse reads as a countdown and this window has no clock, only the next click. The blue wash is the
+ * same one the slot's rim wears, and it is the colour the interface keeps for a mark that is not the tomb's: a
+ * card that can still be somewhere it is not. The wash is a colour matrix on the artwork itself, like the
+ * boss-suit stain, so it turns and scales with the float instead of sitting over it.
+ */
+.slot.pickpocket img.held {
+	transform-origin: 50% 72%;
+	animation: pickpocket-float 3.7s ease-in-out infinite;
+}
+
+.slot.pickpocket img.held:not(.flip-back) {
+	filter: url(#tombStolen);
+}
+
+/* the rim sits inside the face like every other mark, and rides the card through the drift */
+.slot.pickpocket:not(.selected) img.held:not(.flip-back) {
+	outline: 2px solid rgba(120, 190, 255, 0.95);
+	outline-offset: -2px;
+	box-shadow: 0 0 12px rgba(96, 170, 255, 0.6);
+}
+
+/*
+ * The stops are deliberately uneven — gaps of 11, 12, 15, 14, 15, 12, 12 and 9 percent, and never the same
+ * tilt or the same size twice — so the card reads as bobbing in a hand rather than ticking.
+ */
+@keyframes pickpocket-float {
+	0% {
+		transform: rotate(-2.4deg) scale(1);
+	}
+	11% {
+		transform: rotate(1.9deg) scale(1.045);
+	}
+	23% {
+		transform: rotate(3.2deg) scale(0.985);
+	}
+	38% {
+		transform: rotate(-1.1deg) scale(1.055);
+	}
+	52% {
+		transform: rotate(-3.6deg) scale(0.99);
+	}
+	67% {
+		transform: rotate(0.7deg) scale(1.03);
+	}
+	79% {
+		transform: rotate(2.6deg) scale(1.005);
+	}
+	91% {
+		transform: rotate(-0.5deg) scale(1.05);
+	}
+	100% {
+		transform: rotate(-2.4deg) scale(1);
+	}
 }
 
 /*

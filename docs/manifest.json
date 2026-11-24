@@ -1,5 +1,5 @@
 {
-	"name": "TT Tombcrawl",
+	"name": "TTTombcrawl",
 	"short_name": "Tombcrawl",
 	"description": "FreeCell, built on a tested rules engine",
 	"start_url": "./",
