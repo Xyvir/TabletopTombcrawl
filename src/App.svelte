@@ -2244,16 +2244,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								class:stacked={stack.length > 1}
 					class:stone={stone}
 					class:wounded={!!wounded}
-					// the stain follows a boss-suit card into a free cell as well as down its column
-					class:boss={!!card && !!tomb && isBoss(tomb, card)}
-					// A drafted card is not on the board to be slain, so it only wears the stain while it is
-					// the one item the chip has reached: the rest of the party is a promise, not a monster.
-					class:aura={!!card &&
-						!!tomb &&
-						carriesPower(tomb, card) &&
-						!isBoss(tomb, card) &&
-						!down &&
-						(!entry || convertibleCell(tomb) === i)}
+					// The stain marks what a blow can reach: it follows a boss-suit card into a free cell as well as
+					// down its column. A hero aspect is none of that — it cannot be slain, and the chip is the only
+					// thing that can spend it — so the party wears no shade at all, the boss king's included. A
+					// lavender aspect said "this one pays the tomb" about a card that never can.
+					class:boss={!entry && !!card && !!tomb && isBoss(tomb, card)}
+					class:aura={!entry && !!card && !!tomb && carriesPower(tomb, card) && !isBoss(tomb, card) && !down}
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:pickpocket={!!tomb && tomb.pickpocket === i}

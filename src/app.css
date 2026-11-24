@@ -1465,6 +1465,21 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
+ * A pocket that would be wounded and is stained by the tomb at the same time. The stain's colour matrix is the
+ * stronger filter of the two — a class more and an element more than the preview's own — so on a boss-suit card
+ * the red wash never landed and the price of the move came down to a hairline ring on lavender, the one case
+ * where the warning was hard to read. The preview gets the last word, and a heavier ring to go with it: it is
+ * the answer to the move under the pointer, so it has to outshout the tomb's own colour.
+ */
+.slot.aura img.held.wound-next,
+.slot.boss img.held.wound-next {
+	filter: saturate(0.55) sepia(0.5) saturate(3.2) hue-rotate(-18deg) brightness(0.9);
+	outline: 3px solid #ff2f2f;
+	outline-offset: -3px;
+	box-shadow: 0 0 10px rgba(255, 47, 47, 0.85);
+}
+
+/*
  * A fogged card an affliction is aimed at gets a violet rim light around its edge rather than a wash over the
  * back: the back's own drawing swallows a tint, and a rim is what the eye catches while it scans the hallways.
  * Venom is the only power that aims at fog, so this is its card.
