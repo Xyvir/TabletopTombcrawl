@@ -600,13 +600,17 @@ img {
 	position: absolute;
 	top: 50%;
 	/*
-	 * Index 0 is the track's left edge, so the chip comes to rest centred on it and overhangs the board by
-	 * half a token — the same half-step it takes into every other gap, and the reason the last conversion
-	 * reads as the chip arriving somewhere rather than as a token going out.
+	 * The track's stops are gaps, but index 0 has no card to its left: there the formula would centre the
+	 * chip in a gap that isn't there, so the floor puts it on the first card's own left edge instead. The
+	 * token overhangs the board by half of itself, which is what the last conversion should look like — the
+	 * chip arriving against the kin's edge rather than a token going out.
 	 */
-	left: calc(
-		((100% - (var(--cell-count) - 1) * var(--gap)) / var(--cell-count)) * var(--chip-index) +
-			(var(--chip-index) - 1) * var(--gap) + var(--gap) * 0.5
+	left: max(
+		0px,
+		calc(
+			((100% - (var(--cell-count) - 1) * var(--gap)) / var(--cell-count)) * var(--chip-index) +
+				(var(--chip-index) - 1) * var(--gap) + var(--gap) * 0.5
+		)
 	);
 	width: max(15px, calc(var(--gap) * 2.4));
 	aspect-ratio: 1;
