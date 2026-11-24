@@ -7,6 +7,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import {
 		getRankForCompare,
 		shorthandCard,
+		SuitList,
 		type Card,
 		type CardLocation,
 		type CardSequence,
@@ -151,6 +152,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const GHOST_PAD = 14;
 	/** Pixels a pointer must travel before a press becomes a drag. */
 	const DRAG_THRESHOLD = 6;
+	/**
+	 * How far past a legal target's own box a drag may be released and still count, as a fraction of
+	 * that target's width. A drop used to need the pointer to land on the card itself, so a release a
+	 * fingertip short of a king was read as a miss; a quarter of a card is the difference between
+	 * "I meant that column" and not.
+	 */
+	const DROP_GIVE = 0.25;
 	/** Normal card flight. */
 	const FLIGHT_MS = 190;
 	/** The automatic home chain gets a beat before it starts, then takes turns card by card. */
@@ -2016,13 +2024,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return card?.location ?? null;
 	}
 
-	function dropTargetAt(x: number, y: number): CardLocation | null {
-		if (tomb?.armed?.kind === 'burndayraz') {
-			const aimed = cardUnderPointer(x, y);
-			if (aimed) return aimed;
-		}
-		const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop]');
-		const drop = el?.dataset.drop;
+	/** The location a `data-drop` key names, in the shape the rules take. */
+	function locationFromDrop(drop: string | undefined): CardLocation | null {
 		if (!drop) return null;
 		const [fixture, index] = drop.split(':');
 		if (fixture !== 'cell' && fixture !== 'foundation' && fixture !== 'cascade') return null;
@@ -2031,6 +2034,41 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return { fixture, data: [i, Math.max(0, (game.tableau[i]?.length ?? 1) - 1)] };
 		}
 		return { fixture, data: [i] };
+	}
+
+	function dropTargetAt(x: number, y: number): CardLocation | null {
+		if (tomb?.armed?.kind === 'burndayraz') {
+			const aimed = cardUnderPointer(x, y);
+			if (aimed) return aimed;
+		}
+		return locationFromDrop(document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop]')?.dataset.drop);
+	}
+
+	/**
+	 * The legal drop nearest a release that missed every card. Each target's own box is grown by
+	 * `DROP_GIVE` of its width, the closest one wins — so two columns either side of a gap resolve by
+	 * which is nearer the pointer rather than by which gap the pointer happened to be over — and the
+	 * nearest legal target must beat that margin, or the drop is a miss and the cards go back. Only the
+	 * targets the move is legal on are weighed, so this can forgive the aim but never the rule.
+	 */
+	function forgivingDropAt(x: number, y: number, legal: string[]): CardLocation | null {
+		if (!board || !legal.length) return null;
+		let best: { location: CardLocation; distance: number } | null = null;
+		for (const key of legal) {
+			const el = board.querySelector<HTMLElement>(`[data-drop="${key}"]`);
+			if (!el) continue;
+			const rect = el.getBoundingClientRect();
+			// How far outside the target's own box the release is, zero in either axis when it is inside.
+			const distance = Math.hypot(
+				Math.max(rect.left - x, 0, x - rect.right),
+				Math.max(rect.top - y, 0, y - rect.bottom)
+			);
+			if (distance > rect.width * DROP_GIVE) continue;
+			if (best && distance >= best.distance) continue;
+			const location = locationFromDrop(key);
+			if (location) best = { location, distance };
+		}
+		return best?.location ?? null;
 	}
 
 	function onPointerUp(event: PointerEvent) {
@@ -2045,7 +2083,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 		suppressClickUntil = Date.now() + 350;
 		const from = drag?.from;
-		const to = dropTargetAt(event.clientX, event.clientY);
+		const legal = drag?.targets ?? [];
+		const hit = dropTargetAt(event.clientX, event.clientY);
+		// A release on a target the move is legal on is the drop; anything else gets one forgiving pass
+		// over the legal targets before the gesture is called a miss.
+		const to =
+			hit && legal.includes(pileKey(hit))
+				? hit
+				: (forgivingDropAt(event.clientX, event.clientY, legal) ?? hit);
 		// where the cards sit under the pointer, captured before the drag transform clears
 		const before = cardRects();
 		drag = null;
@@ -2717,14 +2762,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{#each game.foundations as card, i}
 				{@const location = { fixture: 'foundation' as const, data: [i] }}
 				{@const stack = foundationStack(i)}
+				<!-- Foundations are indexed in suit order, so an empty grave still knows which suit it will hold. -->
+				{@const suit = card?.suit ?? SuitList[i]}
 				{@const lifts = !!card && levelUp.has(card.suit)}
 				<!-- thirteen cards is every rank of the suit: the pile has no gaps and nothing can follow -->
 				{@const full = stack.length === 13}
 				<!--
 					The ranks this pile has passed over because the party holds them: a drafted card never comes
-					home, so the grave builds above it, and the pile is further along than its face says.
+					home, so the grave builds above it, and the pile is further along than its face says. An empty
+					grave reads the same way, so a held ace lifts a blank pile's first card to the two.
 				-->
-				{@const skips = tomb && card && !full ? phantomRank(tomb, card.suit) - foundationTopRank(tomb, card.suit) : 0}
+				{@const skips = tomb && !full ? phantomRank(tomb, suit) - foundationTopRank(tomb, suit) : 0}
 				<button
 					class="slot"
 					class:empty={!stack.length}
@@ -2756,15 +2804,28 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
 					{/if}
 					<!--
-						Two chevrons, not the level-up arrow: this grave is not about to lift you a level, it has
-						climbed past ranks the party is holding. Drawn on the slot rather than on the card, so no
-						boss-suit wash can tint it, the way the affliction marks sit over the face and not in it.
+						Chevrons, not the level-up arrow: this grave is not about to lift you a level, it has climbed
+						past ranks the party is holding. One chevron more than the ranks skipped, so the mark counts
+						the landing it opens: two chevrons is one skipped rank, three is two, up to the five a party
+						can hold of one suit's low end. Drawn on the slot rather than on the card, so no boss-suit wash
+						can tint it, the way the affliction marks sit over the face and not in it.
 					-->
 					{#if skips}
-						<span class="phantoms" aria-hidden="true">
-							<svg viewBox="0 0 14 18" fill="none" stroke="#7cc0ff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M2 7.6 7 2.6 12 7.6" />
-								<path d="M2 15.2 7 10.2 12 15.2" />
+						{@const rungs = skips + 1}
+						<!-- one rung is 7.6 tall in the drawing's own units, with 2.8 of air below the lowest -->
+						{@const height = 7.6 * rungs + 2.8}
+						<span class="phantoms" style={`aspect-ratio: 14 / ${height}`} aria-hidden="true">
+							<svg
+								viewBox={`0 0 14 ${height}`}
+								fill="none"
+								stroke="#7cc0ff"
+								stroke-width="2.1"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								{#each Array.from({ length: rungs }, (_, row) => 7.6 * (rungs - row)) as y}
+									<path d={`M2 ${y} 7 ${y - 5} 12 ${y}`} />
+								{/each}
 							</svg>
 						</span>
 					{/if}
