@@ -1,0 +1,392 @@
+% Tabletop Tombcrawl — a three-page landscape print-and-play set:
+%   page 1  the rules
+%   page 2  the playmat (left half: hero reminder row, hero status track, hallways 1-4)
+%   page 3  the playmat (right half: all 4 graves, storage/dwarf track, hallways 5-8)
+%
+% Tape Page 2 (right edge) to Page 3 (left edge) longways to form an 8.5 x 22 in mat
+% with 1:1 full-size poker card footprints (63.5 x 88.9 mm).
+
+\documentclass[10pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[letterpaper,landscape,margin=9.5mm]{geometry}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+% ---------------------------------------------------------------- palette
+\definecolor{ink}{HTML}{1B1F27}
+\definecolor{rust}{HTML}{8A4B2A}
+\definecolor{gold}{HTML}{A9792B}
+\definecolor{faint}{HTML}{7C7568}
+
+\color{ink}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.4pt}
+\setlength{\columnsep}{5mm}
+
+% ------------------------------------------------------------- card sizes
+\def\cardscale{1.0}
+\pgfmathsetmacro{\cw}{63.5*\cardscale}   % full card width  (63.5 mm)
+\pgfmathsetmacro{\ch}{88.9*\cardscale}   % full card height (88.9 mm)
+\def\gp{1.5}                             % gap between footprints, mm
+
+% ------------------------------------------------------------ type helpers
+\newcommand{\rh}[1]{\par\vspace{2.5pt}{\color{rust}\sffamily\bfseries\footnotesize #1}\par\nopagebreak\vspace{0.8pt}\nopagebreak}
+\newcommand{\kw}[1]{\textbf{#1}}
+\newcommand{\dn}[1]{{\color{faint}\footnotesize #1}}
+\newcommand{\suit}[1]{{\color{ink!55}#1}}
+
+% --------------------------------------------------- full-scale mat macro
+% Left bank (Cols 1-4): x = 10.0..268.5 mm on Page 2 (10.0 mm left / 10.9 mm right margin).
+% Right bank (Cols 5-8): x = 280.4..538.9 mm, shifted by -269.4 mm onto Page 3 so Page 2's
+% uncut right edge (279.4 mm) lands directly on Page 3's dotted alignment line at x = 10.0 mm.
+% #1 = horizontal shift in mm (0 for left sheet, -269.4 for right sheet)
+% #2 = 1 to draw the overlap alignment guide on the right sheet, 0 otherwise
+\newcommand{\drawplaymat}[2]{%
+	\begin{tikzpicture}[remember picture, overlay]
+		\begin{scope}[shift={($(current page.north west)+(#1 mm, 0mm)$)}, x=1mm, y=-1mm]
+			\renewcommand{\suit}[1]{{\color{black}##1}}
+			
+			% ------------------------------------------------ overlap alignment guide (Page 3)
+			\ifnum#2=1
+			\draw[black, dashed, line width=0.9pt] (279.4,9.0) -- (279.4,206.5);
+			\foreach \ay in {26, 76, 132, 184} {
+				\draw[black, line width=0.9pt, ->] (272.2,\ay) -- (278.9,\ay);
+			}
+			\node[rotate=90, anchor=center, font=\tiny\bfseries\sffamily, text=black] at (274.8,51)
+			{COVER WITH LEFT SHEET};
+			\node[rotate=90, anchor=center, font=\tiny\bfseries\sffamily, text=black] at (274.8,104)
+			{LINE UP RIGHT EDGE HERE};
+			\node[rotate=90, anchor=center, font=\tiny\bfseries\sffamily, text=black] at (274.8,158)
+			{COVER WITH LEFT SHEET};
+			\fi
+			
+			% ------------------------------------------------------------- heading
+			\node[anchor=north west, inner sep=0, align=left] at (10.0,8.5)
+			{{\sffamily\bfseries\large\color{black} TABLETOP TOMBCRAWL PLAYMAT}};
+			
+			\node[anchor=north east, inner sep=0, align=right, font=\footnotesize, text=black] at (268.5,9.2)
+			{a solo-play 52-card dungeon crawl};
+			
+			% ------------------------------------------------------------- graveyard (Right Sheet)
+			\node[anchor=south west, inner sep=0, font=\footnotesize\bfseries\sffamily\color{black}]
+			at (280.4,16.0) {GRAVEYARD};
+			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black] at (538.9,16.0)
+			{four graves, one per suit, ace to king};
+			
+			\foreach \i/\gx/\sy in {0/280.4/{$\spadesuit$},1/345.4/{$\heartsuit$},2/410.4/{$\clubsuit$},3/475.4/{$\diamondsuit$}} {
+				\draw[draw=black, line width=0.75pt] (\gx,17.5) rectangle ++(\cw,\ch);
+				\draw[draw=black, line width=0.9pt, line join=round]
+				(\gx+\cw/2-10.5, 17.5+\ch/2+13.5)
+				-- (\gx+\cw/2-10.5, 17.5+\ch/2-3.5)
+				arc[start angle=180, end angle=360, radius=10.5]
+				-- (\gx+\cw/2+10.5, 17.5+\ch/2+13.5)
+				-- cycle;
+				\node[text=black, font=\fontsize{30}{30}\selectfont] at (\gx+\cw/2,17.5+\ch/2) {\sy};
+			}
+			
+			% ------------------------------------------------------------- legends (Left Sheet)
+			\node[anchor=north west, align=left, font=\footnotesize\itshape, text=black, inner sep=0] at (10.0,15.5)
+			{You will need a poker chip; a D12 is suggested for easier level tracking.};
+			
+			\node[anchor=north west, align=left, font=\footnotesize, text=black, inner sep=0] at (10.0,21.0)
+			{\textbf{to lay a crawl out}\\[2.5pt]
+				\begin{tabular}{@{}l@{\hspace{5pt}}p{166mm}@{}}
+					\suit{$\bullet$} & Place the Hero Chip on the rightmost pip. \\
+					\suit{$\bullet$} & Deal 4 cards face up into the Hero aspects (Kin, Class, Glyph, Item). \\
+					\suit{$\bullet$} & Deal 1 card face down across all 8 hallways, then 1 face up across all 8;
+					repeat until each hallway holds 6 cards. \\
+					\suit{$\bullet$} & When a King appears face up in a hallway, tilt it 90$^\circ$ to mark the Boss
+					suit. \\
+			\end{tabular}};
+			
+			\node[anchor=north east, align=right, font=\footnotesize, text=black, inner sep=0] at (268.5,21.0)
+			{\textbf{gold pays}\\[2.5pt]
+				\begin{tabular}{@{}r@{\hspace{8pt}}l@{}}
+					1 & a rat \\
+					2 & a Monster (boss's suit) \\
+					5 & a General \\
+					25 & the boss \\
+					\midrule
+					100 & a bare tomb \\
+			\end{tabular}};
+			
+			% ------------------------------------------------ Hero Aspect reminder row (Left Sheet)
+			\foreach \tx in {10.0, 75.0, 140.0, 205.0} {
+				\draw[draw=black, line width=0.6pt] (\tx,70.5) rectangle ++(\cw,35.0);
+			}
+			\foreach \tx/\lab in {10.0/KIN, 75.0/CLASS, 140.0/GLYPH, 205.0/ITEM} {
+				\node[anchor=north, font=\scriptsize\bfseries\sffamily, text=black] at (\tx+\cw/2,72.2) {\lab};
+			}
+			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (10.0+0.5*\cw,78.0) {%
+				\begin{tabular}{@{}l@{\hspace{3pt}}l@{\hspace{4pt}}l@{}}
+					\suit{$\spadesuit$} & \textbf{Dwarf} & \emph{Constitution}\\
+					\suit{$\heartsuit$} & \textbf{Human} & \emph{Intuition}\\
+					\suit{$\clubsuit$} & \textbf{Orc} & \emph{Aggression}\\
+					\suit{$\diamondsuit$} & \textbf{Elf} & \emph{Perception}
+			\end{tabular}};
+			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (75.0+0.5*\cw,78.0) {%
+				\begin{tabular}{@{}l@{\hspace{3pt}}l@{\hspace{4pt}}l@{}}
+					\suit{$\spadesuit$} & \textbf{Fighter} & \emph{Powerstrike}\\
+					\suit{$\heartsuit$} & \textbf{Priest} & \emph{Bloodgift}\\
+					\suit{$\clubsuit$} & \textbf{Wizard} & \emph{Dualcast}\\
+					\suit{$\diamondsuit$} & \textbf{Thief} & \emph{Pickpocket}
+			\end{tabular}};
+			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (140.0+0.5*\cw,78.0) {%
+				\begin{tabular}{@{}l@{\hspace{5pt}}l@{}}
+					\suit{$\spadesuit$} & BYSSEPS\\
+					\suit{$\heartsuit$} & CYDSTEPP\\
+					\suit{$\clubsuit$} & PISORF\\
+					\suit{$\diamondsuit$} & WEYTWUT
+			\end{tabular}};
+			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (205.0+0.5*\cw,78.0) {%
+				\begin{tabular}{@{}l@{\hspace{5pt}}l@{}}
+					\suit{$\spadesuit$} & Purity\\
+					\suit{$\heartsuit$} & Potion\\
+					\suit{$\clubsuit$} & Elixir\\
+					\suit{$\diamondsuit$} & Remedy
+			\end{tabular}};
+			
+			% ----------------------------------------------------------- status track
+			% Eight full-size footprints: Cols 1-4 on left sheet (10.0..268.5), Cols 5-8 on right sheet (280.4..538.9)
+			\node[anchor=south west, inner sep=0, font=\footnotesize\bfseries\sffamily\color{black}]
+			at (10.0,110.2) {STATUS TRACK};
+			\node[anchor=south west, inner sep=0, font=\scriptsize, text=black] at (75.0,110.2)
+			{\textbf{Hero Chip:} Hero Aspects to the left and pockets to the right.};
+			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black] at (538.9,110.2)
+			{wounds land at the right and work inward};
+			
+			\foreach \i/\tx in {0/10.0, 1/75.0, 2/140.0, 3/205.0, 4/280.4, 5/345.4, 6/410.4, 7/475.4} {
+				\ifnum\i=7
+				\draw[draw=black, dashed, line width=0.75pt] (\tx,111.8) rectangle ++(\cw,\ch);
+				\else
+				\draw[draw=black, line width=0.75pt] (\tx,111.8) rectangle ++(\cw,\ch);
+				\fi
+			}
+			
+			\foreach \tx/\lab in {10.0/KIN, 75.0/CLASS, 140.0/GLYPH, 205.0/ITEM} {
+				\node[anchor=north, font=\small\bfseries\sffamily, text=black] at (\tx+\cw/2,115.8) {\lab};
+			}
+			\foreach \tx in {10.0, 75.0, 140.0, 205.0, 280.4, 345.4, 410.4, 475.4} {
+				\pgfmathsetmacro{\px}{\tx+\cw/2}
+				\pgfmathsetmacro{\py}{111.8+\ch/2}
+				\draw[draw=black, line width=0.9pt, line join=round]
+				(\px-2.2,\py-8.0) -- (\px+2.2,\py-8.0) -- (\px+2.2,\py-2.2) --
+				(\px+8.0,\py-2.2) -- (\px+8.0,\py+2.2) -- (\px+2.2,\py+2.2) --
+				(\px+2.2,\py+8.0) -- (\px-2.2,\py+8.0) -- (\px-2.2,\py+2.2) --
+				(\px-8.0,\py+2.2) -- (\px-8.0,\py-2.2) -- (\px-2.2,\py-2.2) -- cycle;
+			}
+			
+			% the Dwarf's pocket, pure black line art: it is his alone
+			\pgfmathsetmacro{\hxp}{475.4+\cw/2}
+			\draw[draw=black, line width=0.9pt] (\hxp-7.5,127.8) arc[start angle=180, end angle=360, radius=7.5] -- cycle;
+			\draw[draw=black, fill=white, line width=0.9pt] (\hxp-8.0,127.8) rectangle (\hxp+8.0,129.8);
+			\draw[draw=black, fill=white, line width=0.9pt] (\hxp-1.0,129.8) rectangle (\hxp+1.0,134.0);
+			\draw[black, line width=1.8pt, line cap=round] (\hxp-7.5,124.8) .. controls (\hxp-12.6,125.2) and (\hxp-14.0,120.8) .. (\hxp-11.7,116.3);
+			\draw[black, line width=1.8pt, line cap=round] (\hxp+7.5,124.8) .. controls (\hxp+12.6,125.2) and (\hxp+14.0,120.8) .. (\hxp+11.7,116.3);
+			\node[anchor=north, font=\footnotesize\itshape, text=black] at (\hxp,136.0) {dwarf only};
+			
+			% --------------------------------------------------------- the Hero Chip
+			\foreach \dx in {10.0, 74.25, 139.25, 204.25, 268.5} {
+				\fill[white] (\dx,111.8+\ch/2) circle (3.2);
+				\fill[black] (\dx,111.8+\ch/2) circle (2.3);
+			}
+			
+			% ------------------------------------------------------ the tomb
+			\node[anchor=south west, inner sep=0, font=\footnotesize\bfseries\sffamily\color{black}]
+			at (10.0,204.5) {THE TOMB};
+			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black]
+			at (538.9,204.5) {eight columns, six cards deep};
+			
+			\foreach \hname/\hx in {First Hallway/10.0, Second Hallway/75.0, Third Hallway/140.0, Fourth Hallway/205.0, Fifth Hallway/280.4, Sixth Hallway/345.4, Seventh Hallway/410.4, Eighth Hallway/475.4} {
+				\draw[black, line width=1.4pt] (\hx,206.0) -- ++(\cw,0);
+				\draw[black, line width=0.75pt] (\hx,206.0) -- ++(0,4.5);
+				\draw[black, line width=0.75pt] (\hx+\cw,206.0) -- ++(0,4.5);
+				\node[anchor=north west, font=\scriptsize\bfseries\sffamily, text=black] at (\hx+3.0,207.2) {\hname};
+			}
+			
+		\end{scope}
+	\end{tikzpicture}%
+}
+
+\begin{document}
+	
+	% ================================================================ PAGE 1
+	\newgeometry{margin=7.5mm}
+	\setlength{\parskip}{1.0pt}
+	\noindent
+	\begin{minipage}[t]{0.40\linewidth}
+		{\color{rust}\sffamily\bfseries\Large TABLETOP TOMBCRAWL}\\[1pt]
+		{\color{faint}\sffamily\small a solo-play 52-card dungeon crawl}
+	\end{minipage}\hfill
+	\begin{minipage}[t]{0.58\linewidth}
+		\raggedleft
+		{\color{ink!70}\footnotesize An RPG FreeCell variant: \kw{hallways} are tableau columns, \kw{pockets} are
+			free cells (and your health), \kw{graves} are foundations—so \kw{stashing} is parking a card in a free
+			cell, \kw{slaying} is playing to a foundation.}
+	\end{minipage}
+	
+	\vspace{3pt}
+	{\fontsize{7.0}{8.1}\selectfont
+		\renewcommand{\arraystretch}{1.08}
+		\setlength{\aboverulesep}{1.2pt}
+		\setlength{\belowrulesep}{1.4pt}
+		\begin{tabularx}{\linewidth}{@{}c@{\hspace{5pt}}*{5}{!{\color{ink!18}\vrule}@{\hspace{5pt}}>{\raggedright\arraybackslash}X@{\hspace{4pt}}}}
+			\toprule
+			\sffamily\bfseries\scriptsize\color{rust} SUIT &
+			{\sffamily\bfseries\scriptsize\color{rust} MONSTER} {\scriptsize\color{faint}(Boss's suit \& Kings)} &
+			{\sffamily\bfseries\scriptsize\color{rust} KIN} {\scriptsize\color{faint}(passive while face up)} &
+			{\sffamily\bfseries\scriptsize\color{rust} CLASS} {\scriptsize\color{faint}(passive while face up)} &
+			{\sffamily\bfseries\scriptsize\color{rust} GLYPH} {\scriptsize\color{faint}(exhaust; refreshes on level up)} &
+			{\sffamily\bfseries\scriptsize\color{rust} ITEM} {\scriptsize\color{faint}(exhaust; spent once used)} \\
+			\midrule
+			{\large\color{ink!65}$\spadesuit$} &
+			\textbf{Bandit} \emph{(Mug)}: Slaying or stashing this forces a Hero Chip conversion, with no heal. Blocked by a wound over the aspect, or by a slay that completes a rank. &
+			\textbf{Dwarf} \emph{(Constitution)}: Unlocks 8th track pocket (takes nothing in while the Dwarf is wounded; nothing is evicted). &
+			\textbf{Fighter} \emph{(Powerstrike)}: Slay a card skipping 1 missing rank above a grave's top card. &
+			\textbf{BYSSEPS}: Move any valid run regardless of empty pocket limits. &
+			\textbf{Purity}: Flip up to 3 face-up cards in a hallway face down into fog, bottom up (skipping already-fogged cards; excludes the Boss). \\
+			\midrule
+			{\large\color{ink!65}$\heartsuit$} &
+			\textbf{Viper} \emph{(Venom)}: Flips deepest fogged card in rightmost fogged hallway face up without healing a wound. &
+			\textbf{Human} \emph{(Intuition)}: Ignore your lowest grave when calculating Level. &
+			\textbf{Priest} \emph{(Bloodgift)}: Digging and leveling up heal 2 wounds instead of 1. &
+			\textbf{CYDSTEPP}: Place a card or run onto a fogged card, or move the Boss to an empty hallway. &
+			\textbf{Potion}: Heal all wounds on the Status Track. \\
+			\midrule
+			{\large\color{ink!65}$\clubsuit$} &
+			\textbf{Gorgon} \emph{(Stone Gaze)}: Turns one card face down (wounding it): the leftmost face-up of your Kin and Class, never past Class. &
+			\textbf{Orc} \emph{(Aggression)}: Slaying into your fullest grave costs 0 wounds. &
+			\textbf{Wizard} \emph{(Dualcast)}: Your Item pocket holds a second Glyph instead. &
+			\textbf{PISORF}: Stack a 2-card run into 1 empty pocket (counts as 2 cards and 2 Hearts). &
+			\textbf{Elixir}: Refresh and heal your Glyph (affects only the Glyph itself). \\
+			\midrule
+			{\large\color{ink!65}$\diamondsuit$} &
+			\textbf{Wraith} \emph{(Mana Burn)}: Exhausts and wounds your Glyph (both Glyphs under Wizard's Dualcast). &
+			\textbf{Elf} \emph{(Perception)}: Slay or dig any buried card covered only by face-up number cards (A--10). &
+			\textbf{Thief} \emph{(Pickpocket)}: A level up opens a one-action window: swap your Item pocket's card with any exposed hallway card. &
+			\textbf{WEYTWUT}: Swap any two face-up cards. &
+			\textbf{Remedy}: Ignore any Monster affliction on your next slay or stash. \\
+			\bottomrule
+	\end{tabularx}}
+	
+	\vspace{2.5pt}
+	\fontsize{7.25}{8.35}\selectfont
+	\begin{multicols}{3}
+		
+		\rh{Objective \& scoring}
+		Build your hero, explore the tomb, and survive long enough to slay the \kw{Boss} or empty all eight
+		hallways (\kw{Clear Tomb}). When either goal is met—or whenever you choose to flee—take the \kw{exit}
+		to end the run and bank your \kw{gold}:
+		\begin{itemize}[leftmargin=8pt,itemsep=0.15pt,topsep=0.3pt,parsep=0pt,label=\suit{$\bullet$}]
+			\item \kw{1 gold} per \kw{Rat} (Ace--Queen of the three non-boss suits; 36 cards).
+			\item \kw{2 gold} per \kw{Monster} (Ace--Queen of the Boss's suit; 12 cards).
+			\item \kw{5 gold} per \kw{General} (the three non-boss Kings).
+			\item \kw{25 gold} for the \kw{Boss} (100 gold total for a full clear).
+		\end{itemize}
+		
+		\rh{Setup}
+		Shuffle a standard 52-card deck and deal as follows:
+		\begin{enumerate}[leftmargin=10pt,itemsep=0.15pt,topsep=0.3pt,parsep=0pt]
+			\item \kw{The Hero:} Deal the top four cards face up into the four left-most pockets of the \kw{Status
+				Track}, in order: \kw{Kin}, \kw{Class}, \kw{Glyph}, and \kw{Item}.
+			\item \kw{The Hero Chip:} Place the \kw{Hero Chip} on the divider immediately right of the Item pocket,
+			separating your four hero aspects from the three plain pockets (a Dwarf unlocks an eighth).
+			\item \kw{The Hallways:} Deal the remaining 48 cards in rows \emph{across} the eight \kw{hallways} from
+			left to right—one row face down, the next face up—repeating until each column holds six cards (three
+			under \kw{fog}, ending with a face-up \kw{mouth} card).
+		\end{enumerate}
+		
+		\rh{The Boss, Generals \& Monsters}
+		The first King \emph{face up} in a hallway is the \kw{Boss}—turn it \kw{90 degrees} (sideways) to
+		mark it. The Boss's suit determines the primary \kw{Monster Type} infesting that tomb and which
+		\kw{affliction} (see chart above) is active. A King hidden under fog is not the Boss until uncovered,
+		and a King dealt onto your Hero is simply a Hero card—so a crawl can begin with no active Boss. The
+		remaining three Kings are \kw{Generals}. Unlike generic Rats, every \kw{Monster} (Ace--Queen of the
+		Boss's suit) and all four Kings (the Boss and its Generals) inflict a negative affliction.
+		
+		\columnbreak
+		\rh{The Boss's Special Protection}
+		\kw{Invulnerable:} You cannot slay the Boss until at least one General is in its grave.
+		\kw{Indomitable:} Outside of being slain, the Boss cannot be moved by hand (to a pocket or built on top
+		of another card). Only a movement Glyph can lift it from a hallway, and only \kw{CYDSTEPP} can set it in
+		an empty hallway.
+		
+		\rh{Status Track: health, combat \& Hero slots}
+		Your Status Track acts as both your FreeCells and your life bar:
+		\begin{itemize}[leftmargin=8pt,itemsep=0.15pt,topsep=0.3pt,parsep=0pt,label=\suit{$\bullet$}]
+			\item \kw{Hearts (HP):} Every \emph{face-up} card in the track is 1 Heart (a two-card PISORF stack counts
+			as 2 Hearts). Empty pockets are open storage, not Hearts.
+			\item \kw{Level \& Combat Wounds:} Your \kw{Level} is \textbf{1 + the lowest grave's top rank},
+			capped at \textbf{Level 12} (an empty grave is 0, so you start at Level 1; no level-ups occur after all
+			Jacks are slain). Slaying a card applies wounds equal to \textbf{Card Rank minus Your Level} (minimum
+			0)—you must have \textbf{at least 1 Heart left} afterward, or the slay is illegal.
+			\item \kw{Taking Wounds \& Healing:} Each wound flips the \emph{rightmost} face-up track card face
+			down, working inward (bottom card first in a PISORF stack). Face-down cards are \kw{locked}—they cannot
+			be moved, slain, or used. Healing flips wounded cards face up from the \emph{leftmost} wounded card
+			outward.
+			\item \kw{Leveling Up \& Abilities:} Kin and Class traits stay active while face up. Glyphs and Items
+			turn sideways (\kw{exhausted}) when used (Items stay spent; exhausted cards still count as Hearts and
+			can leave their pocket). Whenever your Level increases, \kw{heal 1 wound} (2 with a Priest) and turn
+			all exhausted Glyphs upright (\kw{refreshed}).
+			\item \kw{Converting (Hero Chip):} A Hero aspect leaves play only by conversion, and only through the
+			chip: click the chip and the face-up aspect immediately to its \emph{left} is spent for
+			good---its ability is gone. The card stays lying in its pocket as plain storage (free to be
+			moved, stashed or sent home like any other card), the chip steps one space left, and you
+			\kw{heal 1 wound}. A wounded aspect cannot be converted, and the chip never steps back.
+		\end{itemize}
+		
+		\rh{Turn actions}
+		On your turn, perform any legal action in any order:
+		\begin{itemize}[leftmargin=8pt,itemsep=0.15pt,topsep=0.3pt,parsep=0pt,label=\suit{$\bullet$}]
+			\item \kw{Move (Build):} Place an exposed hallway \kw{mouth} card—or a valid descending,
+			alternating-color \kw{run} starting at a mouth—onto a mouth card of the opposite color and one rank
+			higher. A run may contain at most \textbf{empty pockets + 1} cards. Face-up pocket cards may move to a
+			valid hallway mouth, another empty pocket, or a grave.
+			\item \kw{Stash (Free Cell):} Move an exposed mouth card into an empty pocket. Stashed Boss's suits and
+			Kings trigger their affliction.
+			\item \kw{Dig:} When a hallway's mouth card is face down (fog), flip it face up and \kw{heal 1 wound}
+			(2 with a Priest). Nothing flips fog except digging (or Venom/Purity). You may leave fogged cards un-dug
+			until you need the heal.
+			\item \kw{Use Glyph / Item:} Turn a ready Glyph or Item sideways (\kw{exhausted}) to apply its effect—either
+			on its own (e.g., WEYTWUT, Potion) or as part of a move or slay (e.g., BYSSEPS, Remedy).
+			\item \kw{Slay (Foundation Play):} Move an exposed mouth card or face-up pocket card onto its suit's
+			\kw{grave} (built Ace to King). You may play a card one rank above the grave's top card—or lower, slid
+			underneath, keeping skipped ranks playable later. Ranks your own Hero cards hold count as home, so a
+			drafted 3 and 4 let that suit's grave take a 5 straight off the 2. Slaying is the only way cards leave
+			play.
+			\item \kw{Convert:} Click the Hero Chip to spend the aspect beside it: its pocket becomes plain
+			storage, it stays there as an ordinary card, the chip steps one space left and you heal 1 wound. A
+			wounded aspect locks this, as does a wounded neighbour.
+			\item \kw{Action Order:} When multiple effects trigger together, resolve in order: \textbf{(1)} exhaust
+			any Glyph/Item used and pay wound costs, \textbf{(2)} move, dig, or slay the card(s), \textbf{(3)}
+			resolve triggered afflictions, then check for a Level Up. A Level Up reached by the blow spares the
+			Bandit's Mug, which is the one affliction that waits on it.
+		\end{itemize}
+		
+	\end{multicols}
+	\restoregeometry
+	
+	% ================================================================ PAGE 2 (LEFT MAT)
+	\newpage
+	\thispagestyle{empty}\null
+	\drawplaymat{0}{0}
+	
+	% ================================================================ PAGE 3 (RIGHT MAT)
+	\newpage
+	\thispagestyle{empty}\null
+	\drawplaymat{-269.4}{1}
+	
+\end{document}

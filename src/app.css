@@ -709,6 +709,37 @@ body:has(.card.dragging) .cells.tomb .chip {
 	width: auto;
 }
 
+/*
+ * The name and the pill under it, as one block: the rules belong to the wordmark rather than to the
+ * header row, so they follow the mark wherever the header puts the track and the graves.
+ */
+.titleblock {
+	flex: 0 0 auto;
+	align-self: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--gap) * 0.4);
+}
+
+/*
+ * A label-sized pill: the footer's shape and felt at the width of the corner it stands in, so the rules
+ * read as part of the table's name instead of as another control.
+ */
+.titleblock .rules {
+	padding: 0.15em 0.7em;
+	font-size: 11px;
+	line-height: 1.6;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: #f1e8d4;
+}
+
+.titleblock .rules:hover {
+	background: rgba(255, 255, 255, 0.22);
+}
+
 /* the bar that parts the wound track from the graveyard: a wide-layout item only */
 .gravesplit {
 	display: none;
@@ -886,9 +917,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 		--title-w: calc(2.04 * 26px * 2.4366);
 	}
 
-	.board.tomb .titlecard {
-		/* first in the row, ahead of the track: the corner reads the same at every width */
+	/* first in the row, ahead of the track: the corner reads the same at every width */
+	.board.tomb .titleblock {
 		order: -3;
+	}
+
+	.board.tomb .titlecard {
 		font-size: 26px;
 	}
 
@@ -1078,8 +1112,15 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 
 	/* the wordmark keeps its own line rather than costing a card's worth of width beside the graves */
-	.titlecard {
+	.titleblock {
 		flex: 1 1 100%;
+		/* the name reads from the left edge here, so the pill under it does too */
+		align-items: flex-start;
+	}
+
+	.titlecard {
+		/* the mark reads from the left edge here, so it fills the line it has been given */
+		align-self: stretch;
 		/* two lines of Vinque in a 34px mark read as a smudge: give the name back its line height */
 		font-size: clamp(16px, calc(var(--col-w) * 0.62), 30px);
 	}

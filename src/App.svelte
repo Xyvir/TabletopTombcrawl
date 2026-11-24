@@ -124,6 +124,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const TRACK: Difficulty = 'med';
 	const BASE = import.meta.env.BASE_URL;
 	/**
+	 * The printed rules, straight from the repo: the pill under the wordmark opens this rather than the
+	 * bundle carrying a second copy of the PDF.
+	 */
+	const RULES_URL = 'https://raw.githubusercontent.com/Xyvir/TabletopTombcrawl/master/playmat/rules.pdf';
+	/**
 	 * Every face plus the two backs. A card coming out of the fog shows its face for the first time
 	 * mid-turn, so the picture has to be fetched and decoded before the animation needs it.
 	 */
@@ -2502,15 +2507,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	<header class="top" class:tomb={!!tomb}>
 		{#if tomb}
-			<button
-				type="button"
-				class="titlecard"
-				onclick={openLayout}
-				title="Choose a loadout: every arrangement the four roles can make, and how far you have got with it"
-				aria-label="Tabletop Tombcrawl — choose a loadout"
-			>
-				<span class="titlemark">{@html titleMark}</span>
-			</button>
+			<div class="titleblock">
+				<button
+					type="button"
+					class="titlecard"
+					onclick={openLayout}
+					title="Choose a loadout: every arrangement the four roles can make, and how far you have got with it"
+					aria-label="Tabletop Tombcrawl — choose a loadout"
+				>
+					<span class="titlemark">{@html titleMark}</span>
+				</button>
+				<!-- The rules sit under the name they belong to, in the footer's own pill rather than a second kind of button. -->
+				<a class="btn rules" href={RULES_URL} target="_blank" rel="noopener noreferrer" title="The printed rules, as a PDF">
+					Rules
+				</a>
+			</div>
 		{/if}
 
 		<div class="foundations" class:tomb={!!tomb}>
