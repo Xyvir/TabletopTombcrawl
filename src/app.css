@@ -348,6 +348,11 @@ img {
 	visibility: hidden;
 }
 
+/* the table is not playable until the deal lands; the overlay, not the board, takes the dismissing click */
+.board.dealing {
+	pointer-events: none;
+}
+
 /* the labels and the chip are furniture with their cards: they wait for the deal to land beside them */
 .board.dealing .slot .kind,
 .board.dealing .slot .sash,

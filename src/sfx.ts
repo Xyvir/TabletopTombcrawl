@@ -11,6 +11,7 @@ import arrowUrl from '../audio/arrow.ogg?url';
 import bossClearUrl from '../audio/boss_kill_dungeon_clear.ogg?url';
 import bossRevealUrl from '../audio/boss_reveal.ogg?url';
 import convertUrl from '../audio/convert_draft.ogg?url';
+import dealUrl from '../audio/deal.ogg?url';
 import exitUrl from '../audio/exit_crawl.ogg?url';
 import kingDiesUrl from '../audio/king_dies.ogg?url';
 import levelUrl from '../audio/level_up.ogg?url';
@@ -30,6 +31,7 @@ export type SfxName =
 	| 'bossClear'
 	| 'bossReveal'
 	| 'convert'
+	| 'deal'
 	| 'exit'
 	| 'kingDies'
 	| 'level'
@@ -46,6 +48,7 @@ const URLS: Record<SfxName, string> = {
 	bossClear: bossClearUrl,
 	bossReveal: bossRevealUrl,
 	convert: convertUrl,
+	deal: dealUrl,
 	exit: exitUrl,
 	kingDies: kingDiesUrl,
 	level: levelUrl,

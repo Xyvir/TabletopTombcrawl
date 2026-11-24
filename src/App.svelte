@@ -28,6 +28,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	} from './interaction';
 	import { describeStep, transcript } from './notation';
 	import { playMoveSfx, playSfx, setSfxEnabled } from './sfx';
+	import { readPreference, writePreference } from './prefs';
 	import type { SolverReply } from './solver.worker';
 	import { markLayout, readLayouts, type LayoutRecord } from './progress';
 	import './trellis.css';
@@ -77,6 +78,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombGold,
 		reserveCell,
 		draftAbility,
+		isDualcastItem,
 		stoneCell,
 		trueBossKill,
 		trueClear,
@@ -1361,11 +1363,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		// covered — and it sounds in the role's own voice.
 		const armedNow = label?.startsWith('arm') ?? false;
 		const resolved = prev.armed && !next.armed && next.exhausted[prev.armed.cell] ? prev.armed : null;
-		const usedRole = resolved
-			? prev.draft.find((entry) => entry.cell === resolved.cell)?.role
-			: armedNow
-				? undefined
-				: spent?.role;
+		const usedCell = resolved?.cell ?? (armedNow ? undefined : spent?.cell);
+		const usedEntry = usedCell === undefined ? null : (prev.draft.find((entry) => entry.cell === usedCell) ?? null);
+		/*
+		 * A Wizard's item pocket holds a second glyph while Dualcast is live, so the sound has to follow the
+		 * ability the slot is holding rather than the role the deal gave it: a cast out of that pocket is a glyph
+		 * use, and the same pocket answers as an item again the moment the Wizard is stoned or wounded out.
+		 */
+		const usedIsGlyph = !!usedEntry && (usedEntry.role === 'glyph' || isDualcastItem(prev, usedEntry));
 		// Take_damage counts the kill's clean bill only, read back off the board it was previewed on:
 		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's gaze on the first passive
 		// class — sound as affliction and nothing else, even when they land mid-slash.
@@ -1391,8 +1396,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			parked: label?.startsWith('park') ?? false,
 			stepped: (label?.startsWith('move') ?? false) || (label?.startsWith('swap') ?? false),
 			armed: armedNow,
-			usedGlyph: usedRole === 'glyph',
-			usedItem: !!usedRole && usedRole !== 'glyph',
+			usedGlyph: usedIsGlyph,
+			usedItem: !!usedEntry && !usedIsGlyph,
 			converted: next.draft.length < prev.draft.length,
 			leveled,
 			bossFound: foundBoss,
@@ -1901,8 +1906,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/* ---------- controls ---------- */
 
 	/**
-	 * Sound effects, off until the speaker pill says otherwise. Remembered per browser, so a
-	 * player who turns them on keeps them on; a fresh browser still opens silent.
+	 * Sound effects, off until the speaker pill says otherwise. The setting is kept in IndexedDB so it survives
+	 * a reload, and written to localStorage as well, purely to seed the first paint: a database read is async,
+	 * and a speaker that flips on a frame after the page opens reads as a setting the page had lost. The
+	 * database wins when the two disagree, because it is the copy that outlives a cleared localStorage.
 	 */
 	function storedSfx(): boolean {
 		try {
@@ -1911,17 +1918,32 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return false;
 		}
 	}
+	function rememberSfx(on: boolean) {
+		try {
+			localStorage.setItem('tombcrawl.sfx', on ? '1' : '0');
+		} catch {
+			// A browser that forgets is still a browser that plays.
+		}
+		void writePreference('sfx', on);
+	}
 	let sfxOn = $state(storedSfx());
 	$effect(() => {
 		setSfxEnabled(sfxOn);
 	});
+	onMount(() => {
+		void readPreference('sfx').then((stored) => {
+			if (typeof stored !== 'boolean' || stored === sfxOn) return;
+			sfxOn = stored;
+			try {
+				localStorage.setItem('tombcrawl.sfx', stored ? '1' : '0');
+			} catch {
+				// the database already has it
+			}
+		});
+	});
 	function toggleSfx() {
 		sfxOn = !sfxOn;
-		try {
-			localStorage.setItem('tombcrawl.sfx', sfxOn ? '1' : '0');
-		} catch {
-		// A browser that forgets is still a browser that plays.
-		}
+		rememberSfx(sfxOn);
 		// The tap that turns it on is the gesture, so the blip always lands.
 		if (sfxOn) playSfx('arm');
 	}
@@ -2017,12 +2039,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	const DEAL_TURN_AT = 0.2;
 	let dealing = $state(false);
+	/** Bumped by every end and every start, so an awaited deal knows it has been superseded. */
+	let dealRun = 0;
 	let dealLayer: HTMLDivElement | null = null;
 	let dealAnimations: Animation[] = [];
 	let dealTimers: number[] = [];
 
 	/** Ends the deal wherever it stands: every card snaps to the square it was flying to. */
 	function endDeal() {
+		// a deal that is still waiting on the deck sees this and gives up instead of starting over the top
+		dealRun++;
 		for (const timer of dealTimers) clearTimeout(timer);
 		dealTimers = [];
 		for (const animation of dealAnimations) animation.cancel();
@@ -2062,10 +2088,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		);
 	}
 
-	function startDeal() {
+	async function startDeal() {
 		endDeal();
 		if (!board || !tomb) return;
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+		const run = dealRun;
+		// the table is covered while the deck decodes, so the wait shows an empty board rather than a laid-out
+		// one that then hides itself
+		dealing = true;
+		await (deckReady ?? warmCardImages());
+		if (run !== dealRun) return;
 		// the logo itself, not the button it sits in: the title card is a grid cell as wide as the header,
 		// so measuring it would start every card from the middle of the page
 		const mark =
@@ -2073,7 +2105,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			document.querySelector<HTMLElement>('.titlecard svg') ??
 			document.querySelector<HTMLElement>('.titlecard .titlemark') ??
 			document.querySelector<HTMLElement>('.titlecard');
-		if (!mark) return;
+		if (!mark) return endDeal();
 		const origin = mark.getBoundingClientRect();
 		const fogged = new Set(tomb.hidden);
 		// measured before the board is hidden, on the rects the cards will actually keep
@@ -2081,7 +2113,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			.map((el) => ({ id: el.dataset.card ?? '', rect: visualRect(el) }))
 			.filter((spot) => spot.id && spot.rect.width > 0)
 			.sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left);
-		if (!measured.length) return;
+		if (!measured.length) return endDeal();
 		/*
 		 * Dealt across rows, not down columns. A row of the layout is not a row of the screen: the pockets,
 		 * the party and each hallway open at their own height, so the cards are banded by their top first —
@@ -2139,6 +2171,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		layer.addEventListener('pointerdown', endDeal);
 		const middle = [origin.left + origin.width / 2, origin.top + origin.height / 2];
 		const started = performance.now();
+		// the shuffle and the fling, once per deal, on the frame the first card leaves the mark
+		playSfx('deal');
 		spots.forEach((spot, index) => {
 			const item = document.createElement('div');
 			item.className = 'deal-card';
@@ -2305,15 +2339,29 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/** Warm every picture once, so a flip never waits on a fetch or a decode. */
-	function warmCardImages() {
-		for (const name of CARD_IMAGES) {
+	/**
+	 * The deck's pictures, decoded once per page. `decode()` is the real gate and not a guess at a loading
+	 * time: it resolves when the browser has the bitmap ready to paint, which is the thing a dealt card needs
+	 * — downloading the bytes is not enough, and a card whose face is still being decoded lands blank while
+	 * its flight goes on. The wait is capped so a picture that never decodes cannot hold the board hostage.
+	 */
+	let deckReady: Promise<void> | null = null;
+	const DECK_WAIT_CAP_MS = 3000;
+
+	function warmCardImages(): Promise<void> {
+		if (deckReady) return deckReady;
+		const decoded = CARD_IMAGES.map((name) => {
 			const image = new Image();
 			// the back is its own drawing rather than a face, and it is a vector: warm the file the board
 			// actually asks for, or the deal's first frame is a broken picture waiting on a 404
 			image.src = name === 'back' ? `${BASE}images/back.svg` : `${BASE}images/${name}.png`;
-			// decode() resolves once the bitmap itself is ready; a failure only costs a late picture
-			void image.decode?.().catch(() => {});
-		}
+			return image.decode?.().catch(() => undefined) ?? Promise.resolve();
+		});
+		const cap = new Promise<void>((resolve) => {
+			window.setTimeout(resolve, DECK_WAIT_CAP_MS);
+		});
+		deckReady = Promise.race([Promise.all(decoded).then(() => undefined), cap]);
+		return deckReady;
 	}
 
 	onMount(warmCardImages);
