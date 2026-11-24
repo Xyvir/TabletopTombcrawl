@@ -1555,6 +1555,37 @@
 			"at": "2026-11-24T02:15:58.002Z"
 		},
 		{
+			"loadout": "dcsc",
+			"boss": null,
+			"seed": 702,
+			"moves": 120,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Elf",
+					"suit": "diamonds"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "PISORF",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-24T10:44:13.323Z"
+		},
+		{
 			"loadout": "dcsh",
 			"boss": "hearts",
 			"seed": 1139,
@@ -4594,6 +4625,14 @@
 			"at": "2026-11-24T02:15:58.002Z"
 		},
 		{
+			"loadout": "dcsc",
+			"difficulty": "med",
+			"seed": 702,
+			"moves": 120,
+			"goal": "boss",
+			"at": "2026-11-24T10:44:13.323Z"
+		},
+		{
 			"loadout": "dcsh",
 			"difficulty": "med",
 			"seed": 1139,
@@ -5971,6 +6010,14 @@
 				}
 			}
 		},
+		"dcsc": {
+			"med": {
+				"boss": {
+					"seed": 702,
+					"moves": 120
+				}
+			}
+		},
 		"ccdc": {
 			"med": {
 				"boss": {
@@ -6586,13 +6633,6 @@
 				"seed": 1571,
 				"score": 88,
 				"at": "2026-11-13T18:44:16.289Z"
-			}
-		},
-		"dcsc": {
-			"med": {
-				"seed": 702,
-				"score": 78,
-				"at": "2026-11-13T18:42:45.043Z"
 			}
 		},
 		"cddd": {
@@ -7259,7 +7299,6 @@
 		"dccc",
 		"dccd",
 		"dcdc",
-		"dcsc",
 		"dcsd",
 		"ddhh",
 		"ddhc",
