@@ -1998,7 +1998,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * queue. A card that will be known at the end of it — a hallway's bottom card, a party aspect — turns over
 	 * as it lands, with the same turn the fogger uses when it puts a back on a card, run backwards.
 	 */
-	const DEAL_STAGGER_MS = 34;
+	/** Card to card inside a row: one hallway's cards follow each other into the air. */
+	const DEAL_STAGGER_MS = 30;
+	/**
+	 * Row to row: a beat after the last card of a row has been dealt before the next row starts. Short enough that
+	 * the rows still overlap in the air (a row's last card is barely off the mark when the next row opens), long
+	 * enough that the rows are read as rows instead of one continuous diagonal stream of cards.
+	 */
+	const DEAL_ROW_GAP_MS = 120;
 	const DEAL_FLIGHT_MS = 560;
 	const DEAL_TURN_MS = 220;
 	/**
@@ -2082,7 +2089,28 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		 * left to right inside it. A fan is dealt along the hallway rather than one hallway at a time, and the
 		 * deal sweeps the table the way the eye reads it.
 		 */
-		const bandTolerance = measured[0].rect.height * 0.32;
+		/*
+		 * How far apart two cards can sit in height and still be the same row. It is read off the board rather than
+		 * fixed in pixels: the step from one rank of a fan to the next is the smallest gap between two cards that
+		 * share a left, and a row may never be wider than a bit more than half of it — otherwise a wide screen
+		 * folds two ranks of every hallway into one row and the deal stops reading as rows at all.
+		 */
+		const topsByLeft = new Map<number, number[]>();
+		for (const spot of measured) {
+			const key = Math.round(spot.rect.left);
+			const tops = topsByLeft.get(key);
+			if (tops) tops.push(spot.rect.top);
+			else topsByLeft.set(key, [spot.rect.top]);
+		}
+		let fanStep = Number.POSITIVE_INFINITY;
+		for (const tops of topsByLeft.values()) {
+			tops.sort((a, b) => a - b);
+			for (let i = 1; i < tops.length; i++) {
+				const gap = tops[i] - tops[i - 1];
+				if (gap > 1 && gap < fanStep) fanStep = gap;
+			}
+		}
+		const bandTolerance = Number.isFinite(fanStep) ? fanStep * 0.6 : measured[0].rect.width * 0.35;
 		const banded: { spot: (typeof measured)[number]; band: number }[] = [];
 		let band = Number.NEGATIVE_INFINITY;
 		for (const spot of measured) {
@@ -2091,6 +2119,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}
 		banded.sort((a, b) => a.band - b.band || a.spot.rect.left - b.spot.rect.left);
 		const spots = banded.map((entry) => entry.spot);
+		/*
+		 * Rows are dealt one at a time: the cards of a row follow each other by the card stagger, and the next row
+		 * only opens once the last card of this one is on its way, plus the gap. The delay is therefore not a card
+		 * count but a time per row, which is what keeps the rows separate even though they are all in the air at once.
+		 */
+		const rowDelays: number[] = [];
+		let clock = 0;
+		for (let start = 0; start < banded.length; ) {
+			let end = start;
+			while (end + 1 < banded.length && banded[end + 1].band === banded[start].band) end++;
+			for (let index = start; index <= end; index++) rowDelays[index] = clock + (index - start) * DEAL_STAGGER_MS;
+			clock += (end - start) * DEAL_STAGGER_MS + DEAL_ROW_GAP_MS;
+			start = end + 1;
+		}
 
 		const layer = document.createElement('div');
 		layer.className = 'deal';
@@ -2113,7 +2155,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 			const dx = middle[0] - (spot.rect.left + spot.rect.width / 2);
 			const dy = middle[1] - (spot.rect.top + spot.rect.height / 2);
-			const delay = index * DEAL_STAGGER_MS;
+			const delay = rowDelays[index];
 			dealAnimations.push(
 				item.animate(
 					[
@@ -2165,7 +2207,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		document.body.appendChild(layer);
 		dealing = true;
 		// the last card's flight, its turn, and a beat to look at the board before it is handed over
-		const total = performance.now() - started + (spots.length - 1) * DEAL_STAGGER_MS + DEAL_FLIGHT_MS + 150;
+		const total = performance.now() - started + rowDelays[rowDelays.length - 1] + DEAL_FLIGHT_MS + 150;
 		dealTimers.push(window.setTimeout(settleDeal, total));
 	}
 
