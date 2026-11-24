@@ -108,6 +108,13 @@ export const CLAUSES = {
 	 */
 	banditMug: true,
 	/**
+	 * Mug spares a blow that completes a rank: the level up lifts the delver before the bandit reaches the
+	 * chip, so the aspect beside it stands and the chip does not move. Mug is the one power whose price no
+	 * heal can buy back, and the level up is the heal that arrives with the kill that would have taken it.
+	 * Every other power still fires on that blow — only the permanent price is refunded.
+	 */
+	mugLevelSparing: true,
+	/**
 	 * Every king is a lesser king of the boss: it carries the boss suit's power, whatever its own suit is,
 	 * the way a euchre bower answers to the trump. That keeps one aura per deal to learn, felt by the
 	 * court and by all four kings rather than by a quarter of the deck.
@@ -639,22 +646,39 @@ export function currentLevel(state: TombState): number {
  * nothing, and a grave already at its king can take no card at all. The next card home is the highest
  * rank the grave can take, which is not always the one right above it (see `graveReach`).
  */
-export function levelUpGraves(state: TombState): Suit[] {
-	const suits: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
-	const ranks = suits.map((suit) => foundationTopRank(state, suit));
+const GRAVE_SUITS: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
+
+/** The level a set of grave tops reads in this party's hands: the lowest of the four, the second for a Human. */
+function levelOfRanks(state: TombState, ranks: number[]): number {
+	const sorted = [...ranks].sort((a, b) => a - b);
 	const human = CLAUSES.humanLevel && hasPassive(state, 'Human');
-	const levelOf = (values: number[]) => {
-		const sorted = [...values].sort((a, b) => a - b);
-		return cappedLevel(1 + (human ? (sorted[1] ?? 0) : (sorted[0] ?? 0)));
-	};
-	const level = levelOf(ranks);
-	return suits.filter((_, index) => {
-		const reach = graveReach(state, suits[index]);
+	return cappedLevel(1 + (human ? (sorted[1] ?? 0) : (sorted[0] ?? 0)));
+}
+
+export function levelUpGraves(state: TombState): Suit[] {
+	const ranks = GRAVE_SUITS.map((suit) => foundationTopRank(state, suit));
+	const level = levelOfRanks(state, ranks);
+	return GRAVE_SUITS.filter((suit, index) => {
+		const reach = graveReach(state, suit);
 		if (reach <= ranks[index]) return false;
 		const raised = [...ranks];
 		raised[index] = reach;
-		return levelOf(raised) > level;
+		return levelOfRanks(state, raised) > level;
 	});
+}
+
+/**
+ * Whether sending this one card home completes a rank, which is the blow a bandit cannot answer. A pile reads
+ * by its highest card, so a card slid under a higher one lifts nothing. Asked about the card in hand rather
+ * than about the next card each grave could take, which is the question `levelUpGraves` answers.
+ */
+export function levelsUpOnSlay(state: TombState, card: Card): boolean {
+	const index = GRAVE_SUITS.indexOf(card.suit);
+	if (index < 0) return false;
+	const ranks = GRAVE_SUITS.map((suit) => foundationTopRank(state, suit));
+	const raised = [...ranks];
+	raised[index] = Math.max(raised[index], rankOf(card.rank));
+	return levelOfRanks(state, raised) > levelOfRanks(state, ranks);
 }
 
 export function isBoss(state: TombState, card: Card): boolean {
@@ -691,7 +715,7 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		boss: 'Tomithy Longdall',
 		blurb: 'A scallywag looking to loot the tomb.',
 		power: 'Mug',
-		text: 'slaying this, or stashing it in a pocket, forces your conversion one step early: the Hero Chip walks left with no heal. A wounded aspect is locked, so the bandit takes nothing.',
+		text: 'slaying or stashing this forces a Hero Chip conversion, with no heal. Blocked by a wound over the aspect, or by a slay that completes a rank.',
 	},
 	hearts: {
 		name: 'Viper',
@@ -1916,8 +1940,10 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
  * `by` says which of the two it was, because Stone Gaze is the one power already priced into the kill.
- */
-function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState {
+	 * `levelled` says the blow completed a rank: the bandit is the one power that arrives too late, because
+	 * the level up lifts the delver first. Nothing parks a card home, so a park never levels.
+	 */
+function bossAura(state: TombState, card: Card, by: 'kill' | 'park', levelled = false): TombState {
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
@@ -1930,7 +1956,7 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 			// Mug forces the conversion rather than pricing the card: the Hero Chip walks left with no heal,
 			// whether the bandit went down to a blade or was only stashed. Nothing is priced into the
 			// kill for this, so both routes land here.
-			return CLAUSES.banditMug ? mugSlot(state) : state;
+			return CLAUSES.banditMug && !(CLAUSES.mugLevelSparing && levelled) ? mugSlot(state) : state;
 		case 'clubs':
 			// Stone Gaze turns the party's kin and class face down, left to right, and stops at the class.
 			// A kill pays its own wounds first and then gazes (see `attackWith`); a park has no bill to
@@ -2183,9 +2209,12 @@ export function attackWith(
 		});
 	}
 
+	// Whether this blow completed a rank, read with the card already home: Mug is the one power a level up
+	// outruns, so the bandit needs to know before it reaches the chip.
+	const levelled = currentLevel(next) > levelBefore;
 	// A power card that was itself the item is already converting its own slot on the way home, so there is no
 	// conversion left to force: the bandit takes the slot as it stands, not the next pocket's worth after one.
-	next = itemCard ? next : bossAura(next, card, 'kill');
+	next = itemCard ? next : bossAura(next, card, 'kill', levelled);
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });

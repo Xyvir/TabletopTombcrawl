@@ -93,6 +93,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		phantomRank,
 		isBoss,
 		levelUpGraves,
+		levelsUpOnSlay,
 		isBossMinion,
 		isFaceDown,
 		cydsteppCanBury,
@@ -718,14 +719,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * what would a conversion spend, and what does it mend — so the mark answers on the hover and the mend
 	 * lights up on the track beside it. A bandit under the pointer puts it there too: Mug walks the chip a
 	 * step left with no heal, and the aspect it takes never moves, so the chip is the only card-shaped thing
-	 * that happens. A wounded aspect locks both, and neither has anything to warn about then.
+	 * that happens. A wounded aspect locks both, and neither has anything to warn about then; and a bandit
+	 * whose blow completes a rank never reaches the chip at all, so that aim stays quiet.
 	 */
 	const chipWarning = $derived.by(() => {
 		if (!tomb) return false;
 		if (chipHover) return canConvert(tomb);
 		if (!tombHover || tomb.bossSuit !== 'spades') return false;
 		const card = cardAt(tomb.game, tombHover);
-		return !!card && carriesPower(tomb, card) && auraActive(tomb) && !!mugTarget(tomb);
+		if (!card || !carriesPower(tomb, card) || !auraActive(tomb) || !mugTarget(tomb)) return false;
+		// The level up lands first: the bandit has nothing to reach for.
+		return !levelsUpOnSlay(tomb, card);
 	});
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
@@ -1267,8 +1271,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The deal's one monster affliction, e.g. "Affliction: Mug — slaying this, or stashing it in a pocket,
-	 * forces your conversion one step early: the chip walks left with no heal." The court and every other king wear it, so it is always read from the boss suit. A court card
+	 * The deal's one monster affliction, e.g. "Affliction: Mug — slaying or stashing this forces a Hero Chip
+	 * conversion, with no heal." The court and every other king wear it, so it is always read from the boss suit. A court card
 	 * also carries the monster's one-line description; a General and the boss speak for themselves.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {

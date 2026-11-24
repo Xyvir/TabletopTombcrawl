@@ -45,6 +45,7 @@ import {
 	createTombState,
 	currentLevel,
 	levelUpGraves,
+	levelsUpOnSlay,
 	difficultyOf,
 	emptyCells,
 	hp,
@@ -745,6 +746,41 @@ describe('mana burn and mug', () => {
 		// the kill's own wounds land with nothing mended on top: 5S at level 1 deals four, all still showing
 		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(4);
 		expect(hp(next)).toBe(3);
+	});
+
+	test('a blow that completes a rank lifts the delver before the bandit reaches the chip', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({
+			columns: [['5S'], ['3S']],
+			cells: ['TC', '2C', '3C', '4C', '6C', '7C'],
+			// spades lag a rank behind the other three graves, so the five is the card that lifts the level
+			foundations: ['4S', '5H', '5D', '5C'],
+			boss: 'KS',
+			draft,
+		});
+		const five = state.game.cards.find((card) => shorthandCard(card) === '5S')!;
+		const three = state.game.cards.find((card) => shorthandCard(card) === '3S')!;
+		expect(currentLevel(state)).toBe(5);
+		expect(levelsUpOnSlay(state, five)).toBe(true);
+		// a card slid underneath a higher one completes nothing, so the bandit is still there to take it
+		expect(levelsUpOnSlay(state, three)).toBe(false);
+
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(currentLevel(next)).toBe(6);
+		// outrun: the aspect keeps its slot, the chip does not move, and the card still counts as a heart
+		expect(next.draft).toHaveLength(1);
+		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
+		expect(mugTarget(next)?.id).toBe('TC');
+
+		// the same board without the level up: that is the ordinary kill, and it still mugs
+		const noLevel = makeTomb({
+			columns: [['5S']],
+			cells: ['TC', '2C', '3C', '4C', '6C', '7C'],
+			foundations: ['4S', '4H', '4D', '4C'],
+			boss: 'KS',
+			draft,
+		});
+		expect(attackWith(noLevel, cascade(0, 0))!.draft).toHaveLength(0);
 	});
 
 	test('a Wizard\'s Dualcast glyph is mugged out of the item slot like an item', () => {
