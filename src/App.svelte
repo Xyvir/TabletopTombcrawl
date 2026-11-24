@@ -636,7 +636,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	);
 	/**
 	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
-	 * Bandit would empty, the card a Gorgon would turn down, the glyphs a Wraith would spend. An
+	 * Bandit would convert, the card a Gorgon would turn down, the glyphs a Wraith would spend. An
 	 * armed Remedy turns the whole aura off, and the warning goes with it, since the move it covers would
 	 * not do any of it.
 	 */
@@ -677,14 +677,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const filledPockets = $derived(tomb ? tomb.game.cells.filter((card) => !!card).length : 0);
 	/** Empty free cells: each one is a single card away from being another heart. */
 	const openSlots = $derived(tomb ? emptyCells(tomb).length : 0);
-	/** Where the conversion chip sits: the boundary between ability slots and plain free cells. */
+	/** Where the Hero Chip sits: the boundary between hero aspects and plain pockets. */
 	const chipAt = $derived(tomb ? chipBoundary(tomb) : 0);
 	/**
 	 * The conversion a drag would spend, marked on the chip itself: a card in hand with no grave open to it
-	 * has only one way out of its slot, and that way is a conversion — the slot goes plain and the chip walks
-	 * a step left. Only the card the chip has reached can leave at all, so the ones behind it (locked by the
+	 * has only one way out of its aspect, and that way is a conversion — the aspect goes plain and the chip walks
+	 * a step left. Only the aspect the chip has reached can leave at all, so the ones behind it (locked by the
 	 * conversion order) say nothing at all, and a Thief's Pickpocket is the exception: he plays the item into
-	 * a hallway and the slot waits on its refill instead, so the chip stays put and has nothing to warn about.
+	 * a hallway and the aspect waits on its refill instead, so the chip stays put and has nothing to warn about.
 	 */
 	const conversionPreview = $derived.by(() => {
 		if (!tomb || !aim || aim.fixture !== 'cell') return false;
@@ -1238,7 +1238,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 	/**
 	 * The deal's one monster affliction, e.g. "Affliction: Mug — slaying this, or stashing it in a pocket,
-	 * shoves the card out of your item slot into the first empty pocket to its right, which spends it." The court and every other king wear it, so it is always read from the boss suit. A court card
+	 * forces your conversion one step early: the chip walks left with no heal." The court and every other king wear it, so it is always read from the boss suit. A court card
 	 * also carries the monster's one-line description; a General and the boss speak for themselves.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
@@ -1270,7 +1270,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (!slain) return null;
 		// Venom only bites when there is fog left to dig into.
 		if (slain.suit === 'hearts') return after.hidden.length < before.hidden.length ? 'venom' : null;
-		// Mug shows when the bandit actually got the item out: the slot converts, so the draft shrinks.
+		// Mug shows when the bandit forced the conversion: the chip walked left with no heal, so the draft shrinks.
 		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
 		// Stone Gaze is wounds, and the wound flash already answers for it; Mana Burn needs a glyph to drain.
 		if (auraItemOf(after, slain) === null) return null;
@@ -2336,10 +2336,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					style={`--chip-index:${chipAt}`}
 					disabled={!ready}
 					title={ready
-						? `Convert ${chipCard?.name ?? 'the card'}: give up its ability for good and mend one wound. The card stays in its pocket as a plain card, free to go home.`
+						? `Hero Chip: aspects to the left, pockets to the right. Click to convert '${chipCard?.name ?? 'the hero aspect'}': turn it into a pocket — its ability is gone for good — and mend one wound as a bonus. The card stays where it lies as a plain card, free to go home. A wounded aspect cannot be converted.`
 						: conversionPreview
 							? 'Playing this card out converts its slot: the chip walks one step left.'
-							: 'Conversion tracker: the item slots to its left are your live abilities, and the free cells to its right are plain — they only hold a card. Each conversion walks the chip one slot left.'}
+							: 'Hero Chip: the hero aspects to its left are your live abilities, and the pockets to its right are plain — they only hold a card. Each conversion turns one aspect into a pocket.'}
 					onclick={convertChipClick}
 					onpointerenter={() => (chipHover = true)}
 					onpointerleave={() => (chipHover = false)}
@@ -2641,7 +2641,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/each}
 						{#each SUITS as cls, clsIndex (cls)}
 							<!--
-								A Wizard's Dualcast makes the item slot a second glyph, spelling from the suit of the card in it, so
+								A Wizard's Dualcast makes the item aspect a second glyph, spelling from the suit of the card in it, so
 								his block's four columns are four glyphs rather than four items: the bottom margin says what they are
 								in his column, the way the side margin already names the first one.
 							-->
@@ -2688,9 +2688,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 								{#each ROLE_ORDER as role (role)}
 									{@const suit = inspected[role]}
 									<!--
-										The pane reads the party back the way the board deals it, so a Wizard's item slot spells
+										The pane reads the party back the way the board deals it, so a Wizard's item aspect spells
 										rather than carrying a potion: the role is still the item pocket, the ability is the glyph.
-									-->
+								-->
 									{@const shown = abilityFor(role === 'consumable' && inspected.class === 'clubs' ? 'glyph' : role, suit)}
 									<li>
 										<span class="role">{ROLE_WORD[role]}</span>

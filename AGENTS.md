@@ -3,7 +3,7 @@
 ## Overlapping windows are the design, not a bug
 
 DD and FreeCell both run on many small, overlapping windows of opportunity, and that is the shape this game
-wants. A power that has nothing to do on a particular crawl is not a broken rule: the conversion chip is
+wants. A power that has nothing to do on a particular crawl is not a broken rule: the Hero Chip is
 what turns a quiet slot into a decision, so an ability going idle is one more thing to weigh when the chip
 moves, and the choice of when to spend it is the interesting part.
 
@@ -237,6 +237,67 @@ targeting errors, so there is nothing for the planner to aim at instead. A 1M pl
 won nothing — these deals are hard, not under-searched. The engine's test replays its line
 move by move without asserting a win, so the arm can change the line without changing the test.
 
+The heal gate stays wound-only: a need leaves `actionable` only while its pocket is wounded, so a phase
+stuck behind one banks a dig or park instead of missing with the heal on the board. A broader *workable*
+gate (`needUnworkable`: buried under an immovable top, buried with nowhere for its cover, fogged where
+no dig reaches) was tried and reverted: the immovable-top clause lets phases end early on a banked heal
+and sidetracks 3054/150677/150738 into wound-gridlock stalemates the wound-only gate walks past
+(3054: 59-move win in 543 states with it off, dead at 72 plies with it on), while its only reproduced
+win is 822-clear rerouting 121 to 113 — wins beat pars, so the clause goes. Tried and reverted beside it:
+a heal-end reachability check (`canHeal`: dig/level/convert listed, parking not) that strands 205510's
+mint-then-home path — the phase must end on the park-minted heart to walk it, so the heal end stays
+unconditional (123-move win unreachable in 22k states with the check, found in 15k without it); a convert
+ban at full hearts (kills 822 outright and quits 2769 at ply 30 — the clogged board's only path goes
+through the chip, so a ban just moves the quit earlier); a re-sweep of the 165 still-missing keys with the
+restored gate at boss/200k (four workers, fixed code throughout) adds exactly one win — the remainder is
+hard for the plan arm, not under-searched (1200155 burns 200k on plan/two-phase/fallback and 852k of 1M
+plan without solving); a full-pocket cliff in `planScore` (−25 wins
+2769 in 115 but breaks 822/12/154116 — the cap endgame legitimately fills pockets with wound banks, so
+a room price cannot tell gridlock from banking); and broadening the due past wound-locked needs (bleeds
+tracks out climbing high graves, exactly the failure the lagging-only rule was built to stop). `allow`
+now also takes the board the move leaves from, so a future gate can price what a move costs; nothing
+passes one yet.
+
+### The miss that banks nothing (adopted 2026-11-23)
+
+A miss whose best line banks no home leaves the next phase exactly where the last one started, so three
+of them quit a tomb that still has homes on it. On a miss with no home anywhere in the walked line, the
+driver now takes the single best-scoring home move instead of walking: homes never come back out, so it is
+certain progress, and the next phase re-plans from the richer board rather than grinding the same
+unreachable due again. It fires only when the walk banks nothing, so a phase that homes its way forward
+walks exactly as before. Measured, recovery-only (no weight change), 200k: 154116-clear par 144 at 20k
+states to par 29 alive (the furthest any arm has taken it — flat's best is 434 at a million), 2769-clear
+from a par-35 dead end to 48 of 52 foundations before the endgame strand, 822-clear still 121, 3054-boss
+still 59, 150250-boss still won; suite green at 2530. The wound term tried beside it — 8 per wound on draft
+cells — bought 2769's early game (par 35 to par 175) but tripled seed-12's search past the solver test's
+timeout and changed nothing on 154116, so it was reverted: pars on unwon deals do not buy a red suite.
+
+What the two human deals now show is the endgame, not the release: 2769 reaches 48 foundations with its
+four party hearts wounded-locked in draft slots and zero moves, and 154116 strands two wounded parked cards
+(H9, SK) with no heal and no hearts. Both need one mend past the last wounding home and neither has any fog,
+potion, level-up or convert left to make it — the same true-deadlock class as 3054/150250, and the human
+lines (which drank the potion midgame and levelled past 12) cannot be replayed under the cap for the same
+reason. The next fix is a mend budget — remaining fog/potion/level-ups/converts against wounds outstanding —
+not another release price.
+
+Sweeps with the recovery in, 200k a deal over all 173 missing placeholders: plan-clear wins none (the
+November-16 plan sweep's 22 wins date from before the Mug rework, and none of its seeds re-solve now —
+1038 sits at par 270–290 with the recovery on or off, so that drift is rules, not search); plan-boss wins 9
+— hdsh 243 in 140, hshs 137 in 106, hsch 81319 in 81, chdd 800079 in 112, hhds 1000799 in 116, csdc 205184
+in 104, sscc 23 in 104, sshd 1446 in 115, shsd 600213 in 121 — and the merge promotes all nine. 1518/328's
+documented plan wins (107/102) no longer re-solve under the tree either, identically with the recovery on
+and off; they are drift from the in-progress rule rework, not a regression.
+
+Alternates sweep, 200k a deal, plan-boss: the 174 placeholder seeds gave nothing, but two fresh-or-archived
+seeds per key (`corpus/alt-plan.ts`: archived woundlock-era winning seeds that still deal a missing key,
+then fresh deals from 2000001 up, skipping tried seeds) won **28 new squares** — 20 fresh deals plus 8
+archived seeds. All 28 lines replay under the current tree. Eight of the archived seeds sat in
+`corpus/retired.json` from the ability re-sweep ("a 400k pass and then a 1M best-first pass both find
+nothing"); the current planner re-proves them, so those eight rows were removed from the retired list and
+the merge published all 28. Corpus: 82 → **110 of 256**, 146 missing. Convert-seeking in the driver is now
+gated to clear-goal runs (`!bossRun`), so it cannot trade boss tempo for endgame fuel; boss baselines
+3054/150250/243/81319 unchanged and the suite green.
+
 ## The Potion proposal, kept on file (not adopted)
 
 The Potion is left exactly as it is — drink it, every wound heals, it turns face down — and it is being playtested
@@ -297,14 +358,14 @@ holding neither were untouched. The 359 dead lines went to `solutions/archive/`,
 ## The affliction swap (adopted)
 
 The four monster powers now price four different things, where two of them used to price the same thing in
-different slots. **Mug** (spades, Bandit) pushes the card in your item slot into the first free pocket to its
-right, on a slay or a park, exactly as playing it out would: the slot converts, the chip steps past it, and
-nothing waits to remake the item. **Stone Gaze** (clubs, Gorgon) turns one card face down, the leftmost of the
+different slots. **Mug** (spades, Bandit) forces the conversion a step early — the chip walks one slot left
+with no heal — on a slay or a park: the ability is spent, the card stays plain where it lies, and nothing
+waits to remake the item. **Stone Gaze** (clubs, Gorgon) turns one card face down, the leftmost of the
 party's kin and class that is still face up, and stops at the class — its window is the party's own two passives, one
 per affliction, and a cell already wounded has nothing left to give, so the kin answers the first gorgon and the
-class the second. Venom (hearts) stays knowledge and Mana Burn (diamonds) stays the glyphs, so the
-four currencies are hearts, space, spell slots and knowledge instead of two of them being the item and two being
-the glyph.
+class the second. Venom (hearts) stays knowledge and Mana Burn (diamonds) stays the glyphs, so no two afflictions price the same
+thing: Mug prices the conversion itself — the ability early, and the heal it would have mended — instead of two
+of them being the item and two being the glyph.
 
 The monsters are the Bandit, the Viper, the Gorgon and the Wraith — the heart one was the Serpent until the
 Venom rename. The status bar names the tombs they fill rather than the bosses: Barrow of Bandits (♠), Cairn of
@@ -315,14 +376,15 @@ still has its card's tooltip.
 Three rules were settled while building it. Mug fires on a park as well as a kill: otherwise stashing a bandit is a
 free way to switch its affliction off. An Arcana glyph is mugged exactly like a flask — the slot is the item slot
 whatever it holds, which is why the Wizard's text now says the slot holds a glyph *in place of an item*. And a
-wounded slot cannot be mugged: a wound turns the card face down and locks it, and a bandit has nothing to shove
-out of a locked pocket — the same bargain a Wraith offers, where a slot already paid for has nothing left to take.
-That makes fighting while damaged a little cheaper in a spades tomb, which is the shape we want: the two ways Mug
-is dodged are filling the row to its right (no free pocket, no shove) and arriving wounded.
+wounded slot cannot be mugged: a wound turns the card face down and locks it, and a bandit has nothing to
+convert in a locked pocket — the same bargain a Wraith offers, where a slot already paid for has nothing left
+to take. That makes fighting while damaged a little cheaper in a spades tomb, which is the shape we want: the
+way Mug is dodged is arriving wounded. A full row is no defence, because nothing moves — and neither is a manual
+conversion, which the same lock refuses.
 
 The board warns on what an affliction is aimed at: `afflictionTargets()` names the cards, and the interface draws a
 see-through purple `!` on each while a carrier is under the pointer — the fog a Viper would lift, the card in the
-slot a Bandit would shove out, the card a Gorgon would turn down, the glyphs a Wraith would spend. The Gorgon's one
+slot a Bandit would convert, the card a Gorgon would turn down, the glyphs a Wraith would spend. The Gorgon's one
 target is the leftmost passive still standing, read in draw order until the class, and it is the only warning a
 stashed gorgon gets: a park has no attack preview to show the heart it costs. The gaze's card wears the purple `!`
 and the blow's own wounds keep the red glow, so the two prices read as the two different things they are. A fogged

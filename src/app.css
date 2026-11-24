@@ -512,9 +512,9 @@ img {
 }
 
 /*
- * The conversion chip: a poker chip wedged in the gap between the last ability slot and the first
- * plain free cell. Its track is the boundary between them, so it walks one slot left each time an
- * item converts, and disappears once every slot on the track is plain.
+ * The Hero Chip: a poker chip wedged in the gap between the last hero aspect and the first
+ * plain pocket. Its track is the boundary between them, so it walks one slot left each time an
+ * aspect converts, and disappears once every slot on the track is plain.
  */
 .cells.tomb .chip {
 	position: absolute;
@@ -531,7 +531,7 @@ img {
 		radial-gradient(circle, #efe4cc 0 26%, transparent 27%),
 		repeating-conic-gradient(from 0deg, #a72c2c 0 22.5deg, #efe4cc 22.5deg 45deg);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
-	/* it is the conversion tracker, so it has to be hoverable to carry its own tooltip */
+	/* it is the Hero Chip, so it has to be hoverable to carry its own tooltip */
 	pointer-events: auto;
 	cursor: help;
 	z-index: 2;
@@ -544,8 +544,8 @@ img {
 }
 
 /*
- * Under the explicit conversion the chip is a button, not a tracker: one click spends the party card
- * beside it. The token is small, so the ring is the only signal it gives — the tooltip names the card.
+ * Under the explicit conversion the chip is a button, not a tracker: one click spends the hero aspect
+ * beside it. The token is small, so the ring is the only signal it gives — the tooltip names the aspect.
  */
 .cells.tomb .chip {
 	appearance: none;

@@ -727,7 +727,7 @@ describe('mana burn and mug', () => {
 		expect(abilityUsable(next, 1)).toBe(false);
 	});
 
-	test('mug needs a free pocket to its right, and leaves the item when the row is full', () => {
+	test('mug forces the conversion with no heal, and needs no free pocket', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['5S']],
@@ -738,9 +738,12 @@ describe('mana burn and mug', () => {
 		});
 		const next = attackWith(state, cascade(0, 0))!;
 
-		// there is nowhere to put it, so the item keeps its slot: the pockets are the price, and there are none
-		expect(next.draft).toHaveLength(1);
+		// nothing moves, so a full row is no defence: the chip walks left with no heal, the card stays plain
+		expect(next.draft).toHaveLength(0);
 		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
+		// the kill's own wounds land with nothing mended on top: 5S at level 1 deals four, all still showing
+		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(4);
+		expect(hp(next)).toBe(3);
 	});
 
 	test('a Wizard\'s Dualcast glyph is mugged out of the item slot like an item', () => {
@@ -758,9 +761,11 @@ describe('mana burn and mug', () => {
 		});
 		const next = attackWith(state, cascade(0, 0))!;
 
-		// the slot is the slot whatever it holds: one entry leaves, the class card stays
+		// the slot is the slot whatever it holds: one entry leaves, the class card stays, and the forced
+		// card never leaves its pocket — it turns plain where it lies, with no heal
 		expect(next.draft.map((entry) => entry.role)).toEqual(['class']);
-		expect(shorthandCard(next.game.cells[3]!)).toBe('TC');
+		expect(shorthandCard(next.game.cells[2]!)).toBe('TC');
+		expect(next.game.cells[3]).toBe(null);
 	});
 
 	test('an armed Remedy covers a mugging, so the item keeps its slot', () => {
@@ -956,17 +961,22 @@ describe('the level cap', () => {
 			variant(() => {
 				const state = endgame(spread(KINGS), NO_HEAL);
 				expect(canConvert(state)).toBe(true);
-				// a king first, so there is a wound for the conversion to mend
-				const hurt = applyAction(state, { kind: 'home', at: cascade(0) })!;
-				expect(hp(hurt)).toBe(3);
-				expect(hurt.wounded[3]).toBe(1);
-
-				const converted = convertChip(hurt)!;
+				// convert while healthy: the slot turns plain with nothing to mend
+				const converted = convertChip(state)!;
 				expect(converted.draft.map((entry) => entry.cell)).toEqual([0, 1, 2]);
 				expect(hp(converted)).toBe(4);
 				// the card never left its pocket: it is a plain card now, and it can be sent home
 				expect(shorthandCard(converted.game.cells[3]!)).toBe('3D');
 				expect(cellCardMovable(converted, 3)).toBe(true);
+				// a king next: the wound lands on the plain card at the right edge, leaving the chip's
+				// new slot clean, so the following conversion mends exactly that wound
+				const hurt = applyAction(converted, { kind: 'home', at: cascade(0) })!;
+				expect(hp(hurt)).toBe(3);
+				expect(hurt.wounded[3]).toBe(1);
+				expect(canConvert(hurt)).toBe(true);
+				const mended = convertChip(hurt)!;
+				expect(mended.draft.map((entry) => entry.cell)).toEqual([0, 1]);
+				expect(hp(mended)).toBe(4);
 			});
 		});
 
@@ -979,28 +989,31 @@ describe('the level cap', () => {
 			});
 		});
 
-		test('a wounded card can still be spent: the conversion is the way out of that lock', () => {
+		test('a wounded card cannot be converted: the lock holds until the wound lifts', () => {
 			variant(() => {
 				const hurt = applyAction(endgame(spread(KINGS), NO_HEAL), { kind: 'home', at: cascade(0) })!;
 				expect(cellTopWounded(hurt, 3)).toBe(true);
-				const converted = convertChip(hurt)!;
-				expect(converted.wounded[3]).toBe(0);
+				expect(canConvert(hurt)).toBe(false);
+				expect(convertChip(hurt)).toBeNull();
 			});
 		});
 
-		test('four conversions pay the four kings, and the party walks home plain', () => {
+		test('convert-first spends the opener: a heal-less party falls one wound short of four kings', () => {
 			variant(() => {
+				// convert-before-every-home: a wound always lands on the rightmost pocket, so the chip's
+				// slot must be spent before the blow locks it. The opener mends nothing on a healthy
+				// board, so three mends pay for four kings and the last wound has nowhere to go.
 				let board = endgame(spread(KINGS), NO_HEAL);
-				board = applyAction(board, { kind: 'home', at: cascade(0) })!;
-				board = applyAction(board, { kind: 'home', at: cascade(1) })!;
-				board = convertChip(board)!;
-				board = applyAction(board, { kind: 'home', at: cascade(2) })!;
-				board = applyAction(board, { kind: 'home', at: cascade(3) })!;
-				while (canConvert(board)) board = convertChip(board)!;
+				for (const column of [0, 1, 2, 3]) {
+					board = convertChip(board)!;
+					board = applyAction(board, { kind: 'home', at: cascade(column) })!;
+				}
 				expect(board.draft).toHaveLength(0);
-				for (const slot of [3, 2, 1, 0]) board = applyAction(board, { kind: 'home', at: cell(slot) })!;
-				expect(board.game.cards.every((card) => card.location.fixture === 'foundation')).toBe(true);
-				expect(tombPar(board)).toBe(0);
+				expect(board.wounded[3]).toBe(1);
+				expect(canConvert(board)).toBe(false);
+				// the plain card under the last wound cannot go home face-down: the spare heal the
+				// endgame needs has to come from fog held on purpose, a flask, or a level-up
+				expect(attackWith(board, cell(3))).toBeNull();
 			});
 		});
 
@@ -1355,11 +1368,11 @@ describe('tombcrawl damage and free-cell HP', () => {
 		const parked = tombMove(state, cascade(0, 0), cell(5))!;
 		// the parked card is a fresh heart on the track, and Mug takes no heart at all
 		expect(hp(parked)).toBe(6);
-		// the item left its slot for the first free pocket along — past the card just parked — and the
-		// slot converted behind it, so nothing is left waiting to remake it
+		// the forced conversion spends the slot behind the parked card: the chip walks left with no heal,
+		// the card stays where it lay as a plain card, so nothing is left waiting to remake it
 		expect(parked.draft).toHaveLength(0);
-		expect(parked.game.cells[0]).toBe(null);
-		expect(shorthandCard(parked.game.cells[6]!)).toBe('2C');
+		expect(shorthandCard(parked.game.cells[0]!)).toBe('2C');
+		expect(shorthandCard(parked.game.cells[5]!)).toBe('5S');
 		expect(parked.itemWindow).toBe(null);
 
 		// a minion of another suit parks for free and touches nothing
@@ -1998,9 +2011,10 @@ describe('tombcrawl progression rules', () => {
 			boss: 'KS',
 		});
 		const mugged = attackWith(state, cascade(0, 0))!;
-		// the first free pocket to the right of the slot, past the rest of the party
+		// the forced conversion: the chip walks left with no heal and the card stays plain in its pocket
 		expect(mugged.draft).toHaveLength(0);
-		expect(shorthandCard(mugged.game.cells[6]!)).toBe('7C');
+		expect(shorthandCard(mugged.game.cells[0]!)).toBe('7C');
+		expect(mugged.game.cells[6]).toBe(null);
 		expect(mugged.exhausted[0]).toBe(false);
 	});
 

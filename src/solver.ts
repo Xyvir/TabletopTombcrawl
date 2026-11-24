@@ -30,6 +30,7 @@ import {
 	canConvert,
 	conversionTarget,
 	convertChip,
+	convertibleCell,
 	pickpocketUsable,
 	restockSuits,
 	revealFaceDown,
@@ -82,7 +83,7 @@ export type SolverAction =
 	| { kind: 'weytwut'; cell: number; a: CardLocation; b: CardLocation }
 	/** Purity aims at a hallway rather than a card, so its arm and its aim are one action too. */
 	| { kind: 'purity'; cell: number; column: number }
-	/** The chip, clicked: one party card spent for one wound. */
+	/** The Hero Chip, clicked: one hero aspect spent for one wound. */
 	| { kind: 'convert' }
 	/** Pickpocket, armed on the item pocket and aimed at an exposed card. */
 	| { kind: 'pickpocket'; cell: number; at: CardLocation };
@@ -250,7 +251,7 @@ export function generateMoves(state: TombState): SolverMove[] {
 		}
 	}
 
-	// The explicit conversion: the chip spends the party card beside it for one wound.
+	// The explicit conversion: the Hero Chip spends the hero aspect beside it for one wound.
 	if (canConvert(state)) {
 		const entry = conversionTarget(state);
 		if (entry) add({ kind: 'convert' }, convertLabel(entry.name, entry.cell), convertChip(state));
@@ -393,9 +394,10 @@ export interface SolveOptions {
 	/**
 	 * Allowed moves inside one pass. The modes driver uses it to fence each phase into its own kind of
 	 * work — homes home, digs heal, sorts arrange — so a sorting phase can never spend the fog a heal
-	 * phase banks on. Flat passes without it behave exactly as before.
+	 * phase banks on. Flat passes without it behave exactly as before. The state is the board the move
+	 * would leave from, so a gate can read what the move costs (a convert that heals nothing, for one).
 	 */
-	allow?: (action: SolverAction) => boolean;
+	allow?: (action: SolverAction, state?: TombState) => boolean;
 	score?: (state: TombState) => number;
 	/** States to examine before giving up. */
 	nodes?: number;
@@ -919,7 +921,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 
 			const children: Node[] = [];
 			for (const move of generateMoves(node.state)) {
-				if (allow && !allow(move.action)) continue;
+				if (allow && !allow(move.action, node.state)) continue;
 				nodes++;
 				const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 				if (reached(move.next)) {
@@ -960,7 +962,7 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 			const children: Node[] = [];
 			for (const node of frontier) {
 				for (const move of generateMoves(node.state)) {
-					if (allow && !allow(move.action)) continue;
+					if (allow && !allow(move.action, node.state)) continue;
 					nodes++;
 					const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 					if (reached(move.next)) {
@@ -1008,9 +1010,9 @@ export function solveTomb(options: SolveOptions = {}): SolveResult {
 		if (node.depth >= depth) continue;
 
 		for (const move of generateMoves(node.state)) {
-			if (allow && !allow(move.action)) continue;
+			if (allow && !allow(move.action, node.state)) continue;
 			nodes++;
-								const path: PathLink = { action: move.action, label: move.label, prev: node.path };
+			const path: PathLink = { action: move.action, label: move.label, prev: node.path };
 			if (reached(move.next)) {
 				deepest = Math.max(deepest, node.depth + 1);
 				return finish(true, path, move.next);
@@ -1612,6 +1614,8 @@ export function planBreakdown(state: TombState): {
 	blocked: number;
 	squat: number;
 	dull: number;
+	spent: number;
+	order: number;
 } {
 	const context = releaseContext(state);
 	let cheapest = 0;
@@ -1634,6 +1638,16 @@ export function planBreakdown(state: TombState): {
 		level: currentLevel(state),
 		blocked: bossBlockedCount(state),
 		squat: squatters(state),
+		// Party spent: conversions and draft cards played out shrink the draft for good (a restock
+		// feed is the only way one comes back). Midgame that is the endgame fuel burnt for one
+		// heart; late, with the tomb nearly home, it is the gesture itself. The score prices it,
+		// not the move, so the search feels the empty slot on every board after it.
+		spent: Math.max(0, 4 - state.draft.length),
+		// Arrangement the release price cannot see: runs already joined on the board. The cheapest
+		// home leads, but two boards one home away are not equal when one of them has the next
+		// three covers already stacked — that is the sorting the human intersperses with the
+		// homing to keep fogged cards playable instead of stranding them behind cover.
+		order: orderedRuns(state),
 		// Freshness is worth protecting only when there is a spare to keep: a lone CYDSTEPP is the whole
 		// lifting corps, and taxing its every routine bury reroutes the tomb around a tool it cannot spare
 		// (150250: par 214 to 460 with the tax on, exactly 214 with it off). Two or more may spell each other
@@ -1653,6 +1667,15 @@ export function planBreakdown(state: TombState): {
  */
 function planScore(state: TombState): number {
 	const parts = planBreakdown(state);
+	// Endgame fuel, priced: a spent party slot costs most at full hearts on a fresh tomb and
+	// least when the track is empty and the foundations are nearly full. A midgame convert for
+	// one heart (+1.5 here) never pays its slot back, so the search digs or sorts instead; a
+	// last-heart convert with par nearly gone costs little more than the heart it mends, which is
+	// the human's own endgame. Progress is par banked over a full clear (~480); hearts are the
+	// share of the track still alive.
+	const progress = Math.min(1, Math.max(0, parts.par / 480));
+	const heartShare = maxHp(state) > 0 ? hp(state) / maxHp(state) : 1;
+	const spentPrice = parts.spent * (10 + 12 * heartShare + 8 * (1 - progress));
 	return (
 		-parts.cheapest * 6 +
 		parts.hp * 1.5 +
@@ -1660,6 +1683,8 @@ function planScore(state: TombState): number {
 		parts.reach * 2 -
 		parts.hidden * 0.5 +
 		parts.level * 2 +
+		parts.order * 3 -
+		spentPrice +
 		// An empty cell is a place to put cover; a whisper of it keeps a gridlocked board from scoring standing
 		// still above the move that would unlock it. More than a whisper buys hoarding instead (measured: 3/cell
 		// stalls seed 154116 at 6 homes where 1/cell walks past), because the planner starts keeping cells empty
@@ -1677,10 +1702,14 @@ function planScore(state: TombState): number {
 		// A plain pocket hands its card back; a draft slot below the chip does not, so a foreign card parked
 		// there is locked until the chip arrives. Eight a squatter keeps the parking in the pockets, where a
 		// later phase can still take hold of it — the human's parks never touch the party's slots at all.
-		parts.squat * 8 +
+		parts.squat * 8 -
+		// A wounded draft slot, priced like a squatter: the ability is locked either way, and the
+		// convertible one holds the whole conversion chain hostage. Eight is the squat price, so a
+		// wound that locks a lived-in slot reads the same as a stranger sitting in it.
 		// A glyph spent on routine cover while the boss is unsafe is the re-lift thrown away: twelve a dull
 		// head, which a bury's handful cannot pay but a level wipes clean. Bend, not break — a tomb whose
 		// only way forward is a bury still buries, and the lift that moves the boss pays it gladly.
+		// (Sign corrected: dull glyphs cost, never pay — the old `+` rewarded spending the freshness.)
 		parts.dull * 12
 	);
 }
@@ -1818,15 +1847,28 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		const affordable = due.filter((need) => Math.max(0, need.rank - startLevel) <= startHp - 1);
 		// A wound-locked need reads affordable — its price is fine — but no heal short of the wound mending
 		// makes it legal. Gate the heal target on what is actually actionable, so a phase stuck behind a
-		// locked pocket may bank a convert, dig or park instead of missing with the heal on the board.
+		// locked pocket may bank a dig or park instead of missing with the heal on the board.
 		const actionable = affordable.filter((need) => !needWoundLocked(state, need));
+		// The convert chain is the endgame the release target cannot see: once every suit is topped or
+		// phantom-held, the only homes left are mop-ups, but a clean convertible aspect is a mend and a
+		// step left on the chip at once — the self-mending finish (2769 strands with four wounded party
+		// hearts because the pass walks past the clean potion window to home one more king). While the
+		// tomb is nearly released and the party is nearly whole, phases end on the chip walking, not on
+		// another home: the convert is the move the strand boards are each exactly one of short of.
+		const startConvertible = convertibleCell(state);
+		// Clear-goal only: a boss run ends at the slay, long before the convert chain matters, so
+		// seeking converts there can only trade boss tempo for endgame fuel the goal never spends.
+		const convertSeeking = !bossRun && needs.length <= 1 && state.draft.length >= 3 && startConvertible >= 0;
+
 		const target = (board: TombState) =>
-			due.some((need) => {
-				const card = board.game.cards.find(
-					(candidate) => candidate.suit === need.suit && planRank(candidate) === need.rank,
-				);
-				return card?.location.fixture === 'foundation';
-			}) ||
+			(convertSeeking
+				? convertibleCell(board) < startConvertible
+				: due.some((need) => {
+						const card = board.game.cards.find(
+							(candidate) => candidate.suit === need.suit && planRank(candidate) === need.rank,
+						);
+						return card?.location.fixture === 'foundation';
+					})) ||
 			(bossAlive && bossSlain(board)) ||
 			// A level is progress even when no grave advanced on paper: the track heals on it, and the next
 			// expensive home gets cheaper. Levels never come back out of the foundations, so this cannot loop.
@@ -1840,6 +1882,9 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 			// finish. A phase that will not end on them stops at 40 homes with twelve one-movers on the
 			// board; ending on any home mops them up, and homes never come back out.
 			(due.length === 0 && board.game.cards.filter((card) => card.location.fixture === 'foundation').length > startHomes) ||
+			// A phase stuck behind a locked need banks any heal — a dig, a park-minted heart — with no
+			// further check, because the mint-then-home path has to end on the mint to walk it (205510:
+			// gating the heal end on a reachability check strands its 123-move win past 22k states).
 			(!actionable.length && hp(board) > startHp);
 		const pass = solveTomb({
 			state,
@@ -1857,14 +1902,27 @@ export function solvePlanned(options: SolveOptions = {}): SolveResult {
 		});
 		nodes += pass.nodes;
 		timedOut = timedOut || pass.timedOut;
-		const walked = pass.solved ? pass.steps : pass.bestSteps;
+		let walked = pass.solved ? pass.steps : pass.bestSteps;
+		if (!pass.solved && !walked.some((step) => step.action.kind === 'home')) {
+			// A miss whose best line banks nothing leaves the next phase exactly where this one
+			// started, so three of them quit a tomb that still has homes on it (154116 stalls at
+			// par 144 with homeable foundations on the board while the pass grinds its due). Take the
+			// single best-scoring home instead: homes never come back out, so a greedy home on a miss
+			// is certain progress, and the next phase re-plans from the richer board.
+			const homing = generateMoves(state).filter((move) => move.action.kind === 'home');
+			if (homing.length) {
+				homing.sort((a, b) => planScore(b.next) - planScore(a.next));
+				walked = [{ action: homing[0].action, label: homing[0].label, state: homing[0].next }];
+			}
+		}
 		for (const step of walked) line.push(step);
 		state = walked.length ? walked[walked.length - 1].state : pass.best;
 		const now = state.game.cards.filter((card) => card.location.fixture === 'foundation').length;
 		// A heal with no home is still progress — it banks what the next expensive home spends — but only the
 		// affordable-gated phases may claim it, so a track at full hearts cannot spin on it forever.
 		const healed = !actionable.length && hp(state) > startHp;
-		const progressed = pass.solved || now > homes || (bossAlive && bossSlain(state)) || healed;
+		const converted = convertibleCell(state) < startConvertible;
+		const progressed = pass.solved || now > homes || (bossAlive && bossSlain(state)) || healed || converted;
 		if (progressed) {
 			failures = 0;
 			homes = now;

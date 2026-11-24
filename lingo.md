@@ -41,9 +41,10 @@ One crawl *is* the whole game, the way one floor is the whole of a Desktop Dunge
 word works as both the sit-down and the board. "New crawl" drafts a fresh party and a fresh seed,
 "Restart crawl" replays the one you have, and "End crawl" is how a crawl is left once the boss is down.
 
-A pocket is the same word in all three of its jobs — that is the point of choosing it over `slot` or
-`cell`. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of pocket it is when that matters:
-*party pocket* for the four at the left, *empty pocket* for storage.
+The track is two things with the **Hero Chip** between them: the four cards to its left are **hero aspects**,
+and the cells to its right are **pockets**. The role word (`Kin`, `Class`, `Glyph`, `Item`) says which kind of
+aspect it is when that matters. A converted aspect becomes a pocket like any other — that is the point of
+choosing *pocket* over `slot` or `cell` for what is left once the hero is gone.
 
 Every ability in the game names both where it comes from and what kind of thing it is, and those two words
 are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affliction** only of a monster,
@@ -112,7 +113,7 @@ Four verbs cover every way a card moves, and copy uses only these.
 | **Slay** | Send a card to its grave. Every route is a slay: the attack that pays HP, the plain play straight to the graveyard, and a glyph that carries a card there. | send home / auto-foundation | `attackWith`, `canSendHome` |
 | **Stash** | Send a card from the tomb into a pocket, to wait there. | move to a free cell | `tombMove` to a cell, "park" |
 | **Restock** | Claim a waiting party pocket: the card played in becomes the party thing that lives there, or remakes the one that owned the pocket before. | refill the item | `itemWindow` |
-| **Convert** | Give up a party pocket's claim. The restock window lapses, a party card is stashed out to the tomb or slain, and the pocket becomes ordinary storage. | lose the drafted card | `convertibleCell`, consumed draft |
+| **Convert** | Give up a party pocket's claim through the chip: the ability is spent, the card stays lying in the pocket as a plain card, the chip walks one step left and the track mends one wound. A wounded card cannot be converted. | lose the drafted card | `convertibleCell`, consumed draft |
 
 Notes that follow from those:
 
@@ -121,6 +122,8 @@ Notes that follow from those:
   copy should say which one the player is about to do, never "use the item or lose it".
 - **A slain party card converts its own pocket.** The thing that lived there is dead, so the pocket is
   plain from then on — slay and convert can both happen on one move.
+- **A wound locks the pocket it lies on.** A wounded card cannot be converted, and a bandit gets nothing
+  from that slot either — arriving wounded is the counterplay, the same bargain a wraith offers.
 - **Stash is the code's "park".** The affliction still fires on it: a stashed carrier sets off its power where it
   lies. Copy says stash; nothing in copy says park.
 

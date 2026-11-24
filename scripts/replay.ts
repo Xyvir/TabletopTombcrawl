@@ -129,7 +129,7 @@ export function step(state: TombState, text: string): TombState | null {
 		if (cast?.kind !== 'purity' || cast.cell !== Number(m[2]) - 1) throw new Error(`no Purity armed in cell ${m[2]}`);
 		return armedClick(state, column(Number(m[3]) - 1));
 	}
-	// convert Remedy (cell 4) — the chip, clicked: the party card beside it is spent for one wound
+	// convert Remedy (cell 4) — the Hero Chip, clicked: the hero aspect beside it is spent for one wound
 	if ((m = /^convert (\w+) \(cell (\d+)\)$/.exec(text))) return convertChip(state);
 	// arm   PISORF (cell 3)   /   drop  PISORF (cell 3)
 	if ((m = /^arm (\w+) \(cell (\d+)\)$/.exec(text))) return useAbility(state, Number(m[2]) - 1);

@@ -37,8 +37,9 @@ export const TOMB_RULES = {
 	/** Hearts a level up mends. The card game this borrows from healed fully. */
 	levelUpHeal: 1,
 	/**
-	 * Wounds one conversion mends. One is the whole of the endgame's supply: four party cards, four kings,
-	 * four hearts of bill, and no slack at all — the spare has to come from fog the crawl held on purpose.
+	 * Wounds one conversion mends. One is the whole of the endgame's supply: four hero aspects, four kings,
+	 * four hearts of bill, and no slack at all — and convert-first spends the opener on a healthy board,
+	 * so the spare has to come from fog the crawl held on purpose.
 	 */
 	conversionHeal: 1,
 	/**
@@ -100,9 +101,10 @@ export const CLAUSES = {
 	/** Stone Gaze: a boss-suit minion turns the party's kin and class to stone instead of adding a rank. */
 	stoneGaze: true,
 	/**
-	 * Mug: a bandit slays or stashes your item out of its slot into the next free pocket along, spending it the
-	 * way playing it out yourself would. Every affliction prices a different thing — hearts, space, knowledge,
-	 * spell slots — and this one prices the pockets.
+	 * Mug: a bandit forces the conversion a step early — the chip walks one slot left with no heal.
+	 * The card stays where it lies as a plain card, exactly as a conversion by hand leaves it, minus the
+	 * mend. A wound over the slot locks it, so the bandit takes nothing: the counterplay is arriving
+	 * wounded, the same bargain a Wraith offers.
 	 */
 	banditMug: true,
 	/**
@@ -143,10 +145,10 @@ export const CLAUSES = {
 	 */
 	wraithSlot: false,
 	/**
-	 * The conversion is explicit: clicking the chip is the only way a party card ever leaves its slot. It
+	 * The conversion is explicit: clicking the Hero Chip is the only way a hero aspect ever leaves its slot. It
 	 * spends the ability for good, leaves the card lying in the pocket as a plain card, walks the chip one
-	 * step left and mends a wound. A drafted card is never picked up, parked, played out or sent home, and
-	 * no refill window opens — the chip is the conversion, not a tracker for one made somewhere else.
+	 * step left and mends a wound as a bonus. A drafted card is never picked up, parked, played out or sent
+	 * home, and no refill window opens — the chip is the conversion, not a tracker for one made somewhere else.
 	 * Switched off, the old rules come back: a card beside the chip could be played out for free.
 	 */
 	explicitConversion: true,
@@ -221,7 +223,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Dualcast: the item slot holds a second glyph in place of an item, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
+		text: 'Dualcast: the item aspect holds a second glyph in place of an item, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
 	},
 	diamonds: {
 		name: 'Thief',
@@ -689,7 +691,7 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		boss: 'Tomithy Longdall',
 		blurb: 'A scallywag looking to loot the tomb.',
 		power: 'Mug',
-		text: 'slaying this, or stashing it in a pocket, shoves the card out of your item slot into the first empty pocket to its right, which spends it.',
+		text: 'slaying this, or stashing it in a pocket, forces your conversion one step early: the Hero Chip walks left with no heal. A wounded aspect is locked, so the bandit takes nothing.',
 	},
 	hearts: {
 		name: 'Viper',
@@ -983,9 +985,9 @@ function runReachesBottom(state: TombState, from: CardLocation, run: Card[]): bo
 }
 
 /**
- * The poker chip's boundary: ability cells sit to its left, plain free cells to its right, and the
- * mark walks one slot left each time an item converts. A slot waiting on its refill is still an
- * ability slot — the chip only moves once that window closes unfed.
+ * The Hero Chip's boundary: hero aspects sit to its left, plain pockets to its right, and the
+ * mark walks one slot left each time an aspect converts. A slot waiting on its refill is still an
+ * aspect slot — the chip only moves once that window closes unfed.
  */
 export function chipBoundary(state: TombState): number {
 	const drafted = convertibleCell(state) + 1;
@@ -993,22 +995,26 @@ export function chipBoundary(state: TombState): number {
 	return Math.max(drafted, pending);
 }
 
-/** The one item that may leave its slot: the drafted card sitting just left of the chip. */
+/** The one aspect that may leave its slot: the drafted card sitting just left of the chip. */
 export function convertibleCell(state: TombState): number {
 	return state.draft.reduce((highest, entry) => Math.max(highest, entry.cell), -1);
 }
 
-/** The drafted card the chip has reached: the one a conversion would spend. */
+/** The hero aspect the chip has reached: the one a conversion would spend. */
 export function conversionTarget(state: TombState): DraftCard | undefined {
 	const cell = convertibleCell(state);
 	return cell >= 0 ? draftAt(state, cell) : undefined;
 }
 
-/** Whether the chip itself can be clicked: a live party card beside it, under the explicit rule. */
+/**
+ * Whether the Hero Chip itself can be clicked: a live, unwounded hero aspect beside it, under the explicit rule.
+ * A wound locks the aspect — the conversion cannot spend a face-down card, and neither can a bandit.
+ */
 export function canConvert(state: TombState): boolean {
 	if (!CLAUSES.explicitConversion || state.won || state.itemWindow) return false;
 	const cell = convertibleCell(state);
-	return cell >= 0 && !!state.game.cells[cell];
+	if (cell < 0 || !state.game.cells[cell]) return false;
+	return !cellTopWounded(state, cell);
 }
 
 /** Any action other than the conversion closes Pickpocket's one-turn window. */
@@ -1017,10 +1023,10 @@ function closePickpocket(state: TombState): TombState {
 }
 
 /**
- * The conversion, made by hand: click the chip and the card beside it is spent for good. Its ability is
- * gone, the slot turns plain, the chip walks one step left and the track mends one wound. The card stays
- * where it lies — a plain card in the pocket, free to go home like any other — so the price is always an
- * ability, never a heart.
+ * The conversion, made by hand: click the Hero Chip and the hero aspect beside it is spent for good. Its
+ * ability is gone, the slot turns into a plain pocket, the chip walks one step left and the track mends one
+ * wound as a bonus. The card stays where it lies — a plain card in the pocket, free to go home like any
+ * other — so the price is always an ability, never a heart.
  */
 /**
  * The cards a conversion would turn face up, so the board can price the chip before it is clicked —
@@ -1056,8 +1062,8 @@ export function convertChip(state: TombState): TombState | null {
 }
 
 /**
- * A plain scratch cell (to the right of the chip) hands its card back like FreeCell does: it builds
- * onto a column, waits in another cell, or goes home. A drafted item may leave only once the chip
+ * A plain pocket (to the right of the chip) hands its card back like FreeCell does: it builds
+ * onto a column, waits in another pocket, or goes home. A hero aspect may leave only once the chip
  * reaches it, because conversions run in order — and a card played out that way is spent for good.
  * A wound locks either kind until it is healed.
  */
@@ -1069,7 +1075,7 @@ export function cellCardMovable(state: TombState, cell: number): boolean {
 	// Only a wound locks a cell: a spent card can still be picked up and played.
 	if (!card || cellTopWounded(state, cell)) return false;
 	if (!draftAt(state, cell)) return true;
-	// The explicit conversion: a party card is not a card you can pick up at all. Click the chip, and the
+	// The explicit conversion: a hero aspect is not a card you can pick up at all. Click the chip, and the
 	// plain card it leaves behind moves like every other card on the track.
 	if (CLAUSES.explicitConversion) return false;
 	return cell === convertibleCell(state);
@@ -1545,7 +1551,7 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 /**
  * Constitution closes with the Dwarf: when a wound turns him down, the card left in the pocket he opened is
- * shoved out to the first free pocket along the row, the mirror of the bandit's Mug. With every pocket
+ * shoved out to the first free pocket along the row. With every pocket
  * to its left full it stays where it is — still a heart, still able to be played out — and the pocket
  * stays stone until he is healed, which is the counterplay to losing the pocket entirely. A stack moves
  * together: what it leaves is a pocket, and one pocket is what it needs.
@@ -1739,12 +1745,12 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 
 /**
  * The cells a monster power drains: the item under a Gorgon, the Glyph under a Wraith — and with a
- * Wizard's Dualcast the item slot spells too, so a Wraith bites both glyphs.
+ * Wizard's Dualcast the item aspect spells too, so a Wraith bites both glyphs.
  */
 /**
  * The cells Mana Burn drains. The item used to share this list — one affliction for each spent slot — but the
- * item is Mug's now: a bandit moves the card out of its pocket rather than spending it, so this list is the
- * Wraith's alone. The glyphs are its own, and a Wizard's Dualcast makes the item slot one of them.
+ * item is Mug's now: a bandit forces its conversion without a heal rather than spending it, so this list is
+ * the Wraith's alone. The glyphs are its own, and a Wizard's Dualcast makes the item slot one of them.
  */
 function auraCells(state: TombState): number[] {
 	if (state.bossSuit !== 'diamonds') return [];
@@ -1790,44 +1796,38 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 }
 
 /**
- * Mug: the bandit shoves the card in your item slot down the row, into the first free pocket to its right.
- * It lands the way a card you played out yourself lands, and that is the whole price: the slot converts, so the
- * chip steps past it and nothing waits to remake the item — a restock answers an item you spent, not one that
- * was taken off you. With every pocket to the right already full the bandit has nowhere to put it and the item
- * stays where it is, which is the counterplay: keep the row behind the slot busy. A wound lying over the slot
- * keeps the card where it is too. The slot is the item slot whatever it holds, so a Wizard's Dualcast glyph is
- * mugged exactly like a flask, and a card merely resting on top of a drafted item is not the item.
+ * Mug: the bandit forces the conversion one step early — the Hero Chip walks left with no heal.
+ * The card stays where it lies and turns plain, exactly as a conversion by hand leaves it, minus the
+ * bonus mend. No pocket need stand open, because nothing moves: the price is the aspect and its heal.
+ * A wound lying over the aspect locks it, so the bandit takes nothing — the counterplay is
+ * arriving wounded, the same bargain a Wraith offers. The aspect is whatever the chip has reached, so a
+ * Wizard's Dualcast glyph is mugged exactly like a flask, and a card merely resting on top of a drafted
+ * aspect is not the aspect.
  */
 function mugSlot(state: TombState): TombState {
 	const slot = convertibleCell(state);
 	if (slot < 0) return state;
 	const entry = draftAt(state, slot);
-	// A wound turns the card face down and locks the slot, so a bandit has nothing to shove out of it:
+	// A wound turns the card face down and locks the aspect, so a bandit has nothing to convert:
 	// the same bargain a Wraith offers, where a slot already paid for has nothing left to take.
 	if (!entry || cellTopWounded(state, slot)) return state;
-	const card = state.game.cards.find(
-		(candidate) => cardId(candidate) === entry.id && candidate.location.fixture === 'cell' && candidate.location.data[0] === slot
-	);
-	if (!card) return state;
-	// The first free pocket along the row, skipping any that are taken. Drafted slots hold party cards, so in
-	// practice this walks past the rest of the party into the plain pockets.
-	let target = -1;
-	for (let cell = slot + 1; cell < state.game.cells.length; cell++) {
-		if (!state.game.cells[cell] && !stoneCell(state, cell)) {
-			target = cell;
-			break;
-		}
-	}
-	if (target < 0) return state;
+	if (!state.game.cells[slot]) return state;
 	const exhausted = [...state.exhausted];
 	exhausted[slot] = false;
-	return dropKnockedArm(
+	// No heal: the forced step spends the ability without mending anything. Settle still runs, because it
+	// is where the party's own state is read once the slot is gone — a converted Dwarf closes the pocket
+	// his Constitution opened.
+	const next = settle(
 		cloneWith(state, {
-			game: relocate(state, [{ id: cardId(card), to: { fixture: 'cell', data: [target] } }]),
-			exhausted,
 			draft: consumeDraft(state, slot),
-		})
+			exhausted,
+			armed: state.armed?.cell === slot ? null : state.armed,
+			itemWindow: null,
+			pickpocket: null,
+		}),
+		currentLevel(state)
 	);
+	return dropKnockedArm(spendArmedItem(next));
 }
 
 /**
@@ -1892,7 +1892,7 @@ function stoneGaze(state: TombState, card: Card): TombState {
 
 /**
  * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the fog Venom would lift, the card in the slot Mug would shove out of the party, the kin and
+ * pointer: the fog Venom would lift, the hero aspect Mug would convert into a pocket, the kin and
  * class Stone Gaze would turn down, the glyphs Mana Burn would spend. An armed Remedy turns the whole aura
  * off, so it warns on nothing at all: nothing would happen.
  */
@@ -1904,8 +1904,8 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 			return fog ? [cardId(fog)] : [];
 		}
 		case 'spades': {
-			// The slot, not the chip: the warning sits on the card the party would lose, which is the one
-			// the chip has reached. A wounded slot is locked, so there is nothing to take and nothing to say.
+			// The aspect, not the chip: the warning sits on the hero aspect the party would lose, which
+			// is the one the chip has reached. A wounded aspect is locked, so there is nothing to take.
 			const slot = convertibleCell(state);
 			const entry = slot >= 0 ? draftAt(state, slot) : undefined;
 			if (!entry || cellTopWounded(state, slot)) return [];
@@ -1947,9 +1947,9 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park'): TombState 
 			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(venom)) });
 		}
 		case 'spades':
-			// Mug takes the slot rather than the card's worth: the bandit empties your item pocket into the
-			// next free one along, and it does it whether the bandit went down to a blade or was only
-			// stashed. Nothing is priced into the kill for this, so both routes land here.
+			// Mug forces the conversion rather than pricing the card: the Hero Chip walks left with no heal,
+			// whether the bandit went down to a blade or was only stashed. Nothing is priced into the
+			// kill for this, so both routes land here.
 			return CLAUSES.banditMug ? mugSlot(state) : state;
 		case 'clubs':
 			// Stone Gaze turns the party's kin and class face down, left to right, and stops at the class.
@@ -2204,7 +2204,7 @@ export function attackWith(
 	}
 
 	// A power card that was itself the item is already converting its own slot on the way home, so there is no
-	// item left to mug: the bandit takes what is in the slot, not the next pocket's worth after a conversion.
+	// conversion left to force: the bandit takes the slot as it stands, not the next pocket's worth after one.
 	next = itemCard ? next : bossAura(next, card, 'kill');
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.

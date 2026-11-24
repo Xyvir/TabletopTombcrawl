@@ -83,7 +83,7 @@ export function describeStep(before: TombState, after: TombState): string | null
 			return `swap  ${cardName(a)} ${where(fromA)} <-> ${cardName(b)} ${where(fromB)}`;
 	}
 	if (!moved.length) {
-		// A conversion: a party card leaves the draft without moving anywhere, and the chip steps. Nothing
+		// A conversion: a hero aspect leaves the draft without moving anywhere, and the chip steps. Nothing
 		// else on the board changes, so this is the only line that can describe it.
 		const converted = before.draft.find((entry) => !after.draft.some((now) => now.cell === entry.cell));
 		if (converted) return convertLabel(converted.name, converted.cell);
