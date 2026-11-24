@@ -3428,7 +3428,7 @@ describe('a stoned dwarf’s constitution pocket closes', () => {
 	];
 	const held = (state: TombState, id: string) => state.game.cards.find((card) => shorthandCard(card) === id)!;
 
-	test('a gaze on the kin shoves the extra card out to the first free pocket to its left', () => {
+	test('a gaze on the kin shuts the pocket without moving what is in it', () => {
 		const state = makeTomb({
 			columns: [['4C'], ['8S']],
 			cells: ['KS', null, null, null, null, null, null, '8D'],
@@ -3439,15 +3439,22 @@ describe('a stoned dwarf’s constitution pocket closes', () => {
 		});
 		expect(stoneCell(state, 7)).toBe(false);
 
-		// a club minion stashed in a free cell stones the kin, and the pocket he opened closes
+		// a club minion stashed in a free cell stones the kin, and the pocket he opened shuts — no card is
+		// evicted, even though the row to its left is empty and a pocket is waiting for one
 		const parked = tombMove(state, cascade(0, 0), cell(5))!;
 		expect(parked.wounded[0]).toBe(1);
 		expect(stoneCell(parked, 7)).toBe(true);
-		expect(cellCards(parked, 7)).toHaveLength(0);
-		expect(shorthandCard(cellCards(parked, 6)[0])).toBe('8D');
-		// the pocket is out of the track: not a free cell, and nothing builds into it
-		expect(emptyCells(parked)).toEqual([1, 2, 3, 4]);
-		expect(canBuildOn(parked, [held(parked, 'QC')], cell(7))).toBe(false);
+		expect(cellCards(parked, 7)).toHaveLength(1);
+		expect(shorthandCard(cellCards(parked, 7)[0])).toBe('8D');
+		// it is also not a free cell while the card is in it: six pockets were empty, five are free
+		expect(emptyCells(parked)).toEqual([1, 2, 3, 4, 6]);
+
+		// played out by hand, the shut pocket stands empty and still takes nothing until he is healed
+		const out = tombMove(parked, cell(7), cell(1))!;
+		expect(cellCards(out, 7)).toHaveLength(0);
+		expect(stoneCell(out, 7)).toBe(true);
+		expect(emptyCells(out)).toEqual([2, 3, 4, 6]);
+		expect(canBuildOn(out, [held(out, 'QC')], cell(7))).toBe(false);
 	});
 
 	test('with nowhere to go it stays, a heart still in play, until the wound heals', () => {

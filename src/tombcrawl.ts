@@ -1130,9 +1130,9 @@ export function pisorfPair(state: TombState, from: CardLocation): Card[] | null 
 	return run;
 }
 
-/** PISORF needs a proper pair and an open free cell to put it in. */
+/** PISORF needs a proper pair and an open free cell to put it in — a stone pocket is not an open cell. */
 export function pisorfCanStack(state: TombState, from: CardLocation, cell: number): boolean {
-	return !!pisorfPair(state, from) && !state.game.cells[cell];
+	return !!pisorfPair(state, from) && !state.game.cells[cell] && !stoneCell(state, cell);
 }
 
 export function canBuildOn(state: TombState, cards: Card[], to: CardLocation): boolean {
@@ -1557,35 +1557,7 @@ function settle(state: TombState, levelBefore: number): TombState {
 
 	// Nothing ends a run on its own any more: once the boss king is down the exit is on offer,
 	// and the dungeon is only left when the player takes it.
-	return closeConstitution(noteReserve(noteTrueBoss(next)));
-}
-
-/**
- * Constitution closes with the Dwarf: when a wound turns him down, the card left in the pocket he opened is
- * shoved out to the first free pocket along the row. With every pocket
- * to its left full it stays where it is — still a heart, still able to be played out — and the pocket
- * stays stone until he is healed, which is the counterplay to losing the pocket entirely. A stack moves
- * together: what it leaves is a pocket, and one pocket is what it needs.
- */
-function closeConstitution(state: TombState): TombState {
-	const cell = state.game.cells.length - 1;
-	if (!stoneCell(state, cell)) return state;
-	const held = cellCards(state, cell);
-	if (!held.length) return state;
-	let to = -1;
-	for (let index = cell - 1; index >= 0; index--) {
-		if (!state.game.cells[index] && !stoneCell(state, index)) {
-			to = index;
-			break;
-		}
-	}
-	if (to < 0) return state;
-	return cloneWith(state, {
-		game: relocate(
-			state,
-			held.map((card, depth) => ({ id: cardId(card), to: { fixture: 'cell' as const, data: [to, depth] } }))
-		),
-	});
+	return noteReserve(noteTrueBoss(next));
 }
 
 /** The right-most free cell: the reserve pocket the star sits over, and where the Dwarf's extra cell lands. */
@@ -1597,9 +1569,11 @@ export function reserveCell(state: TombState): number {
  * A pocket Constitution opened and a wound has closed: stone for as long as the Dwarf is face down. It is the
  * right-most cell of a deal that opened one wider than the track, so it is also the reserve pocket, and
  * the crawl is the track's own size again while he is stoned. Nothing else in the game can close a
- * pocket, which is what makes this the Dwarf's whole off-switch. The stone is one-way on purpose: the
- * pocket takes nothing in, while a card already lying in it is played out like any other — otherwise a
- * full row would bury that card for the rest of the crawl and the affliction would read as a bug.
+ * pocket, which is what makes this the Dwarf's whole off-switch.
+ *
+ * The stone only shuts the pocket: nothing is ever moved out of it. A card already lying there stays, is
+ * still a heart and is still played out like any other, and the pocket stands empty and shut only once the
+ * player has moved that card on by hand — nothing can enter it again until his wound heals.
  */
 export function stoneCell(state: TombState, cell: number): boolean {
 	return state.constitution && cell === state.game.cells.length - 1 && !hasPassive(state, 'Dwarf');
