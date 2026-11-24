@@ -2000,9 +2000,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 */
 	const DEAL_STAGGER_MS = 34;
 	const DEAL_FLIGHT_MS = 560;
-	const DEAL_TURN_MS = 210;
-	/** Where in the flight a readable card starts to turn: far enough in to be nearly home, early enough to land face-up. */
-	const DEAL_TURN_AT = 0.6;
+	const DEAL_TURN_MS = 220;
+	/**
+	 * Where in the flight a readable card starts to turn. Placed by the distance still to go rather than by clock
+	 * time: the flight speeds up through its middle, so a turn timed at the halfway mark finds the card almost
+	 * home already — at 0.6 it was 97% of the way in and read as a flip after landing. Measured at 0.2, the turn
+	 * covers the last few percent of the mark to nine tenths of the trip and the face appears around three
+	 * quarters of the way, so the card is plainly in the air while it turns.
+	 */
+	const DEAL_TURN_AT = 0.2;
 	let dealing = $state(false);
 	let dealLayer: HTMLDivElement | null = null;
 	let dealAnimations: Animation[] = [];
@@ -2121,7 +2127,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						},
 						{ transform: 'none', opacity: 1 },
 					],
-					{ duration: DEAL_FLIGHT_MS, delay, easing: 'cubic-bezier(.24,.68,.3,1)', fill: 'both' }
+					// a steadier curve than the drag flights use: those snap to a slot the player is aiming at, while
+					// a dealt card has to stay in the air long enough to be seen turning over on the way
+					{ duration: DEAL_FLIGHT_MS, delay, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'both' }
 				)
 			);
 
