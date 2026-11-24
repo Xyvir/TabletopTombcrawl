@@ -149,6 +149,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const FLIP_MS = 210;
 	/** Purity turns the mouth of a hallway over, so each card waits this long for the one before it. */
 	const TURN_STAGGER_MS = 70;
+	/**
+	 * A restart puts the fog back on cards that were dug out, and they turn over in the air on the way home.
+	 * The turn waits until the flight is under way so the card leaves as a face, and a hallway starts a beat
+	 * after the one to its left: the fog sweeps across the board instead of eight cards blinking at once.
+	 */
+	const REFOG_DELAY_MS = 60;
+	const REFOG_STAGGER_MS = 14;
 	/** How long a banner holds the screen before it clears. */
 	const FANFARE_MS = 2200;
 	/** A level up is the smallest banner and clears quickly, so a run of levels can each be read. */
@@ -2007,6 +2014,33 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		apply(deal(valid ? requested : undefined));
 	}
 
+	/**
+	 * A restart deals the same tomb, fog included, and every card flies back to the square it started on. A
+	 * card that had been dug out leaves as a face and has a back to put on again, so it turns over in the air
+	 * with the fogger's own animation (`turningDelays`): held off until the flight has started, and staggered
+	 * by hallway so the cover reads as a wave. A card that was already face down keeps its back and never
+	 * turns, and a card that goes back face down where it stood still turns, because the deal put its back on.
+	 */
+	function refogOnRestart(state: TombState, wasHidden: Set<string>) {
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+		const fogging = new Set(state.hidden);
+		const delays: Record<string, number> = {};
+		for (const card of state.game.cards) {
+			if (card.location.fixture !== 'cascade') continue;
+			const id = shorthandCard(card);
+			if (!fogging.has(id) || wasHidden.has(id)) continue;
+			delays[id] = REFOG_DELAY_MS + card.location.data[0] * REFOG_STAGGER_MS;
+		}
+		if (!Object.keys(delays).length) return;
+		turningDelays = { ...turningDelays, ...delays };
+		const life = FLIP_MS + Math.max(...Object.values(delays));
+		setTimeout(() => {
+			// By delay rather than by key: a move made while these are still turning re-fogs a card with
+			// the fogger's own turn, and that later one must not be cut short by this timer.
+			turningDelays = Object.fromEntries(Object.entries(turningDelays).filter(([id, ms]) => delays[id] !== ms));
+		}, life);
+	}
+
 	function replay() {
 		flushPending();
 		pendingDeath = null;
@@ -2014,12 +2048,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (tomb) {
 			// Measured before the deal is put back, so every card has somewhere to fly home from.
 			const before = cardRects();
+			// Which cards were still in the fog: those are the ones that fly home wearing a back already.
+			const wasHidden = new Set(tomb.hidden);
 			tombHistory = [];
 			tombSelected = null;
 			// The same deal again, so the square it belongs to is unchanged.
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
 			game = tomb.game;
 			const redealt = game;
+			refogOnRestart(tomb, wasHidden);
 			void tick().then(() => animateFrom(before, redealt, null));
 			return;
 		}
