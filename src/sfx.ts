@@ -15,6 +15,7 @@ import dealUrl from '../audio/deal.ogg?url';
 import exitUrl from '../audio/exit_crawl.ogg?url';
 import kingDiesUrl from '../audio/king_dies.ogg?url';
 import levelUrl from '../audio/level_up.ogg?url';
+import mendUrl from '../audio/mend2.ogg?url';
 import slash1Url from '../audio/slash1.ogg?url';
 import slash2Url from '../audio/slash2.ogg?url';
 import slash3Url from '../audio/slash3.ogg?url';
@@ -35,6 +36,7 @@ export type SfxName =
 	| 'exit'
 	| 'kingDies'
 	| 'level'
+	| 'mend'
 	| 'stash'
 	| 'step'
 	| 'takeDamage'
@@ -52,6 +54,7 @@ const URLS: Record<SfxName, string> = {
 	exit: exitUrl,
 	kingDies: kingDiesUrl,
 	level: levelUrl,
+	mend: mendUrl,
 	stash: stashUrl,
 	step: stepUrl,
 	takeDamage: takeDamageUrl,
@@ -85,10 +88,19 @@ export function setSfxEnabled(on: boolean) {
 	}
 }
 
-function out(url: string) {
+function out(url: string, rate = 1) {
 	if (!enabled) return;
 	try {
 		const el = new Audio(url);
+		if (rate !== 1) {
+			// Speed carries pitch once the browser is told not to preserve it, which is the whole trick: no
+			// pitch-shifting filter, just the same file played a little faster and so a little higher.
+			const pitchable = el as HTMLAudioElement & { mozPreservesPitch?: boolean; webkitPreservesPitch?: boolean };
+			pitchable.preservesPitch = false;
+			pitchable.mozPreservesPitch = false;
+			pitchable.webkitPreservesPitch = false;
+			el.playbackRate = rate;
+		}
 		void el.play().catch(() => {});
 	} catch {
 		// Playback can fail without a gesture or a device; the move already landed.
@@ -121,6 +133,20 @@ export function playTakeDamage(times: number) {
 	if (!enabled) return;
 	const n = Math.max(0, Math.floor(times));
 	for (let i = 0; i < n; i++) outDelayed(URLS.takeDamage, i * TAKE_DAMAGE_GAP_MS);
+}
+
+/**
+ * The step: one foot, then the other. Games alternate a step's pitch so a run does not sound like one sound
+ * repeated, and the same file a shade higher is enough — 15% up is a different foot, not a different sound.
+ * The alternation is per session, like the slash cycle, so a walk still alternates after a reload.
+ */
+const STEP_PITCH = 1.15;
+// starts high so the first step of a session is the file as recorded and the second is the shifted foot
+let stepHigh = true;
+
+export function playStepSfx() {
+	stepHigh = !stepHigh;
+	out(URLS.step, stepHigh ? STEP_PITCH : 1);
 }
 
 /** A kill: slash1-3, never the same one twice in a row. */
@@ -165,6 +191,11 @@ export interface MoveSfx {
 	tombEmptied: boolean;
 	/** A monster power fired (Mug, Venom, Stone Gaze, Mana Burn). */
 	afflicted: boolean;
+	/**
+	 * A wound mended and a card came back up: the chip's conversion bounty, a level up's repair, the glyph's
+	 * own wound closed by a flask. Any mend, wherever it came from — the layering can be thinned later.
+	 */
+	mended: boolean;
 }
 
 export function playMoveSfx(f: MoveSfx) {
@@ -181,9 +212,10 @@ export function playMoveSfx(f: MoveSfx) {
 	if (f.damage > 0) playTakeDamage(f.damage);
 	if (f.afflicted) playSfx('affliction');
 	if (f.converted) playSfx('convert');
+	if (f.mended) playSfx('mend');
 	if (f.armed) playSfx('arm');
 	if (f.usedGlyph) playSfx('useGlyph');
 	if (f.usedItem) playSfx('useItem');
 	if (f.parked) playSfx('stash');
-	if (f.stepped || f.dug) playSfx('step');
+	if (f.stepped || f.dug) playStepSfx();
 }

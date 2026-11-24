@@ -1398,12 +1398,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			armed: armedNow,
 			usedGlyph: usedIsGlyph,
 			usedItem: !!usedEntry && !usedIsGlyph,
-			converted: next.draft.length < prev.draft.length,
+			// A conversion the chip makes is a sound of its own; a bandit forcing the step is the affliction and
+			// nothing else. Mug spends the slot without mending anything, so convert.ogg must not layer over it.
+			converted: next.draft.length < prev.draft.length && power !== 'mug',
 			leveled,
 			bossFound: foundBoss,
 			bossKilled: killedBoss,
 			tombEmptied: emptiedTomb,
 			damage: killDamage,
+			// Any wound mended, from any source: the flash only answers the quiet repairs, the sound answers all.
+			mended: healing.length > 0,
 			// Sound wants every power the aura priced, not just the ones worth a flash:
 			// a Gorgon kill doubles up with the slash, and a stash sets its power off too.
 			afflicted: afflictionFired(tomb, next),
