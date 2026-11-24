@@ -9,6 +9,24 @@
 	--gap: min(0.9vw, 10px);
 	--card-h: calc(var(--col-w) * 1.4);
 	--radius: min(1.1vw, 8px);
+	/*
+	 * One hue a suit, shared by the party's ribbons and by the trellis that names the four aspects.
+	 * Spades keep the banner's own blue-violet; clubs take a lighter blue, hearts the maroon of the
+	 * pip, diamonds a yellow-beige dark enough that the white lettering still reads on it.
+	 */
+	--suit-spades-a: rgba(76, 30, 111, 0.94);
+	--suit-spades-b: rgba(47, 16, 74, 0.94);
+	--suit-clubs-a: rgba(56, 118, 150, 0.94);
+	--suit-clubs-b: rgba(31, 76, 101, 0.94);
+	--suit-hearts-a: rgba(124, 36, 52, 0.94);
+	--suit-hearts-b: rgba(82, 18, 30, 0.94);
+	--suit-diamonds-a: rgba(132, 107, 48, 0.94);
+	--suit-diamonds-b: rgba(96, 77, 30, 0.94);
+	/* The same four as ink for dark boards: a band colour is far too dark to read as text. */
+	--suit-spades-ink: #a8b6f0;
+	--suit-clubs-ink: #7ec6ea;
+	--suit-hearts-ink: #ef9fab;
+	--suit-diamonds-ink: #eeda9c;
 }
 
 * {
@@ -1470,7 +1488,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 	   the right end low, which is the tilt a ribbon takes when it is tied on */
 	top: 47%;
 	transform: translateY(-50%) rotate(20deg);
-	font-size: clamp(0.56rem, calc(var(--col-w) * 0.115), 0.72rem);
+	/* Sized off the card first; the phone's own ratio is set in the narrow-screen block below. */
+	font-size: clamp(0.44rem, calc(var(--col-w) * 0.115), 0.72rem);
 	font-weight: 700;
 	line-height: 1;
 	letter-spacing: 0.07em;
@@ -1482,11 +1501,50 @@ body:has(.card.dragging) .cells.tomb .chip {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	padding: 0.3em 0 0.32em;
-	background: linear-gradient(180deg, rgba(76, 30, 111, 0.94), rgba(47, 16, 74, 0.94));
+	background: linear-gradient(180deg, var(--suit-spades-a), var(--suit-spades-b));
 	box-shadow:
 		0 2px 4px rgba(0, 0, 0, 0.55),
 		0 0 0 1px rgba(24, 8, 40, 0.55) inset;
 	pointer-events: none;
+}
+
+/* The ribbon takes the hue of the suit it is tied to, so the party reads at a glance. */
+.slot .role[data-suit='clubs'] {
+	background: linear-gradient(180deg, var(--suit-clubs-a), var(--suit-clubs-b));
+}
+
+.slot .role[data-suit='hearts'] {
+	background: linear-gradient(180deg, var(--suit-hearts-a), var(--suit-hearts-b));
+}
+
+.slot .role[data-suit='diamonds'] {
+	background: linear-gradient(180deg, var(--suit-diamonds-a), var(--suit-diamonds-b));
+}
+
+/*
+ * The Hero Chip is wedged in the gap beside the last aspect, and the token reaches a few pixels over
+ * that pocket's face — right where the ribbon's right end sits. On a phone there is nothing to spare:
+ * the token shrinks to what the gap can hide, and the ribbon beside it drops a size and steps its text
+ * left, away from the corner the two share.
+ */
+@media (max-width: 560px) {
+	.cells.tomb .chip {
+		width: max(12px, calc(var(--gap) * 1.9));
+	}
+
+	/*
+	 * A phone's pocket is ~40px, and the ribbon has to carry a name like CYDSTEPP inside it: 0.15 of
+	 * the card leaves a margin at both ends at every width from 320 up, where the old floor of 9px ran
+	 * 53px wide and was cut off. Tall screens are unaffected — this only ever sizes down.
+	 */
+	.slot .role {
+		font-size: clamp(0.34rem, calc(var(--col-w) * 0.15), 0.56rem);
+	}
+
+	.slot.beside-chip .role {
+		font-size: clamp(0.32rem, calc(var(--col-w) * 0.12), 0.5rem);
+		padding-right: 1.1em;
+	}
 }
 
 /*
@@ -2270,3 +2328,62 @@ body:has(.card.dragging) .cells.tomb .chip {
 	opacity: 0.6;
 }
 
+
+/* ---------- wisps: the mend and the gold, wandering from where they came from ---------- */
+
+/*
+ * One layer over the whole page. The wisps are placed in viewport coordinates and fly with fixed
+ * positioning, so scrolling or resizing cannot drag them off the card they are headed for — and it
+ * has to sit outside the board, whose own overflow is clipped.
+ */
+.wisp-layer {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 55;
+	pointer-events: none;
+	overflow: visible;
+}
+
+/*
+ * The wisp is a stroke, not a dot: a short length of ink on the road it travels. The dash that makes the
+ * tail is set on the path itself, so only the stroke's look lives here.
+ */
+.wisp {
+	fill: none;
+	stroke: #ff4a5e;
+	stroke-width: 3;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	/* The glow is what carries the red over the felt at a glance: three pixels of line reads as smoke. */
+	filter: drop-shadow(0 0 3px rgba(255, 70, 92, 0.95)) drop-shadow(0 0 7px rgba(200, 30, 55, 0.55));
+}
+
+.wisp.gold {
+	stroke: #f4c96b;
+	filter: drop-shadow(0 0 3px rgba(244, 201, 107, 0.95)) drop-shadow(0 0 7px rgba(170, 120, 30, 0.55));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wisp-layer {
+		display: none;
+	}
+}
+
+/*
+ * The click that brings a mend in. While the ink is flying this sits over the board — under the wisps,
+ * over the cards — so the same click that ends the wait cannot also play a card, which is exactly what
+ * the deal's own overlay does for the opening flight.
+ */
+.mend-skip {
+	position: fixed;
+	inset: 0;
+	z-index: 54;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	appearance: none;
+	cursor: pointer;
+}

@@ -177,8 +177,40 @@ button.titlecard:focus-visible {
 	padding-right: 2px;
 }
 
-.trellis .tick.red .glyph {
-	color: #ff8c9c;
+/*
+ * One hue a suit, the families the party's ribbons wear lifted to ink — a band colour cannot be read
+ * as text on this green. Every name in the sheet follows the suit it names: the class skill along the
+ * top, the kin down the side, the glyphs and items on the two margins, and the readout's own list.
+ *
+ * Spades are the exception: on the sheet its blue sits too close to the clubs' to tell the two apart,
+ * so the spade's name and pip are plain white and the hue is left to the ribbon on the board.
+ */
+.trellis .tick[data-suit='spades'] .name,
+.trellis .tick[data-suit='spades'] .glyph,
+.trellis .margin span[data-suit='spades'],
+.layout-preview .glyph[data-suit='spades'] {
+	color: #fff;
+}
+
+.trellis .tick[data-suit='clubs'] .name,
+.trellis .tick[data-suit='clubs'] .glyph,
+.trellis .margin span[data-suit='clubs'],
+.layout-preview .glyph[data-suit='clubs'] {
+	color: var(--suit-clubs-ink);
+}
+
+.trellis .tick[data-suit='hearts'] .name,
+.trellis .tick[data-suit='hearts'] .glyph,
+.trellis .margin span[data-suit='hearts'],
+.layout-preview .glyph[data-suit='hearts'] {
+	color: var(--suit-hearts-ink);
+}
+
+.trellis .tick[data-suit='diamonds'] .name,
+.trellis .tick[data-suit='diamonds'] .glyph,
+.trellis .margin span[data-suit='diamonds'],
+.layout-preview .glyph[data-suit='diamonds'] {
+	color: var(--suit-diamonds-ink);
 }
 
 .layout-preview {

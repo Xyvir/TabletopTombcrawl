@@ -205,6 +205,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** Cards that just came back from a wound, turning face-up for one animation. */
 	let healingIds = $state<string[]>([]);
 	/**
+	 * Cards whose mend is still in the air: the game has healed them, but the board keeps them face down
+	 * until the wisp sent for them arrives, so the wound is seen closing rather than found closed.
+	 */
+	let pendingHealIds = $state<string[]>([]);
+	/** Every timer still waiting on a wisp, so a click can end the wait the way it ends a deal. */
+	const mendTimers = new Set<number>();
+	/**
 	 * Cards a spell just turned face down, and how long each waits before it turns. A fogged hallway
 	 * turns over from the unburied card downwards, so the sweep reads as one gesture rather than a shuffle.
 	 */
@@ -872,6 +879,124 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return rects;
 	}
 
+	/* ---------- wisps: where a mend came from, drawn on the way to the wound it closes ---------- */
+
+	/** A mend wanders for a beat; the gold that marks a reset is a bookmark and travels lighter. */
+	const WISP_MS = 640;
+	const WISP_GOLD_MS = 520;
+	/**
+	 * The tail is not a trail of copies: it is one short stroke of ink, and this is its length in pixels.
+	 * A dash of this length slides along the wisps own road, so the mark is always that long and always
+	 * on the same curve — the line the mend actually took rather than a row of dots behind it.
+	 */
+	const WISP_TAIL_PX = 65;
+	/** One layer for the whole page, made on first use: wisps are placed in viewport coordinates. */
+	let wispLayer: SVGSVGElement | null = null;
+	const SVG_NS = 'http://www.w3.org/2000/svg';
+
+	function wispLayerFor(): SVGSVGElement {
+		if (!wispLayer || !wispLayer.isConnected) {
+			const svg = document.createElementNS(SVG_NS, 'svg') as SVGSVGElement;
+			svg.setAttribute('class', 'wisp-layer');
+			svg.setAttribute('aria-hidden', 'true');
+			document.body.appendChild(svg);
+			wispLayer = svg;
+		}
+		return wispLayer;
+	}
+
+	/** The middle of what the board is drawing there, in the same coordinates the wisps fly in. */
+	function wispPoint(el: Element | null | undefined) {
+		if (!el) return null;
+		const rect = visualRect(el as HTMLElement);
+		return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+	}
+
+	/**
+	 * One wisp: a short stroke of ink laid on the road it takes, where the road is the straight chord
+	 * between the two points with a wave across it:
+	 *
+	 *   across(t) = reach * sin(pi t) * (sin(w1 t + phase) + 0.45 * sin(w2 t + swell))
+	 *
+	 * The leading sine is the envelope — zero at both ends, so however far the wisp strays it still lands
+	 * exactly on the wound — and the pair inside it is the "variable magnitude": one wave sets the sway,
+	 * the slower, weaker one swells and thins it, so the drift wanders rather than ticking like a metronome.
+	 *
+	 * The stroke is not chased by copies of itself: the whole curve is one path, and a dash exactly
+	 * `WISP_TAIL_PX` long slides along it, so the tail is that length at every moment and always lies on
+	 * the line the mend took. Returns when the ink arrives, which is what the wound's flip waits on.
+	 */
+	function spawnWisp(from: { x: number; y: number }, to: { x: number; y: number }, kind: 'mend' | 'gold', delay = 0) {
+		const duration = kind === 'gold' ? WISP_GOLD_MS : WISP_MS;
+		if (reducedMotion()) return 0;
+		const dx = to.x - from.x;
+		const dy = to.y - from.y;
+		const span = Math.hypot(dx, dy);
+		const across = span ? { x: -dy / span, y: dx / span } : { x: 0, y: 0 };
+		const reach = Math.min(span * 0.24, 52);
+		const phase = Math.random() * Math.PI * 2;
+		const swell = Math.random() * Math.PI * 2;
+		const drift = (t: number) =>
+			reach *
+			Math.sin(Math.PI * t) *
+			(Math.sin(2 * Math.PI * 1.4 * t + phase) + 0.45 * Math.sin(2 * Math.PI * 2.7 * t + swell));
+		const ease = (t: number) => t * t * (3 - 2 * t);
+		// The road itself, sampled finely enough that the sway reads as a curve and not as corners.
+		const steps = 24;
+		let d = '';
+		for (let step = 0; step <= steps; step++) {
+			const t = step / steps;
+			const out = drift(t);
+			const x = from.x + dx * ease(t) + across.x * out;
+			const y = from.y + dy * ease(t) + across.y * out;
+			d += `${step ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+		}
+		const path = document.createElementNS(SVG_NS, 'path') as SVGPathElement;
+		path.setAttribute('class', `wisp ${kind}`);
+		path.setAttribute('d', d);
+		wispLayerFor().append(path);
+		const length = path.getTotalLength();
+		// One dash, a gap longer than the whole road: nothing is ever drawn twice, and the ink never
+		// smears over a stretch it has already passed.
+		// A short road keeps a little travel of its own: a tail the whole length of the path would sit
+		// still rather than be drawn along it.
+		const tail = Math.min(WISP_TAIL_PX, length * 0.6);
+		path.style.strokeDasharray = `${tail} ${length + tail}`;
+		const travel = Math.max(0, length - tail);
+		const frames: Keyframe[] = [];
+		for (let step = 0; step <= 12; step++) {
+			const t = step / 12;
+			// It condenses at the source and is drunk by the wound rather than blinking out on it.
+			const fade = t < 0.1 ? t / 0.1 : t > 0.88 ? (1 - t) / 0.12 : 1;
+			frames.push({ offset: t, strokeDashoffset: String(-t * travel), opacity: fade });
+		}
+		const flight = path.animate(frames, { duration, delay, easing: 'linear', fill: 'both' });
+		flight.finished.catch(() => undefined).then(() => path.remove());
+		// When the ink lands, counted from now: a waiter starts later, so its quiet first frame holds
+		// the ink at the source until it is its turn to leave.
+		return delay + duration;
+	}
+
+	/** Ends whatever mend is in the air: its timers, the faces still waiting on it, and the ink itself. */
+	function endMendFlight() {
+		for (const timer of mendTimers) clearTimeout(timer);
+		mendTimers.clear();
+		pendingHealIds = [];
+		wispLayer?.replaceChildren();
+	}
+
+	/**
+	 * A click while a mend is in the air brings it in instead of waiting it out: the wound turns now and the
+	 * ink goes. The same bargain the deal's overlay offers — one click, and the board is the player's again.
+	 */
+	function skipMend() {
+		const ids = pendingHealIds;
+		endMendFlight();
+		if (!ids.length) return;
+		healingIds = [...new Set([...healingIds, ...ids])];
+		setTimeout(() => (healingIds = healingIds.filter((id) => !ids.includes(id))), FLIP_MS);
+	}
+
 	function animateFrom(before: Map<string, DOMRect>, next?: FreeCell, primary?: string | null) {
 		if (!board) return;
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
@@ -1471,12 +1596,67 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				woundingIds = woundingIds.filter((id) => !wounding.includes(id));
 			}, FLIP_MS);
 		}
-		// a healed card turns back face-up with the same animation, the other way round
-		if (healing.length) {
-			healingIds = [...new Set([...healingIds, ...healing])];
-			setTimeout(() => {
-				healingIds = healingIds.filter((id) => !healing.includes(id));
-			}, FLIP_MS);
+		/*
+		 * The mend, drawn from where it came: a wisp leaves the fog that was dug, the aspect the chip spent
+		 * or the grave that paid the level, and the wounded card stays face down until the head arrives —
+		 * hence `pendingHealIds`, set here before the board is drawn. The repair should be watched, not
+		 * discovered already done.
+		 */
+		{
+			const pocketAt = (cell: number) => board?.querySelector(`[data-drop="cell:${cell}"]`) ?? null;
+			const sentHome = homedPrev.find((card) => card.location.fixture === 'foundation');
+			const homeSlot = sentHome ? (sentHome.location.data[0] as number) : null;
+			// The grave the level now reads off is the one this move just raised.
+			const levelGrave =
+				leveled && homedPrev.length
+					? [...homedPrev].sort((a, b) => foundationTopRank(next, a.suit) - foundationTopRank(next, b.suit))[0]
+					: null;
+			const graveEl =
+				levelGrave && levelGrave.location.fixture === 'foundation'
+					? (board?.querySelector(`[data-drop="foundation:${levelGrave.location.data[0]}"]`) ?? null)
+					: null;
+			const converted = prev.draft.find((entry) => !next.draft.some((other) => other.cell === entry.cell));
+			const dugCard = revealed[0] ? (board?.querySelector(`[data-card="${revealed[0]}"]`) ?? null) : null;
+			const mendFrom = wispPoint(graveEl ?? (converted ? pocketAt(converted.cell) : null) ?? dugCard);
+			if (healing.length) {
+				healing.forEach((id, index) => {
+					const at = next.game.cards.find((card) => shorthandCard(card) === id)?.location;
+					const to = at && at.fixture === 'cell' ? wispPoint(pocketAt(at.data[0])) : null;
+					// Bloodgift mends twice, so the second wisp leaves the same card a beat after the first:
+					// each wound then waits on the ink sent for it, and not on its neighbour's.
+					const arrival = mendFrom && to ? spawnWisp(mendFrom, to, 'mend', index * 90) : 0;
+					// Nothing to watch means nothing to wait for: a reduced-motion board turns at once.
+					if (arrival > 0) pendingHealIds = [...pendingHealIds, id];
+					const handle = window.setTimeout(() => {
+						mendTimers.delete(handle);
+						pendingHealIds = pendingHealIds.filter((other) => other !== id);
+						healingIds = [...new Set([...healingIds, id])];
+						setTimeout(() => (healingIds = healingIds.filter((other) => other !== id)), FLIP_MS);
+					}, arrival);
+					mendTimers.add(handle);
+				});
+			}
+			// Gold rides the same road on a level up: the grave that paid it brushes the dust off the glyphs,
+			// one wisp a glyph, so a Wizard's two slots are marked one after the other.
+			if (leveled && graveEl) {
+				const from = wispPoint(graveEl);
+				const revived = next.draft.filter(
+					(entry) =>
+						prev.exhausted[entry.cell] &&
+						!next.exhausted[entry.cell] &&
+						(entry.role === 'glyph' || isDualcastItem(next, entry))
+				);
+				revived.forEach((entry, index) => {
+					const to = wispPoint(pocketAt(entry.cell));
+					if (from && to) setTimeout(() => spawnWisp(from, to, 'gold'), index * 90);
+				});
+			}
+			// A Thief's bounty: the grave that took the kill names the pocket that now takes any card.
+			if (next.pickpocket !== null && next.pickpocket !== prev.pickpocket && homeSlot !== null) {
+				const from = wispPoint(board?.querySelector(`[data-drop="foundation:${homeSlot}"]`) ?? null);
+				const to = wispPoint(pocketAt(next.pickpocket));
+				if (from && to) setTimeout(() => spawnWisp(from, to, 'gold'), 60);
+			}
 		}
 		void tick().then(() => animateFrom(rects, next.game, null));
 	}
@@ -2288,10 +2468,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		dealTimers.push(window.setTimeout(settleDeal, total));
 	}
 
-	function newDeal() {
+			function newDeal() {
 		clearClickMemory();
 		pendingDeath = null;
 		pendingExit = false;
+		// A mend still in the air belongs to the crawl being left behind.
+		endMendFlight();
+		healingIds = [];
 		const requested = Number.parseInt(seedInput, 10);
 		const valid = Number.isFinite(requested) && requested >= 1 && requested <= 32000;
 		// A boardstring is a position rather than a deal: pasting one sets the crawl down on a board
@@ -2350,10 +2533,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		}, life);
 	}
 
-	function replay() {
+			function replay() {
 		flushPending();
 		pendingDeath = null;
 		pendingExit = false;
+		endMendFlight();
+		healingIds = [];
 		if (tomb) {
 			// Measured before the deal is put back, so every card has somewhere to fly home from.
 			const before = cardRects();
@@ -2623,6 +2808,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:armed={!!tomb?.armed && tomb.armed.cell === i}
 					class:locked={!!card && !!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 					class:pickpocket={!!tomb && tomb.pickpocket === i}
+					// The pocket the Hero Chip is wedged against: its ribbon has to keep clear of the token.
+					class:beside-chip={!!tomb && chipAt > 0 && i === chipAt - 1}
 					class:locking={!!preview?.locks.includes(i)}
 					class:need={!!preview?.need.includes(i)}
 					class:empty={!card}
@@ -2663,7 +2850,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				>
 					{#if stack.length}
 						{#each stack as stacked, depth (shorthandCard(stacked))}
-							{@const faceDown = depth < down}
+							{@const faceDown = depth < down || pendingHealIds.includes(shorthandCard(stacked))}
 							{@const deeper = depth < stack.length - 1}
 							{@const turning = faceDown && woundingIds.includes(shorthandCard(stacked))}
 							{@const mending = !faceDown && healingIds.includes(shorthandCard(stacked))}
@@ -2755,7 +2942,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<span
 							class="sash"
 							out:scale={{ start: 0.55, opacity: 0, duration: reducedMotion() ? 0 : 260, easing: cubicOut }}
-						><span class="role">{(live ?? entry).name}</span></span
+													><span class="role" data-suit={entry.suit}>{(live ?? entry).name}</span></span
 						>
 					{/if}
 				</button>
@@ -3013,7 +3200,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{#each SUITS as suit, suitIndex (suit)}
 							<span
 								class="tick top"
-								class:red={suit === 'hearts' || suit === 'diamonds'}
+								data-suit={suit}
 								title={`Class skill — ${abilityFor('class', suit).text}`}
 								style={`grid-area: 1 / ${2 + suitIndex}`}
 							>
@@ -3024,7 +3211,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{#each SUITS as kin, kinIndex (kin)}
 							<span
 								class="tick side"
-								class:red={kin === 'hearts' || kin === 'diamonds'}
+								data-suit={kin}
 								title={`Kin trait — ${abilityFor('kin', kin).text}`}
 								style={`grid-area: ${2 + kinIndex} / 1`}
 							>
@@ -3069,7 +3256,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							{/each}
 							<span class="margin side" style={`grid-column: 6; grid-row: ${2 + kinIndex}`}>
 								{#each SUITS as glyph (glyph)}
-									<span title={abilityFor('glyph', glyph).text}>{abilityFor('glyph', glyph).name}</span>
+									<span data-suit={glyph} title={abilityFor('glyph', glyph).text}>{abilityFor('glyph', glyph).name}</span>
 								{/each}
 							</span>
 						{/each}
@@ -3082,7 +3269,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							<span class="margin bottom" style={`grid-column: ${2 + clsIndex}; grid-row: 6`}>
 								{#each SUITS as item (item)}
 									{@const label = abilityFor(cls === 'clubs' ? 'glyph' : 'consumable', item)}
-									<span title={label.text}>{label.name}</span>
+									<span data-suit={item} title={label.text}>{label.name}</span>
 								{/each}
 							</span>
 						{/each}
@@ -3128,7 +3315,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 									{@const shown = abilityFor(role === 'consumable' && inspected.class === 'clubs' ? 'glyph' : role, suit)}
 									<li>
 										<span class="role">{ROLE_WORD[role]}</span>
-										<span class="glyph" class:red={suit === 'hearts' || suit === 'diamonds'}>{SUIT_GLYPH[suit]}</span>
+										<span class="glyph" data-suit={suit}>{SUIT_GLYPH[suit]}</span>
 										<span class="ability">{shown.name}</span>
 									</li>
 								{/each}
@@ -3290,3 +3477,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		</div>
 	{/if}
 </div>
+
+{#if pendingHealIds.length}
+	<!--
+		A mend is watched, not waited on: while the wisp is in the air a click anywhere brings it in, the way
+		a click anywhere ends the deal. The layer is under the ink (the wisps draw at 55) and above the board,
+		so the click that skips cannot also play a card.
+	-->
+	<button type="button" class="mend-skip" aria-label="Finish the mend" onclick={skipMend}></button>
+{/if}
