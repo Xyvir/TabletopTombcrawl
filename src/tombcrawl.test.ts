@@ -34,6 +34,7 @@ import {
 	chipBoundary,
 	canConvert,
 	convertChip,
+	mugTarget,
 	convertibleCell,
 	pickpocketUsable,
 	withSyntheticLoadout,
@@ -3296,15 +3297,17 @@ describe('gold', () => {
 describe('the affliction preview', () => {
 	const cardIn = (state: TombState, id: string) => state.game.cards.find((card) => shorthandCard(card) === id)!;
 
-	test('a bandit warns on the slot the chip has reached, and on the glyph once the item is gone', () => {
+	test('a bandit warns on the chip, not on the card, since Mug leaves the aspect where it lies', () => {
 		const item: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({ columns: [['5S']], cells: ['TC', null], boss: 'KS', draft: item });
-		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual(['TC']);
+		expect(mugTarget(state)?.id).toBe('TC');
+		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual([]);
 
 		// the item is spent, so the chip has stepped onto the glyph and the glyph is what is at stake
 		const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
 		const later = makeTomb({ columns: [['5S']], cells: ['TS', null], boss: 'KS', draft: glyph });
-		expect(afflictionTargets(later, cardIn(later, '5S'))).toEqual(['TS']);
+		expect(mugTarget(later)?.id).toBe('TS');
+		expect(afflictionTargets(later, cardIn(later, '5S'))).toEqual([]);
 	});
 
 	test('a wounded slot is locked, so the bandit warns on nothing and takes nothing', () => {
@@ -3317,6 +3320,7 @@ describe('the affliction preview', () => {
 			draft,
 			wounded: [0],
 		});
+		expect(mugTarget(state)).toBeUndefined();
 		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual([]);
 
 		// and the rule agrees: the kill lands and the face-down slot keeps its card and its entry
@@ -3356,15 +3360,15 @@ describe('the affliction preview', () => {
 
 	test('an armed Remedy silences the warning, since the blow would not set the power off', () => {
 		const draft: DraftCard[] = [
-			{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Remedy', text: '' },
+			{ cell: 0, role: 'consumable', id: 'TH', suit: 'hearts', name: 'Remedy', text: '' },
 			{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
-		const state = makeTomb({ columns: [['5S']], cells: ['TC', 'TS'], boss: 'KS', draft });
-		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual(['TS']);
+		const state = makeTomb({ columns: [['2C', '3C'], ['4H']], cells: ['TH', null], hidden: ['3C'], boss: 'KH', draft });
+		expect(afflictionTargets(state, cardIn(state, '4H'))).toEqual(['3C']);
 
 		const armed = useAbility(state, 0)!;
 		expect(armed.armed?.kind).toBe('remedy');
-		expect(afflictionTargets(armed, cardIn(armed, '5S'))).toEqual([]);
+		expect(afflictionTargets(armed, cardIn(armed, '4H'))).toEqual([]);
 	});
 
 	test('a plain card warns on nothing, whatever tomb it stands in', () => {

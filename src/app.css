@@ -169,7 +169,15 @@ img {
 	appearance: none;
 	/* cards own the pointer so a press can become a drag on touch too */
 	touch-action: none;
-	transition: transform 90ms ease;
+	/*
+	 * A stack that grows past the column's box gives its step back to the room that is left over, so every
+	 * card above the newest one slides up at once — the scrunch. Tweening `top` is what makes that a shuffle
+	 * instead of a jump: a card is born at its final offset, so only the cards already dealt move, and a pile
+	 * that falls back under the box opens out the same way.
+	 */
+	transition:
+		transform 90ms ease,
+		top 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .card.dragging {
@@ -313,6 +321,10 @@ img {
 @media (prefers-reduced-motion: reduce) {
 	.card .slay,
 	.slot .slay {
+		transition: none;
+	}
+
+	.card {
 		transition: none;
 	}
 }

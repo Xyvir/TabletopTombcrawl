@@ -1007,6 +1007,17 @@ export function conversionTarget(state: TombState): DraftCard | undefined {
 }
 
 /**
+ * The hero aspect Mug would spend: the one the chip has reached, as long as its pocket holds a card and no
+ * wound has locked it. Shared with the interface, because the bandit's warning sits on the chip and not on a
+ * card — the aspect never moves, so there is nothing on the board to mark.
+ */
+export function mugTarget(state: TombState): DraftCard | undefined {
+	const slot = convertibleCell(state);
+	if (slot < 0 || !state.game.cells[slot] || cellTopWounded(state, slot)) return undefined;
+	return draftAt(state, slot);
+}
+
+/**
  * Whether the Hero Chip itself can be clicked: a live, unwounded hero aspect beside it, under the explicit rule.
  * A wound locks the aspect — the conversion cannot spend a face-down card, and neither can a bandit.
  */
@@ -1805,13 +1816,11 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
  * aspect is not the aspect.
  */
 function mugSlot(state: TombState): TombState {
-	const slot = convertibleCell(state);
-	if (slot < 0) return state;
-	const entry = draftAt(state, slot);
 	// A wound turns the card face down and locks the aspect, so a bandit has nothing to convert:
 	// the same bargain a Wraith offers, where a slot already paid for has nothing left to take.
-	if (!entry || cellTopWounded(state, slot)) return state;
-	if (!state.game.cells[slot]) return state;
+	const entry = mugTarget(state);
+	if (!entry) return state;
+	const slot = entry.cell;
 	const exhausted = [...state.exhausted];
 	exhausted[slot] = false;
 	// No heal: the forced step spends the ability without mending anything. Settle still runs, because it
@@ -1892,9 +1901,10 @@ function stoneGaze(state: TombState, card: Card): TombState {
 
 /**
  * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the fog Venom would lift, the hero aspect Mug would convert into a pocket, the kin and
- * class Stone Gaze would turn down, the glyphs Mana Burn would spend. An armed Remedy turns the whole aura
- * off, so it warns on nothing at all: nothing would happen.
+ * pointer: the fog Venom would lift, the kin and class Stone Gaze would turn down, the glyphs Mana Burn
+ * would spend. Mug is the exception — it spends the hero aspect beside the chip and leaves the card where it
+ * lies, so nothing on the board is marked and the interface bangs the chip instead (`mugTarget`). An armed
+ * Remedy turns the whole aura off, so it warns on nothing at all: nothing would happen.
  */
 export function afflictionTargets(state: TombState, card: Card): string[] {
 	if (!carriesPower(state, card) || !auraActive(state)) return [];
@@ -1903,14 +1913,10 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 			const fog = venomTarget(state);
 			return fog ? [cardId(fog)] : [];
 		}
-		case 'spades': {
-			// The aspect, not the chip: the warning sits on the hero aspect the party would lose, which
-			// is the one the chip has reached. A wounded aspect is locked, so there is nothing to take.
-			const slot = convertibleCell(state);
-			const entry = slot >= 0 ? draftAt(state, slot) : undefined;
-			if (!entry || cellTopWounded(state, slot)) return [];
-			return [entry.id];
-		}
+		case 'spades':
+			// Mug walks the chip a step left with no heal, and the aspect it spends stays in its pocket as a
+			// plain card: the chip is the one thing that moves, so it is the one thing the warning marks.
+			return [];
 		case 'clubs': {
 			// Stone Gaze turns one card, the leftmost passive still face up: the kin first, then the class
 			// once the kin is wounded. A stashed gorgon has no attack preview to show its heart, so this is

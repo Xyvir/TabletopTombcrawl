@@ -57,6 +57,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		chipBoundary,
 		conversionHeals,
 		conversionTarget,
+		mugTarget,
 		convertChip,
 		CLAUSES,
 		convertibleCell,
@@ -696,6 +697,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		// a card with a grave open to it is a home, not a slot spent
 		if (attackPreview(tomb, aim).legal) return false;
 		return !(CLAUSES.thiefPickpocket && entry.role === 'consumable' && hasPassive(tomb, 'Thief'));
+	});
+	/**
+	 * The chip's own `!`, mounted on the token and nowhere else. Hovering the chip is the whole question —
+	 * what would a conversion spend, and what does it mend — so the mark answers on the hover and the mend
+	 * lights up on the track beside it. A bandit under the pointer puts it there too: Mug walks the chip a
+	 * step left with no heal, and the aspect it takes never moves, so the chip is the only card-shaped thing
+	 * that happens. A wounded aspect locks both, and neither has anything to warn about then.
+	 */
+	const chipWarning = $derived.by(() => {
+		if (!tomb) return false;
+		if (chipHover) return canConvert(tomb);
+		if (!tombHover || tomb.bossSuit !== 'spades') return false;
+		const card = cardAt(tomb.game, tombHover);
+		return !!card && carriesPower(tomb, card) && auraActive(tomb) && !!mugTarget(tomb);
 	});
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
@@ -2227,7 +2242,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										: 'Heal it face up before you can use it.'
 								}${tomb ? `\n${goldNote(tomb, wounded)}` : ''}`
 						: entry
-							? `${(live ?? entry).name} — ${ROLE_LABEL[entry.role]}.\n								${(live ?? entry).text}${
+							? `${(live ?? entry).name} — ${ROLE_LABEL[entry.role]}.\n${(live ?? entry).text}${
 									tomb?.armed && tomb.armed.cell === i ? '\nClick to disarm.' : ''
 								}`
 							: pending
@@ -2336,7 +2351,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					style={`--chip-index:${chipAt}`}
 					disabled={!ready}
 					title={ready
-						? `Hero Chip: aspects to the left, pockets to the right. Click to convert '${chipCard?.name ?? 'the hero aspect'}': turn it into a pocket — its ability is gone for good — and mend one wound as a bonus. The card stays where it lies as a plain card, free to go home. A wounded aspect cannot be converted.`
+						? `Hero Chip: aspects to the left, pockets to the right.\nClick to convert '${chipCard?.name ?? 'the hero aspect'}': turn it into a pocket — its ability is gone for good — and mend one wound as a bonus. The card stays where it lies as a plain card, free to go home. A wounded aspect cannot be converted.`
 						: conversionPreview
 							? 'Playing this card out converts its slot: the chip walks one step left.'
 							: 'Hero Chip: the hero aspects to its left are your live abilities, and the pockets to its right are plain — they only hold a card. Each conversion turns one aspect into a pocket.'}
@@ -2344,9 +2359,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					onpointerenter={() => (chipHover = true)}
 					onpointerleave={() => (chipHover = false)}
 				>
-					<!-- The conversion a card in hand would spend. Mounted always, so it fades like an affliction's mark
-					     rather than popping in on the pointer. -->
-					<span class="alert" class:on={conversionPreview} aria-hidden="true">!</span>
+					<!-- The chip's own warning: on its hover, and while a bandit under the pointer would spend the
+					     aspect beside it. Mounted always, so it fades like an affliction's mark rather than popping in. -->
+					<span class="alert" class:on={chipWarning} aria-hidden="true">!</span>
 				</button>
 			{/if}
 		</div>
