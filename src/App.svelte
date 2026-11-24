@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { fade, scale } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { FreeCell } from './game/game';
 import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import {
@@ -2404,12 +2406,24 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<span class="reserve" aria-hidden="true"></span>
 					{/if}
 					{#if entry}
-						<span class="kind">{ROLE_WORD[entry.role]}</span>
+						<!--
+							A spent aspect leaves the way it arrived, in reverse: the label fades and the ribbon
+							shrinks back into the face it was tied round, so a conversion reads as the party's card
+							being taken rather than a name blinking off. Only the label fades on its own; a ribbon
+							that merely dimmed would still be lying across the card.
+						-->
+						<span class="kind" out:fade={{ duration: reducedMotion() ? 0 : 200, easing: cubicOut }}>
+							{ROLE_WORD[entry.role]}
+						</span>
 						<!--
 							The party's name is a ribbon tied round the card: the band is drawn wider than the face
 							and the wrapper clips it, so its ends run into the card's own edges instead of past them.
 						-->
-						<span class="sash"><span class="role">{(live ?? entry).name}</span></span>
+						<span
+							class="sash"
+							out:scale={{ start: 0.55, opacity: 0, duration: reducedMotion() ? 0 : 260, easing: cubicOut }}
+						><span class="role">{(live ?? entry).name}</span></span
+						>
 					{/if}
 				</button>
 			{/each}
