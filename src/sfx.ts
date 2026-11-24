@@ -12,6 +12,7 @@ import bossClearUrl from '../audio/boss_kill_dungeon_clear.ogg?url';
 import bossRevealUrl from '../audio/boss_reveal.ogg?url';
 import convertUrl from '../audio/convert_draft.ogg?url';
 import dealUrl from '../audio/deal.ogg?url';
+import disarmUrl from '../audio/disarm.ogg?url';
 import exitUrl from '../audio/exit_crawl.ogg?url';
 import kingDiesUrl from '../audio/king_dies.ogg?url';
 import levelUrl from '../audio/level_up.ogg?url';
@@ -33,6 +34,7 @@ export type SfxName =
 	| 'bossReveal'
 	| 'convert'
 	| 'deal'
+	| 'disarm'
 	| 'exit'
 	| 'kingDies'
 	| 'level'
@@ -51,6 +53,7 @@ const URLS: Record<SfxName, string> = {
 	bossReveal: bossRevealUrl,
 	convert: convertUrl,
 	deal: dealUrl,
+	disarm: disarmUrl,
 	exit: exitUrl,
 	kingDies: kingDiesUrl,
 	level: levelUrl,
@@ -179,6 +182,8 @@ export interface MoveSfx {
 	stepped: boolean;
 	/** An ability was taken in hand: a glyph and the party's item both answer to arm.ogg. */
 	armed: boolean;
+	/** The armed ability was put down again unused: arm.ogg run backwards, since nothing else happened. */
+	disarmed: boolean;
 	/** The ability left the hand and resolved: a glyph cast, a flask drunk, a Remedy covering its action. */
 	usedGlyph: boolean;
 	/** The same moment, for everything the party carries that is not a glyph. */
@@ -214,6 +219,7 @@ export function playMoveSfx(f: MoveSfx) {
 	if (f.converted) playSfx('convert');
 	if (f.mended) playSfx('mend');
 	if (f.armed) playSfx('arm');
+	if (f.disarmed) playSfx('disarm');
 	if (f.usedGlyph) playSfx('useGlyph');
 	if (f.usedItem) playSfx('useItem');
 	if (f.parked) playSfx('stash');

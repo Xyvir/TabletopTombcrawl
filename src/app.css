@@ -719,7 +719,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: calc(var(--gap) * 0.4);
+	/* the pill stands clear of the name's descenders rather than tucking under them */
+	gap: var(--gap);
 }
 
 /*

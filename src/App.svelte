@@ -1372,6 +1372,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		// covered — and it sounds in the role's own voice.
 		const armedNow = label?.startsWith('arm') ?? false;
 		const resolved = prev.armed && !next.armed && next.exhausted[prev.armed.cell] ? prev.armed : null;
+		// A drop that spends nothing is the click putting the ability back, and it sounds like the arm run backwards.
+		// A glyph aimed and spent also prints as a drop, so the ability has to still be unspent to count as one.
+		const disarmed = (label?.startsWith('drop') ?? false) && !resolved;
 		const usedCell = resolved?.cell ?? (armedNow ? undefined : spent?.cell);
 		const usedEntry = usedCell === undefined ? null : (prev.draft.find((entry) => entry.cell === usedCell) ?? null);
 		/*
@@ -1405,6 +1408,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			parked: label?.startsWith('park') ?? false,
 			stepped: (label?.startsWith('move') ?? false) || (label?.startsWith('swap') ?? false),
 			armed: armedNow,
+			disarmed,
 			usedGlyph: usedIsGlyph,
 			usedItem: !!usedEntry && !usedIsGlyph,
 			// A conversion the chip makes is a sound of its own; a bandit forcing the step is the affliction and
