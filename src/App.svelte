@@ -3008,7 +3008,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					{/if}
 				</button>
 			{/each}
-			{#if !!tomb && chipAt > 0}
+			<!--
+				The chip keeps its place on the board after the last conversion: it comes to rest at the left
+				edge of the party's first slot (index 0 is that edge) and stays there, inert, rather than
+				vanishing — the board keeps saying which side of the track is still a hero.
+			-->
+			{#if tomb}
 				{@const ready = canConvert(tomb)}
 				{@const chipCard = conversionTarget(tomb)}
 				<button
@@ -3017,11 +3022,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:ready
 					style={`--chip-index:${chipAt}`}
 					disabled={!ready}
-					title={ready
-						? `Hero Chip: aspects to the left, pockets to the right.\nClick to convert '${chipCard?.name ?? 'the hero aspect'}': turn it into a pocket — its ability is gone for good — and mend one wound as a bonus. The card stays where it lies as a plain card, free to go home. A wounded aspect cannot be converted.`
-						: conversionPreview
-							? 'Playing this card out converts its slot: the chip walks one step left.'
-							: 'Hero Chip: the hero aspects to its left are your live abilities, and the pockets to its right are plain — they only hold a card. Each conversion turns one aspect into a pocket.'}
+					title={!chipCard
+						? 'Hero Chip: no hero aspects are left. Every slot on the track is a plain pocket now, so there is nothing left to convert — the chip rests at the left edge where the party started.'
+						: ready
+							? `Hero Chip: aspects to the left, pockets to the right.\nClick to convert '${chipCard.name}': turn it into a pocket — its ability is gone for good — and mend one wound as a bonus. The card stays where it lies as a plain card, free to go home. A wounded aspect cannot be converted.`
+							: conversionPreview
+								? 'Playing this card out converts its slot: the chip walks one step left.'
+								: 'Hero Chip: the hero aspects to its left are your live abilities, and the pockets to its right are plain — they only hold a card. Each conversion turns one aspect into a pocket.'}
 					onclick={convertChipClick}
 					onpointerenter={() => (chipHover = true)}
 					onpointerleave={() => (chipHover = false)}

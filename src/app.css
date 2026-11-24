@@ -593,11 +593,17 @@ img {
 /*
  * The Hero Chip: a poker chip wedged in the gap between the last hero aspect and the first
  * plain pocket. Its track is the boundary between them, so it walks one slot left each time an
- * aspect converts, and disappears once every slot on the track is plain.
+ * aspect converts. The last conversion leaves it at index 0 — the left edge of the party's first
+ * slot — where it stays inert instead of vanishing, so the track keeps its own history on the board.
  */
 .cells.tomb .chip {
 	position: absolute;
 	top: 50%;
+	/*
+	 * Index 0 is the track's left edge, so the chip comes to rest centred on it and overhangs the board by
+	 * half a token — the same half-step it takes into every other gap, and the reason the last conversion
+	 * reads as the chip arriving somewhere rather than as a token going out.
+	 */
 	left: calc(
 		((100% - (var(--cell-count) - 1) * var(--gap)) / var(--cell-count)) * var(--chip-index) +
 			(var(--chip-index) - 1) * var(--gap) + var(--gap) * 0.5
@@ -1521,13 +1527,13 @@ body:has(.card.dragging) .cells.tomb .chip {
 	background: linear-gradient(180deg, var(--suit-diamonds-a), var(--suit-diamonds-b));
 }
 
-/*
- * The Hero Chip is wedged in the gap beside the last aspect, and the token reaches a few pixels over
- * that pocket's face — right where the ribbon's right end sits. On a phone there is nothing to spare:
- * the token shrinks to what the gap can hide, and the ribbon beside it drops a size and steps its text
- * left, away from the corner the two share.
- */
 @media (max-width: 560px) {
+	/*
+	 * The Hero Chip is wedged in the gap beside the last aspect, and the token reaches a few pixels over
+	 * that pocket's face — right where the ribbon's right end sits. On a phone there is nothing to spare:
+	 * the token shrinks to what the gap can hide, and the ribbon beside it drops a size and steps its text
+	 * left, away from the corner the two share.
+	 */
 	.cells.tomb .chip {
 		width: max(12px, calc(var(--gap) * 1.9));
 	}
