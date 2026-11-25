@@ -245,7 +245,7 @@ function frame(): string {
 		`  merge      +${ready.length} lined wins -> ${projected}/${corpus.keys}  ·  ${unlined} rows have no line to publish`,
 		`  workers    ${rows.length} shards · ${live} live · ${current.size} current wins`,
 		'',
-		'  start   seed range   finds   beat    newest win',
+		'  start   seed range   finds   pulse   newest win',
 		...shown.map(
 			(row) =>
 				`  ${String(row.from).padEnd(6)}  ${row.progress.padEnd(10)}  ${String(row.keys).padEnd(5)}   ${since(row.updated).padStart(5)}   ${row.win || '—'}`
