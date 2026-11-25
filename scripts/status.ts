@@ -1,7 +1,9 @@
 /**
  * A status board for a running corpus search: what is covered, how far each worker has walked its
- * seed range, and which parties it has just won. It reads only the files the workers already write,
- * so it can be started or stopped at any time without disturbing a search.
+ * seed range, which parties it has just won, and which of those wins a merge could actually publish
+ * — a row counts only with its line in `solutions/`. It reads files and nothing else (the workers'
+ * shards and heartbeats, that line directory, the published corpus), so it can be started or
+ * stopped at any time without disturbing a search.
  *
  *   node scripts/status.ts            print one frame and exit
  *   node scripts/status.ts --follow   draw every two seconds until closed
@@ -22,6 +24,7 @@ interface Entry {
 	moves: number;
 	goal: string;
 	boss: string | null;
+	difficulty?: string;
 	/** an ISO stamp, or null on entries merged in from a corpus written before it kept dates */
 	at?: string | null;
 }
@@ -41,10 +44,15 @@ interface Beat {
 
 const DIR = process.env.DIR ?? 'corpus';
 const CORPUS = process.env.CORPUS ?? 'public/corpus.json';
+/** Where a win's line is kept: a merge publishes a row only when this holds med-<seed>.json. */
+const LINES = process.env.LINES ?? 'solutions';
 const REFRESH_MS = Number(process.env.REFRESH_MS ?? 2000);
 /** A worker beats every five seeds; a deal can take minutes, so this leaves room for a slow one. */
 const QUIET_MS = 10 * 60_000;
-const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+/** A shard nobody has touched for this long is history: it still counts in the totals, not the table. */
+const STALE_MS = 24 * 60 * 60_000;
+/** Braille reads as boxes in the console fonts that ship with Windows, so the spinner is plain ASCII. */
+const SPINNER = ['|', '/', '-', '\\'];
 
 const readJson = <T>(path: string, fallback: T): T => {
 	if (!existsSync(path)) return fallback;
@@ -53,6 +61,17 @@ const readJson = <T>(path: string, fallback: T): T => {
 	} catch {
 		return fallback;
 	}
+};
+
+/** The seeds a merge can publish: the ones with a line on the published track. */
+const linedSeeds = (): Set<number> => {
+	const seeds = new Set<number>();
+	if (!existsSync(LINES)) return seeds;
+	for (const name of readdirSync(LINES)) {
+		const found = /^med-(\d+)\.json$/.exec(name);
+		if (found) seeds.add(Number(found[1]));
+	}
+	return seeds;
 };
 
 const since = (stamp: number): string => {
@@ -67,18 +86,13 @@ const bar = (done: number, total: number, width = 36): string => {
 	return `${'█'.repeat(filled)}${'░'.repeat(Math.max(0, width - filled))}`;
 };
 
-/** The last line a worker logged about a win, if it has won anything yet. */
-const lastWin = (path: string): string => {
-	if (!existsSync(path)) return '';
-	try {
-		const lines = readFileSync(path, 'utf8')
-			.split('\n')
-			.filter((line) => line.includes('solved'));
-		const last = lines[lines.length - 1] ?? '';
-		return last.replace(/^seed /, '').trim();
-	} catch {
-		return '';
+/** The newest win in a worker's own shard: what its log used to be read for, and never was. */
+const newestWin = (entries: Entry[]): string => {
+	let best: Entry | null = null;
+	for (const entry of entries) {
+		if (!best || String(entry.at ?? '') > String(best.at ?? '')) best = entry;
 	}
+	return best ? `${best.loadout} ${best.seed} \u00b7 ${best.moves}` : '';
 };
 
 interface Worker {
@@ -90,7 +104,7 @@ interface Worker {
 	win: string;
 }
 
-const workers = (): Worker[] => {
+const workers = (entries: Entry[]): Worker[] => {
 	if (!existsSync(DIR)) return [];
 	// A worker that has not won anything yet has no shard file, only a heartbeat, so both count as
 	// a worker being there: otherwise a fresh pool shows nothing until its first find.
@@ -109,77 +123,107 @@ const workers = (): Worker[] => {
 			written = 0;
 		}
 		const beat = readJson<Beat | null>(`${DIR}/heartbeat-${from}.json`, null);
-		const entries = readJson<Entry[]>(path, []);
 		const updated = Math.max(written, beat?.at ?? 0);
 		const span = beat ? beat.to - beat.from + 1 : 0;
 		const walked = beat ? beat.seed - beat.from : 0;
 		const progress = beat ? `${walked}/${span}` : '—';
-		const win = lastWin(`${DIR}/bosslog-${from}.txt`) || lastWin(`${DIR}/log-${from}.txt`);
+		// Wins are matched by seed range, not by file name: a sweep can write its shard under a name of
+		// its own (scan-freshb-w0.json), and the deal's own seed is the only thing tying it to a worker.
+		const mine = beat ? entries.filter((entry) => entry.seed >= beat.from && entry.seed <= beat.to) : [];
 		rows.push({
 			from,
-			// a sweep that writes its shard under a name of its own (scan-night-w0.json) still leaves the
-			// count in its heartbeat, which is the only place the board can read it from
-			keys: entries.length || (beat?.finds ?? 0),
+			keys: mine.length || (beat?.finds ?? 0),
 			progress,
 			updated,
 			live: Date.now() - updated < QUIET_MS,
-			win,
+			win: newestWin(mine),
 		});
 	}
 	return rows;
 };
 
-function frame(): string {
-	const corpus = readJson<Corpus>(CORPUS, { keys: 256, entries: [] });
-	const rows = workers();
-	const live = rows.filter((row) => row.live).length;
-	const merged = new Set(corpus.entries.map((entry) => entry.loadout));
-	const onDisk = new Set<string>();
-	let finds = 0;
-	for (const row of rows) finds += row.keys;
-	// every shard on disk counts as a source, whatever its name: a renamed sweep still has finds waiting
-	if (existsSync(DIR)) {
-		for (const name of readdirSync(DIR)) {
-			if (!name.startsWith('scan-') || !name.endsWith('.json')) continue;
-			for (const entry of readJson<Entry[]>(`${DIR}/${name}`, [])) {
-				if (typeof entry?.loadout === 'string') onDisk.add(entry.loadout);
-			}
+/** Every win on disk, read once: the worker rows, the merge count and the news all come from it. */
+const allEntries = (): Entry[] => {
+	const found: Entry[] = [];
+	if (!existsSync(DIR)) return found;
+	for (const name of readdirSync(DIR)) {
+		if (!name.startsWith('scan-') || !name.endsWith('.json')) continue;
+		for (const entry of readJson<Entry[]>(`${DIR}/${name}`, [])) {
+			if (typeof entry?.loadout === 'string') found.push(entry);
 		}
 	}
-	const pending = [...onDisk].filter((loadout) => !merged.has(loadout)).length;
+	return found;
+};
+
+function frame(): string {
+	const corpus = readJson<Corpus>(CORPUS, { keys: 256, entries: [] });
+	const entries = allEntries();
+	const rows = workers(entries);
+	const live = rows.filter((row) => row.live).length;
+	const merged = new Set(corpus.entries.map((entry) => entry.loadout));
+	const lined = linedSeeds();
+	const onDisk = new Set<string>();
+	// The row a party's newest win lives in: two sweeps can each hold a win for one key, and the board
+	// should show the latest one rather than whichever file it happened to read last.
+	const newest = new Map<string, Entry>();
+	for (const entry of entries) {
+		onDisk.add(entry.loadout);
+		const held = newest.get(entry.loadout);
+		if (!held || String(entry.at ?? '') > String(held.at ?? '')) newest.set(entry.loadout, entry);
+	}
+	const pending = [...onDisk].filter((loadout) => !merged.has(loadout));
+	// A merge publishes a row only when solutions/ holds its line on the published track. A row written
+	// before that rule — or by a run whose line was archived since — cannot move a square however long
+	// it sits on disk, so it is counted apart from the wins a merge would actually land.
+	const ready = pending.filter((loadout) => {
+		const entry = newest.get(loadout);
+		return entry?.difficulty === 'med' && lined.has(entry.seed);
+	});
+	const unlined = pending.length - ready.length;
+	const projected = merged.size + ready.length;
 	const pct = ((corpus.entries.length / Math.max(1, corpus.keys)) * 100).toFixed(1);
-	// by date, not by where they happen to sit in the file: the entries are sorted by loadout, so the
-	// last five rows were the alphabet, not the news
-	const recent = [...corpus.entries]
-		.sort((a, b) => Date.parse(b.at ?? '') - Date.parse(a.at ?? ''))
-		.slice(0, 5)
+	// Newest first across every shard, with what a merge would do with each. The published rows only
+	// change when a merge runs, so they were the stalest thing on the board once sweeps started keeping
+	// lines: the news is the lined wins that have not landed yet.
+	const fresh = [...newest.values()]
 		.filter((entry) => Number.isFinite(Date.parse(entry.at ?? '')))
-		.map((entry) => `  ${entry.loadout}  seed ${String(entry.seed).padStart(5)}  ${String(entry.moves).padStart(3)} moves`);
+		.sort((a, b) => Date.parse(b.at ?? '') - Date.parse(a.at ?? ''))
+		.slice(0, 6)
+		.map((entry) => {
+			const state = merged.has(entry.loadout)
+				? 'published'
+				: entry.difficulty === 'med' && lined.has(entry.seed)
+					? 'lined, unmerged'
+					: 'no line';
+			return `  ${entry.loadout}  seed ${String(entry.seed).padStart(7)}  ${String(entry.moves).padStart(3)} moves  ${entry.goal.padEnd(5)} ${state}`;
+		});
 	// A working corpus/ keeps every shard a sweep ever wrote — months of them — and a frame tall
 	// enough to need its own scrollback moves under the reader on every repaint, however it is drawn.
 	// Live shards are always shown in full; the rest are capped, newest first, and the line above
 	// still says how many there are.
 	const SHOWN = 12;
+	const active = rows.filter((row) => row.live || Date.now() - row.updated < STALE_MS);
 	const shown = [
-		...rows.filter((row) => row.live),
-		...rows.filter((row) => !row.live).sort((a, b) => b.updated - a.updated),
+		...active.filter((row) => row.live),
+		...active.filter((row) => !row.live).sort((a, b) => b.updated - a.updated),
 	].slice(0, SHOWN);
 	const hidden = rows.length - shown.length;
 	const lines = [
 		` ${SPINNER[Math.floor(Date.now() / 200) % SPINNER.length]}  CORPUS SEARCH   ${new Date().toLocaleTimeString()}   ${DIR}/`,
 		'',
 		`  coverage   ${bar(corpus.entries.length, corpus.keys)}  ${corpus.entries.length}/${corpus.keys}  ${pct}%`,
-		`  workers    ${rows.length} shards · ${live} live · ${finds} finds on disk · ${pending} waiting to merge`,
+		`  merge      +${ready.length} lined wins -> ${projected}/${corpus.keys}  ·  ${unlined} rows have no line to publish`,
+		`  workers    ${rows.length} shards · ${live} live · ${entries.length} wins on disk`,
 		'',
-		'  start   seed range   finds   beat    last win',
+		'  start   seed range   finds   beat    newest win',
 		...shown.map(
 			(row) =>
 				`  ${String(row.from).padEnd(6)}  ${row.progress.padEnd(10)}  ${String(row.keys).padEnd(5)}   ${since(row.updated).padStart(5)}   ${row.win || '—'}`
 		),
 		...(hidden > 0 ? [`  … ${hidden} older shard${hidden === 1 ? '' : 's'} not shown`] : []),
 		'',
-		'  latest in the corpus',
-		...(recent.length ? recent : ['  (nothing merged yet)']),
+		'  latest finds',
+		...(fresh.length ? fresh : ['  (nothing dated on disk yet)']),
 		'',
 		'  Ctrl+C to close · the search keeps running without this board',
 	];
