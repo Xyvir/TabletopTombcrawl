@@ -1852,12 +1852,13 @@ body:has(.card.dragging) .cells.tomb .chip {
 .card .venom-bolt {
 	position: absolute;
 	/*
-	 * The elf's own bolt, place for place: a shot lies across the first quarter of the card, which is the
-	 * strip a covered card keeps on show above the card stacked over it. Sharing that alignment is what
-	 * makes the violet arrow read as the same mark in another colour rather than as a stray stroke.
+	 * The elf's own band, from the top down: a shot lies across the first quarter of the card, which is
+	 * the strip a covered card keeps on show above the card stacked over it. It is centred left to right
+	 * where the elf's is not, and that is the one place they part company: a fog back has no rank and
+	 * suit in its corner for the mark to keep clear of, so there is no reason for it to sit off-centre.
 	 */
 	top: 14%;
-	left: 57%;
+	left: 50%;
 	width: 58%;
 	height: 15%;
 	z-index: 3;
