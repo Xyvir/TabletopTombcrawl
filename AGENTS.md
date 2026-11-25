@@ -34,9 +34,11 @@ legal* rather than *which of the legal things happens* is a rules question first
 
 ## Corpus status board
 
-When the corpus status TUI is wanted (`node scripts/run.mjs scripts/status.ts`), launch it in its own
-PowerShell window with `Start-Process powershell -NoExit -Command '...'`. Do not run it in Freebuff's
-integrated terminal, and do not leave a chat-owned PTY copy of it running.
+When the corpus status board is wanted, launch it in its own PowerShell window with
+`Start-Process powershell -NoExit -Command '...'`. `node scripts/status.ts` prints one frame and exits;
+`scripts\watch-corpus.cmd` is the live board, redrawn by a Clear-Host loop because the Windows console
+host ignores the ANSI clear a long-lived painter would use. Do not run it in Freebuff's integrated
+terminal, and do not leave a chat-owned PTY copy of it running.
 
 ## A solution found by hand goes into the corpus
 

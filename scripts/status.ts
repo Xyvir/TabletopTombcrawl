@@ -3,8 +3,12 @@
  * seed range, and which parties it has just won. It reads only the files the workers already write,
  * so it can be started or stopped at any time without disturbing a search.
  *
- *   node scripts/run.mjs scripts/status.ts          draw every two seconds
- *   ONCE=1 node scripts/run.mjs scripts/status.ts    print one frame and exit
+ *   node scripts/status.ts            print one frame and exit
+ *   node scripts/status.ts --follow   draw every two seconds until closed
+ *
+ * It reads files and imports nothing but node:fs, so plain node runs it: no bundler or alias setup is
+ * owed. `--follow` repaints with ANSI escapes, which the classic Windows console host ignores; for a
+ * live board there, scripts/watch-corpus.cmd clears the screen from the host between frames instead.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 
@@ -151,6 +155,16 @@ function frame(): string {
 		.slice(0, 5)
 		.filter((entry) => Number.isFinite(Date.parse(entry.at ?? '')))
 		.map((entry) => `  ${entry.loadout}  seed ${String(entry.seed).padStart(5)}  ${String(entry.moves).padStart(3)} moves`);
+	// A working corpus/ keeps every shard a sweep ever wrote — months of them — and a frame tall
+	// enough to need its own scrollback moves under the reader on every repaint, however it is drawn.
+	// Live shards are always shown in full; the rest are capped, newest first, and the line above
+	// still says how many there are.
+	const SHOWN = 12;
+	const shown = [
+		...rows.filter((row) => row.live),
+		...rows.filter((row) => !row.live).sort((a, b) => b.updated - a.updated),
+	].slice(0, SHOWN);
+	const hidden = rows.length - shown.length;
 	const lines = [
 		` ${SPINNER[Math.floor(Date.now() / 200) % SPINNER.length]}  CORPUS SEARCH   ${new Date().toLocaleTimeString()}   ${DIR}/`,
 		'',
@@ -158,12 +172,11 @@ function frame(): string {
 		`  workers    ${rows.length} shards · ${live} live · ${finds} finds on disk · ${pending} waiting to merge`,
 		'',
 		'  start   seed range   finds   beat    last win',
-		...rows.map(
+		...shown.map(
 			(row) =>
-				`  ${String(row.from).padEnd(6)}  ${row.progress.padEnd(10)}  ${String(row.keys).padEnd(5)}   ${
-					row.live ? since(row.updated).padStart(5) : since(row.updated).padStart(5)
-				}   ${row.win || '—'}`
+				`  ${String(row.from).padEnd(6)}  ${row.progress.padEnd(10)}  ${String(row.keys).padEnd(5)}   ${since(row.updated).padStart(5)}   ${row.win || '—'}`
 		),
+		...(hidden > 0 ? [`  … ${hidden} older shard${hidden === 1 ? '' : 's'} not shown`] : []),
 		'',
 		'  latest in the corpus',
 		...(recent.length ? recent : ['  (nothing merged yet)']),
@@ -177,7 +190,11 @@ const draw = () => {
 	process.stdout.write(`\x1b[H\x1b[2J${frame()}\n`);
 };
 
-if (process.env.ONCE) {
+// A single frame is the default: it reads the same in a log, a pipe, and a console that does not
+// honour the clear sequences, where a redraw wears the scrollback out instead of holding still.
+// FOLLOW=1 does what --follow does, for a launcher that would rather set an environment.
+const follow = process.argv.includes('--follow') || /^(1|true|yes)$/i.test(process.env.FOLLOW ?? '');
+if (!follow) {
 	process.stdout.write(`${frame()}\n`);
 } else {
 	process.stdout.write('\x1b[?25l');
