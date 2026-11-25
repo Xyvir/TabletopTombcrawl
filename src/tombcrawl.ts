@@ -2263,9 +2263,10 @@ export function attackWith(
 
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
 	// The last heart is gone: the crawl ends here. Read off the board rather than the preview, so a
-	// killing blow that levels up is saved by the heal it earns, and a wound Venom charged on top of the
-	// bill still ends the crawl even though the preview priced the blow alone.
-	if (hp(settled) === 0)
+	// killing blow that levels up is saved by the heal it earns. `fatal` is the bill the preview priced,
+	// Venom's dry-board heart included, so a blow that empties the track is exactly the one it refused;
+	// a party card played home leaving no hearts behind is the end of a clear, not a death.
+	if (preview.fatal && hp(settled) === 0)
 		return cloneWith(settled, { won: true, died: true, score: tombScore(settled) });
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all, with a
 	// Thief's Pickpocket) restocks the item and the chip stays put. A kill is the exit that earns the wide
