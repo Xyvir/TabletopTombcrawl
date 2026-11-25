@@ -1860,21 +1860,21 @@ function venomWounds(state: TombState, card: Card): boolean {
  * The fog Venom digs. At a table the player may dig any face-down card, without the heal, or take 1 extra
  * damage instead; the app makes that choice for them, and takes the dig while any fog is left.
  *
- * The card it takes is the deepest one anywhere in the hallways, the rightmost hallway breaking a tie — the
- * card that has been buried longest pays out first, and reading right to left on a tie keeps the pick in the
- * order the board is already scanned in. Shared with the interface, so the card the warning points at is the
- * card the blow would turn over.
+ * The card it takes is the most buried one anywhere in the hallways, the rightmost hallway breaking a tie.
+ * The last card of a pile is the one a hand can reach, so the deepest card is the lowest row — the one that has
+ * been under the most cards for the longest. Shared with the interface, so the card the warning points at is
+ * the card the blow would turn over.
  */
 export function venomTarget(state: TombState): Card | null {
 	const tableau = state.game.tableau as Card[][];
 	let deepest: Card | null = null;
-	let depth = -1;
+	let depth = Infinity;
 	// Left to right, so a tie at the same depth leaves the later — rightmost — hallway holding it.
 	for (const column of tableau) {
 		for (let k = 0; k < column.length; k++) {
 			const card = column[k];
 			if (!state.hidden.includes(cardId(card))) continue;
-			if (k >= depth) {
+			if (k <= depth) {
 				depth = k;
 				deepest = card;
 			}

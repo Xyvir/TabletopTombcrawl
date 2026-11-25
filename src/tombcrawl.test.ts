@@ -1946,18 +1946,19 @@ describe('tombcrawl progression rules', () => {
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 
-	test('venom digs the deepest fog, with no heal, wherever in the hallways it lies', () => {
+	test('venom digs the most buried fog, with no heal, wherever in the hallways it lies', () => {
 		const state = makeTomb({
-			columns: [['2C', '8H'], ['3D', '5C', 'KS']],
+			columns: [['2C', '8H'], ['5C', '3D', 'KS']],
 			cells: ['6S', '2D'],
 			foundations: ['7H', '7S', '7D', '7C'],
-			hidden: ['2C', '3D', '5C'],
+			hidden: ['2C', '5C', '3D'],
 			boss: 'KH',
 		});
 		expect(state.bossSuit).toBe('hearts');
 
 		const next = attackWith(state, cascade(0, 1))!;
-		// 5C is the deepest fog on the board, though 3D sits in the rightmost fogged hallway
+		// 2C and 5C are both at the bottom of their hallways; the tie goes right, so 5C turns over while
+		// 3D — one card nearer the right hallway's mouth, so less buried — is left face down
 		expect(next.hidden).not.toContain('5C');
 		expect(next.hidden).toContain('3D');
 		expect(next.hidden).toContain('2C');
