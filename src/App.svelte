@@ -125,6 +125,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	const TRACK: Difficulty = 'med';
 	const BASE = import.meta.env.BASE_URL;
 	/**
+	 * The range arrow is drawn as a mask, and a `url()` inside a custom property resolves against the
+	 * stylesheet that reads it — in the build that is a file in assets/, so a relative path pointed at
+	 * assets/images/ and the arrow silently vanished from the published site. Pinning it to the document
+	 * gives the stylesheet an absolute URL to resolve.
+	 */
+	const RANGE_ARROW = new URL(`${BASE}images/range-arrow.png`, document.baseURI).href;
+	/**
 	 * The printed rules, straight from the repo: the pill under the wordmark opens this rather than the
 	 * bundle carrying a second copy of the PDF.
 	 */
@@ -3180,7 +3187,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							<span
 								class="venom-bolt"
 								class:on={arrowed}
-								style={`--arrow: url("${BASE}images/range-arrow.png")`}
+								style={`--arrow: url("${RANGE_ARROW}")`}
 								aria-hidden="true"
 							></span>
 						{/if}
