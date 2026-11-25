@@ -74,8 +74,30 @@ const linedSeeds = (): Set<number> => {
 	return seeds;
 };
 
-const since = (stamp: number): string => {
-	const seconds = Math.max(0, Math.round((Date.now() - stamp) / 1000));
+/**
+ * Every live line on disk, keyed the way a shard row names its deal: `<track>|<seed>`. Archived lines
+ * moved to `solutions/archive/`, so what is left here is what still proves a win under today's rules.
+ */
+const linedProofs = (): Set<string> => {
+	const proofs = new Set<string>();
+	if (!existsSync(LINES)) return proofs;
+	for (const name of readdirSync(LINES)) {
+		const found = /^(med|hard)-(\d+)\.json$/.exec(name);
+		if (found) proofs.add(`${found[1]}|${found[2]}`);
+	}
+	return proofs;
+};
+
+/** When a find landed, in the board's own local clock: a date alone hides a run that just finished. */
+const stamp = (iso: string): string => {
+	const at = new Date(iso);
+	if (!Number.isFinite(at.getTime())) return '—';
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())} ${pad(at.getHours())}:${pad(at.getMinutes())}`;
+};
+
+const since = (ms: number): string => {
+	const seconds = Math.max(0, Math.round((Date.now() - ms) / 1000));
 	if (seconds < 60) return `${seconds}s`;
 	if (seconds < 5400) return `${Math.round(seconds / 60)}m`;
 	return `${(seconds / 3600).toFixed(1)}h`;
@@ -162,12 +184,20 @@ function frame(): string {
 	const live = rows.filter((row) => row.live).length;
 	const merged = new Set(corpus.entries.map((entry) => entry.loadout));
 	const lined = linedSeeds();
+	const proofs = linedProofs();
+	// A shard row is only a claim: a sweep writes one when it wins, but a rule change archives the
+	// line and leaves the row behind. Counting rows made the board read hundreds of wins that no
+	// longer replay, so the total is the deals a live line still proves, and nothing else.
+	const current = new Set<string>();
 	const onDisk = new Set<string>();
 	// The row a party's newest win lives in: two sweeps can each hold a win for one key, and the board
 	// should show the latest one rather than whichever file it happened to read last.
 	const newest = new Map<string, Entry>();
 	for (const entry of entries) {
 		onDisk.add(entry.loadout);
+		if (proofs.has(`${entry.difficulty ?? 'med'}|${entry.seed}`)) {
+			current.add(`${entry.difficulty ?? 'med'}|${entry.seed}`);
+		}
 		const held = newest.get(entry.loadout);
 		if (!held || String(entry.at ?? '') > String(held.at ?? '')) newest.set(entry.loadout, entry);
 	}
@@ -195,7 +225,7 @@ function frame(): string {
 				: entry.difficulty === 'med' && lined.has(entry.seed)
 					? 'lined, unmerged'
 					: 'no line';
-			return `  ${entry.loadout}  seed ${String(entry.seed).padStart(7)}  ${String(entry.moves).padStart(3)} moves  ${entry.goal.padEnd(5)} ${state}`;
+			return `  ${entry.loadout}  seed ${String(entry.seed).padStart(7)}  ${String(entry.moves).padStart(3)} moves  ${stamp(entry.at ?? '')}  ${entry.goal.padEnd(5)} ${state}`;
 		});
 	// A working corpus/ keeps every shard a sweep ever wrote — months of them — and a frame tall
 	// enough to need its own scrollback moves under the reader on every repaint, however it is drawn.
@@ -213,7 +243,7 @@ function frame(): string {
 		'',
 		`  coverage   ${bar(corpus.entries.length, corpus.keys)}  ${corpus.entries.length}/${corpus.keys}  ${pct}%`,
 		`  merge      +${ready.length} lined wins -> ${projected}/${corpus.keys}  ·  ${unlined} rows have no line to publish`,
-		`  workers    ${rows.length} shards · ${live} live · ${entries.length} wins on disk`,
+		`  workers    ${rows.length} shards · ${live} live · ${current.size} current wins`,
 		'',
 		'  start   seed range   finds   beat    newest win',
 		...shown.map(
