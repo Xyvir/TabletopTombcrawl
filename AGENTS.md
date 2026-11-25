@@ -432,6 +432,14 @@ under "the level cap" state the new arithmetic instead of the old one, and a cle
 finish, which is the shape the rule was adopted for: the boss kill stays the road out, and the bare tomb is the hard
 second win.
 
+Measured on the stored lines the first time the rule went in: 95 of 150 transcripts still replay, and every one of
+the 50 that died is a hearts tomb — 48 boss kills and 2 clears, stopping at the first dig or move the new venom
+target no longer left open (median move 24, earliest 3). They went to `solutions/archive/` with a `-venom` suffix
+and the merge gate demoted their squares: 126 entries with a win to 85, 145 proved rows to 97. No other suit moved,
+which is what pinned the second bug — ending a crawl on any zero-heart board also killed every clear whose last
+party card went home, so the death guard is back to `preview.fatal && hp === 0`, with the venom heart priced into
+`attackPreview` where that gate can see it.
+
 ## The reserve pocket (adopted)
 
 The right-most free cell — the Dwarf's extra one when he is in the party, since `reserveCell()` reads the track's own
