@@ -22,6 +22,10 @@ is only ever in *who makes a choice the rules leave open*.
 - **Venom** may dig any face-down card without the heal, or take 1 extra damage. The app takes the dig for the
   player while there is any fog left — the deepest card, the rightmost hallway breaking a tie — and pays the
   damage only once there is nothing left to dig.
+- **A wound in a two-card PISORF pocket** may be put on either card at a table. The app always turns the bottom
+  card first, which is the choice a player would reach for anyway: the top card is the only one that can be
+  touched, so wounding the bottom keeps the pocket’s top card liftable and the stack no more locked than the
+  wound has to make it.
 
 Two rules make a simplification like this safe. It picks among options the rules already allow, so it can never
 make a move legal that the table would refuse. And the rule sheet keeps the loose wording, so a player moving from
