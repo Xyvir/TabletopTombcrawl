@@ -216,14 +216,23 @@ img {
 	transform: translateY(1px);
 }
 
-.card.selected img,
-.slot.selected img {
+/*
+ * The ring belongs to the card's own picture, not to every image inside it. A mark drawn on the card is
+ * an image too, and the unscoped selector put a yellow box around the elf's bolt — and would do the same
+ * to a skull — so this reaches the dealt pictures and nothing else.
+ */
+.card.selected > img,
+.card.selected .flip img,
+.slot.selected > img,
+.slot.selected .flip img {
 	outline: 3px solid #ffd95e;
 	outline-offset: -3px;
 }
 /* The first card of a two-click spell keeps the selection ring while its partner is picked. */
-.card.aimed img,
-.slot.aimed img {
+.card.aimed > img,
+.card.aimed .flip img,
+.slot.aimed > img,
+.slot.aimed .flip img {
 	outline: 3px solid #ffd95e;
 	outline-offset: -3px;
 }
@@ -1768,18 +1777,32 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * A fogged card an affliction is aimed at gets a violet rim light around its edge rather than a wash over the
- * back: the back's own drawing swallows a tint, and a rim is what the eye catches while it scans the hallways.
- * Venom is the only power that aims at fog, so this is its card.
+ * A fogged card an affliction is aimed at is lit up rather than ringed: the back itself goes pale under a
+ * lavender wash, so the dark violet mark drawn on it has something to stand against. A rim light could not do
+ * that — it left the drawing as dark as it was, and the mark had to fight the same near-black mortar the rim
+ * was framing. Venom is the only power that aims at fog, so this is its card.
  */
 .card.down.afflicted {
 	border-radius: var(--radius);
-	box-shadow:
-		0 0 0 2px rgba(199, 155, 255, 0.85),
-		0 0 16px 4px rgba(138, 70, 235, 0.55);
+	box-shadow: 0 0 12px 2px rgba(236, 222, 255, 0.38);
 	transition:
 		transform 90ms ease,
 		box-shadow 150ms ease;
+}
+
+/*
+ * The wash sits above the dealt picture and below the marks (both are z-index 3), so the card lightens and the
+ * bang or the arrow keep their own colour on top of it. It is also what makes the darkened fog back
+ * (`.card.down img` takes it to 0.8 brightness) read as lit at a glance while the carrier is under the pointer.
+ */
+.card.down.afflicted::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius);
+	background: rgba(232, 214, 255, 0.62);
+	pointer-events: none;
+	z-index: 2;
 }
 
 /*
@@ -1819,9 +1842,53 @@ body:has(.card.dragging) .cells.tomb .chip {
 	opacity: 0.9;
 }
 
+/*
+ * A covered fogged card an affliction is aimed at cannot show the bang: everything but the top strip of the
+ * card is behind the card above it. It wears the archer's arrow instead — the mark an Elf's ranged kill
+ * draws, so the affliction reads as reaching down the hallway rather than touching the card — in the
+ * affliction's violet, with the dark halo the bang wears. The arrow is the elf's own picture masked, which
+ * keeps one shape for both meanings and lets it take any colour.
+ */
+.card .venom-bolt {
+	position: absolute;
+	/*
+	 * The elf's own bolt, place for place: a shot lies across the first quarter of the card, which is the
+	 * strip a covered card keeps on show above the card stacked over it. Sharing that alignment is what
+	 * makes the violet arrow read as the same mark in another colour rather than as a stray stroke.
+	 */
+	top: 14%;
+	left: 57%;
+	width: 58%;
+	height: 15%;
+	z-index: 3;
+	transform: translate(-50%, -50%) rotate(-6deg);
+	-webkit-mask-image: var(--arrow);
+	mask-image: var(--arrow);
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	/* The bang's own dark purple. The contrast comes from the card, which is washed pale under the mark, not
+	   from the fill: the wash lifts the near-black mortar the stroke used to disappear into, and the white
+	   halo is the same one the bang wears. */
+	background: rgba(52, 16, 92, 0.95);
+	filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+	pointer-events: none;
+	/* mounted with the card, lit only while the carrier is under the pointer */
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.card .venom-bolt.on {
+	opacity: 0.95;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.card .afflict,
-	.slot .afflict {
+	.slot .afflict,
+	.card .venom-bolt {
 		transition: none;
 	}
 }

@@ -3109,16 +3109,22 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{@const passiveSlay = slayableIds.has(key(card.location))}
 						{@const marked = slaying || passiveSlay}
 						{@const bolted = marked && shotAt(tomb, card.location)}
-					<button
-						class="card"
+						{@const afflicted = afflictionIds.has(shorthandCard(card))}
+						<!--
+							An affliction aimed at this card stains it and bangs it, so the mark is findable on a
+							face-down back that has a drawing of its own. A covered fogged card cannot show the bang
+							— all but its top strip is behind the card above — so it wears the archer's arrow there
+							instead, in the affliction's violet: that strip is exactly where a shot is drawn anyway.
+						-->
+						{@const arrowed = afflicted && down && i < cascade.length - 1}
+						<button
+							class="card"
 						class:selected={selected.has(key(card.location))}
 						class:aimed={!!tomb?.armed?.first && tomb.armed.first === shorthandCard(card)}
 						class:dragging={dragIds.has(shorthandCard(card))}
 						class:boss
 						class:aura={power && !down && !boss}
-						// The card an affliction under the pointer would touch: stained as well as banged, so the
-						// mark is findable on a face-down back that has a drawing of its own.
-						class:afflicted={afflictionIds.has(shorthandCard(card))}
+						class:afflicted
 						class:locked={!!tomb && isBoss(tomb, card) && bossProtected(tomb)}
 						class:down
 						class:flipping
@@ -3164,12 +3170,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{:else}
 							<img src={down ? `${BASE}images/back.svg` : img(card)} alt="" draggable="false" />
 						{/if}
-						<!-- The card an affliction is aimed at, mounted so the mark can fade rather than pop. -->
-						<span
-							class="afflict"
-							class:on={afflictionIds.has(shorthandCard(card))}
-							aria-hidden="true">!</span
-						>
+						<!--
+							The card an affliction is aimed at, mounted so the mark can fade rather than pop. A covered
+							fogged card takes the arrow below instead, because a bang at its middle is behind the card
+							above it.
+						-->
+						<span class="afflict" class:on={afflicted && !arrowed} aria-hidden="true">!</span>
+						{#if down}
+							<span
+								class="venom-bolt"
+								class:on={arrowed}
+								style={`--arrow: url("${BASE}images/range-arrow.png")`}
+								aria-hidden="true"
+							></span>
+						{/if}
 						<span
 							class="slay"
 							class:on={marked}
