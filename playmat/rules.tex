@@ -4,7 +4,7 @@
 %   page 3  the playmat (right half: all 4 graves, storage/dwarf track, hallways 5-8)
 %
 % Tape Page 2 (right edge) to Page 3 (left edge) longways to form an 8.5 x 22 in mat
-% with 1:1 full-size poker card footprints (63.5 x 88.9 mm).
+% with enlarged card spaces (+15% width, soft-faded outer edges).
 
 \documentclass[10pt]{article}
 
@@ -37,10 +37,10 @@
 \setlength{\columnsep}{5mm}
 
 % ------------------------------------------------------------- card sizes
-\def\cardscale{1.0}
-\pgfmathsetmacro{\cw}{63.5*\cardscale}   % full card width  (63.5 mm)
-\pgfmathsetmacro{\ch}{88.9*\cardscale}   % full card height (88.9 mm)
-\def\gp{1.5}                             % gap between footprints, mm
+\def\cardscale{1.15}
+\pgfmathsetmacro{\cw}{63.5*\cardscale}   % enlarged card width  (73.025 mm, +15%)
+\pgfmathsetmacro{\ch}{96.0}              % enlarged card height (96.0 mm)
+\def\gp{2.0}                             % gap between footprints, mm
 
 % ------------------------------------------------------------ type helpers
 \newcommand{\rh}[1]{\par\vspace{2.5pt}{\color{rust}\sffamily\bfseries\footnotesize #1}\par\nopagebreak\vspace{0.8pt}\nopagebreak}
@@ -48,10 +48,37 @@
 \newcommand{\dn}[1]{{\color{faint}\footnotesize #1}}
 \newcommand{\suit}[1]{{\color{ink!55}#1}}
 
+% --------------------------------------------------- soft-edge line helpers
+% Draw a horizontal segment from #2 (solid end) to #3 (fade-out end) at y=#4,
+% fading smoothly over the outer 18 mm so edge boxes run cleanly into the margin.
+\newcommand{\softlineH}[5][solid]{%
+	\pgfmathsetmacro{\fdir}{(#3 > #2) ? 1 : -1}%
+	\pgfmathsetmacro{\fstart}{#3 - \fdir*18.0}%
+	\draw[black, #1, line width=#5pt] (#2,#4) -- (\fstart,#4);
+	\foreach \s in {0,...,17} {
+		\pgfmathsetmacro{\xa}{\fstart + \fdir*\s}%
+		\pgfmathsetmacro{\xb}{\fstart + \fdir*(\s+1)}%
+		\pgfmathtruncatemacro{\pct}{max(0, 100 - \s*6)}%
+		\draw[black!\pct, #1, line width=#5pt] (\xa,#4) -- (\xb,#4);
+	}%
+}
+% Vertical soft-fade segment from #2 (solid bottom) up to #3 (fade-out top) at x=#1
+\newcommand{\softlineVup}[4]{%
+	\pgfmathsetmacro{\fstart}{#3 + 16.0}%
+	\draw[black, line width=#4pt] (#1,#2) -- (#1,\fstart);
+	\foreach \s in {0,...,15} {
+		\pgfmathsetmacro{\ya}{\fstart - \s}%
+		\pgfmathsetmacro{\yb}{\fstart - (\s+1)}%
+		\pgfmathtruncatemacro{\pct}{max(0, 100 - \s*6)}%
+		\draw[black!\pct, line width=#4pt] (#1,\ya) -- (#1,\yb);
+	}%
+}
+
 % --------------------------------------------------- full-scale mat macro
-% Left bank (Cols 1-4): x = 10.0..268.5 mm on Page 2 (10.0 mm left / 10.9 mm right margin).
-% Right bank (Cols 5-8): x = 280.4..538.9 mm, shifted by -269.4 mm onto Page 3 so Page 2's
-% uncut right edge (279.4 mm) lands directly on Page 3's dotted alignment line at x = 10.0 mm.
+% Symmetric 8-column layout across two taped Letter sheets (548.8 mm total width):
+%   Cols 2, 3, 6, 7 are full 73.025 mm boxes (+15% larger than a poker card).
+%   Cols 1, 4, 5, 8 have open outer edges with 18 mm fade-out top/bottom borders,
+%   respecting a 7.5 mm safe print margin while allowing full-size cards to overhang.
 % #1 = horizontal shift in mm (0 for left sheet, -269.4 for right sheet)
 % #2 = 1 to draw the overlap alignment guide on the right sheet, 0 otherwise
 \newcommand{\drawplaymat}[2]{%
@@ -61,7 +88,7 @@
 			
 			% ------------------------------------------------ overlap alignment guide (Page 3)
 			\ifnum#2=1
-			\draw[black, dashed, line width=0.9pt] (279.4,9.0) -- (279.4,206.5);
+			\draw[black, dashed, line width=0.9pt] (279.4,8.0) -- (279.4,205.5);
 			\foreach \ay in {26, 76, 132, 184} {
 				\draw[black, line width=0.9pt, ->] (272.2,\ay) -- (278.9,\ay);
 			}
@@ -74,36 +101,49 @@
 			\fi
 			
 			% ------------------------------------------------------------- heading
-			\node[anchor=north west, inner sep=0, align=left] at (10.0,8.5)
+			\node[anchor=north west, inner sep=0, align=left] at (7.5,7.5)
 			{{\sffamily\bfseries\large\color{black} TABLETOP TOMBCRAWL PLAYMAT}};
 			
-			\node[anchor=north east, inner sep=0, align=right, font=\footnotesize, text=black] at (268.5,9.2)
+			\node[anchor=north east, inner sep=0, align=right, font=\footnotesize, text=black] at (271.9,8.2)
 			{a solo-play 52-card dungeon crawl};
 			
 			% ------------------------------------------------------------- graveyard (Right Sheet)
-			\node[anchor=south west, inner sep=0, font=\footnotesize\bfseries\sffamily\color{black}]
-			at (280.4,16.0) {GRAVEYARD};
-			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black] at (538.9,16.0)
-			{four graves, one per suit, ace to king};
+			% Left & bottom bounding lines fading into the top and right margins
+			\softlineVup{280.4}{85.5}{10.0}{0.75}
+			\softlineH{280.4}{541.3}{85.5}{0.75}
 			
-			\foreach \i/\gx/\sy in {0/280.4/{$\spadesuit$},1/345.4/{$\heartsuit$},2/410.4/{$\clubsuit$},3/475.4/{$\diamondsuit$}} {
-				\draw[draw=black, line width=0.75pt] (\gx,17.5) rectangle ++(\cw,\ch);
+			\node[anchor=south west, inner sep=0, text=black] at (282.5,84.0)
+			{{\sffamily\bfseries\footnotesize GRAVEYARD} {\footnotesize -- build graves A--K; Hero Level = lowest grave + 1 (max 12)}};
+			
+			% Gravestones (y = 36.5..65.5) with 7.4 mm gap to reminder text (y = 72.9..78.1)
+			% and 7.4 mm gap from reminder text to bottom boundary line (y = 85.5)
+			\foreach \gcx/\sy in {314.4/{$\spadesuit$}, 386.9/{$\heartsuit$}, 461.9/{$\clubsuit$}, 520.85/{$\diamondsuit$}} {
 				\draw[draw=black, line width=0.9pt, line join=round]
-				(\gx+\cw/2-10.5, 17.5+\ch/2+13.5)
-				-- (\gx+\cw/2-10.5, 17.5+\ch/2-3.5)
-				arc[start angle=180, end angle=360, radius=10.5]
-				-- (\gx+\cw/2+10.5, 17.5+\ch/2+13.5)
+				(\gcx-11.0, 51.0+14.5)
+				-- (\gcx-11.0, 51.0-3.5)
+				arc[start angle=180, end angle=360, radius=11.0]
+				-- (\gcx+11.0, 51.0+14.5)
 				-- cycle;
-				\node[text=black, font=\fontsize{30}{30}\selectfont] at (\gx+\cw/2,17.5+\ch/2) {\sy};
+				\node[text=black, font=\fontsize{32}{32}\selectfont] at (\gcx,51.0) {\sy};
 			}
 			
+			% Monster - Affliction reminders below each gravestone
+			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (314.4,78.0)
+			{\textbf{Bandit} -- Mug\\\emph{Forces Hero Chip conversion}};
+			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (386.9,78.0)
+			{\textbf{Viper} -- Venom\\\emph{Dig deepest fog, no heal, or 1 dmg}};
+			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (461.9,78.0)
+			{\textbf{Gorgon} -- Stone Gaze\\\emph{Wounds Kin, then Class}};
+			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (520.85,78.0)
+			{\textbf{Wraith} -- Mana Burn\\\emph{Exhausts \& wounds Glyph(s)}};
+			
 			% ------------------------------------------------------------- legends (Left Sheet)
-			\node[anchor=north west, align=left, font=\footnotesize\itshape, text=black, inner sep=0] at (10.0,15.5)
+			\node[anchor=north west, align=left, font=\footnotesize\itshape, text=black, inner sep=0] at (7.5,14.0)
 			{You will need a poker chip; a D12 is suggested for easier level tracking.};
 			
-			\node[anchor=north west, align=left, font=\footnotesize, text=black, inner sep=0] at (10.0,21.0)
-			{\textbf{to lay a crawl out}\\[2.5pt]
-				\begin{tabular}{@{}l@{\hspace{5pt}}p{166mm}@{}}
+			\node[anchor=north west, align=left, font=\footnotesize, text=black, inner sep=0] at (7.5,19.2)
+			{\textbf{to lay a crawl out}\\[2pt]
+				\begin{tabular}{@{}l@{\hspace{5pt}}p{155mm}@{}}
 					\suit{$\bullet$} & Place the Hero Chip on the rightmost pip. \\
 					\suit{$\bullet$} & Deal 4 cards face up into the Hero aspects (Kin, Class, Glyph, Item). \\
 					\suit{$\bullet$} & Deal 1 card face down across all 8 hallways, then 1 face up across all 8;
@@ -112,110 +152,182 @@
 					suit. \\
 			\end{tabular}};
 			
-			\node[anchor=north east, align=right, font=\footnotesize, text=black, inner sep=0] at (268.5,21.0)
-			{\textbf{gold pays}\\[2.5pt]
+			\node[anchor=north east, align=right, font=\footnotesize, text=black, inner sep=0] at (271.9,19.2)
+			{\textbf{gold pays}\\[2pt]
 				\begin{tabular}{@{}r@{\hspace{8pt}}l@{}}
-					1 & a rat \\
-					2 & a Monster (boss's suit) \\
-					5 & a General \\
-					25 & the boss \\
+					25$\times$1 & the boss (first revealed king) \\
+					5$\times$3 & a General (offsuit kings) \\
+					2$\times$12 & a Monster (boss's suit) \\
+					1$\times$36 & a rat (everything else) \\
 					\midrule
 					100 & a bare tomb \\
 			\end{tabular}};
 			
 			% ------------------------------------------------ Hero Aspect reminder row (Left Sheet)
-			\foreach \tx in {10.0, 75.0, 140.0, 205.0} {
-				\draw[draw=black, line width=0.6pt] (\tx,70.5) rectangle ++(\cw,35.0);
+			\node[anchor=south, inner sep=0, font=\scriptsize, text=black] at (139.7,45.8)
+			{\textbf{Hero Chip:} Hero Aspects to the left and pockets to the right.};
+			
+			% Col 1 reminder (soft left)
+			\draw[black, line width=0.6pt] (48.4,50.0) -- (48.4,83.0);
+			\softlineH{48.4}{7.5}{50.0}{0.6}
+			\softlineH{48.4}{7.5}{83.0}{0.6}
+			% Col 2 & 3 reminders (full width)
+			\draw[black, line width=0.6pt] (50.4,50.0) rectangle (123.4,83.0);
+			\draw[black, line width=0.6pt] (125.4,50.0) rectangle (198.4,83.0);
+			% Col 4 reminder (soft right)
+			\draw[black, line width=0.6pt] (200.4,50.0) -- (200.4,83.0);
+			\softlineH{200.4}{271.9}{50.0}{0.6}
+			\softlineH{200.4}{271.9}{83.0}{0.6}
+			
+			\foreach \rcx/\lab in {28.5/KIN, 86.9/CLASS, 161.9/GLYPH, 236.15/ITEM} {
+				\node[anchor=north, font=\scriptsize\bfseries\sffamily, text=black] at (\rcx,51.2) {\lab};
 			}
-			\foreach \tx/\lab in {10.0/KIN, 75.0/CLASS, 140.0/GLYPH, 205.0/ITEM} {
-				\node[anchor=north, font=\scriptsize\bfseries\sffamily, text=black] at (\tx+\cw/2,72.2) {\lab};
+			\node[anchor=north, inner sep=0, font=\fontsize{6.3}{7.1}\selectfont, text=black] at (28.5,55.2) {%
+				\begin{tabular}{@{}l@{\hspace{2.5pt}}l@{}}
+					\suit{$\spadesuit$} & \textbf{Dwarf} Constitution \\
+					& \emph{one extra pocket} \\[0.8pt]
+					\suit{$\heartsuit$} & \textbf{Human} Intuition \\
+					& \emph{Ignore lowest grave for Level} \\[0.8pt]
+					\suit{$\clubsuit$} & \textbf{Orc} Aggression \\
+					& \emph{free slays to fullest grave} \\[0.8pt]
+					\suit{$\diamondsuit$} & \textbf{Elf} Perception \\
+					& \emph{Slay or dig thru As--10s}
+			\end{tabular}};
+			\node[anchor=north, inner sep=0, font=\fontsize{6.8}{7.4}\selectfont, text=black] at (86.9,55.2) {%
+				\begin{tabular}{@{}l@{\hspace{3.5pt}}l@{}}
+					\suit{$\spadesuit$} & \textbf{Fighter} Powerstrike \\
+					& \emph{Skip 1 rank on slay} \\[0.8pt]
+					\suit{$\heartsuit$} & \textbf{Priest} Bloodgift \\
+					& \emph{2x heal on dig and levelup} \\[0.8pt]
+					\suit{$\clubsuit$} & \textbf{Wizard} Dualcast \\
+					& \emph{Item slot holds 2nd Glyph} \\[0.8pt]
+					\suit{$\diamondsuit$} & \textbf{Thief} Pickpocket \\
+					& \emph{Swap Item on level up}
+			\end{tabular}};
+			\node[anchor=north, inner sep=0, font=\fontsize{6.8}{7.4}\selectfont, text=black] at (161.9,55.2) {%
+				\begin{tabular}{@{}l@{\hspace{4pt}}l@{}}
+					\suit{$\spadesuit$} & \textbf{BYSSEPS} \\
+					& \emph{Move run ignoring pocket limits} \\[0.8pt]
+					\suit{$\heartsuit$} & \textbf{CYDSTEPP} \\
+					& \emph{Build on fog; move Boss} \\[0.8pt]
+					\suit{$\clubsuit$} & \textbf{PISORF} \\
+					& \emph{Stack 2-card run in pocket} \\[0.8pt]
+					\suit{$\diamondsuit$} & \textbf{WEYTWUT} \\
+					& \emph{Swap any two face-up cards}
+			\end{tabular}};
+			\node[anchor=north, inner sep=0, font=\fontsize{6.6}{7.3}\selectfont, text=black] at (236.15,55.2) {%
+				\begin{tabular}{@{}l@{\hspace{3pt}}l@{}}
+					\suit{$\spadesuit$} & \textbf{Purity} \\
+					& \emph{Re-fog up to 3 cards} \\[0.8pt]
+					\suit{$\heartsuit$} & \textbf{Potion} \\
+					& \emph{Heal all track wounds} \\[0.8pt]
+					\suit{$\clubsuit$} & \textbf{Elixir} \\
+					& \emph{Refresh \& heal your Glyph(s)} \\[0.8pt]
+					\suit{$\diamondsuit$} & \textbf{Remedy} \\
+					& \emph{Block next Monster affliction}
+			\end{tabular}};
+			
+			% ----------------------------------------- the Hero Chip (top border of reminder row)
+			\foreach \dx in {9.0, 270.4} {
+				\fill[white] (\dx,50.0) circle (3.2);
+				\fill[black] (\dx,50.0) circle (2.3);
 			}
-			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (10.0+0.5*\cw,78.0) {%
-				\begin{tabular}{@{}l@{\hspace{3pt}}l@{\hspace{4pt}}l@{}}
-					\suit{$\spadesuit$} & \textbf{Dwarf} & \emph{Constitution}\\
-					\suit{$\heartsuit$} & \textbf{Human} & \emph{Intuition}\\
-					\suit{$\clubsuit$} & \textbf{Orc} & \emph{Aggression}\\
-					\suit{$\diamondsuit$} & \textbf{Elf} & \emph{Perception}
-			\end{tabular}};
-			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (75.0+0.5*\cw,78.0) {%
-				\begin{tabular}{@{}l@{\hspace{3pt}}l@{\hspace{4pt}}l@{}}
-					\suit{$\spadesuit$} & \textbf{Fighter} & \emph{Powerstrike}\\
-					\suit{$\heartsuit$} & \textbf{Priest} & \emph{Bloodgift}\\
-					\suit{$\clubsuit$} & \textbf{Wizard} & \emph{Dualcast}\\
-					\suit{$\diamondsuit$} & \textbf{Thief} & \emph{Pickpocket}
-			\end{tabular}};
-			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (140.0+0.5*\cw,78.0) {%
-				\begin{tabular}{@{}l@{\hspace{5pt}}l@{}}
-					\suit{$\spadesuit$} & BYSSEPS\\
-					\suit{$\heartsuit$} & CYDSTEPP\\
-					\suit{$\clubsuit$} & PISORF\\
-					\suit{$\diamondsuit$} & WEYTWUT
-			\end{tabular}};
-			\node[anchor=north, inner sep=0, font=\fontsize{7.4}{9.6}\selectfont, text=black] at (205.0+0.5*\cw,78.0) {%
-				\begin{tabular}{@{}l@{\hspace{5pt}}l@{}}
-					\suit{$\spadesuit$} & Purity\\
-					\suit{$\heartsuit$} & Potion\\
-					\suit{$\clubsuit$} & Elixir\\
-					\suit{$\diamondsuit$} & Remedy
-			\end{tabular}};
+			\foreach \dx in {49.4, 124.4, 199.4} {
+				\fill[white] (\dx,50.0) circle (3.4);
+				\fill[black] (\dx,50.0) circle (2.6);
+				\draw[white, line width=0.65pt, line cap=round] (\dx+1.3,50.0) -- (\dx-1.2,50.0);
+				\draw[white, line width=0.65pt, line cap=round, line join=round]
+				(\dx-0.3,50.0-0.85) -- (\dx-1.3,50.0) -- (\dx-0.3,50.0+0.85);
+			}
 			
 			% ----------------------------------------------------------- status track
-			% Eight full-size footprints: Cols 1-4 on left sheet (10.0..268.5), Cols 5-8 on right sheet (280.4..538.9)
 			\node[anchor=south west, inner sep=0, font=\footnotesize\bfseries\sffamily\color{black}]
-			at (10.0,110.2) {STATUS TRACK};
-			\node[anchor=south west, inner sep=0, font=\scriptsize, text=black] at (75.0,110.2)
-			{\textbf{Hero Chip:} Hero Aspects to the left and pockets to the right.};
-			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black] at (538.9,110.2)
+			at (7.5,90.5) {STATUS TRACK};
+			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black] at (541.3,90.5)
 			{wounds land at the right and work inward};
 			
-			\foreach \i/\tx in {0/10.0, 1/75.0, 2/140.0, 3/205.0, 4/280.4, 5/345.4, 6/410.4, 7/475.4} {
-				\ifnum\i=7
-				\draw[draw=black, dashed, line width=0.75pt] (\tx,111.8) rectangle ++(\cw,\ch);
-				\else
-				\draw[draw=black, line width=0.75pt] (\tx,111.8) rectangle ++(\cw,\ch);
-				\fi
-			}
+			% Col 1 (soft left)
+			\draw[black, line width=0.75pt] (48.4,92.0) -- (48.4,92.0+\ch);
+			\softlineH{48.4}{7.5}{92.0}{0.75}
+			\softlineH{48.4}{7.5}{92.0+\ch}{0.75}
 			
-			\foreach \tx/\lab in {10.0/KIN, 75.0/CLASS, 140.0/GLYPH, 205.0/ITEM} {
-				\node[anchor=north, font=\small\bfseries\sffamily, text=black] at (\tx+\cw/2,115.8) {\lab};
+			% Col 2 & 3 (full width)
+			\draw[black, line width=0.75pt] (50.4,92.0) rectangle (123.4,92.0+\ch);
+			\draw[black, line width=0.75pt] (125.4,92.0) rectangle (198.4,92.0+\ch);
+			
+			% Col 4 (soft right)
+			\draw[black, line width=0.75pt] (200.4,92.0) -- (200.4,92.0+\ch);
+			\softlineH{200.4}{271.9}{92.0}{0.75}
+			\softlineH{200.4}{271.9}{92.0+\ch}{0.75}
+			
+			% Col 5 (soft left)
+			\draw[black, line width=0.75pt] (348.4,92.0) -- (348.4,92.0+\ch);
+			\softlineH{348.4}{280.4}{92.0}{0.75}
+			\softlineH{348.4}{280.4}{92.0+\ch}{0.75}
+			
+			% Col 6 & 7 (full width)
+			\draw[black, line width=0.75pt] (350.4,92.0) rectangle (423.4,92.0+\ch);
+			\draw[black, line width=0.75pt] (425.4,92.0) rectangle (498.4,92.0+\ch);
+			
+			% Col 8 (Dwarf: dashed, soft right)
+			\draw[black, dashed, line width=0.75pt] (500.4,92.0) -- (500.4,92.0+\ch);
+			\softlineH[dashed]{500.4}{541.3}{92.0}{0.75}
+			\softlineH[dashed]{500.4}{541.3}{92.0+\ch}{0.75}
+			
+			\foreach \scx/\lab in {28.5/KIN, 86.9/CLASS, 161.9/GLYPH, 236.15/ITEM} {
+				\node[anchor=north, font=\small\bfseries\sffamily, text=black] at (\scx,96.0) {\lab};
 			}
-			\foreach \tx in {10.0, 75.0, 140.0, 205.0, 280.4, 345.4, 410.4, 475.4} {
-				\pgfmathsetmacro{\px}{\tx+\cw/2}
-				\pgfmathsetmacro{\py}{111.8+\ch/2}
+			\foreach \px in {28.5, 86.9, 161.9, 236.15, 314.4, 386.9, 461.9, 520.85} {
+				\pgfmathsetmacro{\py}{92.0+\ch/2}
 				\draw[draw=black, line width=0.9pt, line join=round]
-				(\px-2.2,\py-8.0) -- (\px+2.2,\py-8.0) -- (\px+2.2,\py-2.2) --
-				(\px+8.0,\py-2.2) -- (\px+8.0,\py+2.2) -- (\px+2.2,\py+2.2) --
-				(\px+2.2,\py+8.0) -- (\px-2.2,\py+8.0) -- (\px-2.2,\py+2.2) --
-				(\px-8.0,\py+2.2) -- (\px-8.0,\py-2.2) -- (\px-2.2,\py-2.2) -- cycle;
+				(\px-2.4,\py-8.6) -- (\px+2.4,\py-8.6) -- (\px+2.4,\py-2.4) --
+				(\px+8.6,\py-2.4) -- (\px+8.6,\py+2.4) -- (\px+2.4,\py+2.4) --
+				(\px+2.4,\py+8.6) -- (\px-2.4,\py+8.6) -- (\px-2.4,\py+2.4) --
+				(\px-8.6,\py+2.4) -- (\px-8.6,\py-2.4) -- (\px-2.4,\py-2.4) -- cycle;
 			}
 			
 			% the Dwarf's pocket, pure black line art: it is his alone
-			\pgfmathsetmacro{\hxp}{475.4+\cw/2}
-			\draw[draw=black, line width=0.9pt] (\hxp-7.5,127.8) arc[start angle=180, end angle=360, radius=7.5] -- cycle;
-			\draw[draw=black, fill=white, line width=0.9pt] (\hxp-8.0,127.8) rectangle (\hxp+8.0,129.8);
-			\draw[draw=black, fill=white, line width=0.9pt] (\hxp-1.0,129.8) rectangle (\hxp+1.0,134.0);
-			\draw[black, line width=1.8pt, line cap=round] (\hxp-7.5,124.8) .. controls (\hxp-12.6,125.2) and (\hxp-14.0,120.8) .. (\hxp-11.7,116.3);
-			\draw[black, line width=1.8pt, line cap=round] (\hxp+7.5,124.8) .. controls (\hxp+12.6,125.2) and (\hxp+14.0,120.8) .. (\hxp+11.7,116.3);
-			\node[anchor=north, font=\footnotesize\itshape, text=black] at (\hxp,136.0) {dwarf only};
-			
-			% --------------------------------------------------------- the Hero Chip
-			\foreach \dx in {10.0, 74.25, 139.25, 204.25, 268.5} {
-				\fill[white] (\dx,111.8+\ch/2) circle (3.2);
-				\fill[black] (\dx,111.8+\ch/2) circle (2.3);
-			}
+			\pgfmathsetmacro{\hxp}{520.85}
+			\draw[draw=black, line width=0.9pt] (\hxp-7.5,108.0) arc[start angle=180, end angle=360, radius=7.5] -- cycle;
+			\draw[draw=black, fill=white, line width=0.9pt] (\hxp-8.0,108.0) rectangle (\hxp+8.0,110.0);
+			\draw[draw=black, fill=white, line width=0.9pt] (\hxp-1.0,110.0) rectangle (\hxp+1.0,114.2);
+			\draw[black, line width=1.8pt, line cap=round] (\hxp-7.5,105.0) .. controls (\hxp-12.6,105.4) and (\hxp-14.0,101.0) .. (\hxp-11.7,96.5);
+			\draw[black, line width=1.8pt, line cap=round] (\hxp+7.5,105.0) .. controls (\hxp+12.6,105.4) and (\hxp+14.0,101.0) .. (\hxp+11.7,96.5);
+			\node[anchor=north, font=\footnotesize\itshape, text=black] at (\hxp,116.2) {dwarf only};
 			
 			% ------------------------------------------------------ the tomb
 			\node[anchor=south west, inner sep=0, font=\footnotesize\bfseries\sffamily\color{black}]
-			at (10.0,204.5) {THE TOMB};
+			at (7.5,193.2) {THE TOMB};
 			\node[anchor=south east, inner sep=0, font=\footnotesize, text=black]
-			at (538.9,204.5) {eight columns, six cards deep};
+			at (541.3,193.2) {eight columns, six cards deep};
 			
-			\foreach \hname/\hx in {First Hallway/10.0, Second Hallway/75.0, Third Hallway/140.0, Fourth Hallway/205.0, Fifth Hallway/280.4, Sixth Hallway/345.4, Seventh Hallway/410.4, Eighth Hallway/475.4} {
-				\draw[black, line width=1.4pt] (\hx,206.0) -- ++(\cw,0);
-				\draw[black, line width=0.75pt] (\hx,206.0) -- ++(0,4.5);
-				\draw[black, line width=0.75pt] (\hx+\cw,206.0) -- ++(0,4.5);
-				\node[anchor=north west, font=\scriptsize\bfseries\sffamily, text=black] at (\hx+3.0,207.2) {\hname};
+			% First Hallway (Col 1, soft left)
+			\softlineH{48.4}{7.5}{194.8}{1.4}
+			\draw[black, line width=0.75pt] (48.4,194.8) -- (48.4,199.3);
+			\node[anchor=north east, font=\scriptsize\bfseries\sffamily, text=black] at (46.0,196.0) {First Hallway};
+			
+			% Second, Third, Sixth, Seventh Hallways (full width)
+			\foreach \hname/\hx in {Second Hallway/50.4, Third Hallway/125.4, Sixth Hallway/350.4, Seventh Hallway/425.4} {
+				\draw[black, line width=1.4pt] (\hx,194.8) -- ++(\cw,0);
+				\draw[black, line width=0.75pt] (\hx,194.8) -- ++(0,4.5);
+				\draw[black, line width=0.75pt] (\hx+\cw,194.8) -- ++(0,4.5);
+				\node[anchor=north west, font=\scriptsize\bfseries\sffamily, text=black] at (\hx+3.0,196.0) {\hname};
 			}
+			
+			% Fourth Hallway (Col 4, soft right)
+			\softlineH{200.4}{271.9}{194.8}{1.4}
+			\draw[black, line width=0.75pt] (200.4,194.8) -- (200.4,199.3);
+			\node[anchor=north west, font=\scriptsize\bfseries\sffamily, text=black] at (203.4,196.0) {Fourth Hallway};
+			
+			% Fifth Hallway (Col 5, soft left)
+			\softlineH{348.4}{280.4}{194.8}{1.4}
+			\draw[black, line width=0.75pt] (348.4,194.8) -- (348.4,199.3);
+			\node[anchor=north east, font=\scriptsize\bfseries\sffamily, text=black] at (346.0,196.0) {Fifth Hallway};
+			
+			% Eighth Hallway (Col 8, soft right)
+			\softlineH{500.4}{541.3}{194.8}{1.4}
+			\draw[black, line width=0.75pt] (500.4,194.8) -- (500.4,199.3);
+			\node[anchor=north west, font=\scriptsize\bfseries\sffamily, text=black] at (503.4,196.0) {Eighth Hallway};
 			
 		\end{scope}
 	\end{tikzpicture}%
@@ -260,7 +372,7 @@
 			\textbf{Purity}: Flip up to 3 face-up cards in a hallway face down into fog, bottom up (skipping already-fogged cards; excludes the Boss). \\
 			\midrule
 			{\large\color{ink!65}$\heartsuit$} &
-			\textbf{Viper} \emph{(Venom)}: Flips deepest fogged card in rightmost fogged hallway face up without healing a wound. &
+			\textbf{Viper} \emph{(Venom)}: Dig the deepest fogged card --- rightmost fogged hallway on a tie --- without healing a wound; with no fog left to dig, take 1 extra damage. &
 			\textbf{Human} \emph{(Intuition)}: Ignore your lowest grave when calculating Level. &
 			\textbf{Priest} \emph{(Bloodgift)}: Digging and leveling up heal 2 wounds instead of 1. &
 			\textbf{CYDSTEPP}: Place a card or run onto a fogged card, or move the Boss to an empty hallway. &

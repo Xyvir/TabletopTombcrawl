@@ -941,21 +941,22 @@ describe('the level cap', () => {
 	/** Human · Fighter · BYSSEPS · Remedy: no heal of any kind, which is the point here. */
 	const NO_HEAL = ['3H', '3S', '3C', '3D'];
 
-	test('the last four kings owe four hearts the endgame does not have', () => {
+	test('a dry hearts tomb charges a heart for every carrier, so four kings are out of reach', () => {
 		const state = endgame(spread(KINGS), NO_HEAL);
 		expect(currentLevel(state)).toBe(12);
 		// the four party cards are the only hearts on the track: empty pockets are not hearts
 		expect(hp(state)).toBe(4);
-		for (const column of [0, 1, 2]) expect(attackPreview(state, cascade(column))).toMatchObject({ legal: true, damage: 1 });
+		// the blow's own heart, and the one Venom takes with no fog left to dig instead
+		expect(attackPreview(state, cascade(0))).toMatchObject({ legal: true, damage: 1 });
 
-		// three Generals fall for three hearts, and then the boss wants two it does not have
-		let board = state;
-		for (const column of [0, 1, 2]) board = attackWith(board, cascade(column))!;
-		expect(hp(board)).toBe(1);
-		expect(attackPreview(board, cascade(3))).toMatchObject({ legal: false, damage: 1, fatal: true });
+		// two hearts a king, against a track that has four: two kings is the whole of it
+		const board = attackWith(state, cascade(0))!;
+		expect(hp(board)).toBe(2);
+		// and the second king cannot pay two and leave the one heart the rules hold back
+		expect(attackPreview(board, cascade(1))).toMatchObject({ legal: false, damage: 1, fatal: true });
 	});
 
-	test("a Dwarf's fourth pocket is exactly enough for the cap's endgame", () => {
+	test("a Dwarf's fourth pocket no longer carries a dry hearts endgame", () => {
 		// The old line plays cards out of the party to bank its wounds; the conversion is priced below.
 		Object.assign(CLAUSES, LEGACY_CLAUSES);
 		// Dwarf · Fighter · BYSSEPS · Potion, and the queens still out: the Fighter skips a king past its
@@ -966,21 +967,17 @@ describe('the level cap', () => {
 		// the shipped track has three, which is one wound fewer than the four kings cost
 		expect(emptyCells(endgame(spread(KINGS), NO_HEAL))).toHaveLength(3);
 
+		// the one queen of the boss suit that is parked costs a heart on the way in, and every king
+		// now wants two: a dry board is no longer the flat bank the old line counted on
 		let board = state;
 		for (const column of [4, 5, 6, 7]) board = applyAction(board, { kind: 'move', from: cascade(column), to: cell(column) })!;
-		expect(hp(board)).toBe(8);
+		expect(hp(board)).toBe(7);
 
-		// four hearts of kings land on the four parked queens, and a queen is free at twelve
-		for (const column of [0, 1, 2, 3]) board = applyAction(board, { kind: 'home', at: cascade(column) })!;
-		expect(hp(board)).toBe(4);
-
-		// one drink heals every wound at once, and the rest of the tomb has nothing left to pay
-		board = applyAction(board, { kind: 'arm', cell: 3 })!;
-		expect(hp(board)).toBe(8);
-		// the queens first: homing the Dwarf closes the pocket its last queen is sitting in
-		for (const slot of [4, 5, 6, 7, 3, 2, 1, 0]) board = applyAction(board, { kind: 'home', at: cell(slot) })!;
-		expect(board.game.cards.every((card) => card.location.fixture === 'foundation')).toBe(true);
-		expect(tombPar(board)).toBe(0);
+		// three kings fall for two hearts each, and the boss wants two it does not have
+		for (const column of [0, 1, 2]) board = applyAction(board, { kind: 'home', at: cascade(column) })!;
+		expect(hp(board)).toBe(1);
+		expect(attackPreview(board, cascade(3)).legal).toBe(false);
+		expect(attackWith(board, cascade(3))).toBeNull();
 	});
 
 	describe('the explicit conversion', () => {
@@ -1005,15 +1002,15 @@ describe('the level cap', () => {
 				// the card never left its pocket: it is a plain card now, and it can be sent home
 				expect(shorthandCard(converted.game.cells[3]!)).toBe('3D');
 				expect(cellCardMovable(converted, 3)).toBe(true);
-				// a king next: the wound lands on the plain card at the right edge, leaving the chip's
-				// new slot clean, so the following conversion mends exactly that wound
+				// a king next: the blow's heart lands on the plain card at the right edge and Venom's
+				// dry-board heart lands on the aspect beside the chip, so the conversion is locked until
+				// a heal lifts it — the tax is what the old one-wound line never had to pay
 				const hurt = applyAction(converted, { kind: 'home', at: cascade(0) })!;
-				expect(hp(hurt)).toBe(3);
+				expect(hp(hurt)).toBe(2);
 				expect(hurt.wounded[3]).toBe(1);
-				expect(canConvert(hurt)).toBe(true);
-				const mended = convertChip(hurt)!;
-				expect(mended.draft.map((entry) => entry.cell)).toEqual([0, 1]);
-				expect(hp(mended)).toBe(4);
+				expect(hurt.wounded[2]).toBe(1);
+				expect(canConvert(hurt)).toBe(false);
+				expect(convertChip(hurt)).toBeNull();
 			});
 		});
 
@@ -1035,20 +1032,17 @@ describe('the level cap', () => {
 			});
 		});
 
-		test('convert-first spends the opener: a heal-less party falls one wound short of four kings', () => {
+		test('convert-first cannot outrun a dry board: the second conversion is already locked', () => {
 			variant(() => {
 				// convert-before-every-home: a wound always lands on the rightmost pocket, so the chip's
-				// slot must be spent before the blow locks it. The opener mends nothing on a healthy
-				// board, so three mends pay for four kings and the last wound has nowhere to go.
+				// slot must be spent before the blow locks it. A king now costs two hearts, and the
+				// second one lands on the aspect beside the chip, so the loop dies on its second turn.
 				let board = endgame(spread(KINGS), NO_HEAL);
-				for (const column of [0, 1, 2, 3]) {
-					board = convertChip(board)!;
-					board = applyAction(board, { kind: 'home', at: cascade(column) })!;
-				}
-				expect(board.draft).toHaveLength(0);
-				expect(board.wounded[3]).toBe(1);
+				board = convertChip(board)!;
+				board = applyAction(board, { kind: 'home', at: cascade(0) })!;
 				expect(canConvert(board)).toBe(false);
-				// the plain card under the last wound cannot go home face-down: the spare heal the
+				expect(convertChip(board)).toBeNull();
+				// the plain card under the blow's own wound cannot go home either: the spare heal the
 				// endgame needs has to come from fog held on purpose, a flask, or a level-up
 				expect(attackWith(board, cell(3))).toBeNull();
 			});
@@ -1952,25 +1946,49 @@ describe('tombcrawl progression rules', () => {
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 
-	test('venom turns over the deepest face-down card in the rightmost fogged column, with no heal', () => {
+	test('venom digs the deepest fog, with no heal, wherever in the hallways it lies', () => {
 		const state = makeTomb({
-			columns: [['2C', '8H'], ['KS', '3D'], ['4S', '5C'], [], [], [], [], ['6C', '9D']],
+			columns: [['2C', '8H'], ['3D', '5C', 'KS']],
 			cells: ['6S', '2D'],
 			foundations: ['7H', '7S', '7D', '7C'],
-			hidden: ['2C', 'KS', '3D', '5C', '6C'],
+			hidden: ['2C', '3D', '5C'],
 			boss: 'KH',
 		});
 		expect(state.bossSuit).toBe('hearts');
 
 		const next = attackWith(state, cascade(0, 1))!;
-		// the rightmost column with fog wins, even though its hidden card sits under 9D
-		expect(next.hidden).not.toContain('6C');
-		expect(next.hidden).toContain('5C');
+		// 5C is the deepest fog on the board, though 3D sits in the rightmost fogged hallway
+		expect(next.hidden).not.toContain('5C');
 		expect(next.hidden).toContain('3D');
 		expect(next.hidden).toContain('2C');
-		expect(next.hidden).toContain('KS');
 		// a card that costs nothing wounds nothing, and venom healed nothing either
 		expect(next.wounded[1]).toBe(0);
+	});
+
+	test('a tie for the deepest fog goes to the rightmost fogged hallway', () => {
+		const state = makeTomb({
+			columns: [['2C', '8H'], ['3D', '4S']],
+			cells: ['6S', '2D'],
+			foundations: ['7H', '7S', '7D', '7C'],
+			hidden: ['2C', '3D'],
+			boss: 'KH',
+		});
+		const next = attackWith(state, cascade(0, 1))!;
+		expect(next.hidden).not.toContain('3D');
+		expect(next.hidden).toContain('2C');
+	});
+
+	test('with no fog left to dig, venom costs one more wound instead', () => {
+		const state = makeTomb({ columns: [['AH']], cells: ['6S', '2D'], boss: 'KH' });
+		expect(state.bossSuit).toBe('hearts');
+		expect(state.hidden).toEqual([]);
+		expect(hp(state)).toBe(2);
+
+		// an ace at level 1 costs no damage, so the one wound on the board is venom's own price
+		const next = attackWith(state, cascade(0, 0))!;
+		expect(next.wounded[1]).toBe(1);
+		expect(next.wounded[0]).toBe(0);
+		expect(hp(next)).toBe(1);
 	});
 
 	test('an off-suit king wears the boss suit power: a spade king venoms in a heart tomb', () => {
@@ -2944,6 +2962,8 @@ describe('tombcrawl endgame', () => {
 			columns: [['KH'], ['5H']],
 			cells: ['8C', '5D'],
 			foundations: ['QH', 'KS', 'KD', 'JC'],
+			// one card in the fog: with a dry board the boss itself would cost the extra heart
+			hidden: ['5H'],
 			draft,
 			boss: 'KH',
 		});
@@ -3236,6 +3256,8 @@ describe('the reserve pocket', () => {
 			columns: [['KH'], ['5D']],
 			cells: ['8C', '9C'],
 			foundations: ['QH', 'KS', 'KD', 'JC'],
+			// a card in the fog, or the boss kill itself would want a heart the track does not have
+			hidden: ['5D'],
 			draft,
 			boss: 'KH',
 		});
@@ -3368,6 +3390,11 @@ describe('the affliction preview', () => {
 	test('a viper warns on the fog it would lift, not on any card it likes', () => {
 		const state = makeTomb({ columns: [['2C', '3C'], ['4H']], cells: ['5H', null], hidden: ['3C'], boss: 'KH' });
 		expect(afflictionTargets(state, cardIn(state, '5H'))).toEqual(['3C']);
+	});
+
+	test('a viper with no fog left warns on the wound it costs instead', () => {
+		const state = makeTomb({ columns: [['AH']], cells: ['6S', '2D'], boss: 'KH' });
+		expect(afflictionTargets(state, cardIn(state, 'AH'))).toEqual(['2D']);
 	});
 
 	test('a wraith warns on the glyph it would spend, and stops once the slot is face down', () => {

@@ -11,6 +11,23 @@ So do not retune a power, or reject a rule, because it can be inert on some seed
 bounty goes quiet once a grave fills. Argue a change from the windows it opens and closes, and measure it,
 never from the fact that a given crawl never needed it. "This ability did nothing here" is not evidence.
 
+## The app is allowed to make the table's free choices
+
+The tabletop rules stay loose where loose is what a player can remember, and the app narrows those corners to keep
+the desktop game un-fiddly. That is a deliberate split, not a drift: the two are the same game, and the concession
+is only ever in *who makes a choice the rules leave open*.
+
+- **Purity** may fog any three cards at a table. The app fogs the bottom three of one hallway, because a scatter
+  across hallways is three aims for a card the player rarely wants.
+- **Venom** may dig any face-down card without the heal, or take 1 extra damage. The app takes the dig for the
+  player while there is any fog left — the deepest card, the rightmost hallway breaking a tie — and pays the
+  damage only once there is nothing left to dig.
+
+Two rules make a simplification like this safe. It picks among options the rules already allow, so it can never
+make a move legal that the table would refuse. And the rule sheet keeps the loose wording, so a player moving from
+the app to the mat is never taught a narrower rule than the one they will play. A concession that changes *what is
+legal* rather than *which of the legal things happens* is a rules question first, not a UX one.
+
 ## Corpus status board
 
 When the corpus status TUI is wanted (`node scripts/run.mjs scripts/status.ts`), launch it in its own
@@ -397,6 +414,23 @@ What it cost, measured before it was committed: every stored line was walked bac
 178 no longer replayed (spades 31 of 34, clubs 49 of 49, hearts 5 of 37, diamonds none). Those lines went to
 `solutions/archive/` with a `-mug` suffix, not out of the repository, and the merge gate demoted the corpus from
 138 proved keys to 73 — 183 placeholder squares for a sweep to win back.
+
+### Venom is a choice (adopted 2026-11-25)
+
+Venom reads as a choice now: **dig any face-down card without the heal, or take 1 extra damage.** At a table the
+player picks. The app picks for them — the deepest fog, the rightmost hallway breaking a tie — and pays the wound
+only once there is no fog left (`venomTarget`, `venomWounds`), which is the concession set out in "The app is allowed
+to make the table's free choices", not a second rule.
+
+What the tax costs, because it is charged per carrier: a dry hearts tomb takes a heart on every court card and every
+king, the boss included. `attackPreview` now counts that wound on the bill, so the red glow and the fatal gate tell
+the truth about it, and `attackWith` ends the crawl whenever the settled board has no hearts left rather than only
+when the preview called the blow fatal. The cap's endgame tightens to match: four kings cost eight hearts, not four,
+and the pinned Dwarf clear no longer clears on a board with no fog — each parked carrier pays a heart on the way into
+the pocket, so the fourth pocket is a flat bank rather than the four hearts the old line counted on. The four tests
+under "the level cap" state the new arithmetic instead of the old one, and a clear now has to carry fog into the
+finish, which is the shape the rule was adopted for: the boss kill stays the road out, and the bare tomb is the hard
+second win.
 
 ## The reserve pocket (adopted)
 

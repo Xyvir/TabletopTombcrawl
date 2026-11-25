@@ -722,7 +722,7 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		boss: 'Jörmungandrn',
 		blurb: 'A viper lying in wait, patient and venomous.',
 		power: 'Venom',
-		text: 'slaying this reveals the lowest fogged card of the rightmost fogged hallway, buried or not, with no heal.',
+		text: 'slaying or stashing this digs the deepest fogged card, rightmost hallway on a tie, with no heal — or takes 1 more damage once no fog is left.',
 	},
 	clubs: {
 		name: 'Gorgon',
@@ -1289,7 +1289,15 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
 	const itemCells = auraItemWound(state, card, from);
 	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
-	const afterWounds = wound(afterItem, damage);
+	// Venom digs the fog; with none left to dig it takes a wound instead, and that one lands before the
+	// blow's own. It is a heart the kill costs, so it belongs on the bill the preview reads out.
+	const afterVenom = venomWounds(state, card)
+		? cloneWith(afterItem, { wounded: wound(afterItem, 1).wounded })
+		: afterItem;
+	const venomLocks = afterVenom.wounded.flatMap((count, cell) =>
+		count > (afterItem.wounded[cell] ?? 0) ? [cell] : []
+	);
+	const afterWounds = wound(afterVenom, damage);
 	const struck = cloneWith(state, { wounded: afterWounds.wounded });
 	// Stone Gaze is paid by the party, not the blow: one passive turns face down after the kill's own
 	// wounds, and that heart is on the bill. The card it turns is an affliction, not a wound, so the
@@ -1298,7 +1306,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const gazes = afterGaze.wounded.flatMap((count, cell) =>
 		count > (afterWounds.wounded[cell] ?? 0) ? [cell] : []
 	);
-	const total = damage + itemCells.length + gazes.length;
+	const total = damage + itemCells.length + venomLocks.length + gazes.length;
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
@@ -1307,7 +1315,9 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const short = Math.max(0, total - free + (total > 0 ? 1 : 0));
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
-	const locks = legal ? Array.from(new Set([...itemCells, ...afterWounds.locks, ...gazes])) : [];
+	const locks = legal
+		? Array.from(new Set([...itemCells, ...venomLocks, ...afterWounds.locks, ...gazes]))
+		: [];
 	return {
 		legal,
 		reason: legal ? '' : `needs ${total} wounds and one to spare, you have ${free}`,
@@ -1315,7 +1325,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		locks,
 		need,
 		fatal: short > 0,
-		wounds: legal ? woundCardIds(state, afterItem, itemCells, afterWounds.wounded) : [],
+		wounds: legal ? woundCardIds(state, afterVenom, itemCells, afterWounds.wounded) : [],
 	};
 }
 
@@ -1838,20 +1848,39 @@ function mugSlot(state: TombState): TombState {
 }
 
 /**
- * The fog Venom would lift: the first face-down card met scanning the hallways right to left, each from
- * its top card down. Shared with the interface, so the card the warning points at is the card the blow
- * would turn over.
+ * Whether this blow would pay Venom in wounds rather than fog: a carrier in a hearts tomb, with the aura
+ * standing, and no fog left anywhere to dig. Shared with the interface so the extra heart is on the bill
+ * before the blow.
+ */
+function venomWounds(state: TombState, card: Card): boolean {
+	return state.bossSuit === 'hearts' && carriesPower(state, card) && auraActive(state) && !venomTarget(state);
+}
+
+/**
+ * The fog Venom digs. At a table the player may dig any face-down card, without the heal, or take 1 extra
+ * damage instead; the app makes that choice for them, and takes the dig while any fog is left.
+ *
+ * The card it takes is the deepest one anywhere in the hallways, the rightmost hallway breaking a tie — the
+ * card that has been buried longest pays out first, and reading right to left on a tie keeps the pick in the
+ * order the board is already scanned in. Shared with the interface, so the card the warning points at is the
+ * card the blow would turn over.
  */
 export function venomTarget(state: TombState): Card | null {
 	const tableau = state.game.tableau as Card[][];
-	for (let c = tableau.length - 1; c >= 0; c--) {
-		const column = tableau[c];
+	let deepest: Card | null = null;
+	let depth = -1;
+	// Left to right, so a tie at the same depth leaves the later — rightmost — hallway holding it.
+	for (const column of tableau) {
 		for (let k = 0; k < column.length; k++) {
-			const card = column[column.length - 1 - k];
-			if (state.hidden.includes(cardId(card))) return card;
+			const card = column[k];
+			if (!state.hidden.includes(cardId(card))) continue;
+			if (k >= depth) {
+				depth = k;
+				deepest = card;
+			}
 		}
 	}
-	return null;
+	return deepest;
 }
 
 /**
@@ -1908,7 +1937,9 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 	if (!carriesPower(state, card) || !auraActive(state)) return [];
 	switch (state.bossSuit) {
 		case 'hearts': {
-			const fog = venomTarget(state);
+			// With the fog gone there is nothing left to dig, so the price is the wound instead: the mark
+			// moves to the card that would turn face down, the same one a blow's own damage points at.
+			const fog = venomTarget(state) ?? woundTarget(state);
 			return fog ? [cardId(fog)] : [];
 		}
 		case 'spades':
@@ -1947,10 +1978,12 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park', levelled = 
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts': {
-			// Venom digs anywhere, buried or not — and the card it takes is the one the interface warns on.
+			// Venom is a choice at a table: dig any fog without the heal, or take 1 more damage. The app
+			// makes that choice, and takes the dig while there is any fog to take — buried or not — because
+			// a dry board has no dig left to offer. The card it digs is the one the interface warns on.
 			const venom = venomTarget(state);
-			if (!venom) return state;
-			return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(venom)) });
+			if (venom) return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(venom)) });
+			return cloneWith(state, { wounded: wound(state, 1).wounded });
 		}
 		case 'spades':
 			// Mug forces the conversion rather than pricing the card: the Hero Chip walks left with no heal,
@@ -2004,9 +2037,10 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 	if (!moved) return false;
 	const prior = before.game.cards.find((other) => cardId(other) === cardId(moved));
 	switch (before.bossSuit) {
-		// Venom and Mug leave evidence: fog lifted without a heal, or the slot converted.
+		// Venom and Mug leave evidence: fog lifted without a heal, a wound taken for a dry board, or the
+		// slot converted.
 		case 'hearts':
-			return after.hidden.length < before.hidden.length;
+			return after.hidden.length < before.hidden.length || newlyWounded(before, after).length > 0;
 		case 'spades':
 			return after.draft.length < before.draft.length;
 		// Stone Gaze leaves a passive face down when it has one left to stone.
@@ -2229,8 +2263,9 @@ export function attackWith(
 
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
 	// The last heart is gone: the crawl ends here. Read off the board rather than the preview, so a
-	// killing blow that levels up is saved by the heal it earns, exactly like any other blow.
-	if (preview.fatal && hp(settled) === 0)
+	// killing blow that levels up is saved by the heal it earns, and a wound Venom charged on top of the
+	// bill still ends the crawl even though the preview priced the blow alone.
+	if (hp(settled) === 0)
 		return cloneWith(settled, { won: true, died: true, score: tombScore(settled) });
 	// An item sent home leaves its slot waiting for one action: a card of its suit (any card at all, with a
 	// Thief's Pickpocket) restocks the item and the chip stays put. A kill is the exit that earns the wide

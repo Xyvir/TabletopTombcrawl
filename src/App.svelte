@@ -1447,8 +1447,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return !!was && was.location.fixture !== 'foundation';
 		});
 		if (!slain) return null;
-		// Venom only bites when there is fog left to dig into.
-		if (slain.suit === 'hearts') return after.hidden.length < before.hidden.length ? 'venom' : null;
+		// Venom digs while there is fog left to dig; with the fog gone it takes a wound instead.
+		if (slain.suit === 'hearts')
+			return after.hidden.length < before.hidden.length || newlyWounded(before, after).length > 0 ? 'venom' : null;
 		// Mug shows when the bandit forced the conversion: the chip walked left with no heal, so the draft shrinks.
 		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
 		// Stone Gaze is wounds, and the wound flash already answers for it; Mana Burn needs a glyph to drain.
