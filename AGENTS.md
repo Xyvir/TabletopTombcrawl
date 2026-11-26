@@ -514,9 +514,13 @@ closest to cracking. The pane prints that as "N/500 reached", never as par — t
 
 ## A published win carries its line
 
-`MODE=merge` publishes a row only when `solutions/` holds a line for that seed (same track). A row whose line
-is gone — archived by a rule change, or never written — becomes a placeholder: the square keeps its seed, so the
-party is still dealt and playable, but the trellis stops listing it as a win. That makes the demotion automatic
+`MODE=merge` publishes a row only when `solutions/` holds a line for that seed (same track), and it **replays that
+line through the rules before publishing it** — `replayLine` in `scripts/replay.ts`, the same check the replay run
+prints. A rule change leaves transcripts behind that no longer play, and the file's word kept five of them in the
+corpus for days; a line whose first illegal step is found proves nothing, so its row stays a placeholder and the
+merge names the file and the step at the end of its run. A row whose line is gone — archived by a rule change, or
+never written — becomes a placeholder on the same terms: the square keeps its seed, so the party is still dealt and
+playable, but the trellis stops listing it as a win. That makes the demotion automatic
 rather than a list to maintain: a sweep that wins the square writes a line, and the next merge promotes it back.
 The corpus stands at 111 proved keys and 145 placeholder squares: the swap cost 119 rows their lines, and making the
 boss's Indomitable shield outlast his Generals cost 37 more, since those lines moved him by hand once a king was

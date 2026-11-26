@@ -39,7 +39,7 @@ import { shorthandCard, type CardLocation } from '../src/game/card/card';
 /** Where a transcript is kept. Not gitignored: these are the baselines, so they live in the repository. */
 const DIR = process.env.DIR ?? 'solutions';
 
-interface Solution {
+export interface Solution {
 	seed: number;
 	difficulty: Difficulty;
 	goal: 'boss' | 'clear';
@@ -223,9 +223,14 @@ export function tryStep(state: TombState, text: string): TombState | null {
 	}
 }
 
-function check(file: string): boolean {
-	const solution = JSON.parse(readFileSync(`${DIR}/${file}`, 'utf8')) as Solution;
-	let state = createTombState(solution.seed, FREE_CELL_COUNT[solution.difficulty]);
+/**
+ * Replays one stored line through the rules and names what broke, if anything.
+ *
+ * Exported because the merge asks the same question before it publishes a row: a line is the proof of a win, so a
+ * transcript that no longer plays is not evidence of one. `check` below is only the printing around this.
+ */
+export function replayLine(solution: Solution, file = `${solution.seed}.json`): { problems: string[]; state: TombState } {
+	let state = createTombState(solution.seed, FREE_CELL_COUNT[solution.difficulty] ?? FREE_CELL_COUNT.med);
 	const dealt = [...state.draft]
 		.sort((a, b) => a.cell - b.cell)
 		.map((entry) => entry.suit[0])
@@ -273,6 +278,13 @@ function check(file: string): boolean {
 		if (solution.goal === 'clear' && tombPar(state) !== 0) problems.push(`ends at ${tombPar(state)} par, not a clear`);
 		if (solution.goal === 'boss' && !bossSlain(state)) problems.push('ends with the boss still in the tomb');
 	}
+
+	return { problems, state };
+}
+
+function check(file: string): boolean {
+	const solution = JSON.parse(readFileSync(`${DIR}/${file}`, 'utf8')) as Solution;
+	const { problems, state } = replayLine(solution, file);
 
 	const status = problems.length ? 'FAIL' : 'ok  ';
 	console.log(

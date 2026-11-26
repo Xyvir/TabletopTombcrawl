@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { DRAFT_CELL_COUNT, FREE_CELL_COUNT, createTombState, type Difficulty, type TombState } from '../src/tombcrawl';
 import { ORGANIZE_WEIGHTS, solveTomb, type SolverEngine } from '../src/solver';
 import { writeSolution } from './solution';
+import { replayLine, type Solution as Line } from './replay';
 
 type Boss = string | null;
 interface Candidate { key: string; loadout: string; boss: Boss; seeds: number[] }
@@ -127,6 +128,11 @@ const demotedSeeds = new Set(demotedRows.filter((row) => typeof row.seed === 'nu
  */
 const provedSeeds = new Set<string>();
 /**
+ * Lines that no longer play. A rule change leaves transcripts behind that the rules would refuse today, and a row
+ * published on one of them advertises a win nobody can repeat, so they are listed here instead of counted.
+ */
+const staleLines: { name: string; problem: string }[] = [];
+/**
  * The rows the line files alone can speak for. A solution is a claim and the strongest kind — it says how the
  * deal was won, not merely that it was — so a seed whose line is on disk is published even when the shard that
  * produced it is gone, or when it was found on a track the sweeps no longer write rows for. It is also the only
@@ -139,9 +145,23 @@ const solutionRows: Entry[] = [];
 		for (const name of readdirSync(solutionsDir)) {
 			if (!name.endsWith('.json')) continue;
 			try {
-				const line = JSON.parse(readFileSync(`${solutionsDir}/${name}`, 'utf8'));
-				if (typeof line?.seed !== 'number') continue;
-				const level = line.difficulty ?? 'med';
+				const line = JSON.parse(readFileSync(`${solutionsDir}/${name}`, 'utf8')) as Partial<Line>;
+				if (typeof line?.seed !== 'number' || !Array.isArray(line.lines)) continue;
+				const level = (line.difficulty ?? 'med') as Difficulty;
+				// The line is replayed through the rules before it counts for anything. Publishing on the file's word
+				// alone kept five stale lines in the corpus: they had been played under the deep-Venom target's
+				// predecessor, and every merge since re-advertised the squares they own.
+				const transcript = {
+					...line,
+					difficulty: level,
+					goal: line.goal ?? 'boss',
+					moves: typeof line.moves === 'number' ? line.moves : line.lines.length,
+				} as Line;
+				const { problems } = replayLine(transcript, name);
+				if (problems.length) {
+					staleLines.push({ name, problem: problems[0] });
+					continue;
+				}
 				provedSeeds.add(`${level}|${line.seed}`);
 				if (typeof line.loadout !== 'string' || typeof line.moves !== 'number') continue;
 				solutionRows.push({
@@ -658,6 +678,8 @@ if (mode === 'merge') {
 		)
 	);
 	console.log(
-		`${entries.length}/${ALL_KEYS.length} keys covered at ${difficulty} · ${Object.keys(placeholders).length} placeholders · ${missing.length} still to find → ${target}`
+		`${staleLines.length ? `  ${staleLines.length} lines no longer replay, so their rows stay placeholders:\n` : ''}` +
+			staleLines.map(({ name, problem }) => `    ${name} · ${problem}`).join('\n') +
+			`${staleLines.length ? '\n' : ''}${entries.length}/${ALL_KEYS.length} keys covered at ${difficulty} · ${Object.keys(placeholders).length} placeholders · ${missing.length} still to find → ${target}`
 	);
 }
