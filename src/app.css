@@ -791,7 +791,8 @@ body:has(.card.dragging) .cells.tomb .chip {
 	/* the tombstone drawing sits a touch high in its box, so the engraving rides with it */
 	padding-bottom: 4%;
 	z-index: 5;
-	font-size: calc(var(--col-w) * 0.34);
+	/* small enough to clear the tombstone drawing and the skip chevrons, even on a phone's columns */
+	font-size: calc(var(--col-w) * 0.2);
 	line-height: 1;
 	opacity: 0.5;
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
