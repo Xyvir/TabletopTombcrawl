@@ -12,7 +12,8 @@ import {
 import { FreeCell } from './game/game';
 import {
 	CLAUSES,
-	MONSTERS,
+			MONSTERS,
+	TOMBS,
 	TOMB_RULES,
 	TOMB_CELL_COUNT,
 	DRAFT_CELL_COUNT,
@@ -946,7 +947,7 @@ describe('the level cap', () => {
 		expect(currentLevel(state)).toBe(12);
 		// the four party cards are the only hearts on the track: empty pockets are not hearts
 		expect(hp(state)).toBe(4);
-		// the blow's own heart, and the one Venom takes with no fog left to dig instead
+		// the blow's own heart, and the one Fear adds for a king a rank above the cap
 		expect(attackPreview(state, cascade(0))).toMatchObject({ legal: true, damage: 1 });
 
 		// two hearts a king, against a track that has four: two kings is the whole of it
@@ -967,15 +968,15 @@ describe('the level cap', () => {
 		// the shipped track has three, which is one wound fewer than the four kings cost
 		expect(emptyCells(endgame(spread(KINGS), NO_HEAL))).toHaveLength(3);
 
-		// the one queen of the boss suit that is parked costs a heart on the way in, and every king
-		// now wants two: a dry board is no longer the flat bank the old line counted on
+		// the queens park as a flat bank — at the cap a queen is not above the delver, so Fear adds
+		// nothing — while every king still wants two
 		let board = state;
 		for (const column of [4, 5, 6, 7]) board = applyAction(board, { kind: 'move', from: cascade(column), to: cell(column) })!;
-		expect(hp(board)).toBe(7);
+		expect(hp(board)).toBe(8);
 
 		// three kings fall for two hearts each, and the boss wants two it does not have
 		for (const column of [0, 1, 2]) board = applyAction(board, { kind: 'home', at: cascade(column) })!;
-		expect(hp(board)).toBe(1);
+		expect(hp(board)).toBe(2);
 		expect(attackPreview(board, cascade(3)).legal).toBe(false);
 		expect(attackWith(board, cascade(3))).toBeNull();
 	});
@@ -1002,9 +1003,9 @@ describe('the level cap', () => {
 				// the card never left its pocket: it is a plain card now, and it can be sent home
 				expect(shorthandCard(converted.game.cells[3]!)).toBe('3D');
 				expect(cellCardMovable(converted, 3)).toBe(true);
-				// a king next: the blow's heart lands on the plain card at the right edge and Venom's
-				// dry-board heart lands on the aspect beside the chip, so the conversion is locked until
-				// a heal lifts it — the tax is what the old one-wound line never had to pay
+				// a king next: the blow's heart lands on the plain card at the right edge and Fear's extra
+				// heart lands on the aspect beside the chip, so the conversion is locked until a heal lifts
+				// it — the tax is what the old one-wound line never had to pay
 				const hurt = applyAction(converted, { kind: 'home', at: cascade(0) })!;
 				expect(hp(hurt)).toBe(2);
 				expect(hurt.wounded[3]).toBe(1);
@@ -1433,7 +1434,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(hp(otherParked)).toBe(6);
 	});
 
-	test('stone gaze stones the kin instead of adding a rank to the kill', () => {
+	test('petrify wounds the kin instead of adding a rank to the kill', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'kin', id: '2S', suit: 'spades', name: 'Dwarf', text: '' },
 			{ cell: 1, role: 'class', id: '2H', suit: 'hearts', name: 'Priest', text: '' },
@@ -1966,56 +1967,55 @@ describe('tombcrawl progression rules', () => {
 		expect(attackWith(state, cascade(0, 0))).toBe(null);
 	});
 
-	test('venom digs the most buried fog, with no heal, wherever in the hallways it lies', () => {
-		const state = makeTomb({
-			columns: [['2C', '8H'], ['5C', '3D', 'KS']],
-			cells: ['6S', '2D'],
-			foundations: ['7H', '7S', '7D', '7C'],
-			hidden: ['2C', '5C', '3D'],
-			boss: 'KH',
-		});
-		expect(state.bossSuit).toBe('hearts');
+	test('fear adds a wound while the carrier out-levels the delver, on a kill and on a stash', () => {
+		// the five of hearts is a minion four levels above a level-1 delver: stashing it costs a heart
+		const state = makeTomb({ columns: [['5H'], ['3D']], cells: ['6S', '2D', '7C'], boss: 'KH' });
+		expect(currentLevel(state)).toBe(1);
+		expect(hp(state)).toBe(3);
 
-		const next = attackWith(state, cascade(0, 1))!;
-		// 2C and 5C are both at the bottom of their hallways; the tie goes right, so 5C turns over while
-		// 3D — one card nearer the right hallway's mouth, so less buried — is left face down
-		expect(next.hidden).not.toContain('5C');
-		expect(next.hidden).toContain('3D');
-		expect(next.hidden).toContain('2C');
-		// a card that costs nothing wounds nothing, and venom healed nothing either
-		expect(next.wounded[1]).toBe(0);
+		const parked = tombMove(state, cascade(0, 0), cell(3))!;
+		// the park is a heart of its own, and Fear's wound takes it straight back
+		expect(parked.wounded[3]).toBe(1);
+		expect(hp(parked)).toBe(3);
 	});
 
-	test('a tie for the deepest fog goes to the rightmost fogged hallway', () => {
+	test('a carrier the delver has out-levelled adds nothing', () => {
+		// sixes home read level seven, and the five of hearts is below it: the same stash is free
 		const state = makeTomb({
-			columns: [['2C', '8H'], ['3D', '4S']],
-			cells: ['6S', '2D'],
-			foundations: ['7H', '7S', '7D', '7C'],
-			hidden: ['2C', '3D'],
+			columns: [['5H'], ['3D']],
+			cells: ['7S', '2D', '8C'],
+			foundations: ['6H', '6S', '6D', '6C'],
 			boss: 'KH',
 		});
-		const next = attackWith(state, cascade(0, 1))!;
-		expect(next.hidden).not.toContain('3D');
-		expect(next.hidden).toContain('2C');
+		expect(currentLevel(state)).toBe(7);
+
+		const parked = tombMove(state, cascade(0, 0), cell(3))!;
+		expect(parked.wounded[3]).toBe(0);
+		expect(hp(parked)).toBe(4);
 	});
 
-	test('with no fog left to dig, venom costs one more wound instead', () => {
-		const state = makeTomb({ columns: [['AH']], cells: ['6S', '2D'], boss: 'KH' });
-		expect(state.bossSuit).toBe('hearts');
-		expect(state.hidden).toEqual([]);
-		expect(hp(state)).toBe(2);
+	test('fear is on the bill the preview reads out, before the blow lands', () => {
+		// all four queens home read the cap's twelve, so a king is a rank above and pays a heart more
+		const state = makeTomb({
+			columns: [['KS'], ['2C']],
+			cells: ['6S', '2D', '3C', '4C', '5C', '8C'],
+			foundations: ['QS', 'QH', 'QD', 'QC'],
+			boss: 'KH',
+		});
+		expect(currentLevel(state)).toBe(12);
+		const preview = attackPreview(state, cascade(0, 0));
+		// the blow's own damage and the heart Fear adds, both marked on the track
+		expect(preview).toMatchObject({ legal: true, damage: 1 });
+		expect(preview.wounds).toHaveLength(2);
 
-		// an ace at level 1 costs no damage, so the one wound on the board is venom's own price
 		const next = attackWith(state, cascade(0, 0))!;
-		expect(next.wounded[1]).toBe(1);
-		expect(next.wounded[0]).toBe(0);
-		expect(hp(next)).toBe(1);
+		expect(hp(next)).toBe(4);
 	});
 
-	test('an off-suit king wears the boss suit power: a spade king venoms in a heart tomb', () => {
+	test('an off-suit king wears the boss suit power: a spade king fears in a heart tomb', () => {
 		const state = makeTomb({
 			columns: [['2C', '8H'], ['KS']],
-			cells: ['6S', '2D'],
+			cells: ['6S', '2D', '4D', '5D'],
 			foundations: ['QS', 'QH', 'QD', 'QC'],
 			hidden: ['2C'],
 			boss: 'KH',
@@ -2024,8 +2024,11 @@ describe('tombcrawl progression rules', () => {
 		const king = state.game.cards.find((card) => shorthandCard(card) === 'KS')!;
 		expect(carriesPower(state, king)).toBe(true);
 
+		// the blow's own heart plus Fear's; the fog is dug by hand again and is left alone
+		expect(attackPreview(state, cascade(1, 0)).wounds).toHaveLength(2);
 		const next = attackWith(state, cascade(1, 0))!;
-		expect(next.hidden).not.toContain('2C');
+		expect(next.hidden).toContain('2C');
+		expect(hp(next)).toBe(2);
 	});
 
 	test('no blow has a ceiling on the baseline: every deal pays the whole rank', () => {
@@ -2370,7 +2373,7 @@ describe('tombcrawl PISORF stacks', () => {
 
 	test('a parked pair sets off the gaze, once for the cast', () => {
 		// A Gorgon's tomb: a red king is a lesser gorgon and he is lying on a club queen, one of his own
-		// minions, so both cards carry Stone Gaze — and the pair still stones the party once, not twice.
+		// minions, so both cards carry Petrify — and the pair still stones the party once, not twice.
 		const party: DraftCard[] = [
 			{ cell: 0, role: 'glyph', id: '5C', suit: 'clubs', name: 'PISORF', text: '' },
 			{ cell: 1, role: 'kin', id: '7C', suit: 'clubs', name: 'Orc', text: '' },
@@ -2818,7 +2821,7 @@ describe('tombcrawl boss protection', () => {
 			boss: 'KC',
 			draft,
 		});
-		// Stone Gaze adds no rank of its own: the gaze turns the dwarf's own card face down
+		// Petrify adds no rank of its own: the gaze turns the dwarf's own card face down
 		expect(attackPreview(dwarf, cascade(0, 0)).damage).toBe(0);
 		expect(attackWith(dwarf, cascade(0, 0))!.wounded[0]).toBe(1);
 	});
@@ -2919,9 +2922,18 @@ describe('mana burn on the slot', () => {
 describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster, its boss and its power', () => {
 		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Mug' });
-		expect(MONSTERS.hearts).toMatchObject({ name: 'Viper', boss: 'Jörmungandrn', power: 'Venom' });
-		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Stone Gaze' });
+		expect(MONSTERS.hearts).toMatchObject({ name: 'Zombie', boss: 'Frank', power: 'Fear' });
+		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Petrify' });
 		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', boss: 'Tormented One', power: 'Mana Burn' });
+	});
+
+	test('every tomb is named for its monsters', () => {
+		expect(TOMBS).toEqual({
+			spades: 'Barrow of Bandits',
+			hearts: 'Ziggurat of Zombies',
+			clubs: 'Grotto of Gorgons',
+			diamonds: 'Warren of Wraiths',
+		});
 	});
 });
 
@@ -2981,9 +2993,10 @@ describe('tombcrawl endgame', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
 		const state = makeTomb({
 			columns: [['KH'], ['5H']],
-			cells: ['8C', '5D'],
+			cells: ['8C', '5D', '2D'],
 			foundations: ['QH', 'KS', 'KD', 'JC'],
-			// one card in the fog: with a dry board the boss itself would cost the extra heart
+			// the boss is a king a rank above the delver, so it costs a heart and Fear's, and the third
+			// pocket is the spare the rules hold back
 			hidden: ['5H'],
 			draft,
 			boss: 'KH',
@@ -2997,8 +3010,8 @@ describe('tombcrawl endgame', () => {
 
 		const exit = tombExit(next)!;
 		expect(exit.won).toBe(true);
-		// 5H left on the tableau (5), the un-dumped 8C ability (8) and the spare 5D (5)
-		expect(exit.score).toBe(-18);
+		// 5H left on the tableau (5), the un-dumped 8C ability (8), the spare 5D (5) and 2D (2)
+		expect(exit.score).toBe(-20);
 	});
 
 	test('court cards count as ten apiece and the total stays negative', () => {
@@ -3275,10 +3288,9 @@ describe('the reserve pocket', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'kin', id: '8C', suit: 'clubs', name: 'Elf', text: '' }];
 		const state = makeTomb({
 			columns: [['KH'], ['5D']],
-			cells: ['8C', '9C'],
+			cells: ['8C', '9C', '7C'],
 			foundations: ['QH', 'KS', 'KD', 'JC'],
-			// a card in the fog, or the boss kill itself would want a heart the track does not have
-			hidden: ['5D'],
+			// the boss kill wants a heart and Fear's; the third pocket is the spare the rules hold back
 			draft,
 			boss: 'KH',
 		});
@@ -3408,14 +3420,20 @@ describe('the affliction preview', () => {
 		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
 	});
 
-	test('a viper warns on the fog it would lift, not on any card it likes', () => {
-		const state = makeTomb({ columns: [['2C', '3C'], ['4H']], cells: ['5H', null], hidden: ['3C'], boss: 'KH' });
-		expect(afflictionTargets(state, cardIn(state, '5H'))).toEqual(['3C']);
+	test('a zombie warns on the extra card fear would turn, not on the fog', () => {
+		const state = makeTomb({ columns: [['2C', '3C'], ['5H']], cells: ['6S', '2D'], hidden: ['3C'], boss: 'KH' });
+		expect(afflictionTargets(state, cardIn(state, '5H'))).toEqual(['2D']);
 	});
 
-	test('a viper with no fog left warns on the wound it costs instead', () => {
-		const state = makeTomb({ columns: [['AH']], cells: ['6S', '2D'], boss: 'KH' });
-		expect(afflictionTargets(state, cardIn(state, 'AH'))).toEqual(['2D']);
+	test('a carrier the delver has out-levelled warns on nothing', () => {
+		const state = makeTomb({
+			columns: [['5H']],
+			cells: ['7S', '2D'],
+			foundations: ['6H', '6S', '6D', '6C'],
+			boss: 'KH',
+		});
+		expect(currentLevel(state)).toBe(7);
+		expect(afflictionTargets(state, cardIn(state, '5H'))).toEqual([]);
 	});
 
 	test('a wraith warns on the glyph it would spend, and stops once the slot is face down', () => {
@@ -3448,7 +3466,7 @@ describe('the affliction preview', () => {
 			{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
 		];
 		const state = makeTomb({ columns: [['2C', '3C'], ['4H']], cells: ['TH', null], hidden: ['3C'], boss: 'KH', draft });
-		expect(afflictionTargets(state, cardIn(state, '4H'))).toEqual(['3C']);
+		expect(afflictionTargets(state, cardIn(state, '4H'))).toEqual(['TH']);
 
 		const armed = useAbility(state, 0)!;
 		expect(armed.armed?.kind).toBe('remedy');

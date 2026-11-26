@@ -27,7 +27,7 @@ Two rules for this file:
 | **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
 | **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **Affliction: None**. | plain card |
-| **Affliction** | The deal's one monster power — Mug, Venom, Stone Gaze or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
+| **Affliction** | The deal's one monster power — Mug, Fear, Petrify or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
@@ -76,8 +76,8 @@ The word is *the boss*, never *the boss king*: the throne is dealt as a king of 
 on it, and Medusa is a woman — the rank is the card's, the word is the post. Generals keep their rank: they are kings,
 and they say so.
 
-Monster names are per suit and never per card: Bandit (spades, Mug), Viper (hearts, Venom),
-Gorgon (clubs, Stone Gaze), Wraith (diamonds, Mana Burn).
+Monster names are per suit and never per card: Bandit (spades, Mug), Zombie (hearts, Fear),
+Gorgon (clubs, Petrify), Wraith (diamonds, Mana Burn).
 
 The right-most free cell is the **reserve pocket**, marked with a gold star: it takes cards like any other, but the
 star goes out for the rest of the deal the first time anything sits in it. Finishing with it up is the optional
@@ -93,7 +93,7 @@ and then the pocket spent only ever caps at 200%: what the kill earned is kept, 
 win is still a plain 100%.
 
 The tomb you are in is named for its type and its monster, never for its boss: Barrow of Bandits (spades),
-Cairn of Vipers (hearts), Catacomb of Gorgons (clubs), Crypt of Wraiths (diamonds), and Tomb of Darkness (?) for a
+Ziggurat of Zombies (hearts), Grotto of Gorgons (clubs), Warren of Wraiths (diamonds), and Dungeon of Darkness (?) for a
 deal whose suit is not known yet. The status bar carries that name; the boss keeps its own name in the tooltip
 on its card. Each one has a single descriptive line above its
 affliction — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the affliction

@@ -1832,35 +1832,6 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * A fogged card an affliction is aimed at is lit up rather than ringed: the back itself goes pale under a
- * lavender wash, so the dark violet mark drawn on it has something to stand against. A rim light could not do
- * that — it left the drawing as dark as it was, and the mark had to fight the same near-black mortar the rim
- * was framing. Venom is the only power that aims at fog, so this is its card.
- */
-.card.down.afflicted {
-	border-radius: var(--radius);
-	box-shadow: 0 0 12px 2px rgba(236, 222, 255, 0.38);
-	transition:
-		transform 90ms ease,
-		box-shadow 150ms ease;
-}
-
-/*
- * The wash sits above the dealt picture and below the marks (both are z-index 3), so the card lightens and the
- * bang or the arrow keep their own colour on top of it. It is also what makes the darkened fog back
- * (`.card.down img` takes it to 0.8 brightness) read as lit at a glance while the carrier is under the pointer.
- */
-.card.down.afflicted::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	border-radius: var(--radius);
-	background: rgba(232, 214, 255, 0.62);
-	pointer-events: none;
-	z-index: 2;
-}
-
-/*
  * The warning an affliction draws on the card it is aimed at, while the carrier is under the pointer. It
  * is an outline rather than a filled bang: the card underneath is the information, so the mark has to say
  * "this one" without covering the rank and suit that say what is at stake. A ghost of a fill keeps it
@@ -1897,54 +1868,9 @@ body:has(.card.dragging) .cells.tomb .chip {
 	opacity: 0.9;
 }
 
-/*
- * A covered fogged card an affliction is aimed at cannot show the bang: everything but the top strip of the
- * card is behind the card above it. It wears the archer's arrow instead — the mark an Elf's ranged kill
- * draws, so the affliction reads as reaching down the hallway rather than touching the card — in the
- * affliction's violet, with the dark halo the bang wears. The arrow is the elf's own picture masked, which
- * keeps one shape for both meanings and lets it take any colour.
- */
-.card .venom-bolt {
-	position: absolute;
-	/*
-	 * The elf's own band, from the top down: a shot lies across the first quarter of the card, which is
-	 * the strip a covered card keeps on show above the card stacked over it. It is centred left to right
-	 * where the elf's is not, and that is the one place they part company: a fog back has no rank and
-	 * suit in its corner for the mark to keep clear of, so there is no reason for it to sit off-centre.
-	 */
-	top: 14%;
-	left: 50%;
-	width: 58%;
-	height: 15%;
-	z-index: 3;
-	transform: translate(-50%, -50%) rotate(-6deg);
-	-webkit-mask-image: var(--arrow);
-	mask-image: var(--arrow);
-	-webkit-mask-size: contain;
-	mask-size: contain;
-	-webkit-mask-repeat: no-repeat;
-	mask-repeat: no-repeat;
-	-webkit-mask-position: center;
-	mask-position: center;
-	/* The bang's own dark purple. The contrast comes from the card, which is washed pale under the mark, not
-	   from the fill: the wash lifts the near-black mortar the stroke used to disappear into, and the white
-	   halo is the same one the bang wears. */
-	background: rgba(52, 16, 92, 0.95);
-	filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-	pointer-events: none;
-	/* mounted with the card, lit only while the carrier is under the pointer */
-	opacity: 0;
-	transition: opacity 150ms ease;
-}
-
-.card .venom-bolt.on {
-	opacity: 0.95;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.card .afflict,
-	.slot .afflict,
-	.card .venom-bolt {
+	.slot .afflict {
 		transition: none;
 	}
 }
@@ -2042,7 +1968,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	color: #c79bff;
 }
 
-/* The bar names the tomb in full — "Cairn of Vipers (♥)" — wherever the line has the room for it. A
+/* The bar names the tomb in full — "Ziggurat of Zombies (♥)" — wherever the line has the room for it. A
    phone's status line is a third of the width and the name is a phrase, so the narrow screens fall back
    to the monster's own name; the tooltip carries the boss's title either way. */
 .tombhud .tomb-short {
@@ -2169,36 +2095,6 @@ body:has(.card.dragging) .cells.tomb .chip {
 		transparent 84%
 	);
 	animation-duration: 420ms;
-}
-
-/* Venom is a debuff and not a hit, so it is the one flash that lingers: it lands as fast as damage
-   does, then bleeds away over the best part of a second instead of blinking out in 420ms. That tail
-   is the whole difference between "something went wrong" and "something is wrong with you now". */
-.flash.venom {
-	background: radial-gradient(
-		ellipse at 50% 50%,
-		rgba(168, 84, 255, 0.34),
-		rgba(86, 20, 150, 0.18) 55%,
-		transparent 84%
-	);
-	animation: flash-venom 1100ms both;
-}
-
-@keyframes flash-venom {
-	0% {
-		opacity: 0;
-		animation-timing-function: ease-out;
-	}
-	10% {
-		opacity: 1;
-	}
-	32% {
-		opacity: 0.8;
-		animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
-	}
-	100% {
-		opacity: 0;
-	}
 }
 
 .flash.mana {

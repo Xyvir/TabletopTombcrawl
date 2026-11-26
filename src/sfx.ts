@@ -172,7 +172,7 @@ export interface MoveSfx {
 	ranged: boolean;
 	/** A king went home, general or boss: king_dies plays over the slash. */
 	kingKilled: boolean;
-	/** The kill's clean bill: take_damage replays once per point, staggered. Aura wounds — including Stone Gaze's extra point — sound only as affliction. */
+	/** The kill's clean bill: take_damage replays once per point, staggered. Aura wounds — including Petrify's extra point — sound only as affliction. */
 	damage: number;
 	/** Fog lifted: the revealed card steps into its hallway. */
 	dug: boolean;
@@ -194,7 +194,7 @@ export interface MoveSfx {
 	bossFound: boolean;
 	bossKilled: boolean;
 	tombEmptied: boolean;
-	/** A monster power fired (Mug, Venom, Stone Gaze, Mana Burn). */
+	/** A monster power fired (Mug, Fear, Petrify, Mana Burn). */
 	afflicted: boolean;
 	/**
 	 * A wound mended and a card came back up: the chip's conversion bounty, a level up's repair, the glyph's

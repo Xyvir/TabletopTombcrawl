@@ -98,7 +98,7 @@ export const CLAUSES = {
 	thiefPickpocket: false,
 	/** A boss-suit minion sets its power off when it is parked in a free cell, not only when slain. */
 	bossAuraPark: true,
-	/** Stone Gaze: a boss-suit minion turns the party's kin and class to stone instead of adding a rank. */
+	/** Petrify: a boss-suit minion wounds the party's kin and class instead of adding a rank. */
 	stoneGaze: true,
 	/**
 	 * Mug: a bandit forces the conversion a step early — the chip walks one slot left with no heal.
@@ -141,8 +141,8 @@ export const CLAUSES = {
 	spentDominance: false,
 	/**
 	 * The search drops a board that has dug a card when the same board (fog aside) was reached with that card
-	 * still face down. Not a rule: a dug card is a heal taken, a Venom target and a clogged hallway avoided,
-	 * while the fog is a heal still banked. It is a bet that fog kept is worth more than fog spent, and it is
+	 * still face down. Not a rule: a dug card is a heal taken and a clogged hallway avoided, while the fog is a
+	 * heal still banked. It is a bet that fog kept is worth more than fog spent, and it is
 	 * off until a sweep measures it.
 	 */
 	fogDominance: false,
@@ -697,7 +697,7 @@ export function isBossMinion(state: TombState, card: Card): boolean {
 
 /**
  * Cards that carry a monster power. The boss suit's court always does, and with `kingPowers` every king
- * does too, whatever suit the run dealt — a spade king in a heart tomb is a Viper's king and venoms.
+ * does too, whatever suit the run dealt — a spade king in a heart tomb is a Zombie's king and fears.
  * The power always comes from the boss suit: one aura per deal, worn by the court and the lesser kings.
  */
 export function carriesPower(state: TombState, card: Card): boolean {
@@ -718,25 +718,25 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		text: 'slaying or stashing this forces a Hero Chip conversion, with no heal. Blocked by a wound over the aspect, or by a slay that completes a rank.',
 	},
 	hearts: {
-		name: 'Viper',
-		boss: 'Jörmungandrn',
-		blurb: 'A viper lying in wait, patient and venomous.',
-		power: 'Venom',
-		text: 'slaying or stashing this digs the deepest fogged card, rightmost hallway on a tie, with no heal — or takes 1 more damage once no fog is left.',
+		name: 'Zombie',
+		boss: 'Frank',
+		blurb: 'A walking corpse that feeds on the living.',
+		power: 'Fear',
+		text: 'slaying or stashing this deals 1 extra wound while its rank is higher than your level.',
 	},
 	clubs: {
 		name: 'Gorgon',
 		boss: 'Medusa',
 		blurb: 'A gorgon whose gaze weighs down the living.',
-		power: 'Stone Gaze',
-		text: 'slaying or stashing this turns your kin and class face down, one card each from the left, and stops at the class.',
+		power: 'Petrify',
+		text: 'slaying or stashing this wounds your kin and class, one card each from the left, and stops at the class.',
 	},
 	diamonds: {
 		name: 'Wraith',
 		boss: 'Tormented One',
 		blurb: 'A wraith that drinks the spells out of your hand.',
 		power: 'Mana Burn',
-		text: 'slaying this exhausts and wounds your Glyph.',
+		text: 'slaying this burns your spell slot: the Glyph is exhausted and wounded.',
 	},
 };
 
@@ -747,9 +747,9 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
  */
 export const TOMBS: Record<Suit, string> = {
 	spades: 'Barrow of Bandits',
-	hearts: 'Cairn of Vipers',
-	clubs: 'Catacomb of Gorgons',
-	diamonds: 'Crypt of Wraiths',
+	hearts: 'Ziggurat of Zombies',
+	clubs: 'Grotto of Gorgons',
+	diamonds: 'Warren of Wraiths',
 };
 
 /** The aura is off while a Remedy is armed: the action it covers ignores the power, kill or park. */
@@ -1231,9 +1231,9 @@ export function canSendHome(state: TombState, from: CardLocation, ignoreCover = 
 }
 
 /**
- * Whether Stone Gaze is live: a carrier slain or stashed while the clubs aura is up. The gaze no
- * longer prices a rank onto the blow; it stones the party instead, so this is the predicate the
- * aura and the warning both read rather than a number the bill adds.
+ * Whether Petrify is live: a carrier slain or stashed while the clubs aura is up. Petrify no longer
+ * prices a rank onto the blow; it stones the party instead, so this is the predicate the aura and the
+ * warning both read rather than a number the bill adds.
  */
 export function stoneGazeApplies(state: TombState, card: Card): boolean {
 	return (
@@ -1289,24 +1289,24 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
 	const itemCells = auraItemWound(state, card, from);
 	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
-	// Venom digs the fog; with none left to dig it takes a wound instead, and that one lands before the
-	// blow's own. It is a heart the kill costs, so it belongs on the bill the preview reads out.
-	const afterVenom = venomWounds(state, card)
+	// Fear: a carrier whose rank is above the delver's level lands one wound more, and that one lands
+	// before the blow's own. It is a heart the kill costs, so it belongs on the bill the preview reads out.
+	const afterFear = fearApplies(state, card, level)
 		? cloneWith(afterItem, { wounded: wound(afterItem, 1).wounded })
 		: afterItem;
-	const venomLocks = afterVenom.wounded.flatMap((count, cell) =>
+	const fearLocks = afterFear.wounded.flatMap((count, cell) =>
 		count > (afterItem.wounded[cell] ?? 0) ? [cell] : []
 	);
-	const afterWounds = wound(afterVenom, damage);
+	const afterWounds = wound(afterFear, damage);
 	const struck = cloneWith(state, { wounded: afterWounds.wounded });
-	// Stone Gaze is paid by the party, not the blow: one passive turns face down after the kill's own
+	// Petrify is paid by the party, not the blow: one passive turns face down after the kill's own
 	// wounds, and that heart is on the bill. The card it turns is an affliction, not a wound, so the
 	// preview leaves it off `wounds` (the board's ! mark) rather than painting it as damage.
 	const afterGaze = stoneGaze(struck, card);
 	const gazes = afterGaze.wounded.flatMap((count, cell) =>
 		count > (afterWounds.wounded[cell] ?? 0) ? [cell] : []
 	);
-	const total = damage + itemCells.length + venomLocks.length + gazes.length;
+	const total = damage + itemCells.length + fearLocks.length + gazes.length;
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
@@ -1316,7 +1316,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
 	const locks = legal
-		? Array.from(new Set([...itemCells, ...venomLocks, ...afterWounds.locks, ...gazes]))
+		? Array.from(new Set([...itemCells, ...fearLocks, ...afterWounds.locks, ...gazes]))
 		: [];
 	return {
 		legal,
@@ -1325,7 +1325,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 		locks,
 		need,
 		fatal: short > 0,
-		wounds: legal ? woundCardIds(state, afterVenom, itemCells, afterWounds.wounded) : [],
+		wounds: legal ? woundCardIds(state, afterItem, itemCells, afterWounds.wounded) : [],
 	};
 }
 
@@ -1848,39 +1848,12 @@ function mugSlot(state: TombState): TombState {
 }
 
 /**
- * Whether this blow would pay Venom in wounds rather than fog: a carrier in a hearts tomb, with the aura
- * standing, and no fog left anywhere to dig. Shared with the interface so the extra heart is on the bill
- * before the blow.
+ * Fear: the carrier is a higher level than the delver, so the blow it dies to lands one wound more. A card's
+ * rank is the monster's level, so a king out-levels the cap's twelve while a minion only bites beneath the
+ * delver. `level` is the level the fight opened on, so the preview and the blow read the same number.
  */
-function venomWounds(state: TombState, card: Card): boolean {
-	return state.bossSuit === 'hearts' && carriesPower(state, card) && auraActive(state) && !venomTarget(state);
-}
-
-/**
- * The fog Venom digs. At a table the player may dig any face-down card, without the heal, or take 1 extra
- * damage instead; the app makes that choice for them, and takes the dig while any fog is left.
- *
- * The card it takes is the most buried one anywhere in the hallways, the rightmost hallway breaking a tie.
- * The last card of a pile is the one a hand can reach, so the deepest card is the lowest row — the one that has
- * been under the most cards for the longest. Shared with the interface, so the card the warning points at is
- * the card the blow would turn over.
- */
-export function venomTarget(state: TombState): Card | null {
-	const tableau = state.game.tableau as Card[][];
-	let deepest: Card | null = null;
-	let depth = Infinity;
-	// Left to right, so a tie at the same depth leaves the later — rightmost — hallway holding it.
-	for (const column of tableau) {
-		for (let k = 0; k < column.length; k++) {
-			const card = column[k];
-			if (!state.hidden.includes(cardId(card))) continue;
-			if (k <= depth) {
-				depth = k;
-				deepest = card;
-			}
-		}
-	}
-	return deepest;
+export function fearApplies(state: TombState, card: Card, level = currentLevel(state)): boolean {
+	return state.bossSuit === 'hearts' && carriesPower(state, card) && auraActive(state) && rankOf(card.rank) > level;
 }
 
 /**
@@ -1899,9 +1872,9 @@ export function woundTarget(state: TombState): Card | null {
 }
 
 /**
- * The one card a single Stone Gaze turns: the leftmost of the party's kin and class that is still face
+ * The one card a single Petrify turns: the leftmost of the party's kin and class that is still face
  * up. An affliction takes one card, so the kin turns first and the class is what the next gorgon finds;
- * the gaze stops at the class, so the glyph and the item to its right never turn. A cell already face
+ * Petrify stops at the class, so the glyph and the item to its right never turn. A cell already face
  * down has nothing left to take, which is the window the party can play around by converting a passive
  * away or leaving one wounded before the next gorgon falls.
  */
@@ -1916,7 +1889,7 @@ function gazeCell(state: TombState): number | null {
 	return entry ? entry.cell : null;
 }
 
-/** Stone Gaze: one card turns face down, the leftmost passive still standing. */
+/** Petrify: one card turns face down, the leftmost passive still standing. */
 function stoneGaze(state: TombState, card: Card): TombState {
 	if (!stoneGazeApplies(state, card)) return state;
 	const cell = gazeCell(state);
@@ -1928,7 +1901,7 @@ function stoneGaze(state: TombState, card: Card): TombState {
 
 /**
  * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the fog Venom would lift, the kin and class Stone Gaze would turn down, the glyphs Mana Burn
+ * pointer: the card Fear would turn down, the kin and class Petrify would wound, the glyphs Mana Burn
  * would spend. Mug is the exception — it spends the hero aspect beside the chip and leaves the card where it
  * lies, so nothing on the board is marked and the interface bangs the chip instead (`mugTarget`). An armed
  * Remedy turns the whole aura off, so it warns on nothing at all: nothing would happen.
@@ -1937,17 +1910,17 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 	if (!carriesPower(state, card) || !auraActive(state)) return [];
 	switch (state.bossSuit) {
 		case 'hearts': {
-			// With the fog gone there is nothing left to dig, so the price is the wound instead: the mark
-			// moves to the card that would turn face down, the same one a blow's own damage points at.
-			const fog = venomTarget(state) ?? woundTarget(state);
-			return fog ? [cardId(fog)] : [];
+			// Fear marks the card it would turn face down, the same one a blow's own damage points at. A
+			// delver at or above the carrier's level pays nothing extra, so nothing is marked.
+			const hit = fearApplies(state, card) ? woundTarget(state) : null;
+			return hit ? [cardId(hit)] : [];
 		}
 		case 'spades':
 			// Mug walks the chip a step left with no heal, and the aspect it spends stays in its pocket as a
 			// plain card: the chip is the one thing that moves, so it is the one thing the warning marks.
 			return [];
 		case 'clubs': {
-			// Stone Gaze turns one card, the leftmost passive still face up: the kin first, then the class
+			// Petrify turns one card, the leftmost passive still face up: the kin first, then the class
 			// once the kin is wounded. A stashed gorgon has no attack preview to show its heart, so this is
 			// the only warning that route gets.
 			const cell = gazeCell(state);
@@ -1970,30 +1943,33 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 /**
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
- * `by` says which of the two it was, because Stone Gaze is the one power already priced into the kill.
-	 * `levelled` says the blow completed a rank: the bandit is the one power that arrives too late, because
-	 * the level up lifts the delver first. Nothing parks a card home, so a park never levels.
-	 */
-function bossAura(state: TombState, card: Card, by: 'kill' | 'park', levelled = false): TombState {
+  * `by` says which of the two it was, because Petrify is the one power already priced into the kill.
+ * `levelled` says the blow completed a rank: the bandit is the one power that arrives too late, because
+ * the level up lifts the delver first. Nothing parks a card home, so a park never levels. `level` is the
+ * level the fight opened on, passed in by a kill so Fear reads the same number the preview did.
+ */
+function bossAura(
+	state: TombState,
+	card: Card,
+	by: 'kill' | 'park',
+	levelled = false,
+	level = currentLevel(state)
+): TombState {
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
-		case 'hearts': {
-			// Venom is a choice at a table: dig any fog without the heal, or take 1 more damage. The app
-			// makes that choice, and takes the dig while there is any fog to take — buried or not — because
-			// a dry board has no dig left to offer. The card it digs is the one the interface warns on.
-			const venom = venomTarget(state);
-			if (venom) return cloneWith(state, { hidden: state.hidden.filter((id) => id !== cardId(venom)) });
-			return cloneWith(state, { wounded: wound(state, 1).wounded });
-		}
+		case 'hearts':
+			// Fear lands on the party rather than on the carrier: a stash has no blow to price, so the wound
+			// is taken here, and a kill pays its own wounds after it (see `attackWith`).
+			return fearApplies(state, card, level) ? cloneWith(state, { wounded: wound(state, 1).wounded }) : state;
 		case 'spades':
 			// Mug forces the conversion rather than pricing the card: the Hero Chip walks left with no heal,
 			// whether the bandit went down to a blade or was only stashed. Nothing is priced into the
 			// kill for this, so both routes land here.
 			return CLAUSES.banditMug && !(CLAUSES.mugLevelSparing && levelled) ? mugSlot(state) : state;
 		case 'clubs':
-			// Stone Gaze turns the party's kin and class face down, left to right, and stops at the class.
+			// Petrify turns the party's kin and class face down, left to right, and stops at the class.
 			// A kill pays its own wounds first and then gazes (see `attackWith`); a park has no bill to
-			// pay first, so it gazes here.
+			// pay first, so it petrifies here.
 			return by === 'park' ? stoneGaze(state, card) : state;
 		case 'diamonds': {
 			// Mana Burn takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
@@ -2015,7 +1991,7 @@ function bossAura(state: TombState, card: Card, by: 'kill' | 'park', levelled = 
 
 /**
  * Whether a monster power went off on the move from `before` to `after`, for the speaker.
- * The flash cannot answer this: it only fires on kills, and Stone Gaze leaves no card on the
+ * The flash cannot answer this: it only fires on kills, and Petrify leaves no card on the
  * foundation to see. Sound wants every slay or stash of a carrier the aura actually priced —
  * including a Gorgon kill, which should double up with the slash.
  */
@@ -2037,13 +2013,12 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 	if (!moved) return false;
 	const prior = before.game.cards.find((other) => cardId(other) === cardId(moved));
 	switch (before.bossSuit) {
-		// Venom and Mug leave evidence: fog lifted without a heal, a wound taken for a dry board, or the
-		// slot converted.
+		// Fear and Mug leave evidence: a wound on top of the blow's own bill, or the slot converted.
 		case 'hearts':
-			return after.hidden.length < before.hidden.length || newlyWounded(before, after).length > 0;
+			return !!prior && fearApplies(before, prior) && newlyWounded(before, after).length > 0;
 		case 'spades':
 			return after.draft.length < before.draft.length;
-		// Stone Gaze leaves a passive face down when it has one left to stone.
+		// Petrify leaves a passive face down when it has one left to stone.
 		case 'clubs':
 			return gazeCell(before) !== null;
 		// Mana Burn needs a glyph standing to drain.
@@ -2248,13 +2223,13 @@ export function attackWith(
 	const levelled = currentLevel(next) > levelBefore;
 	// A power card that was itself the item is already converting its own slot on the way home, so there is no
 	// conversion left to force: the bandit takes the slot as it stands, not the next pocket's worth after one.
-	next = itemCard ? next : bossAura(next, card, 'kill', levelled);
+	next = itemCard ? next : bossAura(next, card, 'kill', levelled, levelBefore);
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
 
-	// Stone Gaze follows the blow: the kin and the class turn face down, left to right, stopping at
-	// the class. Anything the kill's own wounds already turned over is left as it is.
+	// Petrify follows the blow: the kin and the class turn face down, left to right, stopping at the
+	// class. Anything the kill's own wounds already turned over is left as it is.
 	next = stoneGaze(next, card);
 
 	// A spent item going home leaves its slot empty and waiting: the restock is the player's pick on the
@@ -2264,7 +2239,7 @@ export function attackWith(
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
 	// The last heart is gone: the crawl ends here. Read off the board rather than the preview, so a
 	// killing blow that levels up is saved by the heal it earns. `fatal` is the bill the preview priced,
-	// Venom's dry-board heart included, so a blow that empties the track is exactly the one it refused;
+	// Fear's extra heart included, so a blow that empties the track is exactly the one it refused;
 	// a party card played home leaving no hearts behind is the end of a clear, not a death.
 	if (preview.fatal && hp(settled) === 0)
 		return cloneWith(settled, { won: true, died: true, score: tombScore(settled) });

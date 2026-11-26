@@ -19,9 +19,6 @@ is only ever in *who makes a choice the rules leave open*.
 
 - **Purity** may fog any three cards at a table. The app fogs the bottom three of one hallway, because a scatter
   across hallways is three aims for a card the player rarely wants.
-- **Venom** may dig any face-down card without the heal, or take 1 extra damage. The app takes the dig for the
-  player while there is any fog left — the deepest card, the rightmost hallway breaking a tie — and pays the
-  damage only once there is nothing left to dig.
 - **A wound in a two-card PISORF pocket** may be put on either card at a table. The app always turns the bottom
   card first, which is the choice a player would reach for anyway: the top card is the only one that can be
   touched, so wounding the bottom keeps the pocket’s top card liftable and the stack no more locked than the
@@ -391,16 +388,16 @@ holding neither were untouched. The 359 dead lines went to `solutions/archive/`,
 The four monster powers now price four different things, where two of them used to price the same thing in
 different slots. **Mug** (spades, Bandit) forces the conversion a step early — the chip walks one slot left
 with no heal — on a slay or a park: the ability is spent, the card stays plain where it lies, and nothing
-waits to remake the item. **Stone Gaze** (clubs, Gorgon) turns one card face down, the leftmost of the
+waits to remake the item. **Petrify** (clubs, Gorgon) turns one card face down, the leftmost of the
 party's kin and class that is still face up, and stops at the class — its window is the party's own two passives, one
 per affliction, and a cell already wounded has nothing left to give, so the kin answers the first gorgon and the
-class the second. Venom (hearts) stays knowledge and Mana Burn (diamonds) stays the glyphs, so no two afflictions price the same
+class the second. Fear (hearts) prices the level and Mana Burn (diamonds) the glyphs, so no two afflictions price the same
 thing: Mug prices the conversion itself — the ability early, and the heal it would have mended — instead of two
 of them being the item and two being the glyph.
 
-The monsters are the Bandit, the Viper, the Gorgon and the Wraith — the heart one was the Serpent until the
-Venom rename. The status bar names the tombs they fill rather than the bosses: Barrow of Bandits (♠), Cairn of
-Vipers (♥), Catacomb of Gorgons (♣), Crypt of Wraiths (♦), Tomb of Darkness (?) before the suit is known. A
+The monsters are the Bandit, the Zombie, the Gorgon and the Wraith. The status bar names the tombs they fill
+rather than the bosses: Barrow of Bandits (♠), Ziggurat of Zombies (♥), Grotto of Gorgons (♣), Warren of Wraiths
+(♦), Dungeon of Darkness (?) before the suit is known. A
 boss's own name is a phrase long enough to crowd out the level, hearts, moves and gold either side of it, and it
 still has its card's tooltip.
 
@@ -414,8 +411,8 @@ way Mug is dodged is arriving wounded. A full row is no defence, because nothing
 conversion, which the same lock refuses.
 
 The board warns on what an affliction is aimed at: `afflictionTargets()` names the cards, and the interface draws a
-see-through purple `!` on each while a carrier is under the pointer — the fog a Viper would lift, the card in the
-slot a Bandit would convert, the card a Gorgon would turn down, the glyphs a Wraith would spend. The Gorgon's one
+see-through purple `!` on each while a carrier is under the pointer — the card Fear would turn, the card in the
+slot a Bandit would convert, the cards a Gorgon would petrify, the glyphs a Wraith would spend. The Gorgon's one
 target is the leftmost passive still standing, read in draw order until the class, and it is the only warning a
 stashed gorgon gets: a park has no attack preview to show the heart it costs. The gaze's card wears the purple `!`
 and the blow's own wounds keep the red glow, so the two prices read as the two different things they are. A fogged
@@ -453,6 +450,23 @@ and the merge gate demoted their squares: 126 entries with a win to 85, 145 prov
 which is what pinned the second bug — ending a crawl on any zero-heart board also killed every clear whose last
 party card went home, so the death guard is back to `preview.fatal && hp === 0`, with the venom heart priced into
 `attackPreview` where that gate can see it.
+
+### Fear replaces Venom (adopted 2026-11-26)
+
+The heart affliction is **Fear** now, on the Zombie (the Viper is gone), and the four tombs are Barrow of
+Bandits, Ziggurat of Zombies, Grotto of Gorgons, Warren of Wraiths, and Dungeon of Darkness before the suit is
+known. Fear reads: **a slay or a stash of a carrier deals 1 extra wound while the carrier's rank is higher than
+the delver's level.** A card's rank is the monster's level, so a king bites everywhere under the cap and a minion
+goes quiet the moment the delver climbs past it: the power prices tempo instead of fog.
+
+`fearApplies()` is the predicate, `attackPreview` counts its heart on the bill so the red glow and the fatal gate
+are truthful, `bossAura` lands it on the park route, and `afflictionTargets` marks the track card it would turn.
+The level read is the one the fight opened on — `attackWith` passes `levelBefore` into the aura — so a kill that
+completes a rank lifts the delver *after* Fear has been paid. The app-only Venom dig went with it: fog is dug by
+hand again, and the violet arrow that marked a covered fog target is gone from the board.
+
+The stored hearts lines were solved under the dig, so they need a re-solve before the corpus can claim them again;
+no other suit's lines are touched by the change.
 
 ## The reserve pocket (adopted)
 
@@ -573,7 +587,7 @@ Measured over custom boards (`corpus/state-probe.ts`, gitignored — one card pe
   are owed and the endgame has no heal at all (the Elixir mends its glyph for one, the Purity has no fog).
 - **kings only with a Potion:** still none, off by exactly one. The flask is the rightmost party card, so it can
   only bank the wounds that land in the pockets to its right — three — and it locks the moment a wound reaches it.
-- **clubs (Stone Gaze), diamonds (Mana Burn), spades (Mug):** no better. The Gaze and the Burn add hearts to the
+- **clubs (Petrify), diamonds (Mana Burn), spades (Mug):** no better. Petrify and the Burn add hearts to the
   bill; Mug shoves the flask out of its slot before it can be drunk.
 - **the one window that wins:** a Dwarf (fourth pocket), a Fighter (so a king is homeable while its queen still
   sits in a pocket) and a Potion. Seventeen moves: park the four queens as a wound bank, kill the four kings into

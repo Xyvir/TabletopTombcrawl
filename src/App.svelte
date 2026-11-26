@@ -132,7 +132,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * assets/images/ and the arrow silently vanished from the published site. Pinning it to the document
 	 * gives the stylesheet an absolute URL to resolve.
 	 */
-	const RANGE_ARROW = new URL(`${BASE}images/range-arrow.png`, document.baseURI).href;
 	/**
 	 * The printed rules, straight from the repo: the pill under the wordmark opens this rather than the
 	 * bundle carrying a second copy of the PDF.
@@ -247,7 +246,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The last card a tomb tap moved, so a second click at the same spot can rewind it. */
 	let tombMoved: { id: string; from: CardLocation; before: TombState; rect: DOMRect; time: number } | null = null;
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
-	type FlashKind = 'level' | 'damage' | 'heal' | 'venom' | 'mana' | 'mug';
+	type FlashKind = 'level' | 'damage' | 'heal' | 'mana' | 'mug';
 	let flash = $state<{ kind: FlashKind; id: number } | null>(null);
 	/**
 	 * The three moments that change what a run is: the tomb finds its boss, the boss dies, and the tomb is
@@ -773,8 +772,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		])
 	);
 	/**
-	 * The cards the affliction of the hovered monster is aimed at: the fog a Viper would lift, the slot a
-	 * Bandit would convert, the card a Gorgon would turn down, the glyphs a Wraith would spend. An
+	 * The cards the affliction of the hovered monster is aimed at: the card a Zombie's fear would turn, the
+	 * slot a Bandit would convert, the cards a Gorgon would petrify, the glyphs a Wraith would spend. An
 	 * armed Remedy turns the whole aura off, and the warning goes with it, since the move it covers would
 	 * not do any of it.
 	 */
@@ -1452,21 +1451,21 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		return `${monster.boss}, ${monster.name} Boss of ${suit[0].toUpperCase()}${suit.slice(1)}`;
 	}
 
-	/** The tomb's full name, for a status line with the room for it: "Cairn of Vipers (♥)". */
+	/** The tomb's full name, for a status line with the room for it: "Ziggurat of Zombies (♥)". */
 	function tombFullTitle(state: TombState): string {
 		const suit = state.bossSuit;
-		if (!suit) return 'Tomb (?)';
+		if (!suit) return 'Dungeon (?)';
 		return `${TOMBS[suit]} (${SUIT_GLYPH[suit]})`;
 	}
 
 	/**
-	 * The same name by its monster alone, "Viper (♥)": a phone's status line is a third of the width and the
+	 * The same name by its monster alone, "Zombie (♥)": a phone's status line is a third of the width and the
 	 * full name is a phrase, so the stylesheet swaps to this one on the narrow screens. Both carry the boss's
 	 * own title in the tooltip.
 	 */
 	function tombTitle(state: TombState): string {
 		const suit = state.bossSuit;
-		if (!suit) return 'Tomb (?)';
+		if (!suit) return 'Dungeon (?)';
 		return `${MONSTERS[suit].name} (${SUIT_GLYPH[suit]})`;
 	}
 
@@ -1541,12 +1540,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return !!was && was.location.fixture !== 'foundation';
 		});
 		if (!slain) return null;
-		// Venom digs while there is fog left to dig; with the fog gone it takes a wound instead.
-		if (slain.suit === 'hearts')
-			return after.hidden.length < before.hidden.length || newlyWounded(before, after).length > 0 ? 'venom' : null;
 		// Mug shows when the bandit forced the conversion: the chip walked left with no heal, so the draft shrinks.
 		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
-		// Stone Gaze is wounds, and the wound flash already answers for it; Mana Burn needs a glyph to drain.
+		// Fear and Petrify are wounds, and the wound flash already answers for them; Mana Burn needs a glyph
+		// to drain.
 		if (auraItemOf(after, slain) === null) return null;
 		return 'mana';
 	}
@@ -1626,8 +1623,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (!at) return n;
 			return n + attackPreview(prev, at).damage;
 		}, 0);
-		// Elf range sounds on every use: a buried kill, or a buried dig. Venom's fog-lift rides on
-		// a kill or a stash, never on a dig, so a dig that lifts fog under the bolt is always his shot.
+		// Elf range sounds on every use: a buried kill, or a buried dig. Digging is the only thing that
+		// lifts fog, so a dig under the bolt is always his shot.
 		const rangedDig =
 			(label?.startsWith('dig') ?? false) &&
 			revealed.some((id) => {
@@ -3256,7 +3253,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 							— all but its top strip is behind the card above — so it wears the archer's arrow there
 							instead, in the affliction's violet: that strip is exactly where a shot is drawn anyway.
 						-->
-						{@const arrowed = afflicted && down && i < cascade.length - 1}
 						<button
 							class="card"
 						class:selected={selected.has(key(card.location))}
@@ -3310,20 +3306,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{:else}
 							<img src={down ? `${BASE}images/back.svg` : img(card)} alt="" draggable="false" />
 						{/if}
-						<!--
-							The card an affliction is aimed at, mounted so the mark can fade rather than pop. A covered
-							fogged card takes the arrow below instead, because a bang at its middle is behind the card
-							above it.
-						-->
-						<span class="afflict" class:on={afflicted && !arrowed} aria-hidden="true">!</span>
-						{#if down}
-							<span
-								class="venom-bolt"
-								class:on={arrowed}
-								style={`--arrow: url("${RANGE_ARROW}")`}
-								aria-hidden="true"
-							></span>
-						{/if}
+						<!-- The card an affliction is aimed at, mounted so the mark can fade rather than pop. -->
+						<span class="afflict" class:on={afflicted} aria-hidden="true">!</span>
 						<span
 							class="slay"
 							class:on={marked}
