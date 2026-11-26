@@ -1089,6 +1089,16 @@ describe('the level cap', () => {
 				expect(dropped.armed).toBeNull();
 				expect(dropped.pickpocket).toBeNull();
 				expect(armedDrop(armedAgain, cascade(0), cell(0))).toBeNull();
+
+				// The trade from the other end: the pocket's own card dropped on an exposed hallway card
+				// swaps the same way, and anything but a hallway refuses — a grave is not the window's move.
+				const reversed = armedDrop(armedAgain, cell(1), cascade(0, 0))!;
+				expect(shorthandCard(reversed.game.cells[1]!)).toBe('7H');
+				expect(shorthandCard(reversed.game.tableau[0]![0]!)).toBe('5C');
+				expect(reversed.armed).toBeNull();
+				expect(reversed.pickpocket).toBeNull();
+				expect(armedDrop(armedAgain, cell(1), { fixture: 'foundation', data: [0] })).toBeNull();
+				expect(armedDrop(armedAgain, cell(0), cascade(0, 0))).toBeNull();
 			});
 		});
 

@@ -234,7 +234,7 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Pickpocket: a level up opens a one-action window. Arm the item pocket, then click an exposed card — or drag one onto the pocket — and the two trade places, the card you took becoming the item and spelling from its own suit. A spent item comes back fresh, because exhaustion does not exist on the tableau.',
+		text: 'Pickpocket: a level up opens a one-action window. Arm the item pocket, then click an exposed card — or drag either way between the pocket and the card — and the two trade places, the card you took becoming the item and spelling from its own suit. A spent item comes back fresh, because exhaustion does not exist on the tableau.',
 	},
 };
 
@@ -2440,8 +2440,13 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 		// an exposed hallway card onto the lit pocket is the trade, so the drop has to land on that pocket and
 		// the swap is aimed at the card in hand.
 		const grabbed = cardAt(state.game, from);
-		if (!grabbed || to.fixture !== 'cell' || to.data[0] !== state.armed.cell) return null;
-		return armedClick(state, grabbed.location);
+		if (grabbed && to.fixture === 'cell' && to.data[0] === state.armed.cell) return armedClick(state, grabbed.location);
+		// A swap has two ends: taking hold of the pocket's own card and dropping it on a hallway card is the
+		// same trade aimed from the other side, and the click path's own gate answers it — a buried card, a
+		// face-down one or the boss still refuses.
+		if (grabbed && from.fixture === 'cell' && from.data[0] === state.armed.cell && to.fixture === 'cascade')
+			return armedClick(state, to);
+		return null;
 	}
 	if (state.armed.kind === 'burndayraz') {
 		// A drop onto a foundation spends the spell on the card in hand, however deeply it lay.

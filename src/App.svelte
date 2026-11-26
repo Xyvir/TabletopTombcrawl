@@ -661,7 +661,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const saved = await loadSession();
 			if (!alive) return;
 			if (saved) {
-				resumeCrawl(saved);
+				try {
+					resumeCrawl(saved);
+				} catch (error) {
+					// A record the rules can no longer rebuild is a fresh deal, said out loud.
+					console.warn('[tombcrawl] the kept crawl could not be rebuilt:', error);
+					void tick().then(() => startDeal());
+				}
 				return;
 			}
 			void tick().then(() => startDeal());
@@ -1774,7 +1780,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			const card = state.game.cells[index];
 			if (!card) return null;
 			// An armed CYDSTEPP can pick up a wounded card that would otherwise be locked.
-			const parked = !cellCardMovable(state, index) && state.armed?.kind !== 'cydstepp';
+			const cydsteppLift = state.armed?.kind === 'cydstepp';
+			// An armed Pickpocket can pick up the pocket's own card: the swap is draggable from either end,
+			// and the drop's own gate still decides which hallway it may land on. Other pockets stay locked.
+			const pickpocketLift = state.armed?.kind === 'pickpocket' && state.armed.cell === index;
+			const parked = !cellCardMovable(state, index) && !cydsteppLift && !pickpocketLift;
 			if (parked && !attackPreview(state, location).legal) return null;
 			return { location, cards: [card], peekOnly: false };
 		}
@@ -1807,6 +1817,18 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				.map((index) => `cascade:${index}`);
 		}
 		if (arm && arm.kind === 'pickpocket') {
+			// The trade from the other end: the pocket's own card in hand, every hallway top it may change
+			// places with. The click path's own gate answers each column, so the columns a drop may land on
+			// and the rule that answers it stay in step — a boss, a face-down top or a buried aim lights nothing.
+			if (location.fixture === 'cell' && location.data[0] === arm.cell) {
+				return state.game.tableau
+					.map((column, index) => ({ column, index }))
+					.filter(({ column }) => {
+						const top = column[column.length - 1];
+						return !!top && !isFaceDown(state, top) && !!swapPickpocket(state, arm.cell, top);
+					})
+					.map(({ index }) => `cascade:${index}`);
+			}
 			// The pocket is the target and the card is the aim, the reverse of every other armed drop: the card
 			// has to be one exposed hallway card, since the swap takes the top of a pile and nothing under it.
 			// Asking `swapPickpocket` itself is what keeps the lit target and the rule that answers it in step —

@@ -1762,6 +1762,12 @@ body:has(.card.dragging) .cells.tomb .chip {
 .slot.exhausted.pickpocket img.held {
 	--float-turn: 90deg;
 	--float-scale: 0.7;
+	/*
+	 * The sideways card has to turn about its own centre, like the spent pose it keeps: the drift's
+	 * low hand-hold pivot (50% 72%) throws a 90-degree card sideways out of its pocket instead of
+	 * rocking it where it lies.
+	 */
+	transform-origin: 50% 50%;
 }
 
 .slot.pickpocket img.held:not(.flip-back) {

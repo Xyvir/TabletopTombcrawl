@@ -166,11 +166,16 @@ function transact<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => I
 const canStore = () => typeof indexedDB !== 'undefined';
 
 export async function saveSession(session: SavedSession): Promise<void> {
-	if (!canStore()) return;
+	if (!canStore()) {
+		console.warn('[tombcrawl] no IndexedDB on this browser: the crawl cannot be kept past a reload');
+		return;
+	}
 	try {
 		await transact('readwrite', (store) => store.put(session, RECORD));
-	} catch {
-		// A refused write costs the next reload its board, not this one its game.
+	} catch (error) {
+		// A refused write costs the next reload its board, not this one its game — but it has to say
+		// so, or a reload that deals fresh looks like the feature is missing rather than the store.
+		console.warn('[tombcrawl] the crawl could not be kept:', error);
 	}
 }
 
@@ -180,7 +185,8 @@ export async function loadSession(): Promise<SavedSession | null> {
 		const saved = await transact<SavedSession | undefined>('readonly', (store) => store.get(RECORD));
 		if (!saved || saved.version !== VERSION || !saved.current) return null;
 		return saved;
-	} catch {
+	} catch (error) {
+		console.warn('[tombcrawl] the kept crawl could not be read back:', error);
 		return null;
 	}
 }
