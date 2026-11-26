@@ -40,6 +40,14 @@ When the corpus status board is wanted, launch it in its own PowerShell window w
 host ignores the ANSI clear a long-lived painter would use. Do not run it in Freebuff's integrated
 terminal, and do not leave a chat-owned PTY copy of it running.
 
+## Sweeps run under three quarters of the machine
+
+`scripts/sweep.sh` puts a hard lid on a batch: `MEM_MB` defaults to **three quarters (75%) of physical RAM**,
+split evenly between `WORKERS` as `--max-old-space-size`, so four workers on an 8GB machine take 1.5GB apiece and a
+worker that overruns its share dies with an out-of-memory error instead of dragging the desktop down. The lid is per
+batch, so two sweeps running at once have to split the budget by hand (`MEM_MB=3012` each on an 8GB box) rather than
+each taking three quarters. Lower it while working beside the sweep; leave the default for an overnight run.
+
 ## A solution found by hand goes into the corpus
 
 When the user plays out a crawl themselves and pastes the move log, record it: it is a proof the solver
