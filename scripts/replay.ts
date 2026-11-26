@@ -46,8 +46,12 @@ export interface Solution {
 	moves: number;
 	loadout: string;
 	party: string[];
-	found: string;
-	source: string;
+	/** The boss the deal showed, when a producer wrote it down. */
+	boss?: string | null;
+	/** The day the line was played, in the solver's files; older hand-kept lines name it `at`. */
+	found?: string;
+	at?: string;
+	source?: string;
 	note?: string;
 	lines: string[];
 	/**

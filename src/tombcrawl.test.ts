@@ -1079,6 +1079,16 @@ describe('the level cap', () => {
 				expect(shorthandCard(swapped.game.tableau[0]![0]!)).toBe('5C');
 				expect(swapped.draft.find((entry) => entry.cell === 1)).toMatchObject({ suit: 'hearts', name: 'Potion' });
 				expect(swapped.exhausted[1]).toBe(false);
+
+				// The drag answers the same trade: dropping the exposed card on the lit pocket swaps it, and a
+				// drop anywhere but that pocket is not the window's move at all.
+				const armedAgain = useAbility(putDown, 1)!;
+				const dropped = armedDrop(armedAgain, cascade(0), cell(1))!;
+				expect(shorthandCard(dropped.game.cells[1]!)).toBe('7H');
+				expect(shorthandCard(dropped.game.tableau[0]![0]!)).toBe('5C');
+				expect(dropped.armed).toBeNull();
+				expect(dropped.pickpocket).toBeNull();
+				expect(armedDrop(armedAgain, cascade(0), cell(0))).toBeNull();
 			});
 		});
 

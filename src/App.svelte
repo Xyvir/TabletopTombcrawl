@@ -32,6 +32,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	import { readPreference, writePreference } from './prefs';
 	import type { SolverReply } from './solver.worker';
 	import { markLayout, readLayouts, type LayoutRecord } from './progress';
+	import { clearSession, loadSession, restoreState, saveSession, snapshotState, type SavedSession } from './session';
 	import './trellis.css';
 	import titleMark from './assets/title.svg?raw';
 	import {
@@ -42,6 +43,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				abilityFor,
 		abilityUsable,
 		pickpocketUsable,
+		swapPickpocket,
 		afflictionFired,
 		afflictionTargets,
 		armedClick,
@@ -553,6 +555,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		layoutOpen = false;
 		seedInput = String(filler.seed);
 		clearClickMemory();
+		forgetSavedCrawl();
 		tombHistory = [];
 		tombSelected = null;
 		tombLast = null;
@@ -567,6 +570,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		layoutOpen = false;
 		seedInput = '';
 		clearClickMemory();
+		forgetSavedCrawl();
 		tombHistory = [];
 		tombSelected = null;
 		tombLast = null;
@@ -596,6 +600,87 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		await markLayout(record);
 	}
 
+	/* ---------- the saved crawl ---------- */
+
+	/**
+	 * The board is written a beat after the last move rather than on every one: a fast run of clicks is one
+	 * write, and closing the tab inside that beat still lands on the board the player was looking at.
+	 */
+	let saveTimer: ReturnType<typeof setTimeout> | null = null;
+	const SAVE_DELAY_MS = 400;
+
+	function saveNow() {
+		if (saveTimer) {
+			clearTimeout(saveTimer);
+			saveTimer = null;
+		}
+		if (!tomb || variant !== 'tomb') return;
+		void saveSession({
+			version: 1,
+			at: Date.now(),
+			difficulty,
+			history: tombHistory.map(snapshotState),
+			current: snapshotState(tomb),
+		});
+	}
+
+	function queueSave() {
+		if (!tomb || variant !== 'tomb') return;
+		if (saveTimer) clearTimeout(saveTimer);
+		saveTimer = setTimeout(saveNow, SAVE_DELAY_MS);
+	}
+
+	/** A crawl being replaced takes its saved board with it, so only one is ever waiting in the store. */
+	function forgetSavedCrawl() {
+		if (saveTimer) {
+			clearTimeout(saveTimer);
+			saveTimer = null;
+		}
+		void clearSession();
+	}
+
+	/**
+	 * Pick the crawl back up: the board, the recorder behind it, and the square its seed belongs to. The
+	 * opening deal is not replayed — this is a session resuming, not a deal starting.
+	 */
+	function resumeCrawl(saved: SavedSession) {
+		const held = restoreState(saved.current);
+		variant = 'tomb';
+		tomb = held;
+		game = held.game;
+		tombHistory = saved.history.map(restoreState);
+		tombSelected = null;
+		tombLast = null;
+		dealLayout = layoutForSeed(held.seed);
+		endDeal();
+	}
+
+	onMount(() => {
+		let alive = true;
+		void (async () => {
+			const saved = await loadSession();
+			if (!alive) return;
+			if (saved) {
+				resumeCrawl(saved);
+				return;
+			}
+			void tick().then(() => startDeal());
+		})();
+		// A tab going away is the one write that has no next move to wait for.
+		const flush = () => saveNow();
+		const onHide = () => {
+			if (document.visibilityState === 'hidden') flush();
+		};
+		window.addEventListener('pagehide', flush);
+		document.addEventListener('visibilitychange', onHide);
+		return () => {
+			alive = false;
+			window.removeEventListener('pagehide', flush);
+			document.removeEventListener('visibilitychange', onHide);
+			endDeal();
+		};
+	});
+
 	onMount(() => {
 		let alive = true;
 		void (async () => {
@@ -607,6 +692,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			}
 			const saved = await readLayouts();
 			if (alive) progress = saved;
+			// A crawl resumed before the sheet arrived has no square to name yet: with the seeds in hand,
+			// the board can say which party it belongs to. A pasted board keeps its empty square.
+			if (alive && tomb && !dealLayout) dealLayout = layoutForSeed(tomb.seed);
 		})();
 		const onKey = (event: KeyboardEvent) => {
 			if (event.key === 'Escape') {
@@ -1570,6 +1658,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombHistory = [...tombHistory, tomb];
 		tomb = next;
 		game = next.game;
+		queueSave();
 		tombSelected = null;
 		tombHover = null;
 		primaryId = null;
@@ -1716,6 +1805,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				.map((_, index) => index)
 				.filter((index) => index !== fromColumn && (state.game.tableau[index]?.length ?? 0) > 0)
 				.map((index) => `cascade:${index}`);
+		}
+		if (arm && arm.kind === 'pickpocket') {
+			// The pocket is the target and the card is the aim, the reverse of every other armed drop: the card
+			// has to be one exposed hallway card, since the swap takes the top of a pile and nothing under it.
+			// Asking `swapPickpocket` itself is what keeps the lit target and the rule that answers it in step —
+			// a boss, a face-down card or a buried one simply lights nothing.
+			const card = location.fixture === 'cascade' ? cardAt(state.game, location) : null;
+			const trades = !!card && run.cards.length === 1 && !!swapPickpocket(state, arm.cell, card);
+			return trades ? [`cell:${arm.cell}`] : [];
 		}
 		const keys: string[] = [];
 		// A drafted item left of the chip, or a wounded cell, has no board targets.
@@ -1926,6 +2024,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function setVariant(next: 'tomb' | 'vanilla') {
 		if (variant === next) return;
 		clearClickMemory();
+		forgetSavedCrawl();
 		tombHistory = [];
 		tombSelected = null;
 		tombLast = null;
@@ -2207,6 +2306,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			tombHistory = tombHistory.slice(0, -1);
 			tomb = previous;
 			game = previous.game;
+			queueSave();
 			tombSelected = null;
 			void tick().then(() => animateFrom(before, previous.game, null));
 			return;
@@ -2523,6 +2623,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 			function newDeal() {
 		clearClickMemory();
+		forgetSavedCrawl();
 		pendingDeath = null;
 		pendingExit = false;
 		// A mend still in the air belongs to the crawl being left behind.
@@ -2588,6 +2689,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 
 			function replay() {
 		flushPending();
+		forgetSavedCrawl();
 		pendingDeath = null;
 		pendingExit = false;
 		endMendFlight();
@@ -2796,7 +2898,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					]
 						.filter(Boolean)
 						.join('. ') || undefined}
-					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : ', empty'}${
+					aria-label={`grave ${i + 1}${card ? `, ${card.rank} of ${card.suit}` : `, empty ${suit} grave`}${
 						full ? ', full' : lifts ? ', the next card here levels you up' : ''
 					}${skips ? `, skipping ${skips} rank${skips === 1 ? '' : 's'} the party holds` : ''}`}
 					onclick={() => tap(location)}
@@ -2810,6 +2912,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{/if}
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />
+						<!--
+							The suit the grave is waiting for, engraved on the blank. The piles are indexed by suit, so
+							the position alone used to say which was which — but the chevrons for the ranks the party holds
+							read as a climb with no way to tell what was climbing when there was no card face to name it.
+						-->
+						{#if tomb}
+							<span class="grave-suit" data-suit={suit} aria-hidden="true">{SUIT_GLYPH[suit]}</span>
+						{/if}
 					{/if}
 					<!--
 						Chevrons, not the level-up arrow: this grave is not about to lift you a level, it has climbed

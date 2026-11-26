@@ -778,6 +778,42 @@ body:has(.card.dragging) .cells.tomb .chip {
 	background: rgba(255, 255, 255, 0.22);
 }
 
+/*
+ * An empty grave names the suit it is waiting for, the way the playmat prints it on every tombstone. It sits
+ * in the middle of the stone, above the blank and under the chevrons, and takes the suit's ink so the four
+ * graves read apart at a glance instead of only by column order.
+ */
+.foundations .slot .grave-suit {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	/* the tombstone drawing sits a touch high in its box, so the engraving rides with it */
+	padding-bottom: 4%;
+	z-index: 5;
+	font-size: calc(var(--col-w) * 0.34);
+	line-height: 1;
+	opacity: 0.5;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+	pointer-events: none;
+}
+
+.foundations .slot .grave-suit[data-suit='hearts'] {
+	color: var(--suit-hearts-ink);
+}
+
+.foundations .slot .grave-suit[data-suit='clubs'] {
+	color: var(--suit-clubs-ink);
+}
+
+.foundations .slot .grave-suit[data-suit='diamonds'] {
+	color: var(--suit-diamonds-ink);
+}
+
+.foundations .slot .grave-suit[data-suit='spades'] {
+	color: var(--suit-spades-ink);
+}
+
 /* the bar that parts the wound track from the graveyard: a wide-layout item only */
 .gravesplit {
 	display: none;
@@ -1712,8 +1748,20 @@ body:has(.card.dragging) .cells.tomb .chip {
  * boss-suit stain, so it turns and scales with the float instead of sitting over it.
  */
 .slot.pickpocket img.held {
+	/*
+	 * The drift carries the pose the card already had: an unspent item bobs upright, and a spent one bobs
+	 * lying on its side at the spent size. Both come off these two variables, so the exhausted slot keeps
+	 * reading as exhausted for as long as the window is open instead of standing back up to dance.
+	 */
+	--float-turn: 0deg;
+	--float-scale: 1;
 	transform-origin: 50% 72%;
 	animation: pickpocket-float 3.7s ease-in-out infinite;
+}
+
+.slot.exhausted.pickpocket img.held {
+	--float-turn: 90deg;
+	--float-scale: 0.7;
 }
 
 .slot.pickpocket img.held:not(.flip-back) {
@@ -1733,31 +1781,31 @@ body:has(.card.dragging) .cells.tomb .chip {
  */
 @keyframes pickpocket-float {
 	0% {
-		transform: rotate(-2.4deg) scale(1);
+		transform: rotate(calc(-2.4deg + var(--float-turn))) scale(calc(1 * var(--float-scale)));
 	}
 	11% {
-		transform: rotate(1.9deg) scale(1.045);
+		transform: rotate(calc(1.9deg + var(--float-turn))) scale(calc(1.045 * var(--float-scale)));
 	}
 	23% {
-		transform: rotate(3.2deg) scale(0.985);
+		transform: rotate(calc(3.2deg + var(--float-turn))) scale(calc(0.985 * var(--float-scale)));
 	}
 	38% {
-		transform: rotate(-1.1deg) scale(1.055);
+		transform: rotate(calc(-1.1deg + var(--float-turn))) scale(calc(1.055 * var(--float-scale)));
 	}
 	52% {
-		transform: rotate(-3.6deg) scale(0.99);
+		transform: rotate(calc(-3.6deg + var(--float-turn))) scale(calc(0.99 * var(--float-scale)));
 	}
 	67% {
-		transform: rotate(0.7deg) scale(1.03);
+		transform: rotate(calc(0.7deg + var(--float-turn))) scale(calc(1.03 * var(--float-scale)));
 	}
 	79% {
-		transform: rotate(2.6deg) scale(1.005);
+		transform: rotate(calc(2.6deg + var(--float-turn))) scale(calc(1.005 * var(--float-scale)));
 	}
 	91% {
-		transform: rotate(-0.5deg) scale(1.05);
+		transform: rotate(calc(-0.5deg + var(--float-turn))) scale(calc(1.05 * var(--float-scale)));
 	}
 	100% {
-		transform: rotate(-2.4deg) scale(1);
+		transform: rotate(calc(-2.4deg + var(--float-turn))) scale(calc(1 * var(--float-scale)));
 	}
 }
 
