@@ -2879,11 +2879,24 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					onclick={() => tap(location)}
 				>
 					{#if stack.length}
+						<!--
+							The boss suit's grave is turned: at a table the slain monsters are laid sideways so the boss suit
+							can be read off the graveyard, and the app lays every card that comes home to that pile the same
+							way. Purely a reading of the pile — no rule looks at which way a card lies.
+						-->
+						{@const turned = !!tomb?.bossSuit && suit === tomb.bossSuit}
 						{#each stack as stacked (shorthandCard(stacked))}
-							<img src={img(stacked)} alt="" draggable="false" data-card={shorthandCard(stacked)} />
+							<img
+								class:turned
+								src={img(stacked)}
+								alt=""
+								draggable="false"
+								data-card={shorthandCard(stacked)}
+							/>
 						{/each}
 						{#if full}
-							<img class="grave-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
+							<!-- the back that says the pile is done leans the same way it always has, sideways too -->
+							<img class:turned class="grave-back" src={`${BASE}images/back.svg`} alt="" draggable="false" />
 						{/if}
 					{:else}
 						<img class="blank" src={`${BASE}images/blank.png`} alt="" draggable="false" />

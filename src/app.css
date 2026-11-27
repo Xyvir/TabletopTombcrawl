@@ -967,6 +967,17 @@ body:has(.card.dragging) .cells.tomb .chip {
 	}
 }
 
+/*
+ * The boss suit's grave lies turned, the way a table marks it: every card slain of the boss suit goes into
+ * its grave sideways, so the suit can be read off the graveyard without naming it. Purely a reading of the
+ * pile — nothing in the rules asks which way a card lies. A card on its side is 1.4 columns wide, so the
+ * turn is scaled by 1/1.4 to sit inside the column it lies in rather than spilling over its neighbours.
+ */
+.foundations .slot img.turned {
+	transform: rotate(90deg) scale(0.71);
+	transform-origin: center;
+}
+
 /* free cells are the wound track: a hollow red cross sits under whatever card is in them */
 .cells.tomb .slot {
 	background-repeat: no-repeat;
