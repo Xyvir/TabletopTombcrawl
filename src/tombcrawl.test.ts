@@ -32,10 +32,11 @@ import {
 	canSendHome,
 	carriesPower,
 	cellCardMovable,		cellTopWounded,
+	banditStone,
 	chipBoundary,
 	canConvert,
 	convertChip,
-	mugTarget,
+	burglarizeTarget,
 	convertibleCell,
 	pickpocketUsable,
 	withSyntheticLoadout,
@@ -96,6 +97,8 @@ interface Setup {
 	cellCount?: number;
 	/** The extra pocket Constitution opened: the deal was dealt one wider than the track. */
 	constitution?: boolean;
+	/** Slots a bandit has already shut. */
+	stone?: number[];
 }
 
 function makeTomb({
@@ -109,6 +112,7 @@ function makeTomb({
 	boss,
 	cellCount = TOMB_CELL_COUNT,
 	constitution = false,
+	stone = [],
 }: Setup): TombState {
 	const cards: Card[] = initializeDeckOfCards();
 	const byId = new Map<string, Card>();
@@ -143,6 +147,9 @@ function makeTomb({
 		won: false,
 		died: false,
 		constitution,
+		stone: Array.from({ length: cellCount }, (_, i) => stone.includes(i)),
+		// The chip is implied by the party: one past the furthest slot that is still an aspect or a stone.
+		chip: Math.max(-1, ...draft.map((entry) => entry.cell), ...stone) + 1,
 		reserveHeld: true,
 		trueBoss: false,
 		score: null,
@@ -544,7 +551,7 @@ describe('the wound turn', () => {
 	});
 });
 
-describe('silence and mug', () => {
+describe('nullify and burglarize', () => {
 	const draft: DraftCard[] = [
 		{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' },
 		{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
@@ -559,7 +566,7 @@ describe('silence and mug', () => {
 			...overrides,
 		});
 
-	test('a Wraith kill spends and wounds the Glyph before the damage lands', () => {
+	test('a Mana Wraith kill spends and wounds the Glyph before the damage lands', () => {
 		// one heart has to be left standing, so this kill runs a rank below the deadly one
 		const state = board({ columns: [['3D']], foundations: ['2D'] });
 		expect(currentLevel(state)).toBe(1);
@@ -579,7 +586,7 @@ describe('silence and mug', () => {
 	});
 
 	test('a kill that would spend the last heart is refused', () => {
-		// one heart left, and the Wraith wants its glyph burned on top of its three damage
+		// one heart left, and the Mana Wraith wants its glyph burned on top of its three damage
 		const state = board({ wounded: [1, 2, 3] });
 		expect(currentLevel(state)).toBe(1);
 		expect(hp(state)).toBe(1);
@@ -616,7 +623,7 @@ describe('silence and mug', () => {
 		expect(attackWith(state, cascade(0, 0))).toBeNull();
 	});
 
-	test('a Wraith kill drains the Glyph instead', () => {
+	test('a Mana Wraith kill drains the Glyph instead', () => {
 		const state = board({ columns: [['3D']], foundations: ['2D'], boss: 'KD' });
 		const next = attackWith(state, cascade(0, 0))!;
 
@@ -651,7 +658,7 @@ describe('silence and mug', () => {
 		expect(hp(next)).toBe(before);
 	});
 
-	test('parking a Wraith in a free cell burns the Glyph too', () => {
+	test('parking a Mana Wraith in a free cell burns the Glyph too', () => {
 		const state = board({ columns: [['4D']], foundations: ['3D'], boss: 'KD' });
 		const next = tombMove(state, cascade(0, 0), cell(4))!;
 
@@ -687,7 +694,7 @@ describe('silence and mug', () => {
 	});
 
 	test('a level up lifts the burn the same kill dealt, so the glyph ends ready', () => {
-		// The third suit reaching three is the level up; the diamonds three is a Wraith, so one kill
+		// The third suit reaching three is the level up; the diamonds three is a Mana Wraith, so one kill
 		// both burns the glyph and levels the delver up. The power resolves first and the level up
 		// after it, the way a level up in DD clears the ailment that was just laid on you.
 		const state = board({
@@ -706,7 +713,7 @@ describe('silence and mug', () => {
 		expect(next.wounded[1]).toBe(0);
 		expect(abilityUsable(next, 1)).toBe(true);
 
-		// the same kill without the level up leaves the glyph exactly as the Wraith left it, so the
+		// the same kill without the level up leaves the glyph exactly as the Mana Wraith left it, so the
 		// burn is really what the level up lifted, not something it never happened to take
 		const noLevel = board({
 			columns: [['3D']],
@@ -740,7 +747,30 @@ describe('silence and mug', () => {
 		expect(abilityUsable(next, 1)).toBe(false);
 	});
 
-	test('mug forces the conversion with no heal, and needs no free pocket', () => {
+	test('burglarize shoves the nearest aspect into the first free pocket and stones the slot it leaves', () => {
+		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
+		const state = makeTomb({
+			columns: [['5S']],
+			cells: ['TC', '2C', '3C', '4C', '6C', null, '8C'],
+			foundations: ['4S'],
+			boss: 'KS',
+			draft,
+		});
+		const next = attackWith(state, cascade(0, 0))!;
+
+		// the card itself moves: it leaves the aspect slot for the first pocket to its right, still a heart
+		expect(next.draft).toHaveLength(0);
+		expect(next.game.cells[0]).toBe(null);
+		expect(shorthandCard(next.game.cells[5]!)).toBe('TC');
+		expect(banditStone(next, 0)).toBe(true);
+		// the chip does not move: nothing was converted, and the slot it now sits beside still pays a mend
+		expect(chipBoundary(next)).toBe(1);
+		expect(canConvert(next)).toBe(true);
+		// the kill's own wounds land with nothing mended on top: 5S at level 1 deals four, all still showing
+		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(4);
+	});
+
+	test('a full track whiffs: there is nowhere to shove the aspect', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['5S']],
@@ -751,51 +781,53 @@ describe('silence and mug', () => {
 		});
 		const next = attackWith(state, cascade(0, 0))!;
 
-		// nothing moves, so a full row is no defence: the chip walks left with no heal, the card stays plain
-		expect(next.draft).toHaveLength(0);
+		// every pocket is full, so the bandit takes nothing at all and the aspect keeps its ability
+		expect(next.draft).toHaveLength(1);
 		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
-		// the kill's own wounds land with nothing mended on top: 5S at level 1 deals four, all still showing
+		expect(banditStone(next, 0)).toBe(false);
+		// the kill's own wounds still landed: 5S at level 1 deals four, all still showing
 		expect(next.wounded.reduce((total, count) => total + count, 0)).toBe(4);
 		expect(hp(next)).toBe(3);
 	});
 
-	test('a blow that completes a rank lifts the delver before the bandit reaches the chip', () => {
+	test('a blow that completes a rank does not spare the bandit', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['5S'], ['3S']],
-			cells: ['TC', '2C', '3C', '4C', '6C', '7C'],
+			cells: ['TC', '2C', '3C', '4C', '6C', null],
 			// spades lag a rank behind the other three graves, so the five is the card that lifts the level
 			foundations: ['4S', '5H', '5D', '5C'],
 			boss: 'KS',
 			draft,
 		});
 		const five = state.game.cards.find((card) => shorthandCard(card) === '5S')!;
-		const three = state.game.cards.find((card) => shorthandCard(card) === '3S')!;
 		expect(currentLevel(state)).toBe(5);
 		expect(levelsUpOnSlay(state, five)).toBe(true);
-		// a card slid underneath a higher one completes nothing, so the bandit is still there to take it
-		expect(levelsUpOnSlay(state, three)).toBe(false);
 
 		const next = attackWith(state, cascade(0, 0))!;
 		expect(currentLevel(next)).toBe(6);
-		// outrun: the aspect keeps its slot, the chip does not move, and the card still counts as a heart
-		expect(next.draft).toHaveLength(1);
-		expect(shorthandCard(next.game.cells[0]!)).toBe('TC');
-		expect(mugTarget(next)?.id).toBe('TC');
-
-		// the same board without the level up: that is the ordinary kill, and it still mugs
-		const noLevel = makeTomb({
-			columns: [['5S']],
-			cells: ['TC', '2C', '3C', '4C', '6C', '7C'],
-			foundations: ['4S', '4H', '4D', '4C'],
-			boss: 'KS',
-			draft,
-		});
-		expect(attackWith(noLevel, cascade(0, 0))!.draft).toHaveLength(0);
+		// the level up arrives with the kill, but the bandit reaches the slot on the same blow
+		expect(next.draft).toHaveLength(0);
+		expect(banditStone(next, 0)).toBe(true);
+		expect(shorthandCard(next.game.cells[5]!)).toBe('TC');
 	});
 
-	test('a Wizard\'s Dualcast glyph is mugged out of the item slot like an item', () => {
-		// the class card sits left of the item, so the item slot is still the slot beside the chip
+	test('a stone pocket still converts, for the mend alone', () => {
+		// the bandit has already emptied the slot: nothing is left but the shut pocket and the chip beside it
+		const state = makeTomb({ columns: [], cells: [null, '2C'], wounded: [1], stone: [0] });
+		expect(banditStone(state, 0)).toBe(true);
+		expect(canConvert(state)).toBe(true);
+		expect(hp(state)).toBe(0);
+
+		const next = convertChip(state)!;
+		// the slot turns plain, the chip steps past it, and the mend is paid even though no ability was spent
+		expect(banditStone(next, 0)).toBe(false);
+		expect(chipBoundary(next)).toBe(0);
+		expect(hp(next)).toBe(1);
+	});
+
+	test('a Wizard\'s Dualcast glyph is shoved out of the item slot like a flask', () => {
+		// the class card sits left of the item, so the item slot is still the slot nearest the chip
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'class', id: 'TD', suit: 'diamonds', name: 'Wizard', text: '' },
 			{ cell: 2, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' },
@@ -809,14 +841,15 @@ describe('silence and mug', () => {
 		});
 		const next = attackWith(state, cascade(0, 0))!;
 
-		// the slot is the slot whatever it holds: one entry leaves, the class card stays, and the forced
-		// card never leaves its pocket — it turns plain where it lies, with no heal
+		// the slot is the slot whatever it holds: the glyph leaves the draft, the class card stays, and the
+		// card is shoved into the empty pocket as a plain card
 		expect(next.draft.map((entry) => entry.role)).toEqual(['class']);
-		expect(shorthandCard(next.game.cells[2]!)).toBe('TC');
-		expect(next.game.cells[3]).toBe(null);
+		expect(next.game.cells[2]).toBe(null);
+		expect(shorthandCard(next.game.cells[3]!)).toBe('TC');
+		expect(banditStone(next, 2)).toBe(true);
 	});
 
-	test('an armed Remedy covers a mugging, so the item keeps its slot', () => {
+	test('an armed Remedy covers a burglary, so the item keeps its slot', () => {
 		const draft: DraftCard[] = [
 			{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Remedy', text: '' },
 			{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
@@ -1202,7 +1235,7 @@ describe('the remedy', () => {
 	test('while it is armed, a boss-suit kill ignores the power', () => {
 		// one heart has to be left standing, so this kill runs a rank below the deadly one
 		const kill = board({ columns: [['3D']], foundations: ['2D'], boss: 'KD' });
-		// without the remedy the Wraith would burn the Glyph before the wounds land
+		// without the remedy the Mana Wraith would burn the Glyph before the wounds land
 		expect(attackPreview(kill, cascade(0, 0)).locks).toContain(1);
 
 		const armed = useAbility(kill, 0)!;
@@ -1219,7 +1252,7 @@ describe('the remedy', () => {
 	});
 
 	test('a minion parked in a free cell is covered too', () => {
-		// unarmed, the Wraith burns the Glyph even when the card is only going to a cell
+		// unarmed, the Mana Wraith burns the Glyph even when the card is only going to a cell
 		const parking = board({ columns: [['4D']], boss: 'KD' });
 		const plain = tombMove(parking, cascade(0, 0), cell(4))!;
 		expect(plain.wounded[1]).toBe(1);
@@ -1442,7 +1475,7 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(attackWith(state, cascade(0))).toBe(null);
 	});
 
-	test('parking a bandit in a free cell mugs the item, and costs no heart', () => {
+	test('parking a bandit in a free cell burglarizes the item, and costs no heart', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '2C', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['5S']],
@@ -1453,12 +1486,14 @@ describe('tombcrawl damage and free-cell HP', () => {
 		expect(hp(state)).toBe(5);
 
 		const parked = tombMove(state, cascade(0, 0), cell(5))!;
-		// the parked card is a fresh heart on the track, and Mug takes no heart at all
+		// the parked card is a fresh heart on the track, and Burglarize takes no heart at all: the evicted card is
+		// still lying face up in the pocket it was shoved into
 		expect(hp(parked)).toBe(6);
-		// the forced conversion spends the slot behind the parked card: the chip walks left with no heal,
-		// the card stays where it lay as a plain card, so nothing is left waiting to remake it
+		// the bandit shoves the flask into the one free pocket and the slot it leaves turns to stone
 		expect(parked.draft).toHaveLength(0);
-		expect(shorthandCard(parked.game.cells[0]!)).toBe('2C');
+		expect(parked.game.cells[0]).toBe(null);
+		expect(banditStone(parked, 0)).toBe(true);
+		expect(shorthandCard(parked.game.cells[6]!)).toBe('2C');
 		expect(shorthandCard(parked.game.cells[5]!)).toBe('5S');
 		expect(parked.itemWindow).toBe(null);
 
@@ -2116,7 +2151,7 @@ describe('tombcrawl progression rules', () => {
 		expect(next.wounded.slice(0, 3)).toEqual([1, 0, 0]);
 	});
 
-	test('an off-suit king mugs the consumable in a spade tomb', () => {
+	test('an off-suit king burglarizes the consumable in a spade tomb', () => {
 		const draft: DraftCard[] = [{ cell: 0, role: 'consumable', id: '7C', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({
 			columns: [['KH']],
@@ -2125,12 +2160,13 @@ describe('tombcrawl progression rules', () => {
 			draft,
 			boss: 'KS',
 		});
-		const mugged = attackWith(state, cascade(0, 0))!;
-		// the forced conversion: the chip walks left with no heal and the card stays plain in its pocket
-		expect(mugged.draft).toHaveLength(0);
-		expect(shorthandCard(mugged.game.cells[0]!)).toBe('7C');
-		expect(mugged.game.cells[6]).toBe(null);
-		expect(mugged.exhausted[0]).toBe(false);
+		const burglarized = attackWith(state, cascade(0, 0))!;
+		// the bandit shoves the flask into the one free pocket and stones the slot it leaves
+		expect(burglarized.draft).toHaveLength(0);
+		expect(burglarized.game.cells[0]).toBe(null);
+		expect(banditStone(burglarized, 0)).toBe(true);
+		expect(shorthandCard(burglarized.game.cells[6]!)).toBe('7C');
+		expect(burglarized.exhausted[0]).toBe(false);
 	});
 
 	test('a drafted card played out to the board is spent for good', () => {
@@ -2914,7 +2950,7 @@ describe('restocking a spent slot', () => {
 	});
 });
 
-describe('silence on the slot', () => {
+describe('nullify on the slot', () => {
 	// The glyph is the third card drafted, so its slot is 2 whatever the chip is doing.
 	const board = (draft: DraftCard[]) =>
 		makeTomb({
@@ -2957,10 +2993,10 @@ describe('silence on the slot', () => {
 
 describe('tombcrawl monsters', () => {
 	test('every boss suit names its monster, its boss and its power', () => {
-		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Mug' });
+		expect(MONSTERS.spades).toMatchObject({ name: 'Bandit', boss: 'Tomithy Longdall', power: 'Burglarize' });
 		expect(MONSTERS.hearts).toMatchObject({ name: 'Zombie', boss: 'Frank', power: 'Terrify' });
 		expect(MONSTERS.clubs).toMatchObject({ name: 'Gorgon', boss: 'Medusa', power: 'Petrify' });
-		expect(MONSTERS.diamonds).toMatchObject({ name: 'Wraith', boss: 'Tormented One', power: 'Silence' });
+		expect(MONSTERS.diamonds).toMatchObject({ name: 'Mana Wraith', boss: 'Tormented One', power: 'Nullify' });
 	});
 
 	test('every tomb is named for its monsters', () => {
@@ -3260,8 +3296,8 @@ describe('the wizard’s dualcast', () => {
 		expect(next.exhausted[2]).toBe(false);
 	});
 
-	test('a wraith drains both glyphs at once', () => {
-		// the diamond king is the boss, so every other king carries his Silence into a free cell
+	test('a mana wraith drains both glyphs at once', () => {
+		// the diamond king is the boss, so every other king carries his Nullify into a free cell
 		const state = makeTomb({
 			columns: [['KD'], ['KH']],
 			cells: ['KC', '2S', '5H', null],
@@ -3425,17 +3461,30 @@ describe('gold', () => {
 describe('the hazard preview', () => {
 	const cardIn = (state: TombState, id: string) => state.game.cards.find((card) => shorthandCard(card) === id)!;
 
-	test('a bandit warns on the chip, not on the card, since Mug leaves the aspect where it lies', () => {
+	test('a bandit marks the aspect it would shove, since the card is what moves', () => {
 		const item: DraftCard[] = [{ cell: 0, role: 'consumable', id: 'TC', suit: 'clubs', name: 'Potion', text: '' }];
 		const state = makeTomb({ columns: [['5S']], cells: ['TC', null], boss: 'KS', draft: item });
-		expect(mugTarget(state)?.id).toBe('TC');
-		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual([]);
+		expect(burglarizeTarget(state)?.id).toBe('TC');
+		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual(['TC']);
 
-		// the item is spent, so the chip has stepped onto the glyph and the glyph is what is at stake
-		const glyph: DraftCard[] = [{ cell: 0, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' }];
-		const later = makeTomb({ columns: [['5S']], cells: ['TS', null], boss: 'KS', draft: glyph });
-		expect(mugTarget(later)?.id).toBe('TS');
-		expect(afflictionTargets(later, cardIn(later, '5S'))).toEqual([]);
+		// the nearest aspect is the one at stake, whatever the chip has already spent
+		const glyph: DraftCard[] = [
+			{ cell: 0, role: 'class', id: 'TD', suit: 'diamonds', name: 'Wizard', text: '' },
+			{ cell: 1, role: 'glyph', id: 'TS', suit: 'spades', name: 'BURNDAYRAZ', text: '' },
+		];
+		const later = makeTomb({ columns: [['5S']], cells: ['TD', 'TS', null], boss: 'KS', draft: glyph });
+		expect(burglarizeTarget(later)?.id).toBe('TS');
+		expect(afflictionTargets(later, cardIn(later, '5S'))).toEqual(['TS']);
+
+		// with no free pocket to its right the bandit has nowhere to shove it, so nothing is marked
+		const full = makeTomb({
+			columns: [['5S']],
+			cells: ['TD', 'TS', '2C', '3C', '4C', '6C', '7C'],
+			boss: 'KS',
+			draft: glyph,
+		});
+		expect(burglarizeTarget(full)).toBeUndefined();
+		expect(afflictionTargets(full, cardIn(full, '5S'))).toEqual([]);
 	});
 
 	test('a wounded slot is locked, so the bandit warns on nothing and takes nothing', () => {
@@ -3448,7 +3497,7 @@ describe('the hazard preview', () => {
 			draft,
 			wounded: [0],
 		});
-		expect(mugTarget(state)).toBeUndefined();
+		expect(burglarizeTarget(state)).toBeUndefined();
 		expect(afflictionTargets(state, cardIn(state, '5S'))).toEqual([]);
 
 		// and the rule agrees: the kill lands and the face-down slot keeps its card and its entry

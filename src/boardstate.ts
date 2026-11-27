@@ -35,7 +35,8 @@ import {
  *
  * - `columns` is eight pile tokens, bottom card first; `cells` is one token per pocket, left to right.
  * - `*` before a card turns it face down: fog in a column, a wound in a pocket. `!` after a pocket's
- *   cards marks an ability already spent.
+ *   cards marks an ability already spent, and `@` alone is a pocket a bandit has shut: a stone slot holds
+ *   nothing, and an empty token could not say so.
  * - `^` before a card marks the boss king. It is the one thing a board cannot imply: the dungeon's
  *   boss is whichever king the deal revealed first, and nothing about where the kings now stand
  *   remembers which one it was.
@@ -58,6 +59,7 @@ export const BOARD_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvw
 const DOWN = '*';
 const BOSS = '^';
 const SPENT = '!';
+const STONE = '@';
 const PILE_SEPARATOR = '.';
 const SECTION_SEPARATOR = '/';
 
@@ -99,6 +101,8 @@ export function encodeBoard(state: TombState, withSeed = true): string {
 		pileText(pile.map((card) => mark(card, state.hidden.includes(shorthandCard(card)))))
 	);
 	const cells = state.game.cells.map((_, index) => {
+		// A bandit's stone: emptied and shut, and the one board fact no card can imply.
+		if (state.stone[index]) return STONE;
 		const stack = cellCards(state, index);
 		const wounded = state.wounded[index] ?? 0;
 		const text = pileText(stack.map((card, depth) => mark(card, depth < wounded)));
@@ -205,8 +209,17 @@ export function decodeBoard(text: string): TombState | null {
 
 	const wounded: number[] = [];
 	const exhausted: boolean[] = [];
+	const stone: boolean[] = [];
 	const pocketTops: (Card | null)[] = [];
 	for (let cell = 0; cell < cellTexts.length; cell += 1) {
+		if (cellTexts[cell] === STONE) {
+			wounded.push(0);
+			exhausted.push(false);
+			stone.push(true);
+			pocketTops.push(null);
+			continue;
+		}
+		stone.push(false);
 		const pile = readPile(cellTexts[cell], true);
 		if (!pile) return null;
 		wounded.push(pile.cards.filter((entry) => entry.down).length);
@@ -278,6 +291,10 @@ export function decodeBoard(text: string): TombState | null {
 		kin?.name === 'Dwarf' &&
 		game.cells.length >= DRAFT_CELL_COUNT + FREE_CELL_COUNT.med;
 	const reserveHeld = !game.cells[game.cells.length - 1];
+	// The chip's mark is implied: the deal set it right of the party, and only a conversion moves it, so it is
+	// one past the furthest slot that is still an aspect or a bandit's stone.
+	const shut = stone.flatMap((shut, cell) => (shut ? [cell] : []));
+	const chip = Math.max(-1, ...draft.map((entry) => entry.cell), ...shut) + 1;
 
 	const state: TombState = {
 		game,
@@ -287,6 +304,8 @@ export function decodeBoard(text: string): TombState | null {
 		bossId: boss ? shorthandCard(boss) : null,
 		bossSuit: boss ? boss.suit : null,
 		constitution,
+		stone,
+		chip,
 		exhausted,
 		wounded,
 		won: false,

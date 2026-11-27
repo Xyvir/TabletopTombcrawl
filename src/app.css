@@ -2181,7 +2181,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	animation-duration: 420ms;
 }
 
-.flash.mug {
+.flash.burglarize {
 	background: radial-gradient(
 		ellipse at 50% 50%,
 		rgba(255, 156, 54, 0.34),

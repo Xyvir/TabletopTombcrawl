@@ -56,6 +56,8 @@ function makeState({
 		bossId: boss ?? null,
 		bossSuit: boss ? 'hearts' : null,
 		constitution: false,
+		stone: Array.from({ length: 7 }, () => false),
+		chip: Math.max(...PARTY.map((entry) => entry.cell)) + 1,
 		exhausted: Array.from({ length: 7 }, (_, index) => exhausted.includes(index)),
 		wounded: Array.from({ length: 7 }, () => 0),
 		won: false,

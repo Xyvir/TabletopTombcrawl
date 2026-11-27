@@ -38,6 +38,10 @@ export interface StateSnapshot {
 	bossId: string | null;
 	bossSuit: TombState['bossSuit'];
 	constitution: boolean;
+	/** Absent on a record written before a bandit could shut a pocket. */
+	stone?: boolean[];
+	/** Absent for the same reason: it is restored from the party when there is no mark to read. */
+	chip?: number;
 	exhausted: boolean[];
 	wounded: number[];
 	won: boolean;
@@ -75,6 +79,8 @@ export function snapshotState(state: TombState): StateSnapshot {
 		bossId: state.bossId,
 		bossSuit: state.bossSuit,
 		constitution: state.constitution,
+		stone: [...state.stone],
+		chip: state.chip,
 		exhausted: [...state.exhausted],
 		wounded: [...state.wounded],
 		won: state.won,
@@ -122,6 +128,11 @@ export function restoreState(snapshot: StateSnapshot): TombState {
 		bossId: snapshot.bossId,
 		bossSuit: snapshot.bossSuit,
 		constitution: snapshot.constitution,
+		stone: snapshot.stone ? [...snapshot.stone] : new Array<boolean>(saved.cellCount).fill(false),
+		chip:
+			snapshot.chip ??
+			Math.max(-1, ...snapshot.draft.map((entry) => entry.cell), ...(snapshot.stone ?? []).flatMap((shut, cell) => (shut ? [cell] : []))) +
+				1,
 		exhausted: [...snapshot.exhausted],
 		wounded: [...snapshot.wounded],
 		won: snapshot.won,

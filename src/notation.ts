@@ -71,9 +71,13 @@ export function describeStep(before: TombState, after: TombState): string | null
 	// armed slot, because a move made under an armed item changes that slot too: the Remedy covering
 	// a park is spent by the park, and a bury spends the IMAWAL that allowed it. The line has to say
 	// what actually moved, or the move disappears from the transcript entirely.
+	// A bandit's shove is the hazard's move, not the player's: the card it takes leaves a slot that is stone
+	// now, and the line has to record what the player did.
+	const shut = new Set(after.stone.flatMap((stone, cell) => (stone ? [cell] : [])));
 	const moved = [...now.values()].filter((card) => {
 		const previous = old(card);
-		return !!previous && !sameLocation(previous.location, card.location);
+		if (!previous || sameLocation(previous.location, card.location)) return false;
+		return !(previous.location.fixture === 'cell' && shut.has(previous.location.data[0]));
 	});
 	if (moved.length === 2) {
 		const [a, b] = moved;
@@ -87,6 +91,9 @@ export function describeStep(before: TombState, after: TombState): string | null
 		// else on the board changes, so this is the only line that can describe it.
 		const converted = before.draft.find((entry) => !after.draft.some((now) => now.cell === entry.cell));
 		if (converted) return convertLabel(converted.name, converted.cell);
+		// A stone pocket the bandit left: the chip spends an empty slot for its mend, so nothing on the board
+		// changes but the chip's own mark.
+		if (after.chip !== before.chip) return convertLabel('stone pocket', before.chip - 1);
 	}
 	if (moved.length) {
 		const first = moved[0];

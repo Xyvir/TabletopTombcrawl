@@ -27,7 +27,7 @@ Two rules for this file:
 | **Court** | The boss suit's ace through queen. Carries the deal's hazard. | boss-suit minions |
 | **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's hazard too. | off-suit king |
 | **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **No hazard.** | plain card |
-| **Hazard** | The deal's one monster power — mug, terrify, petrify or silence — worn by the court and the kings. Copy introduces it as *Hazard: <verb> — …*, with the verb lowercase after the label, because the line reads the card rather than titling it. `aura` and `affliction` stay the code's words. | monster power |
+| **Hazard** | The deal's one monster power — burglarize, terrify, petrify or nullify — worn by the court and the kings. Copy introduces it as *Hazard: <verb> — …*, with the verb lowercase after the label, because the line reads the card rather than titling it. `aura` and `affliction` stay the code's words. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
@@ -55,7 +55,7 @@ are fixed. Copy says **trait** only of a kin, **skill** only of a class, **hazar
 | --- | --- | --- | --- |
 | Kin | **trait** | always on, while the card is unwounded | Intuition |
 | Class | **skill** | always on, while the card is unwounded | Powerstrike |
-| Monster | **hazard** | the deal's one, worn by the court and the kings | Silence |
+| Monster | **hazard** | the deal's one, worn by the court and the kings | Nullify |
 | Glyph | **spell** | armed, spent by the action it is armed for, refreshed on a level up | PISORF |
 | Item | **effect** | spent once, then restocked after it is slain | Potion |
 
@@ -76,10 +76,10 @@ The word is *the boss*, never *the boss king*: the throne is dealt as a king of 
 on it, and Medusa is a woman — the rank is the card's, the word is the post. Generals keep their rank: they are kings,
 and they say so.
 
-Monster names are per suit and never per card: Bandit (spades, mug), Zombie (hearts, terrify),
-Gorgon (clubs, petrify), Wraith (diamonds, silence). The four hazards are punchy symmetric verbs, and the ones
-that name a rule are written as the verb it performs: a zombie terrifies, a gorgon petrifies, a bandit mugs and a
-wraith silences. Where one is named on its own — a status line, a heading — it keeps its capital.
+Monster names are per suit and never per card: Bandit (spades, burglarize), Zombie (hearts, terrify),
+Gorgon (clubs, petrify), Mana Wraith (diamonds, nullify). The four hazards are punchy symmetric verbs, and the ones
+that name a rule are written as the verb it performs: a zombie terrifies, a gorgon petrifies, a bandit burglarizes and a
+mana wraith nullifies. Where one is named on its own — a status line, a heading — it keeps its capital.
 
 The right-most free cell is the **reserve pocket**, marked with a gold star: it takes cards like any other, but the
 star goes out for the rest of the deal the first time anything sits in it. Finishing with it up is the optional
@@ -115,7 +115,7 @@ Four verbs cover every way a card moves, and copy uses only these.
 | **Slay** | Send a card to its grave. Every route is a slay: the attack that pays HP, the plain play straight to the graveyard, and a glyph that carries a card there. | send home / auto-foundation | `attackWith`, `canSendHome` |
 | **Stash** | Send a card from the tomb into a pocket, to wait there. | move to a free cell | `tombMove` to a cell, "park" |
 | **Restock** | Claim a waiting party pocket: the card played in becomes the party thing that lives there, or remakes the one that owned the pocket before. | refill the item | `itemWindow` |
-| **Convert** | Give up a party pocket's claim through the chip: the ability is spent, the card stays lying in the pocket as a plain card, the chip walks one step left and the track mends one wound. A wounded card cannot be converted. | lose the drafted card | `convertibleCell`, consumed draft |
+| **Convert** | Give up a party pocket's claim through the chip: the ability is spent, the card stays lying in the pocket as a plain card, the chip walks one step left and the track mends one wound. A stone pocket a bandit left has no ability to spend and still pays the mend. A wounded card cannot be converted. | lose the drafted card | `convertibleCell`, consumed draft |
 
 Notes that follow from those:
 
@@ -124,8 +124,9 @@ Notes that follow from those:
   copy should say which one the player is about to do, never "use the item or lose it".
 - **A slain party card converts its own pocket.** The thing that lived there is dead, so the pocket is
   plain from then on — slay and convert can both happen on one move.
-- **A wound locks the pocket it lies on.** A wounded card cannot be converted, and a bandit gets nothing
-  from that slot either — arriving wounded is the counterplay, the same bargain a wraith offers.
+- **A wound locks the pocket it lies on.** A wounded card cannot be converted, and a bandit shoves a
+  wounded aspect nowhere — arriving wounded is the counterplay, the same bargain a wraith offers. A stone
+  pocket is not a wound: it locks nothing, and the chip still mends when it is spent.
 - **Stash is the code's "park".** The hazard still fires on it: a stashed carrier sets off its power where it
   lies. Copy says stash; nothing in copy says park.
 

@@ -388,7 +388,7 @@ holding neither were untouched. The 359 dead lines went to `solutions/archive/`,
 The four monster powers now price four different things, where two of them used to price the same thing in
 different slots. **Mug** (spades, Bandit) forces the conversion a step early — the chip walks one slot left
 with no heal — on a slay or a park: the ability is spent, the card stays plain where it lies, and nothing
-waits to remake the item. **Petrify** (clubs, Gorgon) turns one card face down, the leftmost of the
+waits to remake the item. (Superseded by "Mug shoves and stones", below.) **Petrify** (clubs, Gorgon) turns one card face down, the leftmost of the
 party's kin and class that is still face up, and stops at the class — its window is the party's own two passives, one
 per affliction, and a cell already wounded has nothing left to give, so the kin answers the first gorgon and the
 class the second. Fear (hearts) prices the level and Mana Burn (diamonds) the glyphs, so no two afflictions price the same
@@ -474,10 +474,47 @@ The category is a **hazard** now, not an affliction, and the four read as punchy
 (Bandit, spades), **terrify** (Zombie, hearts), **petrify** (Gorgon, clubs), **silence** (Wraith, diamonds). Two of
 the four are unchanged in name; Fear became terrify and Mana Burn became silence. Nothing mechanical moved — the
 same clause keys, suits, carrier rules and prices — so no stored line was re-measured and the corpus is untouched.
+Mug and silence were renamed once more, in *Burglarize and nullify*, below.
 
 Copy reads *Hazard: <verb> — what it costs* with the verb lowercase after the label, and a rat now reads
 *No hazard.* rather than *Affliction: None*. `fearApplies`/`afterTerrify`/`terrifyLocks` follow the power's new
 name; `aura` and `affliction` stay the code's words for the category, the way the glossary sets out.
+
+### Mug shoves and stones (adopted 2026-11-27)
+
+Mug no longer forces a conversion and never moves the Hero Chip. A bandit's slay or stash **shoves the hero
+aspect nearest the chip into the first free pocket to its right, and the slot it leaves turns to stone**. The
+card is not spent: it is a plain card in a pocket now, still a heart, and it goes home like any other. The
+chip stays where it stands, so the price is the ability alone.
+
+Two things whiff: the aspect itself wounded, and a track with no free pocket to its right. Those are the
+player's two counterplays, and the wound one is the same bargain a wraith offers. The level-up exception is
+gone — the level up arrives with the kill, but the bandit reaches the slot on the same blow.
+
+A stone pocket is the Dwarf's pocket's cousin, not the same thing, and it has its own code: `stoneCell` is
+Constitution's (it reopens when his wound heals and keys off the drafted Dwarf), while `banditStone` is
+permanent and per-cell (`TombState.stone`). Both are shut to builds, PISORF and `emptyCells`, through
+`stonePocket`. A bandit's stone is always empty, so the Dwarf's card-in-pocket rules are never tested for it.
+It still pays the chip: `canConvert` accepts a stone slot and `convertChip` spends it for the mend with no
+ability to take, so one eviction never costs an ability *and* the heal.
+
+`TombState.chip` is stored now, because the chip's mark can no longer be derived from the draft: an eviction
+empties an aspect slot without moving the chip. The deal sets it to `DRAFT_CELL_COUNT`, only a conversion
+decrements it, and `chipBoundary` falls back to the draft's own reading under the legacy clause. A boardstring
+writes a shut pocket as `@` — an empty token could not say it — and rebuilds the chip as one past the
+furthest aspect or stone. The warning moved with the card: `afflictionTargets` marks the aspect a bandit would
+shove, since the card is what moves, and the chip's `!` is the conversion hover alone. Notation ignores the
+shoved card, so a player's park still records as the park.
+
+### Burglarize and nullify: the four verbs again (adopted 2026-11-27)
+
+The four hazards read **burglarize** (Bandit, spades), **terrify** (Zombie, hearts), **petrify** (Gorgon,
+clubs) and **nullify** (Mana Wraith, diamonds). Mug became burglarize and silence became nullify, and the
+Wraith is a **Mana Wraith** now. The tomb keeps its name — *Warren of Wraiths* — because a place is named for
+the kind of thing that fills it, and a mana wraith is still a wraith; only the monster card and its hazard
+carry the longer name. Nothing mechanical moved: `banditMug` is `banditBurglarize`, `mugPocket`/`mugTarget`/
+`mugSlot` are `burglarizePocket`/`burglarizeTarget`/`burglarizeSlot`, and the hazard flash kind is
+`burglarize`. No stored line was re-measured and the corpus is untouched.
 
 ## The reserve pocket (adopted)
 

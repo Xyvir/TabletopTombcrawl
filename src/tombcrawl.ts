@@ -102,19 +102,13 @@ export const CLAUSES = {
 	/** Petrify: a boss-suit minion wounds the party's kin and class instead of adding a rank. */
 	stoneGaze: true,
 	/**
-	 * Mug: a bandit forces the conversion a step early — the chip walks one slot left with no heal.
-	 * The card stays where it lies as a plain card, exactly as a conversion by hand leaves it, minus the
-	 * mend. A wound over the slot locks it, so the bandit takes nothing: the counterplay is arriving
-	 * wounded, the same bargain a Wraith offers.
+	 * Burglarize: a bandit shoves the aspect nearest the chip into the first free pocket to its right and shuts the slot
+	 * it leaves — a stone pocket, closed to everything but the chip. The card is not spent and the chip does not
+	 * move, so the price is the ability, not the heart. Two things call it off: the aspect itself wounded, and a
+	 * track with no pocket to shove it into. There is no level-up exception: the level up arrives with the kill,
+	 * but the bandit reaches the slot on the same blow.
 	 */
-	banditMug: true,
-	/**
-	 * Mug spares a blow that completes a rank: the level up lifts the delver before the bandit reaches the
-	 * chip, so the aspect beside it stands and the chip does not move. Mug is the one power whose price no
-	 * heal can buy back, and the level up is the heal that arrives with the kill that would have taken it.
-	 * Every other power still fires on that blow — only the permanent price is refunded.
-	 */
-	mugLevelSparing: true,
+	banditBurglarize: true,
 	/**
 	 * Every king is a lesser king of the boss: it carries the boss suit's power, whatever its own suit is,
 	 * the way a euchre bower answers to the trump. That keeps one aura per deal to learn, felt by the
@@ -148,7 +142,7 @@ export const CLAUSES = {
 	 */
 	fogDominance: false,
 	/**
-	 * Wraith: Silence drains the glyph slot rather than the Glyph item, so a slot the chip has stepped
+	 * Mana Wraith: Nullify drains the glyph slot rather than the Glyph item, so a slot the chip has stepped
 	 * past is still bitten instead of going quiet.
 	 */
 	wraithSlot: false,
@@ -176,18 +170,18 @@ export const ROLE_LABEL: Record<DraftRole, string> = {
 	kin: 'Kin trait · always on',
 	class: 'Class skill · always on',
 	glyph: 'Glyph spell · armed, spends on use, refreshes on level up',
-	consumable: 'Item effect · spent once, restocked after it is slain',
+	consumable: 'Flask · spent once, restocked after it is slain',
 };
 
 /**
  * The one-word reminder printed over each draft slot: four unfamiliar names tell a new player
- * nothing, but "kin, class, glyph, item" says which slot is which at a glance.
+ * nothing, but "kin, class, glyph, flask" says which slot is which at a glance.
  */
 export const ROLE_WORD: Record<DraftRole, string> = {
 	kin: 'kin',
 	class: 'class',
 	glyph: 'glyph',
-	consumable: 'item',
+	consumable: 'flask',
 };
 
 export interface Ability {
@@ -231,11 +225,11 @@ const CLASSES: Record<Suit, Ability> = {
 	},
 	clubs: {
 		name: 'Wizard',
-		text: 'Dualcast: the item aspect holds a second glyph in place of an item, spelling from its own suit. Both refresh on a level up, and a Wraith drains them both.',
+		text: 'Dualcast: the flask aspect holds a second glyph in place of its flask, spelling from its own suit. Both refresh on a level up, and a Mana Wraith drains them both.',
 	},
 	diamonds: {
 		name: 'Thief',
-		text: 'Pickpocket: a level up opens a one-action window. Arm the item pocket, then click an exposed card — or drag either way between the pocket and the card — and the two trade places, the card you took becoming the item and spelling from its own suit. A spent item comes back fresh, because exhaustion does not exist on the tableau.',
+		text: 'Pickpocket: a level up opens a one-action window. Arm the flask pocket, then click an exposed card — or drag either way between the pocket and the card — and the two trade places, the card you took becoming the flask and spelling from its own suit. A spent flask comes back fresh, because exhaustion does not exist on the tableau.',
 	},
 };
 
@@ -331,6 +325,17 @@ export interface TombState {
 	 * pocket an hazard can take off the track.
 	 */
 	constitution: boolean;
+	/**
+	 * A bandit's stone: an aspect slot the bandit emptied, shut for the rest of the deal. The card it held was
+	 * shoved into a pocket rather than spent, so the slot is not a wound and not a conversion — nothing moves
+	 * into it, and the chip still spends the slot itself for its mend.
+	 */
+	stone: boolean[];
+	/**
+	 * Where the Hero Chip stands: hero aspects lie to its left, plain pockets to its right. The deal sets it
+	 * just right of the party, and only a conversion moves it — a bandit never does.
+	 */
+	chip: number;
 	/** An exhausted cell: its ability is spent and the card lies on its side. Still counts as HP. */
 	exhausted: boolean[];
 	/**
@@ -508,6 +513,8 @@ export function createTombState(seed = randomTombSeed(), freeCells = FREE_CELL_C
 		trueBoss: false,
 		score: null,
 		constitution,
+		stone: new Array(cellCount).fill(false),
+		chip: DRAFT_CELL_COUNT,
 					armed: null,
 			itemWindow: null,
 			pickpocket: null,
@@ -578,7 +585,7 @@ export function hasPassive(state: TombState, name: string): boolean {
 
 /**
  * A Wizard's Dualcast: the item slot is a second glyph, holding the spell of the card's own suit. Both
- * refresh on a level up and both are drained by a Wraith, so everything that reads "the glyph" reads
+ * refresh on a level up and both are drained by a Mana Wraith, so everything that reads "the glyph" reads
  * this pair of slots.
  */
 export function isDualcastItem(state: TombState, entry: DraftCard): boolean {
@@ -715,8 +722,8 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		name: 'Bandit',
 		boss: 'Tomithy Longdall',
 		blurb: 'A scallywag looking to loot the tomb.',
-		power: 'Mug',
-		text: 'slaying or stashing this forces a Hero Chip conversion, with no heal. Blocked by a wound over the aspect, or by a slay that completes a rank.',
+		power: 'Burglarize',
+		text: 'slaying or stashing this shoves the hero aspect nearest the chip into the first free pocket to its right, and turns the slot it leaves to stone. Whiffed by a wound over that aspect, or by a track with no free pocket to its right.',
 	},
 	hearts: {
 		name: 'Zombie',
@@ -733,11 +740,11 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		text: 'slaying or stashing this wounds your kin and class, one card each from the left, and stops at the class.',
 	},
 	diamonds: {
-		name: 'Wraith',
+		name: 'Mana Wraith',
 		boss: 'Tormented One',
-		blurb: 'A wraith that drinks the spells out of your hand.',
-		power: 'Silence',
-		text: 'slaying this silences your spell slot: the Glyph is exhausted and wounded.',
+		blurb: 'A mana wraith that drinks the spells out of your hand.',
+		power: 'Nullify',
+		text: 'slaying this nullifies your spell slot: the Glyph is exhausted and wounded.',
 	},
 };
 
@@ -841,7 +848,7 @@ export function maxHp(state: TombState): number {
 export function emptyCells(state: TombState): number[] {
 	return state.game.cells
 		.map((card, index) => (card ? -1 : index))
-		.filter((index) => index >= 0 && !stoneCell(state, index));
+		.filter((index) => index >= 0 && !stonePocket(state, index));
 }
 
 export function hp(state: TombState): number {
@@ -1016,18 +1023,23 @@ function runReachesBottom(state: TombState, from: CardLocation, run: Card[]): bo
 }
 
 /**
- * The Hero Chip's boundary: hero aspects sit to its left, plain pockets to its right, and the
- * mark walks one slot left each time an aspect converts. A slot waiting on its refill is still an
- * aspect slot — the chip only moves once that window closes unfed.
+ * The Hero Chip's boundary: hero aspects sit to its left, plain pockets to its right. Under the explicit
+ * conversion the chip keeps its own mark and only a conversion moves it — a bandit that empties a slot
+ * leaves the chip where it stands. The legacy path derives it from the draft, since nothing else moved it.
  */
 export function chipBoundary(state: TombState): number {
-	const drafted = convertibleCell(state) + 1;
+	if (CLAUSES.explicitConversion) return state.chip;
+	const drafted = state.draft.reduce((highest, entry) => Math.max(highest, entry.cell), -1) + 1;
 	const pending = state.itemWindow ? state.itemWindow.cell + 1 : 0;
 	return Math.max(drafted, pending);
 }
 
-/** The one aspect that may leave its slot: the drafted card sitting just left of the chip. */
+/**
+ * The one slot that may leave play: the one the chip has reached. It holds an aspect, or a stone pocket a
+ * bandit left behind — the chip spends either. Under the legacy rules it is simply the furthest aspect left.
+ */
 export function convertibleCell(state: TombState): number {
+	if (CLAUSES.explicitConversion) return chipBoundary(state) - 1;
 	return state.draft.reduce((highest, entry) => Math.max(highest, entry.cell), -1);
 }
 
@@ -1038,14 +1050,26 @@ export function conversionTarget(state: TombState): DraftCard | undefined {
 }
 
 /**
- * The hero aspect Mug would spend: the one the chip has reached, as long as its pocket holds a card and no
- * wound has locked it. Shared with the interface, because the bandit's warning sits on the chip and not on a
- * card — the aspect never moves, so there is nothing on the board to mark.
+ * The first pocket a bandit could shove an aspect into: the nearest empty one to its right. A stone pocket
+ * takes nothing in, the same as the Dwarf's, so the search walks past one.
  */
-export function mugTarget(state: TombState): DraftCard | undefined {
-	const slot = convertibleCell(state);
+export function burglarizePocket(state: TombState, slot: number): number | null {
+	for (let cell = slot + 1; cell < state.game.cells.length; cell++) {
+		if (!state.game.cells[cell] && !stonePocket(state, cell)) return cell;
+	}
+	return null;
+}
+
+/**
+ 	 * The hero aspect Burglarize would take: the one nearest the chip that still has a card and no wound over it. The
+ * bandit does not spend it — it shoves the card into the first free pocket to the right and shuts the slot
+ * it left — so the two things that call the shot are a wounded aspect and a track with nowhere to shove it.
+ * Shared with the interface, which marks the card itself: unlike a conversion, the board moves.
+ */
+export function burglarizeTarget(state: TombState): DraftCard | undefined {
+	const slot = state.draft.reduce((highest, entry) => Math.max(highest, entry.cell), -1);
 	if (slot < 0 || !state.game.cells[slot] || cellTopWounded(state, slot)) return undefined;
-	return draftAt(state, slot);
+	return burglarizePocket(state, slot) === null ? undefined : draftAt(state, slot);
 }
 
 /**
@@ -1055,7 +1079,11 @@ export function mugTarget(state: TombState): DraftCard | undefined {
 export function canConvert(state: TombState): boolean {
 	if (!CLAUSES.explicitConversion || state.won || state.itemWindow) return false;
 	const cell = convertibleCell(state);
-	if (cell < 0 || !state.game.cells[cell]) return false;
+	if (cell < 0) return false;
+	// A stone pocket the bandit left has no aspect in it to lock: the chip still spends the slot, for the
+	// mend alone. A wound is the one thing that locks a conversion.
+	if (banditStone(state, cell)) return true;
+	if (!state.game.cells[cell]) return false;
 	return !cellTopWounded(state, cell);
 }
 
@@ -1082,18 +1110,23 @@ export function conversionHeals(state: TombState): string[] {
 
 export function convertChip(state: TombState): TombState | null {
 	if (!canConvert(state)) return null;
-	const entry = conversionTarget(state)!;
-	const cell = entry.cell;
+	const cell = convertibleCell(state);
+	const entry = draftAt(state, cell);
 	const exhausted = [...state.exhausted];
 	exhausted[cell] = false;
+	// A stone pocket the bandit left is spent with the slot: the pocket is plain from here on.
+	const stone = [...state.stone];
+	stone[cell] = false;
 	const { wounded } = heal(state, TOMB_RULES.conversionHeal);
 	// Nothing goes home, so no level can lift here; settle still runs because it is where the party's own
 	// state is read once the slot is gone — a converted Dwarf closes the pocket his Constitution opened.
 	const next = settle(
 		cloneWith(state, {
-			draft: consumeDraft(state, cell),
+			draft: entry ? consumeDraft(state, cell) : state.draft,
 			exhausted,
+			stone,
 			wounded,
+			chip: state.chip - 1,
 			armed: state.armed?.cell === cell ? null : state.armed,
 			itemWindow: null,
 			pickpocket: null,
@@ -1163,14 +1196,15 @@ export function pisorfPair(state: TombState, from: CardLocation): Card[] | null 
 
 /** PISORF needs a proper pair and an open free cell to put it in — a stone pocket is not an open cell. */
 export function pisorfCanStack(state: TombState, from: CardLocation, cell: number): boolean {
-	return !!pisorfPair(state, from) && !state.game.cells[cell] && !stoneCell(state, cell);
+	return !!pisorfPair(state, from) && !state.game.cells[cell] && !stonePocket(state, cell);
 }
 
 export function canBuildOn(state: TombState, cards: Card[], to: CardLocation): boolean {
 	if (!cards.length) return false;
 	if (to.fixture === 'cell') {
-		// A stone pocket takes nothing in: it is not a free cell while the Dwarf is face down.
-		return cards.length === 1 && !state.game.cells[to.data[0]] && !stoneCell(state, to.data[0]);
+		// A stone pocket takes nothing in: it is not a free cell while the Dwarf is face down, nor ever
+		// once a bandit has shut it.
+		return cards.length === 1 && !state.game.cells[to.data[0]] && !stonePocket(state, to.data[0]);
 	}
 	if (to.fixture !== 'cascade') return false;
 	const column = state.game.tableau[to.data[0]] ?? [];
@@ -1621,6 +1655,21 @@ export function stoneCell(state: TombState, cell: number): boolean {
 }
 
 /**
+ * A bandit's stone: the slot an eviction emptied, shut for the rest of the deal. It is the Dwarf's pocket's
+ * cousin — nothing moves in, and a card left lying in it would still be a heart — but the two arrive from
+ * opposite ends: Constitution's opens again when the Dwarf's wound heals, and this one never opens at all.
+ * The chip can still spend it (see `canConvert`), which is what keeps an eviction from costing a mend too.
+ */
+export function banditStone(state: TombState, cell: number): boolean {
+	return CLAUSES.banditBurglarize && (state.stone[cell] ?? false);
+}
+
+/** Any shut pocket: the Dwarf's while he is face down, or a bandit's for good. Nothing moves into either. */
+export function stonePocket(state: TombState, cell: number): boolean {
+	return stoneCell(state, cell) || banditStone(state, cell);
+}
+
+/**
  * Give up the reserve the moment anything sits in it. It is sticky on purpose: a card put in and taken out again
  * still ends the true win, or the pocket would be free to borrow from all deal and only be guarded at the end.
  */
@@ -1770,17 +1819,17 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
 }
 
 /**
- * The cells a monster power drains: the item under a Gorgon, the Glyph under a Wraith — and with a
- * Wizard's Dualcast the item aspect spells too, so a Wraith bites both glyphs.
+ 	 * The cells a monster power drains: the Glyph under a Mana Wraith — and with a
+ 	 * Wizard's Dualcast the item aspect spells too, so a Mana Wraith bites both glyphs.
  */
 /**
- * The cells Silence drains. The item used to share this list — one hazard for each spent slot — but the
- * item is Mug's now: a bandit forces its conversion without a heal rather than spending it, so this list is
- * the Wraith's alone. The glyphs are its own, and a Wizard's Dualcast makes the item slot one of them.
+ 	 * The cells Nullify drains. The item used to share this list — one hazard for each spent slot — but the
+ 	 * item is Burglarize's now: a bandit forces its conversion without a heal rather than spending it, so this list is
+ 	 * the Mana Wraith's alone. The glyphs are its own, and a Wizard's Dualcast makes the item slot one of them.
  */
 function auraCells(state: TombState): number[] {
 	if (state.bossSuit !== 'diamonds') return [];
-	// The Wraith on the slot clause drains the place rather than the item, so a converted one still bites.
+	// The Mana Wraith on the slot clause drains the place rather than the item, so a converted one still bites.
 	if (CLAUSES.wraithSlot) {
 		const slot = ROLES_BY_DRAW_ORDER.indexOf('glyph');
 		return slot >= 0 && slot < state.game.cells.length ? [slot] : [];
@@ -1822,29 +1871,31 @@ export function auraItemWound(state: TombState, card: Card, from: CardLocation):
 }
 
 /**
- * Mug: the bandit forces the conversion one step early — the Hero Chip walks left with no heal.
- * The card stays where it lies and turns plain, exactly as a conversion by hand leaves it, minus the
- * bonus mend. No pocket need stand open, because nothing moves: the price is the aspect and its heal.
- * A wound lying over the aspect locks it, so the bandit takes nothing — the counterplay is
- * arriving wounded, the same bargain a Wraith offers. The aspect is whatever the chip has reached, so a
- * Wizard's Dualcast glyph is mugged exactly like a flask, and a card merely resting on top of a drafted
- * aspect is not the aspect.
+ 	 * Burglarize: the bandit shoves the aspect nearest the chip into the first free pocket to its right, and the slot it
+ * leaves turns to stone. The card is not spent — it is a plain card in a pocket now, a heart that can go home
+ * like any other — so the price is the ability, and the chip does not move. A wound over the aspect locks it,
+ * and a track with nowhere to shove it takes nothing either: those are the two whiffs. Once the slot is stone
+ * the chip can still spend it for the mend (`canConvert`), which is what keeps an eviction from costing two.
  */
-function mugSlot(state: TombState): TombState {
-	// A wound turns the card face down and locks the aspect, so a bandit has nothing to convert:
-	// the same bargain a Wraith offers, where a slot already paid for has nothing left to take.
-	const entry = mugTarget(state);
+function burglarizeSlot(state: TombState): TombState {
+	const entry = burglarizeTarget(state);
 	if (!entry) return state;
 	const slot = entry.cell;
+	const to = burglarizePocket(state, slot);
+	if (to === null) return state;
 	const exhausted = [...state.exhausted];
 	exhausted[slot] = false;
-	// No heal: the forced step spends the ability without mending anything. Settle still runs, because it
-	// is where the party's own state is read once the slot is gone — a converted Dwarf closes the pocket
-	// his Constitution opened.
+	const stone = [...state.stone];
+	stone[slot] = true;
+	// Settle still runs, because it is where the party's own state is read once the slot is gone — a
+	// converted Dwarf closes the pocket his Constitution opened, and a card shoved into the reserve pocket
+	// spends the star like any other card arriving there.
 	const next = settle(
 		cloneWith(state, {
+			game: relocate(state, [{ id: entry.id, to: { fixture: 'cell' as const, data: [to] } }]),
 			draft: consumeDraft(state, slot),
 			exhausted,
+			stone,
 			armed: state.armed?.cell === slot ? null : state.armed,
 			itemWindow: null,
 			pickpocket: null,
@@ -1908,9 +1959,9 @@ function stoneGaze(state: TombState, card: Card): TombState {
 
 /**
  * The cards an hazard is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the card Terrify would turn down, the kin and class Petrify would wound, the glyphs Silence
- * would spend. Mug is the exception — it spends the hero aspect beside the chip and leaves the card where it
- * lies, so nothing on the board is marked and the interface bangs the chip instead (`mugTarget`). An armed
+ 	 * pointer: the card Terrify would turn down, the kin and class Petrify would wound, the glyphs Nullify
+ 	 * would drain. Burglarize is the exception — it moves the aspect into a pocket and shuts the slot it leaves,
+ 	 * so the card itself is marked (`burglarizeTarget`) and the chip stays quiet. An armed
  * Remedy turns the whole aura off, so it warns on nothing at all: nothing would happen.
  */
 export function afflictionTargets(state: TombState, card: Card): string[] {
@@ -1922,10 +1973,12 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 			const hit = terrifyApplies(state, card) ? woundTarget(state) : null;
 			return hit ? [cardId(hit)] : [];
 		}
-		case 'spades':
-			// Mug walks the chip a step left with no heal, and the aspect it spends stays in its pocket as a
-			// plain card: the chip is the one thing that moves, so it is the one thing the warning marks.
-			return [];
+		case 'spades': {
+			// Burglarize shoves the nearest aspect one pocket right and shuts the slot it leaves: the card itself is
+			// what moves, so the card is what the warning marks.
+			const entry = burglarizeTarget(state);
+			return entry ? [entry.id] : [];
+		}
 		case 'clubs': {
 			// Petrify turns one card, the leftmost passive still face up: the kin first, then the class
 			// once the kin is wounded. A stashed gorgon has no attack preview to show its heart, so this is
@@ -1951,15 +2004,12 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
  * A boss-suit minion carries its power wherever it leaves the board: sending one home kills it,
  * and parking one in a free cell sets the power off just the same. An armed Remedy covers either.
   * `by` says which of the two it was, because Petrify is the one power already priced into the kill.
- * `levelled` says the blow completed a rank: the bandit is the one power that arrives too late, because
- * the level up lifts the delver first. Nothing parks a card home, so a park never levels. `level` is the
- * level the fight opened on, passed in by a kill so Terrify reads the same number the preview did.
+ * `level` is the level the fight opened on, passed in by a kill so Terrify reads the same number the preview did.
  */
 function bossAura(
 	state: TombState,
 	card: Card,
 	by: 'kill' | 'park',
-	levelled = false,
 	level = currentLevel(state)
 ): TombState {
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
@@ -1969,18 +2019,18 @@ function bossAura(
 			// is taken here, and a kill pays its own wounds after it (see `attackWith`).
 			return terrifyApplies(state, card, level) ? cloneWith(state, { wounded: wound(state, 1).wounded }) : state;
 		case 'spades':
-			// Mug forces the conversion rather than pricing the card: the Hero Chip walks left with no heal,
-			// whether the bandit went down to a blade or was only stashed. Nothing is priced into the
-			// kill for this, so both routes land here.
-			return CLAUSES.banditMug && !(CLAUSES.mugLevelSparing && levelled) ? mugSlot(state) : state;
+			// Burglarize shoves the aspect nearest the chip a pocket to the right and shuts the slot it leaves, whether
+			// the bandit went down to a blade or was only stashed. Nothing is priced into the kill for this, so
+			// both routes land here.
+			return CLAUSES.banditBurglarize ? burglarizeSlot(state) : state;
 		case 'clubs':
 			// Petrify turns the party's kin and class face down, left to right, and stops at the class.
 			// A kill pays its own wounds first and then gazes (see `attackWith`); a park has no bill to
 			// pay first, so it petrifies here.
 			return by === 'park' ? stoneGaze(state, card) : state;
 		case 'diamonds': {
-			// Silence takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
-			// Dualcast leaves two glyphs standing, and a Wraith takes them both.
+			// Nullify takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
+			// Dualcast leaves two glyphs standing, and a Mana Wraith takes them both.
 			const cells = auraCells(state);
 			if (!cells.length) return state;
 			return dropKnockedArm(
@@ -2020,7 +2070,7 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 	if (!moved) return false;
 	const prior = before.game.cards.find((other) => cardId(other) === cardId(moved));
 	switch (before.bossSuit) {
-		// Terrify and Mug leave evidence: a wound on top of the blow's own bill, or the slot converted.
+		// Terrify and Burglarize leave evidence: a wound on top of the blow's own bill, or a slot turned to stone.
 		case 'hearts':
 			return !!prior && terrifyApplies(before, prior) && newlyWounded(before, after).length > 0;
 		case 'spades':
@@ -2028,7 +2078,7 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 		// Petrify leaves a passive face down when it has one left to stone.
 		case 'clubs':
 			return gazeCell(before) !== null;
-		// Silence needs a glyph standing to drain.
+		// Nullify needs a glyph standing to drain.
 		case 'diamonds':
 			return !!prior && auraItemOf(before, prior) !== null;
 		default:
@@ -2229,12 +2279,9 @@ export function attackWith(
 		});
 	}
 
-	// Whether this blow completed a rank, read with the card already home: Mug is the one power a level up
-	// outruns, so the bandit needs to know before it reaches the chip.
-	const levelled = currentLevel(next) > levelBefore;
 	// A power card that was itself the item is already converting its own slot on the way home, so there is no
-	// conversion left to force: the bandit takes the slot as it stands, not the next pocket's worth after one.
-	next = itemCard ? next : bossAura(next, card, 'kill', levelled, levelBefore);
+	// aspect left to force: the bandit takes the slot as it stands, not the next pocket's worth after one.
+	next = itemCard ? next : bossAura(next, card, 'kill', levelBefore);
 
 	// The kill's own wounds are paid last, so a drained item is already face-down when they land.
 	next = cloneWith(next, { wounded: wound(next, preview.damage).wounded });
@@ -2489,7 +2536,7 @@ export function disarm(state: TombState): TombState {
  * This runs where the injury lands, after the arm that paid for the action has been spent, so an item
  * that pays for the very action is never knocked out of hand by its own bill.
  * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
- * already spent, and the only powers that exhaust an unspent item (Burden, Silence) wound it too.
+ * already spent, and the only powers that exhaust an unspent item (Burden, Nullify) wound it too.
  */
 function dropKnockedArm(state: TombState): TombState {
 	const armed = state.armed;

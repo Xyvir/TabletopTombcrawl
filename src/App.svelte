@@ -51,6 +51,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		healPreview,
 		auraActive,
 		auraItemOf,
+		banditStone,
 		carriesPower,
 		canRevealFaceDown,
 		cellCardMovable,
@@ -60,7 +61,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		chipBoundary,
 		conversionHeals,
 		conversionTarget,
-		mugTarget,
 		convertChip,
 		CLAUSES,
 		convertibleCell,
@@ -93,7 +93,6 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		phantomRank,
 		isBoss,
 		levelUpGraves,
-		levelsUpOnSlay,
 		isBossMinion,
 		isFaceDown,
 		bossSlain,
@@ -247,7 +246,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The last card a tomb tap moved, so a second click at the same spot can rewind it. */
 	let tombMoved: { id: string; from: CardLocation; before: TombState; rect: DOMRect; time: number } | null = null;
 	/** A whole-screen flash: gold for a level up, red for damage, a colour for each monster power. */
-	type FlashKind = 'level' | 'damage' | 'heal' | 'mana' | 'mug';
+	type FlashKind = 'level' | 'damage' | 'heal' | 'mana' | 'burglarize';
 	let flash = $state<{ kind: FlashKind; id: number } | null>(null);
 	/**
 	 * The three moments that change what a run is: the tomb finds its boss, the boss dies, and the tomb is
@@ -774,7 +773,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	);
 	/**
 	 * The cards the hazard of the hovered monster is aimed at: the card a Zombie's terrify would turn, the
-	 * slot a Bandit would convert, the cards a Gorgon would petrify, the glyphs a Wraith would spend. An
+	 * aspect a Bandit would shove, the cards a Gorgon would petrify, the glyphs a Mana Wraith would drain. An
 	 * armed Remedy turns the whole aura off, and the warning goes with it, since the move it covers would
 	 * not do any of it.
 	 */
@@ -838,20 +837,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/**
 	 * The chip's own `!`, mounted on the token and nowhere else. Hovering the chip is the whole question —
 	 * what would a conversion spend, and what does it mend — so the mark answers on the hover and the mend
-	 * lights up on the track beside it. A bandit under the pointer puts it there too: Mug walks the chip a
-	 * step left with no heal, and the aspect it takes never moves, so the chip is the only card-shaped thing
-	 * that happens. A wounded aspect locks both, and neither has anything to warn about then; and a bandit
-	 * whose blow completes a rank never reaches the chip at all, so that aim stays quiet.
+	 * lights up on the track beside it. A bandit no longer puts it there: Burglarize moves the aspect itself, so the
+	 * card wears the hazard's mark and the chip stays quiet. A wounded aspect locks the conversion, and there is
+	 * nothing to warn about then.
 	 */
-	const chipWarning = $derived.by(() => {
-		if (!tomb) return false;
-		if (chipHover) return canConvert(tomb);
-		if (!tombHover || tomb.bossSuit !== 'spades') return false;
-		const card = cardAt(tomb.game, tombHover);
-		if (!card || !carriesPower(tomb, card) || !auraActive(tomb) || !mugTarget(tomb)) return false;
-		// The level up lands first: the bandit has nothing to reach for.
-		return !levelsUpOnSlay(tomb, card);
-	});
+	const chipWarning = $derived.by(() => !!tomb && chipHover && canConvert(tomb));
 	const tombLevel = $derived(tomb ? currentLevel(tomb) : 0);
 	/** What the dungeon has yielded, out of the hundred a bare tomb pays. */
 	const tombGoldNow = $derived(tomb ? tombGold(tomb) : 0);
@@ -906,7 +896,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		const takes = state?.itemWindow?.takes;
 		const feed =
 			takes === 'any' ? 'any card' : takes === 'other' ? 'a card of another suit' : `a ${suit} card`;
-		return `Spent item pocket — play ${feed} here on your next action to restock it. Anything else converts this pocket.`;
+		return `Spent flask pocket — play ${feed} here on your next action to restock it. Anything else converts this pocket.`;
 	}
 
 	/**
@@ -1513,8 +1503,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The deal's one monster hazard, e.g. "Hazard: mug — slaying or stashing this forces a Hero Chip
-	 * conversion, with no heal." The court and every other king wear it, so it is always read from the boss suit. A court card
+	 * The deal's one monster hazard, e.g. "Hazard: burglarize — slaying or stashing this shoves the aspect nearest the
+	 * chip into the first free pocket, and turns its slot to stone." The court and every other king wear it, so it is always read from the boss suit. A court card
 	 * also carries the monster's one-line description; a General and the boss speak for themselves. The verb is
 	 * set lowercase where it follows the label, because the line is a reading of the card rather than a title.
 	 */
@@ -1545,9 +1535,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			return !!was && was.location.fixture !== 'foundation';
 		});
 		if (!slain) return null;
-		// Mug shows when the bandit forced the conversion: the chip walked left with no heal, so the draft shrinks.
-		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
-		// Terrify and Petrify are wounds, and the wound flash already answers for them; Silence needs a glyph
+		// Burglarize shows when the bandit emptied a slot: the aspect moved to a pocket, so the draft shrinks.
+		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'burglarize' : null;
+		// Terrify and Petrify are wounds, and the wound flash already answers for them; Nullify needs a glyph
 		// to drain.
 		if (auraItemOf(after, slain) === null) return null;
 		return 'mana';
@@ -1621,7 +1611,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		 */
 		const usedIsGlyph = !!usedEntry && (usedEntry.role === 'glyph' || isDualcastItem(prev, usedEntry));
 		// Take_damage counts the kill's clean bill only, read back off the board it was previewed on:
-		// wounds the aura deals — Silence on the glyph, a stashed Gorgon's gaze on the first passive
+		// wounds the aura deals — Nullify on the glyph, a stashed Gorgon's gaze on the first passive
 		// class — sound as hazard and nothing else, even when they land mid-slash.
 		const killDamage = homedPrev.reduce((n, card) => {
 			const at = wasLoc.get(shorthandCard(card));
@@ -1649,8 +1639,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			usedGlyph: usedIsGlyph,
 			usedItem: !!usedEntry && !usedIsGlyph,
 			// A conversion the chip makes is a sound of its own; a bandit forcing the step is the hazard and
-			// nothing else. Mug spends the slot without mending anything, so convert.ogg must not layer over it.
-			converted: next.draft.length < prev.draft.length && power !== 'mug',
+			// nothing else. Burglarize empties the slot without mending anything, so convert.ogg must not layer over it.
+			converted: next.draft.length < prev.draft.length && power !== 'burglarize',
 			leveled,
 			bossFound: foundBoss,
 			bossKilled: killedBoss,
@@ -2946,7 +2936,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{#each game.cells as card, i}
 				{@const location = { fixture: 'cell' as const, data: [i] }}
 				{@const entry = tomb ? draftAt(tomb, i) : undefined}
-				{@const stone = !!tomb && stoneCell(tomb, i)}
+				{@const bandit = !!tomb && banditStone(tomb, i)}
+				{@const stone = !!tomb && (bandit || stoneCell(tomb, i))}
 				{@const live = tomb && entry ? draftAbility(tomb, entry) : undefined}
 				{@const pending = tomb?.itemWindow && tomb.itemWindow.cell === i ? tomb.itemWindow : undefined}
 				{@const stack = tomb ? cellCards(tomb, i) : card ? [card] : []}
@@ -2983,7 +2974,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					class:empty={!card}
 					data-drop={`cell:${i}`}
 					data-card={card ? shorthandCard(card) : undefined}
-					data-role={entry ? entry.role : undefined}						title={stone
+					data-role={entry ? entry.role : undefined}						title={bandit
+							? `Stone pocket — a bandit shoved this aspect into the pocket to its right and shut the slot. Nothing can move in, and the chip still spends it for a mend.`
+							: stone
 						// Constitution is off, so the pocket is shut for as long as he is face down. A card in it is still a
 						// heart and still plays out; nothing new moves in until the wound heals.
 						? `Stone pocket — Constitution is off while the Dwarf is face down.${
@@ -3123,13 +3116,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			{#if tomb}
 				{@const ready = canConvert(tomb)}
 				{@const chipCard = conversionTarget(tomb)}
+				{@const chipStone = !!tomb && convertibleCell(tomb) >= 0 && banditStone(tomb, convertibleCell(tomb))}
 				<button
 					type="button"
 					class="chip"
 					class:ready
 					style={`--chip-index:${chipAt}`}
 					disabled={!ready}
-					title={!chipCard
+					title={chipStone
+						? 'Hero Chip: the slot beside it is a stone pocket a bandit left — click to spend it for a mend. Its aspect is gone, but the slot still pays.'
+						: !chipCard
 						? 'Hero Chip: no hero aspects are left. Every slot on the track is a plain pocket now, so there is nothing left to convert — the chip rests at the left edge where the party started.'
 						: ready
 							? `Hero Chip: aspects to the left, pockets to the right.\nClick to convert '${chipCard.name}': turn it into a pocket — its ability is gone for good — and mend one wound as a bonus. The card stays where it lies as a plain card, free to go home. A wounded aspect cannot be converted.`
@@ -3417,7 +3413,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 											if (!codeEditing) hovered = key;
 										}}
 												onclick={() => (entry ? startLayout(entry) : startPlaceholder(key))}
-																									title={`kin ${kin} · class ${cls} · glyph ${glyph} · item ${item}: ${
+																									title={`kin ${kin} · class ${cls} · glyph ${glyph} · flask ${item}: ${
 															entry
 																? `seed ${entry.seed}, boss slain in ${entry.moves} moves${entry.at ? `, found ${entry.at.slice(0, 10)}` : ''}`
 																: filler

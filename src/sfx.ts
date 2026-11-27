@@ -194,7 +194,7 @@ export interface MoveSfx {
 	bossFound: boolean;
 	bossKilled: boolean;
 	tombEmptied: boolean;
-	/** A monster power fired (Mug, Terrify, Petrify, Silence). */
+	/** A monster power fired (Burglarize, Terrify, Petrify, Nullify). */
 	afflicted: boolean;
 	/**
 	 * A wound mended and a card came back up: the chip's conversion bounty, a level up's repair, the glyph's

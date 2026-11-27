@@ -251,10 +251,16 @@ export function generateMoves(state: TombState): SolverMove[] {
 		}
 	}
 
-	// The explicit conversion: the Hero Chip spends the hero aspect beside it for one wound.
+	// The explicit conversion: the Hero Chip spends the slot beside it for one wound — an aspect, or a stone
+	// pocket a bandit left, which has no ability left to spend and still pays the mend.
 	if (canConvert(state)) {
-		const entry = conversionTarget(state);
-		if (entry) add({ kind: 'convert' }, convertLabel(entry.name, entry.cell), convertChip(state));
+		const cell = convertibleCell(state);
+		const entry = draftAt(state, cell);
+		add(
+			{ kind: 'convert' },
+			entry ? convertLabel(entry.name, entry.cell) : `convert stone pocket (cell ${cell + 1})`,
+			convertChip(state)
+		);
 	}
 
 	// Pickpocket's window: the item pocket trades with any exposed card of the tableau.
