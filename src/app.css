@@ -751,6 +751,7 @@ body:has(.card.dragging) .cells.tomb .chip {
  * header row, so they follow the mark wherever the header puts the track and the graves.
  */
 .titleblock {
+	position: relative;
 	flex: 0 0 auto;
 	align-self: center;
 	display: flex;
@@ -776,6 +777,31 @@ body:has(.card.dragging) .cells.tomb .chip {
 
 .titleblock .rules:hover {
 	background: rgba(255, 255, 255, 0.22);
+}
+
+/*
+ * The hover a touch sheet does not have, pinned over the wordmark: the tapped or dragged card's own
+ * tooltip text, in the corner the logo and the Rules pill leave free. It sits above the header rather
+ * than in the flow, so it costs the board no room and the wordmark is under it and not gone — the note
+ * is a reading of the card, not a second screen. `pre-line` because the tooltips are written as lines.
+ */
+.infopane {
+	position: absolute;
+	top: -0.1em;
+	left: -0.1em;
+	z-index: 50;
+	width: max-content;
+	max-width: min(78vw, 340px);
+	padding: 0.45em 0.6em;
+	border: 1px solid rgba(241, 232, 212, 0.32);
+	border-radius: var(--radius);
+	background: rgba(16, 13, 11, 0.94);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+	color: #f1e8d4;
+	font-size: 12px;
+	line-height: 1.35;
+	text-align: left;
+	white-space: pre-line;
 }
 
 /*

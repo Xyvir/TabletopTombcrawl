@@ -230,6 +230,12 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	let tombSelected = $state<CardLocation | null>(null);
 	/** The card under the pointer: a kill you are aiming at shows what it would cost first. */
 	let tombHover = $state<CardLocation | null>(null);
+	/**
+	 * The note a card's tooltip would show, pinned over the wordmark for touch sheets: a finger has no
+	 * hover to ask with, so the card the player touches (or lifts) says what it is in the corner the
+	 * logo and the Rules pill leave free. An empty press on the felt takes it away again.
+	 */
+	let infoNote = $state<string | null>(null);
 	let tombLast: { id: string; time: number } | null = null;
 	/**
 	 * The ability the last click took in hand, so the second click of a double can take it back: a glyph or
@@ -1309,6 +1315,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function onBoardPointerDown(event: PointerEvent) {
 		// the footer is not felt: a press on a control never counts as a card or ghost click
 		if ((event.target as HTMLElement | null)?.closest('.controls')) return;
+		// An empty press takes the pinned note away; a press on a card or the note itself leaves it to
+		// the card's own handler, which answers with the new card's text.
+		if (infoNote && !(event.target as HTMLElement | null)?.closest('.infopane, [data-card]')) infoNote = null;
 		if (tomb) {
 			const moved = tombGhostHit(event);
 			if (!moved) return;
@@ -1777,9 +1786,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		shake(event.currentTarget as HTMLElement);
 	}
 
+	/** Pin the tooltip the pointer would have shown: only a touch sheet needs it, and only a card has one. */
+	function showInfo(event: Event) {
+		if (!coarsePointer) return;
+		const title = (event.currentTarget as HTMLElement | null)?.getAttribute('title');
+		if (title) infoNote = title;
+	}
+
 	function tombClick(event: MouseEvent, card: Card) {
 		const state = tomb;
 		if (!state || state.won) return;
+		showInfo(event);
 		const el = event.currentTarget as HTMLElement;
 		const id = shorthandCard(card);
 
@@ -2007,6 +2024,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	function onCardPointerDown(event: PointerEvent, card: Card) {
 		if (card.location.fixture === 'foundation') return;
 		if (event.pointerType === 'mouse' && event.button !== 0) return;
+		// a lift reads the card's note before the run is even picked up
+		showInfo(event);
 
 		press = { card, x: event.clientX, y: event.clientY, dragged: false };
 		window.addEventListener('pointermove', onPointerMove);
@@ -2797,6 +2816,14 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				<a class="btn rules" href={RULES_URL} target="_blank" rel="noopener noreferrer" title="The printed rules, as a PDF">
 					Rules
 				</a>
+				<!--
+					A touch sheet has no hover to ask a card what it is with, so the note the pointer would have
+					shown is pinned over the wordmark instead — the corner the logo and the Rules pill leave free
+					on a phone — and an empty press on the felt takes it away.
+				-->
+				{#if coarsePointer && infoNote}
+					<div class="infopane" role="status">{infoNote}</div>
+				{/if}
 			</div>
 		{/if}
 
