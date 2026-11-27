@@ -2,7 +2,7 @@
 	"seed": 205184,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 104,
+	"moves": 106,
 	"loadout": "csdc",
 	"party": [
 		"Orc",
@@ -10,9 +10,9 @@
 		"WEYTWUT",
 		"Elixir"
 	],
-	"found": "2026-11-24",
+	"found": "2026-11-27",
 	"source": "solver",
-	"note": "plan fill, best, plan, 13,800 states",
+	"note": "stale retry, plan, 20578 states, 20,578 states",
 	"lines": [
 		"home AD -> diamonds foundation",
 		"home AH -> hearts foundation",
@@ -82,24 +82,27 @@
 		"home 5S -> spades foundation",
 		"home 5D -> diamonds foundation",
 		"home 6S -> spades foundation",
-		"home 7S -> spades foundation",
+		"home 8S -> spades foundation",
 		"home 5C -> clubs foundation",
 		"home 6D -> diamonds foundation",
 		"home 7C -> clubs foundation",
-		"home 8S -> spades foundation",
-		"move TC cell 1 -> col 4",
-		"move 9D col 3 -> col 4",
+		"move 7S cell 2 -> col 8",
+		"park 9D col 3 -> cell 2",
 		"dig 7D col 3 row 3",
 		"home 7D -> diamonds foundation",
-		"home 8D -> diamonds foundation",
+		"move QD cell 3 -> col 6",
+		"move JC cell 6 -> col 6",
 		"home 4H -> hearts foundation",
 		"dig 8C col 1 row 3",
 		"home 8C -> clubs foundation",
 		"home 9S -> spades foundation",
+		"home 7S -> spades foundation",
+		"home 8D -> diamonds foundation",
 		"home 9C -> clubs foundation",
 		"home 9D -> diamonds foundation",
 		"home TC -> clubs foundation",
 		"home TD -> diamonds foundation",
+		"park AS col 2 -> cell 1",
 		"home 2H -> hearts foundation",
 		"dig TS col 3 row 1",
 		"home TS -> spades foundation",
@@ -109,7 +112,6 @@
 		"home QD -> diamonds foundation",
 		"home QS -> spades foundation",
 		"home QC -> clubs foundation",
-		"park AS col 2 -> cell 1",
 		"park KH col 4 -> cell 2",
 		"home 8H -> hearts foundation",
 		"dig 4S col 8 row 1",
@@ -990,9 +992,10 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					1
+					2,
+					4
 				]
 			}
 		},
@@ -1027,28 +1030,18 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
-				"fixture": "cascade",
-				"data": [
-					2,
-					4
-				]
-			}
-		},
-		{
 			"kind": "move",
 			"from": {
 				"fixture": "cell",
 				"data": [
-					0
+					1
 				]
 			},
 			"to": {
 				"fixture": "cascade",
 				"data": [
-					3,
-					2
+					7,
+					5
 				]
 			}
 		},
@@ -1062,10 +1055,9 @@
 				]
 			},
 			"to": {
-				"fixture": "cascade",
+				"fixture": "cell",
 				"data": [
-					3,
-					3
+					1
 				]
 			}
 		},
@@ -1090,12 +1082,34 @@
 			}
 		},
 		{
-			"kind": "home",
-			"at": {
+			"kind": "move",
+			"from": {
+				"fixture": "cell",
+				"data": [
+					2
+				]
+			},
+			"to": {
 				"fixture": "cascade",
 				"data": [
-					7,
+					5,
+					0
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cell",
+				"data": [
 					5
+				]
+			},
+			"to": {
+				"fixture": "cascade",
+				"data": [
+					5,
+					1
 				]
 			}
 		},
@@ -1145,7 +1159,7 @@
 				"fixture": "cascade",
 				"data": [
 					7,
-					4
+					6
 				]
 			}
 		},
@@ -1154,8 +1168,8 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					3,
-					4
+					7,
+					5
 				]
 			}
 		},
@@ -1164,8 +1178,26 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					3,
-					3
+					7,
+					4
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					1
+				]
+			}
+		},
+		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					0
 				]
 			}
 		},
@@ -1176,6 +1208,22 @@
 				"data": [
 					7,
 					3
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					1,
+					0
+				]
+			},
+			"to": {
+				"fixture": "cell",
+				"data": [
+					0
 				]
 			}
 		},
@@ -1212,9 +1260,10 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					5
+					5,
+					2
 				]
 			}
 		},
@@ -1241,9 +1290,10 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					2
+					5,
+					1
 				]
 			}
 		},
@@ -1263,22 +1313,6 @@
 				"fixture": "cascade",
 				"data": [
 					4,
-					0
-				]
-			}
-		},
-		{
-			"kind": "move",
-			"from": {
-				"fixture": "cascade",
-				"data": [
-					1,
-					0
-				]
-			},
-			"to": {
-				"fixture": "cell",
-				"data": [
 					0
 				]
 			}

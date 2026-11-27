@@ -5275,6 +5275,37 @@
 			"at": "2026-11-26T01:27:55.486Z"
 		},
 		{
+			"loadout": "scdd",
+			"boss": "clubs",
+			"seed": 3000716,
+			"moves": 123,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Dwarf",
+					"suit": "spades"
+				},
+				{
+					"role": "class",
+					"name": "Wizard",
+					"suit": "clubs"
+				},
+				{
+					"role": "glyph",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				},
+				{
+					"role": "consumable",
+					"name": "WEYTWUT",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-27"
+		},
+		{
 			"loadout": "scdh",
 			"boss": "clubs",
 			"seed": 1022131,
@@ -7159,6 +7190,14 @@
 		{
 			"loadout": "csdc",
 			"difficulty": "med",
+			"seed": 205184,
+			"moves": 106,
+			"goal": "boss",
+			"at": "2026-11-27"
+		},
+		{
+			"loadout": "csdc",
+			"difficulty": "med",
 			"seed": 1021151,
 			"moves": 99,
 			"goal": "boss",
@@ -7565,6 +7604,14 @@
 			"at": "2026-11-26T14:48:03.442Z"
 		},
 		{
+			"loadout": "dhhh",
+			"difficulty": "med",
+			"seed": 3500007,
+			"moves": 74,
+			"goal": "boss",
+			"at": "2026-11-27"
+		},
+		{
 			"loadout": "dhsc",
 			"difficulty": "med",
 			"seed": 1001624,
@@ -7627,6 +7674,14 @@
 			"moves": 66,
 			"goal": "boss",
 			"at": "2026-11-26T14:54:11.479Z"
+		},
+		{
+			"loadout": "dscc",
+			"difficulty": "med",
+			"seed": 3001137,
+			"moves": 101,
+			"goal": "boss",
+			"at": "2026-11-24T02:18:06.794Z"
 		},
 		{
 			"loadout": "dscd",
@@ -8491,6 +8546,14 @@
 			"moves": 101,
 			"goal": "boss",
 			"at": "2026-11-26T01:27:55.486Z"
+		},
+		{
+			"loadout": "scdd",
+			"difficulty": "med",
+			"seed": 3000716,
+			"moves": 123,
+			"goal": "boss",
+			"at": "2026-11-27"
 		},
 		{
 			"loadout": "scdh",
@@ -9877,8 +9940,8 @@
 		"dhhh": {
 			"med": {
 				"boss": {
-					"seed": 1024331,
-					"moves": 101
+					"seed": 3500007,
+					"moves": 74
 				}
 			}
 		},
@@ -10586,6 +10649,14 @@
 				}
 			}
 		},
+		"scdd": {
+			"med": {
+				"boss": {
+					"seed": 3000716,
+					"moves": 123
+				}
+			}
+		},
 		"ssdc": {
 			"med": {
 				"boss": {
@@ -11014,13 +11085,6 @@
 				"score": null,
 				"at": "2026-11-15T02:01:12.272Z"
 			}
-		},
-		"scdd": {
-			"med": {
-				"seed": 845,
-				"score": 81,
-				"at": "2026-11-13T18:43:36.318Z"
-			}
 		}
 	},
 	"missing": [
@@ -11053,7 +11117,6 @@
 		"schd",
 		"scch",
 		"sccs",
-		"scdd",
 		"scds",
 		"scsh",
 		"sdhs",
