@@ -1240,9 +1240,13 @@ body:has(.card.dragging) .cells.tomb .chip {
 	/*
 	 * The graveyard has a row of its own straight under the wordmark here, so the note is held to the
 	 * wordmark's own band: tall enough to read a card by, and short enough never to sit on a tombstone.
+	 * The band is the note's height and not just its ceiling — a one-line tip still covers the name and
+	 * the Rules pill, so the box does not resize from card to card. The 0.1em gives back the shift the
+	 * pane's own top edge rides up by, so its bottom lands on the pill's.
 	 */
 	.infopane {
-		max-height: 100%;
+		min-height: calc(100% + 0.1em);
+		max-height: calc(100% + 0.1em);
 	}
 
 	.top {
