@@ -791,15 +791,26 @@ body:has(.card.dragging) .cells.tomb .chip {
 	left: -0.1em;
 	z-index: 50;
 	width: max-content;
-	max-width: min(78vw, 340px);
-	padding: 0.45em 0.6em;
+	/*
+	 * The felt's own width rather than a phone's three quarters of it: at 78vw the longer notes run five
+	 * or six lines and the box grows down onto the graveyard row under the header, so it takes the width
+	 * the line has and wraps in fewer lines instead of getting taller.
+	 */
+	max-width: min(calc(100vw - 2 * var(--gap)), 460px);
+	padding: 0.35em 0.5em;
+	/*
+	 * A note too tall for the band scrolls inside itself rather than growing over the board: the text is
+	 * still all there, and a press inside the pane never dismisses it.
+	 */
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	border: 1px solid rgba(241, 232, 212, 0.32);
 	border-radius: var(--radius);
 	background: rgba(16, 13, 11, 0.94);
 	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
 	color: #f1e8d4;
-	font-size: 12px;
-	line-height: 1.35;
+	font-size: 11px;
+	line-height: 1.25;
 	text-align: left;
 	white-space: pre-line;
 }
@@ -1224,6 +1235,14 @@ body:has(.card.dragging) .cells.tomb .chip {
 		align-self: stretch;
 		/* two lines of Vinque in a 34px mark read as a smudge: give the name back its line height */
 		font-size: clamp(16px, calc(var(--col-w) * 0.62), 30px);
+	}
+
+	/*
+	 * The graveyard has a row of its own straight under the wordmark here, so the note is held to the
+	 * wordmark's own band: tall enough to read a card by, and short enough never to sit on a tombstone.
+	 */
+	.infopane {
+		max-height: 100%;
 	}
 
 	.top {
