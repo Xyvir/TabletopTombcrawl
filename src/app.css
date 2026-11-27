@@ -1986,8 +1986,10 @@ body:has(.card.dragging) .cells.tomb .chip {
  * A spent card keeps its side under the arm that picks it up for Pickpocket: the lean is what a card
  * still in hand does, and this one has to go on reading as spent until the trade lands. The window's
  * own drift carries the same 90 degrees and outranks this, so the pose holds with or without motion.
+ * This stays scoped to the Pickpocket window, because a glyph is exhausted the moment it is armed — an
+ * unscoped rule would swing every armed glyph straight to 90 degrees instead of the boss-tilt lean.
  */
-.slot.exhausted.armed img:not(.peek) {
+.slot.exhausted.armed.pickpocket img:not(.peek) {
 	transform: rotate(90deg) scale(0.7);
 	opacity: 0.75;
 }
