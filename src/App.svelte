@@ -1793,6 +1793,19 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (title) infoNote = title;
 	}
 
+	/**
+	 * The touch note owns a fixed band, so its type gives way instead of the box: the note is set at the
+	 * pane's own size and stepped down until the whole tooltip is inside it, which keeps a long card
+	 * readable in one look rather than as a box to scroll. Seven is the floor — under it the words stop
+	 * being worth the space they save, and only the boss's own text gets that far.
+	 */
+	function fitNote(node: HTMLElement) {
+		for (let size = 11; size >= 7; size -= 0.5) {
+			node.style.fontSize = `${size}px`;
+			if (node.scrollHeight <= node.clientHeight + 1) return;
+		}
+	}
+
 	function tombClick(event: MouseEvent, card: Card) {
 		const state = tomb;
 		if (!state || state.won) return;
@@ -2822,7 +2835,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					on a phone — and an empty press on the felt takes it away.
 				-->
 				{#if coarsePointer && infoNote}
-					<div class="infopane" role="status">{infoNote}</div>
+					<!-- Keyed so a second card's note is re-measured rather than keeping the first one's size. -->
+					{#key infoNote}
+						<div class="infopane" role="status" use:fitNote>{infoNote}</div>
+					{/key}
 				{/if}
 			</div>
 		{/if}
