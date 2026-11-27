@@ -10,7 +10,7 @@
 		"CYDSTEPP",
 		"WEYTWUT"
 	],
-	"found": "2026-11-24",
+	"found": "2026-11-27",
 	"source": "solver",
 	"note": "plan fill, best, plan, 77,346 states",
 	"lines": [
@@ -159,7 +159,7 @@
 		"park KH col 2 -> cell 2",
 		"home KH -> hearts foundation",
 		"park KC col 5 -> cell 2",
-		"park KD col 7 -> cell 3",
+		"park KD col 7 -> cell 4",
 		"home KS -> spades foundation"
 	],
 	"actions": [
@@ -2040,7 +2040,7 @@
 			"to": {
 				"fixture": "cell",
 				"data": [
-					2
+					3
 				]
 			}
 		},

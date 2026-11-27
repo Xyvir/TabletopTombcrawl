@@ -2,7 +2,7 @@
 	"seed": 23,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 104,
+	"moves": 105,
 	"loadout": "sscc",
 	"party": [
 		"Dwarf",
@@ -10,9 +10,9 @@
 		"PISORF",
 		"Elixir"
 	],
-	"found": "2026-11-24",
+	"found": "2026-11-27",
 	"source": "solver",
-	"note": "plan fill, best, plan, 17,524 states",
+	"note": "plan fill, best, plan, 17,502 states",
 	"lines": [
 		"home AS -> spades foundation",
 		"home 4S -> spades foundation",
@@ -98,9 +98,10 @@
 		"home 6D -> diamonds foundation",
 		"move QH cell 6 -> col 6",
 		"dig AH col 4 row 1",
+		"arm PISORF (cell 3) · JS TD col 1 to cell 6",
 		"home AH -> hearts foundation",
-		"move KD col 2 -> col 4",
-		"park 7D col 2 -> cell 6",
+		"move KD col 2 -> col 1",
+		"move 7D col 2 -> col 4",
 		"dig 6C col 2 row 3",
 		"home 6C -> clubs foundation",
 		"home 7H -> hearts foundation",
@@ -111,7 +112,7 @@
 		"home 9D -> diamonds foundation",
 		"home 9C -> clubs foundation",
 		"home TH -> hearts foundation",
-		"home TD -> diamonds foundation",
+		"home JS -> spades foundation",
 		"home JC -> clubs foundation",
 		"home JD -> diamonds foundation",
 		"home JS -> spades foundation",
@@ -1219,6 +1220,18 @@
 			}
 		},
 		{
+			"kind": "pisorf",
+			"cell": 2,
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					0,
+					0
+				]
+			},
+			"to": 5
+		},
+		{
 			"kind": "home",
 			"at": {
 				"fixture": "cascade",
@@ -1240,7 +1253,7 @@
 			"to": {
 				"fixture": "cascade",
 				"data": [
-					3,
+					0,
 					0
 				]
 			}
@@ -1255,9 +1268,10 @@
 				]
 			},
 			"to": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					5
+					3,
+					0
 				]
 			}
 		},
@@ -1304,9 +1318,10 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cell",
+				"fixture": "cascade",
 				"data": [
-					5
+					3,
+					0
 				]
 			}
 		},
@@ -1362,10 +1377,10 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cascade",
+				"fixture": "cell",
 				"data": [
-					0,
-					1
+					5,
+					0
 				]
 			}
 		},
@@ -1392,9 +1407,9 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cascade",
+				"fixture": "cell",
 				"data": [
-					0,
+					5,
 					0
 				]
 			}
@@ -1414,7 +1429,7 @@
 			"at": {
 				"fixture": "cell",
 				"data": [
-					3
+					5
 				]
 			}
 		},

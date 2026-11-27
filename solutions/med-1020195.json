@@ -2,7 +2,7 @@
 	"seed": 1020195,
 	"difficulty": "med",
 	"goal": "boss",
-	"moves": 100,
+	"moves": 102,
 	"loadout": "sdcc",
 	"party": [
 		"Dwarf",
@@ -10,9 +10,9 @@
 		"PISORF",
 		"Elixir"
 	],
-	"found": "2026-11-26",
+	"found": "2026-11-27",
 	"source": "solver",
-	"note": "scan 1020001-1022500, plan, 3,813 states",
+	"note": "plan fill, best, plan, 3,550 states",
 	"lines": [
 		"move 6S col 2 -> col 8",
 		"dig AS col 2 row 5",
@@ -35,10 +35,11 @@
 		"move 9S 8H col 6 -> col 2",
 		"dig 2D col 4 row 5",
 		"home 2D -> diamonds foundation",
+		"convert stone pocket (cell 4)",
 		"move JS TH 9S 8H col 2 -> col 4",
 		"dig 3H col 2 row 3",
 		"home 3H -> hearts foundation",
-		"park KD col 7 -> cell 5",
+		"park KD col 7 -> cell 4",
 		"park 6H col 7 -> cell 6",
 		"home 4H -> hearts foundation",
 		"dig AC col 7 row 3",
@@ -52,10 +53,12 @@
 		"move JH TS col 5 -> col 2",
 		"dig 2S col 5 row 1",
 		"home 2S -> spades foundation",
-		"move 5S 4D col 1 -> col 5",
+		"move 4D col 1 -> col 3",
+		"move 5S col 1 -> col 5",
+		"convert stone pocket (cell 3)",
 		"dig 8S col 1 row 5",
-		"dig 9D col 6 row 1",
 		"home 6H -> hearts foundation",
+		"dig 9D col 6 row 1",
 		"move 8S col 1 -> col 6",
 		"home 3C -> clubs foundation",
 		"dig KC col 1 row 3",
@@ -67,13 +70,13 @@
 		"dig 8C col 1 row 1",
 		"park 8C col 1 -> cell 6",
 		"move QS col 8 -> col 1",
-		"park 8D col 8 -> cell 8",
+		"park 8D col 8 -> cell 3",
 		"dig 4C col 8 row 3",
 		"move 4C col 8 -> col 2",
 		"home 3S -> spades foundation",
 		"home 4C -> clubs foundation",
-		"home 4D -> diamonds foundation",
 		"home 5S -> spades foundation",
+		"home 4D -> diamonds foundation",
 		"home 5D -> diamonds foundation",
 		"home 6S -> spades foundation",
 		"home 7S -> spades foundation",
@@ -81,7 +84,6 @@
 		"dig 6D col 3 row 5",
 		"home 6D -> diamonds foundation",
 		"move KH col 3 -> col 5",
-		"move 7C cell 3 -> col 4",
 		"dig 7D col 3 row 3",
 		"home 7D -> diamonds foundation",
 		"home 6C -> clubs foundation",
@@ -111,7 +113,7 @@
 		"home JC -> clubs foundation",
 		"home QC -> clubs foundation",
 		"home QD -> diamonds foundation",
-		"park KH col 5 -> cell 6",
+		"park KH col 5 -> cell 7",
 		"home KC -> clubs foundation",
 		"home KS -> spades foundation"
 	],
@@ -390,6 +392,9 @@
 			}
 		},
 		{
+			"kind": "convert"
+		},
+		{
 			"kind": "move",
 			"from": {
 				"fixture": "cascade",
@@ -438,7 +443,7 @@
 			"to": {
 				"fixture": "cell",
 				"data": [
-					4
+					3
 				]
 			}
 		},
@@ -611,6 +616,23 @@
 				"fixture": "cascade",
 				"data": [
 					0,
+					6
+				]
+			},
+			"to": {
+				"fixture": "cascade",
+				"data": [
+					2,
+					5
+				]
+			}
+		},
+		{
+			"kind": "move",
+			"from": {
+				"fixture": "cascade",
+				"data": [
+					0,
 					5
 				]
 			},
@@ -623,6 +645,9 @@
 			}
 		},
 		{
+			"kind": "convert"
+		},
+		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
@@ -633,21 +658,21 @@
 			}
 		},
 		{
+			"kind": "home",
+			"at": {
+				"fixture": "cell",
+				"data": [
+					5
+				]
+			}
+		},
+		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
 				"data": [
 					5,
 					0
-				]
-			}
-		},
-		{
-			"kind": "home",
-			"at": {
-				"fixture": "cell",
-				"data": [
-					5
 				]
 			}
 		},
@@ -814,7 +839,7 @@
 			"to": {
 				"fixture": "cell",
 				"data": [
-					7
+					2
 				]
 			}
 		},
@@ -871,7 +896,7 @@
 				"fixture": "cascade",
 				"data": [
 					4,
-					1
+					0
 				]
 			}
 		},
@@ -880,8 +905,8 @@
 			"at": {
 				"fixture": "cascade",
 				"data": [
-					4,
-					0
+					2,
+					6
 				]
 			}
 		},
@@ -963,22 +988,6 @@
 			}
 		},
 		{
-			"kind": "move",
-			"from": {
-				"fixture": "cell",
-				"data": [
-					2
-				]
-			},
-			"to": {
-				"fixture": "cascade",
-				"data": [
-					3,
-					7
-				]
-			}
-		},
-		{
 			"kind": "dig",
 			"at": {
 				"fixture": "cascade",
@@ -1011,10 +1020,9 @@
 		{
 			"kind": "home",
 			"at": {
-				"fixture": "cascade",
+				"fixture": "cell",
 				"data": [
-					3,
-					8
+					7
 				]
 			}
 		},
@@ -1042,7 +1050,7 @@
 			"at": {
 				"fixture": "cell",
 				"data": [
-					7
+					2
 				]
 			}
 		},
@@ -1217,7 +1225,7 @@
 			"at": {
 				"fixture": "cell",
 				"data": [
-					1
+					2
 				]
 			}
 		},
@@ -1256,7 +1264,7 @@
 			"at": {
 				"fixture": "cell",
 				"data": [
-					3
+					4
 				]
 			}
 		},
@@ -1282,7 +1290,7 @@
 			"to": {
 				"fixture": "cell",
 				"data": [
-					5
+					6
 				]
 			}
 		},
