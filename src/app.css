@@ -1920,6 +1920,16 @@ body:has(.card.dragging) .cells.tomb .chip {
 	transition: transform 160ms ease;
 }
 
+/*
+ * A spent card keeps its side under the arm that picks it up for Pickpocket: the lean is what a card
+ * still in hand does, and this one has to go on reading as spent until the trade lands. The window's
+ * own drift carries the same 90 degrees and outranks this, so the pose holds with or without motion.
+ */
+.slot.exhausted.armed img:not(.peek) {
+	transform: rotate(90deg) scale(0.7);
+	opacity: 0.75;
+}
+
 @keyframes tomb-armed {
 	50% {
 		box-shadow:

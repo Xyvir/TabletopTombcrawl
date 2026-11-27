@@ -47,7 +47,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		afflictionFired,
 		afflictionTargets,
 		armedClick,
-		armedDrop,
+		tombDrop,
 		attackPreview,
 		attackWith,
 		healPreview,
@@ -1778,9 +1778,11 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			if (!card) return null;
 			// An armed CYDSTEPP can pick up a wounded card that would otherwise be locked.
 			const cydsteppLift = state.armed?.kind === 'cydstepp';
-			// An armed Pickpocket can pick up the pocket's own card: the swap is draggable from either end,
-			// and the drop's own gate still decides which hallway it may land on. Other pockets stay locked.
-			const pickpocketLift = state.armed?.kind === 'pickpocket' && state.armed.cell === index;
+			// Pickpocket's open window picks up the pocket's own card, spent or not, and an armed one can
+			// too: the swap is draggable from either end, and the drop's own gate still decides which
+			// hallway it may land on. Other pockets stay locked.
+			const pickpocketLift =
+				state.pickpocket === index || (state.armed?.kind === 'pickpocket' && state.armed.cell === index);
 			const parked = !cellCardMovable(state, index) && !cydsteppLift && !pickpocketLift;
 			if (parked && !attackPreview(state, location).legal) return null;
 			return { location, cards: [card], peekOnly: false };
@@ -1813,16 +1815,20 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				.filter((index) => index !== fromColumn && (state.game.tableau[index]?.length ?? 0) > 0)
 				.map((index) => `cascade:${index}`);
 		}
-		if (arm && arm.kind === 'pickpocket') {
+		// Pickpocket's window trades from either end whether it is armed or not: the pocket's own card
+		// dragged onto a hallway top, or a hallway card dragged onto the lit pocket. The arm changes
+		// only how the click path begins the trade, so both gestures light the same targets.
+		const pocket = arm?.kind === 'pickpocket' ? arm.cell : !arm ? state.pickpocket : null;
+		if (pocket !== null) {
 			// The trade from the other end: the pocket's own card in hand, every hallway top it may change
 			// places with. The click path's own gate answers each column, so the columns a drop may land on
 			// and the rule that answers it stay in step — a boss, a face-down top or a buried aim lights nothing.
-			if (location.fixture === 'cell' && location.data[0] === arm.cell) {
+			if (location.fixture === 'cell' && location.data[0] === pocket) {
 				return state.game.tableau
 					.map((column, index) => ({ column, index }))
 					.filter(({ column }) => {
 						const top = column[column.length - 1];
-						return !!top && !isFaceDown(state, top) && !!swapPickpocket(state, arm.cell, top);
+						return !!top && !isFaceDown(state, top) && !!swapPickpocket(state, pocket, top);
 					})
 					.map(({ index }) => `cascade:${index}`);
 			}
@@ -1831,8 +1837,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			// Asking `swapPickpocket` itself is what keeps the lit target and the rule that answers it in step —
 			// a boss, a face-down card or a buried one simply lights nothing.
 			const card = location.fixture === 'cascade' ? cardAt(state.game, location) : null;
-			const trades = !!card && run.cards.length === 1 && !!swapPickpocket(state, arm.cell, card);
-			return trades ? [`cell:${arm.cell}`] : [];
+			const trades = !!card && run.cards.length === 1 && !!swapPickpocket(state, pocket, card);
+			return trades ? [`cell:${pocket}`] : [];
 		}
 		const keys: string[] = [];
 		// A drafted item left of the chip, or a wounded cell, has no board targets.
@@ -2224,7 +2230,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (from && to) {
 			if (tomb) {
 				// An armed ability answers the drop instead of moving the cards.
-				const next = tomb.armed ? armedDrop(tomb, from, to) : tombMove(tomb, from, to);
+				const next = tombDrop(tomb, from, to);
 				if (next) {
 					commit(next, before);
 					return;

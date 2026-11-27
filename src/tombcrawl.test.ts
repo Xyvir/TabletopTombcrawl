@@ -63,8 +63,9 @@ import {
 	kingsHome,
 	playerLevel,
 	tombExit,
-	tombMove,
-	tombTapTargets,
+			tombMove,
+		tombDrop,
+		tombTapTargets,
 	GOLD_TOTAL,
 	goldMultiplier,
 	goldScore,
@@ -1075,6 +1076,14 @@ describe('the level cap', () => {
 				expect(putDown.armed).toBeNull();
 				expect(putDown.pickpocket).toBe(1);
 
+				// Putting the window's arm down must not hand a spent item its ability back: the arm spent
+				// nothing, and the card has to go on lying on its side until the trade lands.
+				const spentOpen = { ...open, exhausted: [false, true] };
+				const spentDown = armedClick(useAbility(spentOpen, 1)!, cell(1))!;
+				expect(spentDown.exhausted[1]).toBe(true);
+				expect(abilityUsable(spentDown, 1)).toBe(false);
+				expect(spentDown.pickpocket).toBe(1);
+
 				const swapped = armedClick(useAbility(putDown, 1)!, cascade(0))!;
 				expect(shorthandCard(swapped.game.cells[1]!)).toBe('7H');
 				expect(shorthandCard(swapped.game.tableau[0]![0]!)).toBe('5C');
@@ -1100,6 +1109,23 @@ describe('the level cap', () => {
 				expect(reversed.pickpocket).toBeNull();
 				expect(armedDrop(armedAgain, cell(1), { fixture: 'foundation', data: [0] })).toBeNull();
 				expect(armedDrop(armedAgain, cell(0), cascade(0, 0))).toBeNull();
+
+				// The drag needs no arm: the open window itself names the trade, so the exposed card
+				// dropped on the lit pocket swaps, and the pocket's own spent card dropped on a hallway
+				// top swaps the other way. A drag that names the pocket but is not that trade is refused
+				// rather than playing the item out, and a board with no window has no trade at all.
+				const bare = { ...open, exhausted: [false, true] };
+				const byHand = tombDrop(bare, cascade(0), cell(1))!;
+				expect(shorthandCard(byHand.game.cells[1]!)).toBe('7H');
+				expect(shorthandCard(byHand.game.tableau[0]![0]!)).toBe('5C');
+				expect(byHand.armed).toBeNull();
+				expect(byHand.pickpocket).toBeNull();
+				const reversedBare = tombDrop(bare, cell(1), cascade(0, 0))!;
+				expect(shorthandCard(reversedBare.game.cells[1]!)).toBe('7H');
+				expect(shorthandCard(reversedBare.game.tableau[0]![0]!)).toBe('5C');
+				expect(tombDrop(bare, cell(1), cell(0))).toBeNull();
+				expect(tombDrop(bare, cell(1), { fixture: 'foundation', data: [0] })).toBeNull();
+				expect(tombDrop(state, cascade(0), cell(1))).toBeNull();
 			});
 		});
 

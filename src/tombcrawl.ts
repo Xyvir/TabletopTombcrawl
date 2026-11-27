@@ -2431,6 +2431,35 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 	return armedClick(state, to);
 }
 
+/**
+ * The drop a gesture makes. An armed ability answers it as it always has; without an arm the open
+ * Pickpocket window answers the trade itself, because a drag names both ends of the swap — the lit
+ * pocket's own card dropped on a hallway top, or a hallway's exposed card dropped on the lit pocket.
+ *
+ * A drag that names the pocket is either that trade or refused: the item must not be played out of its
+ * slot because a swap missed, which is a price only the click path's own door is allowed to charge.
+ */
+export function tombDrop(state: TombState, from: CardLocation, to: CardLocation): TombState | null {
+	if (state.armed) return armedDrop(state, from, to);
+	const cell = state.pickpocket;
+	if (cell === null) return tombMove(state, from, to);
+	const pocketEnd = (location: CardLocation) => location.fixture === 'cell' && location.data[0] === cell;
+	if (pocketEnd(from) && to.fixture === 'cascade') {
+		const pile = state.game.tableau[to.data[0]] ?? [];
+		const target = pile[pile.length - 1];
+		if (!target || isFaceDown(state, target)) return null;
+		return swapPickpocket(state, cell, target);
+	}
+	if (pocketEnd(to) && from.fixture === 'cascade') {
+		const pile = state.game.tableau[from.data[0]] ?? [];
+		const grabbed = cardAt(state.game, from);
+		if (!grabbed || isFaceDown(state, grabbed) || pile[pile.length - 1] !== grabbed) return null;
+		return swapPickpocket(state, cell, grabbed);
+	}
+	// Anything else that names the pocket is a miss, not a way to play the item out.
+	return pocketEnd(from) || pocketEnd(to) ? null : tombMove(state, from, to);
+}
+
 /** Put an armed ability away unspent: the cell it came from is released again. */
 export function disarm(state: TombState): TombState {
 	return releaseArm(state);
@@ -2461,7 +2490,10 @@ function dropKnockedArm(state: TombState): TombState {
 function releaseArm(state: TombState): TombState {
 	if (!state.armed) return state;
 	const exhausted = [...state.exhausted];
-	exhausted[state.armed.cell] = false;
+	// Casting spends a glyph or item as it arms it, so putting the cast down hands that one back. A
+	// Pickpocket arm spends nothing — the window may be opened on an item that is already spent — and
+	// releasing it must not un-spend that item or hand it back its ability.
+	if (state.armed.kind !== 'pickpocket') exhausted[state.armed.cell] = false;
 	return closeItemWindow(cloneWith(state, { armed: null, exhausted }));
 }
 
