@@ -678,7 +678,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * The chip's own warning, in the same dark-purple stroke the afflictions wear: a card in hand with no grave
+ * The chip's own warning, in the same dark-purple stroke the hazards wear: a card in hand with no grave
  * open to it leaves its slot by being played out, and that leaving is the conversion the chip is counting.
  * It is sized to the token rather than to a card, so the mark overhangs the chip the way a card's sits on a
  * face — the chip itself is what is at stake here, not the card under the pointer.
@@ -927,7 +927,7 @@ body:has(.card.dragging) .cells.tomb .chip {
  * A grave the party has built past. Drafted cards never come home, so a pile with a drafted two above its
  * ace is really waiting on the three, and the board says so with two chevrons rather than the level-up
  * arrow: a climb, not a lift. It sits on the slot, never on the card, so the boss-suit wash can no more
- * tint it than it tints an affliction's mark — the same rule that keeps the purple `!` purple.
+ * tint it than it tints an hazard's mark — the same rule that keeps the purple `!` purple.
  */
 .foundations .slot .phantoms {
 	position: absolute;
@@ -1592,7 +1592,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 	inset: 0;
 	overflow: hidden;
 	border-radius: inherit;
-	/* under the afflictions' mark, so the `!` still lands on top of the ribbon */
+	/* under the hazards' mark, so the `!` still lands on top of the ribbon */
 	z-index: 2;
 	pointer-events: none;
 }
@@ -1894,7 +1894,7 @@ body:has(.card.dragging) .cells.tomb .chip {
 }
 
 /*
- * The warning an affliction draws on the card it is aimed at, while the carrier is under the pointer. It
+ * The warning an hazard draws on the card it is aimed at, while the carrier is under the pointer. It
  * is an outline rather than a filled bang: the card underneath is the information, so the mark has to say
  * "this one" without covering the rank and suit that say what is at stake. A ghost of a fill keeps it
  * visible in a browser that does not stroke text. None of it is a state, and none of it shows while a

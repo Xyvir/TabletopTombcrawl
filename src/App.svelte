@@ -773,7 +773,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		])
 	);
 	/**
-	 * The cards the affliction of the hovered monster is aimed at: the card a Zombie's fear would turn, the
+	 * The cards the hazard of the hovered monster is aimed at: the card a Zombie's terrify would turn, the
 	 * slot a Bandit would convert, the cards a Gorgon would petrify, the glyphs a Wraith would spend. An
 	 * armed Remedy turns the whole aura off, and the warning goes with it, since the move it covers would
 	 * not do any of it.
@@ -1513,14 +1513,15 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	}
 
 	/**
-	 * The deal's one monster affliction, e.g. "Affliction: Mug — slaying or stashing this forces a Hero Chip
+	 * The deal's one monster hazard, e.g. "Hazard: mug — slaying or stashing this forces a Hero Chip
 	 * conversion, with no heal." The court and every other king wear it, so it is always read from the boss suit. A court card
-	 * also carries the monster's one-line description; a General and the boss speak for themselves.
+	 * also carries the monster's one-line description; a General and the boss speak for themselves. The verb is
+	 * set lowercase where it follows the label, because the line is a reading of the card rather than a title.
 	 */
 	function auraTitle(state: TombState, card: Card | null, withName = true) {
 		if (!state.bossSuit) return '';
 		const monster = MONSTERS[state.bossSuit];
-		const line = `Affliction: ${monster.power} — ${monster.text}`;
+		const line = `Hazard: ${monster.power.toLowerCase()} — ${monster.text}`;
 		if (!withName) return line;
 		const name = card ? carrierName(state, card) : monster.name;
 		const blurb = card && card.rank !== 'king' ? `${monster.blurb}\n` : '';
@@ -1546,7 +1547,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		if (!slain) return null;
 		// Mug shows when the bandit forced the conversion: the chip walked left with no heal, so the draft shrinks.
 		if (slain.suit === 'spades') return after.draft.length < before.draft.length ? 'mug' : null;
-		// Fear and Petrify are wounds, and the wound flash already answers for them; Mana Burn needs a glyph
+		// Terrify and Petrify are wounds, and the wound flash already answers for them; Silence needs a glyph
 		// to drain.
 		if (auraItemOf(after, slain) === null) return null;
 		return 'mana';
@@ -1620,8 +1621,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		 */
 		const usedIsGlyph = !!usedEntry && (usedEntry.role === 'glyph' || isDualcastItem(prev, usedEntry));
 		// Take_damage counts the kill's clean bill only, read back off the board it was previewed on:
-		// wounds the aura deals — Mana Burn on the glyph, a stashed Gorgon's gaze on the first passive
-		// class — sound as affliction and nothing else, even when they land mid-slash.
+		// wounds the aura deals — Silence on the glyph, a stashed Gorgon's gaze on the first passive
+		// class — sound as hazard and nothing else, even when they land mid-slash.
 		const killDamage = homedPrev.reduce((n, card) => {
 			const at = wasLoc.get(shorthandCard(card));
 			if (!at) return n;
@@ -1647,7 +1648,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			disarmed,
 			usedGlyph: usedIsGlyph,
 			usedItem: !!usedEntry && !usedIsGlyph,
-			// A conversion the chip makes is a sound of its own; a bandit forcing the step is the affliction and
+			// A conversion the chip makes is a sound of its own; a bandit forcing the step is the hazard and
 			// nothing else. Mug spends the slot without mending anything, so convert.ogg must not layer over it.
 			converted: next.draft.length < prev.draft.length && power !== 'mug',
 			leveled,
@@ -2914,7 +2915,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						past ranks the party is holding. One chevron more than the ranks skipped, so the mark counts
 						the landing it opens: two chevrons is one skipped rank, three is two, up to the five a party
 						can hold of one suit's low end. Drawn on the slot rather than on the card, so no boss-suit wash
-						can tint it, the way the affliction marks sit over the face and not in it.
+						can tint it, the way the hazard marks sit over the face and not in it.
 					-->
 					{#if skips}
 						{@const rungs = skips + 1}
@@ -3072,7 +3073,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						<!-- The bill, drawn on the pocket it would take rather than over the whole track. -->
 						<span class="doom" aria-hidden="true">{@render skull()}</span>
 					{/if}
-					<!-- The pocket an affliction is aimed at: a warning on the card, not a state of it. It stays
+					<!-- The pocket an hazard is aimed at: a warning on the card, not a state of it. It stays
 					     mounted so it can fade in and out the way the swords do. -->
 					<span
 						class="afflict"
@@ -3140,7 +3141,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					onpointerleave={() => (chipHover = false)}
 				>
 					<!-- The chip's own warning: on its hover, and while a bandit under the pointer would spend the
-					     aspect beside it. Mounted always, so it fades like an affliction's mark rather than popping in. -->
+					     aspect beside it. Mounted always, so it fades like an hazard's mark rather than popping in. -->
 					<span class="alert" class:on={chipWarning} aria-hidden="true">!</span>
 				</button>
 			{/if}
@@ -3217,10 +3218,10 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{@const bolted = marked && shotAt(tomb, card.location)}
 						{@const afflicted = afflictionIds.has(shorthandCard(card))}
 						<!--
-							An affliction aimed at this card stains it and bangs it, so the mark is findable on a
+							An hazard aimed at this card stains it and bangs it, so the mark is findable on a
 							face-down back that has a drawing of its own. A covered fogged card cannot show the bang
 							— all but its top strip is behind the card above — so it wears the archer's arrow there
-							instead, in the affliction's violet: that strip is exactly where a shot is drawn anyway.
+							instead, in the hazard's violet: that strip is exactly where a shot is drawn anyway.
 						-->
 						<button
 							class="card"
@@ -3250,7 +3251,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 										? 'Unexplored Room — dig it to heal a wound.'
 										: 'Unexplored Room — buried. Dig the cards above it off first; the dig heals a wound.'
 									: tomb
-										? `${ratName(card)}\nA nondescript tomb rat.\nAffliction: None\n${goldNote(tomb, card)}`
+										? `${ratName(card)}\nA nondescript tomb rat.\nNo hazard.\n${goldNote(tomb, card)}`
 										: undefined}
 						aria-label={`${down ? 'fogged card' : `${card.rank} of ${card.suit}`}, hallway ${col + 1}, card ${i + 1} of ${cascade.length}`}
 						onpointerdown={(event) => !down && onCardPointerDown(event, card)}
@@ -3275,7 +3276,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 						{:else}
 							<img src={down ? `${BASE}images/back.svg` : img(card)} alt="" draggable="false" />
 						{/if}
-						<!-- The card an affliction is aimed at, mounted so the mark can fade rather than pop. -->
+						<!-- The card an hazard is aimed at, mounted so the mark can fade rather than pop. -->
 						<span class="afflict" class:on={afflicted} aria-hidden="true">!</span>
 						<span
 							class="slay"

@@ -102,7 +102,7 @@ export function describeStep(before: TombState, after: TombState): string | null
 	}
 
 	// Fog lifting off a card with nothing else on the board changing is a dig. It is read after the move
-	// branches because a tomb's affliction can lift fog on a park or a build too: printing that as a dig
+	// branches because a tomb's hazard can lift fog on a park or a build too: printing that as a dig
 	// dropped the card that actually moved, and the transcript then could not be replayed.
 	const dug = [...now.values()].filter(
 		(card) => before.hidden.includes(shorthandCard(card)) && !after.hidden.includes(shorthandCard(card))

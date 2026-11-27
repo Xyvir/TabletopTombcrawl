@@ -5,7 +5,7 @@
 // Each play mints its own Audio element, so events that land on the same move
 // overlap the way the board does: a boss kill rings while the king's own slay
 // still sounds. Kills cycle slash1-3 without repeating the last one.
-import afflictionUrl from '../audio/affliction.ogg?url';
+import hazardUrl from '../audio/hazard.ogg?url';
 import armUrl from '../audio/arm.ogg?url';
 import arrowUrl from '../audio/arrow.ogg?url';
 import bossClearUrl from '../audio/boss_kill_dungeon_clear.ogg?url';
@@ -27,7 +27,7 @@ import useGlyphUrl from '../audio/use_glyph.ogg?url';
 import useItemUrl from '../audio/use_item.ogg?url';
 
 export type SfxName =
-	| 'affliction'
+	| 'hazard'
 	| 'arm'
 	| 'arrow'
 	| 'bossClear'
@@ -46,7 +46,7 @@ export type SfxName =
 	| 'useItem';
 
 const URLS: Record<SfxName, string> = {
-	affliction: afflictionUrl,
+	hazard: hazardUrl,
 	arm: armUrl,
 	arrow: arrowUrl,
 	bossClear: bossClearUrl,
@@ -172,7 +172,7 @@ export interface MoveSfx {
 	ranged: boolean;
 	/** A king went home, general or boss: king_dies plays over the slash. */
 	kingKilled: boolean;
-	/** The kill's clean bill: take_damage replays once per point, staggered. Aura wounds — including Petrify's extra point — sound only as affliction. */
+	/** The kill's clean bill: take_damage replays once per point, staggered. Aura wounds — including Petrify's extra point — sound only as hazard. */
 	damage: number;
 	/** Fog lifted: the revealed card steps into its hallway. */
 	dug: boolean;
@@ -194,7 +194,7 @@ export interface MoveSfx {
 	bossFound: boolean;
 	bossKilled: boolean;
 	tombEmptied: boolean;
-	/** A monster power fired (Mug, Fear, Petrify, Mana Burn). */
+	/** A monster power fired (Mug, Terrify, Petrify, Silence). */
 	afflicted: boolean;
 	/**
 	 * A wound mended and a card came back up: the chip's conversion bounty, a level up's repair, the glyph's
@@ -215,7 +215,7 @@ export function playMoveSfx(f: MoveSfx) {
 	if (f.homed) playSlash();
 	if (f.kingKilled) playSfx('kingDies');
 	if (f.damage > 0) playTakeDamage(f.damage);
-	if (f.afflicted) playSfx('affliction');
+	if (f.afflicted) playSfx('hazard');
 	if (f.converted) playSfx('convert');
 	if (f.mended) playSfx('mend');
 	if (f.armed) playSfx('arm');

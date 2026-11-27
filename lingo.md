@@ -24,10 +24,10 @@ Two rules for this file:
 | **Graveyard** | The four piles a card goes to when it is slain. Where the dead lie. | foundations |
 | **Grave** | One suit's pile in the graveyard. Four graves, one per suit, filling in rank order. | one foundation |
 | **Boss** | The king that ends the run when slain, titled *<Name>, <Monster> Boss of <Suit>* — "Medusa, Gorgon Boss of Clubs". Boss is the post, not the card: the off-suit kings rank below her as Generals of theirs, and Medusa is never called a king. | the protected king |
-| **Court** | The boss suit's ace through queen. Carries the deal's affliction. | boss-suit minions |
-| **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's affliction too. | off-suit king |
-| **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **Affliction: None**. | plain card |
-| **Affliction** | The deal's one monster power — Mug, Fear, Petrify or Mana Burn — worn by the court and the kings. Copy introduces it as *Affliction: <name> — …*. `aura` stays the code's word. | monster power |
+| **Court** | The boss suit's ace through queen. Carries the deal's hazard. | boss-suit minions |
+| **General** | A king of any other suit, named *<Boss>'s General of <Suit>* — "JORMUNGANDR's General of Clubs". Carries the deal's hazard too. | off-suit king |
+| **Rat** | Any card with no power: outside the boss suit and off the king's rank. The suit names its colour: **Black Rat** (spades), **Grey Rat** (clubs), **Brown Rat** (hearts), **Red Rat** (diamonds). Its rank measures it *Small* (ace–5), *Medium* (6–9) or *Large* (10–Q). A tooltip reads *A nondescript tomb rat.* and **No hazard.** | plain card |
+| **Hazard** | The deal's one monster power — mug, terrify, petrify or silence — worn by the court and the kings. Copy introduces it as *Hazard: <verb> — …*, with the verb lowercase after the label, because the line reads the card rather than titling it. `aura` and `affliction` stay the code's words. | monster power |
 | **Wound** | The unit of damage: one face-down card on the status track. Copy says wounds, never HP. The board marks it with a band-aid. | lost HP |
 | **Dig** | Turning over a face-down card in the tomb. Heals. | reveal / flip |
 | **Unexplored room** | A face-down card in the tomb, before it is dug. | fogged card |
@@ -47,7 +47,7 @@ aspect it is when that matters. A converted aspect becomes a pocket like any oth
 choosing *pocket* over `slot` or `cell` for what is left once the hero is gone.
 
 Every ability in the game names both where it comes from and what kind of thing it is, and those two words
-are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affliction** only of a monster,
+are fixed. Copy says **trait** only of a kin, **skill** only of a class, **hazard** only of a monster,
 **spell** only of a glyph, **effect** only of an item — so the source is never in doubt, and a phrase like
 "the item's spell" cannot happen.
 
@@ -55,7 +55,7 @@ are fixed. Copy says **trait** only of a kin, **skill** only of a class, **affli
 | --- | --- | --- | --- |
 | Kin | **trait** | always on, while the card is unwounded | Intuition |
 | Class | **skill** | always on, while the card is unwounded | Powerstrike |
-| Monster | **affliction** | the deal's one, worn by the court and the kings | Mana Burn |
+| Monster | **hazard** | the deal's one, worn by the court and the kings | Silence |
 | Glyph | **spell** | armed, spent by the action it is armed for, refreshed on a level up | PISORF |
 | Item | **effect** | spent once, then restocked after it is slain | Potion |
 
@@ -76,8 +76,10 @@ The word is *the boss*, never *the boss king*: the throne is dealt as a king of 
 on it, and Medusa is a woman — the rank is the card's, the word is the post. Generals keep their rank: they are kings,
 and they say so.
 
-Monster names are per suit and never per card: Bandit (spades, Mug), Zombie (hearts, Fear),
-Gorgon (clubs, Petrify), Wraith (diamonds, Mana Burn).
+Monster names are per suit and never per card: Bandit (spades, mug), Zombie (hearts, terrify),
+Gorgon (clubs, petrify), Wraith (diamonds, silence). The four hazards are punchy symmetric verbs, and the ones
+that name a rule are written as the verb it performs: a zombie terrifies, a gorgon petrifies, a bandit mugs and a
+wraith silences. Where one is named on its own — a status line, a heading — it keeps its capital.
 
 The right-most free cell is the **reserve pocket**, marked with a gold star: it takes cards like any other, but the
 star goes out for the rest of the deal the first time anything sits in it. Finishing with it up is the optional
@@ -96,7 +98,7 @@ The tomb you are in is named for its type and its monster, never for its boss: B
 Ziggurat of Zombies (hearts), Grotto of Gorgons (clubs), Warren of Wraiths (diamonds), and Dungeon of Darkness (?) for a
 deal whose suit is not known yet. The status bar carries that name; the boss keeps its own name in the tooltip
 on its card. Each one has a single descriptive line above its
-affliction — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the affliction
+hazard — *A scallywag looking to loot the tomb.* — which is flavour and never a rule; the hazard
 line below it is the rule. A General and the boss carry no description, because they answer to the monster
 rather than being one. Their courts are graded *Lesser* (ace–5), bare
 (6–9) and *Greater* (10–Q). The rats take those same three ranges and give them their own words — *Small*,
@@ -124,7 +126,7 @@ Notes that follow from those:
   plain from then on — slay and convert can both happen on one move.
 - **A wound locks the pocket it lies on.** A wounded card cannot be converted, and a bandit gets nothing
   from that slot either — arriving wounded is the counterplay, the same bargain a wraith offers.
-- **Stash is the code's "park".** The affliction still fires on it: a stashed carrier sets off its power where it
+- **Stash is the code's "park".** The hazard still fires on it: a stashed carrier sets off its power where it
   lies. Copy says stash; nothing in copy says park.
 
 ### Slay vs kill
@@ -177,12 +179,12 @@ Copy that still uses the standard name, each a one-line change:
   synonym problem this file exists to fix.
 - **Goon / Grunt / Mook** for plain cards — Rat won: a creature in a tomb, not a soldier. Soldiers collide
   with King and General.
-- **Minion** for plain cards — already means "carries the affliction" in the code and in the tint's explanation.
+- **Minion** for plain cards — already means "carries the hazard" in the code and in the tint's explanation.
 - **One ladder of words for both families** — a court and a rat sharing *Small* / *Medium* / *Large* read as a
   rule (is a small Gorgon as weak as a small rat?) and left a rat "large" next to a "lesser" Gorgon. Two
   ladders over the same three ranges: the court is *Lesser* / bare / *Greater*, the rats are *Small* /
   *Medium* / *Large*.
-- Listing exceptions in per-card copy (Priest's Bloodgift on every fogged card, the Remedy clause on every affliction
+- Listing exceptions in per-card copy (Priest's Bloodgift on every fogged card, the Remedy clause on every hazard
   line) — the tooltip answers one question, not every edge case.
 
 ---

@@ -148,7 +148,7 @@ export const CLAUSES = {
 	 */
 	fogDominance: false,
 	/**
-	 * Wraith: Mana Burn drains the glyph slot rather than the Glyph item, so a slot the chip has stepped
+	 * Wraith: Silence drains the glyph slot rather than the Glyph item, so a slot the chip has stepped
 	 * past is still bitten instead of going quiet.
 	 */
 	wraithSlot: false,
@@ -328,7 +328,7 @@ export interface TombState {
 	/**
 	 * The deal opened the Dwarf's extra pocket: the right-most free cell. It stands only while the Dwarf is
 	 * face up, so a wound on him turns it to stone (see `stoneCell`) and healing him opens it again — the one
-	 * pocket an affliction can take off the track.
+	 * pocket an hazard can take off the track.
 	 */
 	constitution: boolean;
 	/** An exhausted cell: its ability is spent and the card lies on its side. Still counts as HP. */
@@ -698,7 +698,7 @@ export function isBossMinion(state: TombState, card: Card): boolean {
 
 /**
  * Cards that carry a monster power. The boss suit's court always does, and with `kingPowers` every king
- * does too, whatever suit the run dealt — a spade king in a heart tomb is a Zombie's king and fears.
+ * does too, whatever suit the run dealt — a spade king in a heart tomb is a Zombie's king, and terrifies too.
  * The power always comes from the boss suit: one aura per deal, worn by the court and the lesser kings.
  */
 export function carriesPower(state: TombState, card: Card): boolean {
@@ -722,7 +722,7 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		name: 'Zombie',
 		boss: 'Frank',
 		blurb: 'A walking corpse that feeds on the living.',
-		power: 'Fear',
+		power: 'Terrify',
 		text: 'slaying or stashing this deals 1 extra wound while its rank is higher than your level.',
 	},
 	clubs: {
@@ -736,8 +736,8 @@ export const MONSTERS: Record<Suit, { name: string; boss: string; blurb: string;
 		name: 'Wraith',
 		boss: 'Tormented One',
 		blurb: 'A wraith that drinks the spells out of your hand.',
-		power: 'Mana Burn',
-		text: 'slaying this burns your spell slot: the Glyph is exhausted and wounded.',
+		power: 'Silence',
+		text: 'slaying this silences your spell slot: the Glyph is exhausted and wounded.',
 	},
 };
 
@@ -1296,24 +1296,24 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	// The power spends the item's card before the kill's own wounds, so that wound is owed on top.
 	const itemCells = auraItemWound(state, card, from);
 	const afterItem = itemCells.reduce((next, cell) => woundCell(next, cell), state);
-	// Fear: a carrier whose rank is above the delver's level lands one wound more, and that one lands
+	// Terrify: a carrier whose rank is above the delver's level lands one wound more, and that one lands
 	// before the blow's own. It is a heart the kill costs, so it belongs on the bill the preview reads out.
-	const afterFear = fearApplies(state, card, level)
+	const afterTerrify = terrifyApplies(state, card, level)
 		? cloneWith(afterItem, { wounded: wound(afterItem, 1).wounded })
 		: afterItem;
-	const fearLocks = afterFear.wounded.flatMap((count, cell) =>
+	const terrifyLocks = afterTerrify.wounded.flatMap((count, cell) =>
 		count > (afterItem.wounded[cell] ?? 0) ? [cell] : []
 	);
-	const afterWounds = wound(afterFear, damage);
+	const afterWounds = wound(afterTerrify, damage);
 	const struck = cloneWith(state, { wounded: afterWounds.wounded });
 	// Petrify is paid by the party, not the blow: one passive turns face down after the kill's own
-	// wounds, and that heart is on the bill. The card it turns is an affliction, not a wound, so the
+	// wounds, and that heart is on the bill. The card it turns is an hazard, not a wound, so the
 	// preview leaves it off `wounds` (the board's ! mark) rather than painting it as damage.
 	const afterGaze = stoneGaze(struck, card);
 	const gazes = afterGaze.wounded.flatMap((count, cell) =>
 		count > (afterWounds.wounded[cell] ?? 0) ? [cell] : []
 	);
-	const total = damage + itemCells.length + fearLocks.length + gazes.length;
+	const total = damage + itemCells.length + terrifyLocks.length + gazes.length;
 	const free = hp(state);
 	// One heart has to be left standing, so a kill can spend every heart but the last. An empty free
 	// cell is not a heart until a card sits in it: it is where the track grows by one to absorb more.
@@ -1323,7 +1323,7 @@ export function attackPreview(state: TombState, from: CardLocation, reachThrough
 	const legal = short === 0;
 	const need = short ? emptyCells(state).slice(0, short) : [];
 	const locks = legal
-		? Array.from(new Set([...itemCells, ...fearLocks, ...afterWounds.locks, ...gazes]))
+		? Array.from(new Set([...itemCells, ...terrifyLocks, ...afterWounds.locks, ...gazes]))
 		: [];
 	return {
 		legal,
@@ -1774,7 +1774,7 @@ function consumeDraft(state: TombState, cell: number): DraftCard[] {
  * Wizard's Dualcast the item aspect spells too, so a Wraith bites both glyphs.
  */
 /**
- * The cells Mana Burn drains. The item used to share this list — one affliction for each spent slot — but the
+ * The cells Silence drains. The item used to share this list — one hazard for each spent slot — but the
  * item is Mug's now: a bandit forces its conversion without a heal rather than spending it, so this list is
  * the Wraith's alone. The glyphs are its own, and a Wizard's Dualcast makes the item slot one of them.
  */
@@ -1855,11 +1855,11 @@ function mugSlot(state: TombState): TombState {
 }
 
 /**
- * Fear: the carrier is a higher level than the delver, so the blow it dies to lands one wound more. A card's
+ * Terrify: the carrier is a higher level than the delver, so the blow it dies to lands one wound more. A card's
  * rank is the monster's level, so a king out-levels the cap's twelve while a minion only bites beneath the
  * delver. `level` is the level the fight opened on, so the preview and the blow read the same number.
  */
-export function fearApplies(state: TombState, card: Card, level = currentLevel(state)): boolean {
+export function terrifyApplies(state: TombState, card: Card, level = currentLevel(state)): boolean {
 	return state.bossSuit === 'hearts' && carriesPower(state, card) && auraActive(state) && rankOf(card.rank) > level;
 }
 
@@ -1880,7 +1880,7 @@ export function woundTarget(state: TombState): Card | null {
 
 /**
  * The one card a single Petrify turns: the leftmost of the party's kin and class that is still face
- * up. An affliction takes one card, so the kin turns first and the class is what the next gorgon finds;
+ * up. An hazard takes one card, so the kin turns first and the class is what the next gorgon finds;
  * Petrify stops at the class, so the glyph and the item to its right never turn. A cell already face
  * down has nothing left to take, which is the window the party can play around by converting a passive
  * away or leaving one wounded before the next gorgon falls.
@@ -1907,8 +1907,8 @@ function stoneGaze(state: TombState, card: Card): TombState {
 }
 
 /**
- * The cards an affliction is aimed at right now, for the board to warn on while the carrier is under the
- * pointer: the card Fear would turn down, the kin and class Petrify would wound, the glyphs Mana Burn
+ * The cards an hazard is aimed at right now, for the board to warn on while the carrier is under the
+ * pointer: the card Terrify would turn down, the kin and class Petrify would wound, the glyphs Silence
  * would spend. Mug is the exception — it spends the hero aspect beside the chip and leaves the card where it
  * lies, so nothing on the board is marked and the interface bangs the chip instead (`mugTarget`). An armed
  * Remedy turns the whole aura off, so it warns on nothing at all: nothing would happen.
@@ -1917,9 +1917,9 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
 	if (!carriesPower(state, card) || !auraActive(state)) return [];
 	switch (state.bossSuit) {
 		case 'hearts': {
-			// Fear marks the card it would turn face down, the same one a blow's own damage points at. A
+			// Terrify marks the card it would turn face down, the same one a blow's own damage points at. A
 			// delver at or above the carrier's level pays nothing extra, so nothing is marked.
-			const hit = fearApplies(state, card) ? woundTarget(state) : null;
+			const hit = terrifyApplies(state, card) ? woundTarget(state) : null;
 			return hit ? [cardId(hit)] : [];
 		}
 		case 'spades':
@@ -1953,7 +1953,7 @@ export function afflictionTargets(state: TombState, card: Card): string[] {
   * `by` says which of the two it was, because Petrify is the one power already priced into the kill.
  * `levelled` says the blow completed a rank: the bandit is the one power that arrives too late, because
  * the level up lifts the delver first. Nothing parks a card home, so a park never levels. `level` is the
- * level the fight opened on, passed in by a kill so Fear reads the same number the preview did.
+ * level the fight opened on, passed in by a kill so Terrify reads the same number the preview did.
  */
 function bossAura(
 	state: TombState,
@@ -1965,9 +1965,9 @@ function bossAura(
 	if (!carriesPower(state, card) || !auraActive(state)) return state;
 	switch (state.bossSuit) {
 		case 'hearts':
-			// Fear lands on the party rather than on the carrier: a stash has no blow to price, so the wound
+			// Terrify lands on the party rather than on the carrier: a stash has no blow to price, so the wound
 			// is taken here, and a kill pays its own wounds after it (see `attackWith`).
-			return fearApplies(state, card, level) ? cloneWith(state, { wounded: wound(state, 1).wounded }) : state;
+			return terrifyApplies(state, card, level) ? cloneWith(state, { wounded: wound(state, 1).wounded }) : state;
 		case 'spades':
 			// Mug forces the conversion rather than pricing the card: the Hero Chip walks left with no heal,
 			// whether the bandit went down to a blade or was only stashed. Nothing is priced into the
@@ -1979,7 +1979,7 @@ function bossAura(
 			// pay first, so it petrifies here.
 			return by === 'park' ? stoneGaze(state, card) : state;
 		case 'diamonds': {
-			// Mana Burn takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
+			// Silence takes the glyphs themselves: spent, and turned face-down as a wound. A Wizard's
 			// Dualcast leaves two glyphs standing, and a Wraith takes them both.
 			const cells = auraCells(state);
 			if (!cells.length) return state;
@@ -2020,15 +2020,15 @@ export function afflictionFired(before: TombState, after: TombState): boolean {
 	if (!moved) return false;
 	const prior = before.game.cards.find((other) => cardId(other) === cardId(moved));
 	switch (before.bossSuit) {
-		// Fear and Mug leave evidence: a wound on top of the blow's own bill, or the slot converted.
+		// Terrify and Mug leave evidence: a wound on top of the blow's own bill, or the slot converted.
 		case 'hearts':
-			return !!prior && fearApplies(before, prior) && newlyWounded(before, after).length > 0;
+			return !!prior && terrifyApplies(before, prior) && newlyWounded(before, after).length > 0;
 		case 'spades':
 			return after.draft.length < before.draft.length;
 		// Petrify leaves a passive face down when it has one left to stone.
 		case 'clubs':
 			return gazeCell(before) !== null;
-		// Mana Burn needs a glyph standing to drain.
+		// Silence needs a glyph standing to drain.
 		case 'diamonds':
 			return !!prior && auraItemOf(before, prior) !== null;
 		default:
@@ -2250,7 +2250,7 @@ export function attackWith(
 	const settled = dropKnockedArm(spendArmedItem(settle(next, levelBefore)));
 	// The last heart is gone: the crawl ends here. Read off the board rather than the preview, so a
 	// killing blow that levels up is saved by the heal it earns. `fatal` is the bill the preview priced,
-	// Fear's extra heart included, so a blow that empties the track is exactly the one it refused;
+	// Terrify's extra heart included, so a blow that empties the track is exactly the one it refused;
 	// a party card played home leaving no hearts behind is the end of a clear, not a death.
 	if (preview.fatal && hp(settled) === 0)
 		return cloneWith(settled, { won: true, died: true, score: tombScore(settled) });
@@ -2489,7 +2489,7 @@ export function disarm(state: TombState): TombState {
  * This runs where the injury lands, after the arm that paid for the action has been spent, so an item
  * that pays for the very action is never knocked out of hand by its own bill.
  * Exhaustion needs no rule of its own: casting exhausts a glyph as it arms it, so an armed glyph is
- * already spent, and the only powers that exhaust an unspent item (Burden, Mana Burn) wound it too.
+ * already spent, and the only powers that exhaust an unspent item (Burden, Silence) wound it too.
  */
 function dropKnockedArm(state: TombState): TombState {
 	const armed = state.armed;

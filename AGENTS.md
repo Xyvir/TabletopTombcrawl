@@ -468,6 +468,17 @@ hand again, and the violet arrow that marked a covered fog target is gone from t
 The stored hearts lines were solved under the dig, so they need a re-solve before the corpus can claim them again;
 no other suit's lines are touched by the change.
 
+### Hazards, and the four verbs (adopted 2026-11-27)
+
+The category is a **hazard** now, not an affliction, and the four read as punchy symmetric verbs: **mug**
+(Bandit, spades), **terrify** (Zombie, hearts), **petrify** (Gorgon, clubs), **silence** (Wraith, diamonds). Two of
+the four are unchanged in name; Fear became terrify and Mana Burn became silence. Nothing mechanical moved — the
+same clause keys, suits, carrier rules and prices — so no stored line was re-measured and the corpus is untouched.
+
+Copy reads *Hazard: <verb> — what it costs* with the verb lowercase after the label, and a rat now reads
+*No hazard.* rather than *Affliction: None*. `fearApplies`/`afterTerrify`/`terrifyLocks` follow the power's new
+name; `aura` and `affliction` stay the code's words for the category, the way the glossary sets out.
+
 ## The reserve pocket (adopted)
 
 The right-most free cell — the Dwarf's extra one when he is in the party, since `reserveCell()` reads the track's own
