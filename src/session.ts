@@ -15,9 +15,9 @@ import { FreeCell } from './game/game';
 import type { PreviousAction } from './game/move/history';
 import type { Card } from './game/card/card';
 import { type Difficulty, type DraftCard, type RestockTakes, type TombState } from './tombcrawl';
+import { CRAWL_STORE, openTombcrawlDb } from './db';
 
-const DB_NAME = 'tombcrawl';
-const STORE = 'session';
+const STORE = CRAWL_STORE;
 const RECORD = 'crawl';
 /** Bumped when a field changes shape: an old record is dropped rather than half-read. */
 const VERSION = 1;
@@ -136,20 +136,8 @@ export function restoreState(snapshot: StateSnapshot): TombState {
 	};
 }
 
-/** One store, one record: every write replaces the crawl that was there. */
-function openDatabase(): Promise<IDBDatabase> {
-	return new Promise((resolve, reject) => {
-		const request = indexedDB.open(DB_NAME, 1);
-		request.onupgradeneeded = () => {
-			if (!request.result.objectStoreNames.contains(STORE)) request.result.createObjectStore(STORE);
-		};
-		request.onsuccess = () => resolve(request.result);
-		request.onerror = () => reject(request.error);
-	});
-}
-
 function transact<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-	return openDatabase().then(
+	return openTombcrawlDb().then(
 		(database) =>
 			new Promise<T>((resolve, reject) => {
 				const transaction = database.transaction(STORE, mode);

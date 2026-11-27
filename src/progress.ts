@@ -3,6 +3,8 @@
  * reload. Two results matter: the boss died, or the whole tomb came home. A layout keeps its best
  * result, so a later worse attempt never takes the mark away.
  */
+import { LAYOUT_STORE, openTombcrawlDb } from './db';
+
 export type LayoutStatus = 'boss' | 'clear';
 
 export interface LayoutRecord {
@@ -17,65 +19,15 @@ export interface LayoutRecord {
 	at: number;
 }
 
-const DB_NAME = 'tombcrawl';
-const STORE = 'layouts';
-const DB_VERSION = 2;
-
-const openDb = (): Promise<IDBDatabase> =>
-	new Promise((resolve, reject) => {
-		if (typeof indexedDB === 'undefined') {
-			reject(new Error('this browser has no IndexedDB'));
-			return;
-		}
-		const request = indexedDB.open(DB_NAME, DB_VERSION);
-		// A refused upgrade leaves the database on its old version, and every later open fails the same way.
-		request.onblocked = () => reject(new Error('another tab is holding the progress store open'));
-		request.onupgradeneeded = () => {
-			const db = request.result;
-			const transaction = request.transaction as IDBTransaction;
-			if (!db.objectStoreNames.contains(STORE)) {
-				db.createObjectStore(STORE, { keyPath: 'id' });
-				return;
-			}
-			// Version 1 keyed a result by its party alone, which cannot tell a med win from a hard one.
-			// The store is rebuilt around `id` and every old row is carried over as a med result, since that
-			// is the track the app played before this existed.
-			//
-			// The rows are read first and written back only once the old store is gone: a handle to a
-			// deleted store throws on `openCursor`, and an exception in here aborts the whole upgrade —
-			// which left every later read and write failing silently, so marks never survived a reload.
-			const old = transaction.objectStore(STORE);
-			const carried: LayoutRecord[] = [];
-			const cursor = old.openCursor();
-			cursor.onsuccess = () => {
-				const row = cursor.result;
-				if (row) {
-					const value = row.value as Partial<LayoutRecord>;
-					if (value.loadout) {
-						const difficulty = value.difficulty ?? 'med';
-						carried.push({ ...(value as LayoutRecord), difficulty, id: `${difficulty}:${value.loadout}` });
-					}
-					row.continue();
-					return;
-				}
-				db.deleteObjectStore(STORE);
-				const store = db.createObjectStore(STORE, { keyPath: 'id' });
-				for (const record of carried) store.put(record);
-			};
-		};
-		request.onsuccess = () => resolve(request.result);
-		request.onerror = () => reject(request.error ?? new Error('could not open the progress store'));
-	});
-
 /**
  * Run one request and answer when its transaction has actually committed: a write resolved on its
  * own success event can still be lost if the database is closed before the transaction settles.
  */
 const withStore = async <T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest): Promise<T> => {
-	const db = await openDb();
+	const db = await openTombcrawlDb();
 	return new Promise<T>((resolve, reject) => {
-		const transaction = db.transaction(STORE, mode);
-		const request = run(transaction.objectStore(STORE));
+		const transaction = db.transaction(LAYOUT_STORE, mode);
+		const request = run(transaction.objectStore(LAYOUT_STORE));
 		let result: T;
 		request.onsuccess = () => {
 			result = request.result as T;
