@@ -127,15 +127,15 @@
 				\node[text=black, font=\fontsize{32}{32}\selectfont] at (\gcx,51.0) {\sy};
 			}
 			
-			% Monster - Affliction reminders below each gravestone
+			% Monster - Hazard reminders below each gravestone
 			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (314.4,78.0)
 			{\textbf{Bandit} -- Mug\\\emph{Forces Hero Chip conversion}};
 			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (386.9,78.0)
-			{\textbf{Viper} -- Venom\\\emph{Dig deepest fog, no heal, or 1 dmg}};
+			{\textbf{Zombie} -- Terrify\\\emph{+1 wound if above your Level}};
 			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (461.9,78.0)
-			{\textbf{Gorgon} -- Stone Gaze\\\emph{Wounds Kin, then Class}};
+			{\textbf{Gorgon} -- Petrify\\\emph{Wounds Kin, then Class}};
 			\node[anchor=south, align=center, inner sep=0, font=\fontsize{6.5}{7.8}\selectfont, text=black] at (520.85,78.0)
-			{\textbf{Wraith} -- Mana Burn\\\emph{Exhausts \& wounds Glyph(s)}};
+			{\textbf{Wraith} -- Silence\\\emph{Exhausts \& wounds Glyph(s)}};
 			
 			% ------------------------------------------------------------- legends (Left Sheet)
 			\node[anchor=north west, align=left, font=\footnotesize\itshape, text=black, inner sep=0] at (7.5,14.0)
@@ -224,7 +224,7 @@
 					\suit{$\clubsuit$} & \textbf{Elixir} \\
 					& \emph{Refresh \& heal your Glyph(s)} \\[0.8pt]
 					\suit{$\diamondsuit$} & \textbf{Remedy} \\
-					& \emph{Block next Monster affliction}
+					& \emph{Block next Monster hazard}
 			\end{tabular}};
 			
 			% ----------------------------------------- the Hero Chip (top border of reminder row)
@@ -372,25 +372,25 @@
 			\textbf{Purity}: Flip up to 3 face-up cards in a hallway face down into fog, bottom up (skipping already-fogged cards; excludes the Boss). \\
 			\midrule
 			{\large\color{ink!65}$\heartsuit$} &
-			\textbf{Viper} \emph{(Venom)}: Dig the deepest fogged card --- rightmost fogged hallway on a tie --- without healing a wound; with no fog left to dig, take 1 extra damage. &
+			\textbf{Zombie} \emph{(Terrify)}: Slaying or stashing this deals 1 extra wound while its rank is higher than your Level. &
 			\textbf{Human} \emph{(Intuition)}: Ignore your lowest grave when calculating Level. &
 			\textbf{Priest} \emph{(Bloodgift)}: Digging and leveling up heal 2 wounds instead of 1. &
 			\textbf{CYDSTEPP}: Place a card or run onto a fogged card, or move the Boss to an empty hallway. &
 			\textbf{Potion}: Heal all wounds on the Status Track. \\
 			\midrule
 			{\large\color{ink!65}$\clubsuit$} &
-			\textbf{Gorgon} \emph{(Stone Gaze)}: Turns one card face down (wounding it): the leftmost face-up of your Kin and Class, never past Class. &
+			\textbf{Gorgon} \emph{(Petrify)}: Slaying or stashing this wounds your Kin and Class, one card each from the left, and stops at the Class. &
 			\textbf{Orc} \emph{(Aggression)}: Slaying into your fullest grave costs 0 wounds. &
 			\textbf{Wizard} \emph{(Dualcast)}: Your Item pocket holds a second Glyph instead. &
 			\textbf{PISORF}: Stack a 2-card run into 1 empty pocket (counts as 2 cards and 2 Hearts). &
 			\textbf{Elixir}: Refresh and heal your Glyph (affects only the Glyph itself). \\
 			\midrule
 			{\large\color{ink!65}$\diamondsuit$} &
-			\textbf{Wraith} \emph{(Mana Burn)}: Exhausts and wounds your Glyph (both Glyphs under Wizard's Dualcast). &
+			\textbf{Wraith} \emph{(Silence)}: Slaying this silences your spell slot: the Glyph is exhausted and wounded (both Glyphs under Wizard's Dualcast). &
 			\textbf{Elf} \emph{(Perception)}: Slay or dig any buried card covered only by face-up number cards (A--10). &
 			\textbf{Thief} \emph{(Pickpocket)}: A level up opens a one-action window: swap your Item pocket's card with any exposed hallway card. &
 			\textbf{WEYTWUT}: Swap any two face-up cards. &
-			\textbf{Remedy}: Ignore any Monster affliction on your next slay or stash. \\
+			\textbf{Remedy}: Ignore any Monster hazard on your next slay or stash. \\
 			\bottomrule
 	\end{tabularx}}
 	
@@ -424,14 +424,14 @@
 		\rh{The Boss, Generals \& Monsters}
 		The first King \emph{face up} in a hallway is the \kw{Boss}—turn it \kw{90 degrees} (sideways) to
 		mark it. The Boss's suit determines the primary \kw{Monster Type} infesting that tomb and which
-		\kw{affliction} (see chart above) is active. A King hidden under fog is not the Boss until uncovered,
+		\kw{hazard} (see chart above) is active. A King hidden under fog is not the Boss until uncovered,
 		and a King dealt onto your Hero is simply a Hero card—so a crawl can begin with no active Boss. The
 		remaining three Kings are \kw{Generals}. Unlike generic Rats, every \kw{Monster} (Ace--Queen of the
-		Boss's suit) and all four Kings (the Boss and its Generals) inflict a negative affliction.
+		Boss's suit) and all four Kings (the Boss and its Generals) carry the deal's hazard.
 		
 		\kw{Monsters Turned Sideways:} Slay every \kw{Monster} of the Boss's suit sideways into its grave,
-		as the Boss itself is turned. The affliction reminders are printed on the graves, so a grave holding a
-		turned card is the cue to trigger that suit's affliction.
+		as the Boss itself is turned. The hazard reminders are printed on the graves, so a grave holding a
+		turned card is the cue to trigger that suit's hazard.
 		
 		\columnbreak
 		\rh{The Boss's Special Protection}
@@ -472,9 +472,9 @@
 			higher. A run may contain at most \textbf{empty pockets + 1} cards. Face-up pocket cards may move to a
 			valid hallway mouth, another empty pocket, or a grave.
 			\item \kw{Stash (Free Cell):} Move an exposed mouth card into an empty pocket. Stashed Boss's suits and
-			Kings trigger their affliction.
+			Kings trigger their hazard.
 			\item \kw{Dig:} When a hallway's mouth card is face down (fog), flip it face up and \kw{heal 1 wound}
-			(2 with a Priest). Nothing flips fog except digging (or Venom/Purity). You may leave fogged cards un-dug
+			(2 with a Priest). Nothing flips fog except digging (or Purity). You may leave fogged cards un-dug
 			until you need the heal.
 			\item \kw{Use Glyph / Item:} Turn a ready Glyph or Item sideways (\kw{exhausted}) to apply its effect—either
 			on its own (e.g., WEYTWUT, Potion) or as part of a move or slay (e.g., BYSSEPS, Remedy).
@@ -488,8 +488,8 @@
 			wounded aspect locks this, as does a wounded neighbour.
 			\item \kw{Action Order:} When multiple effects trigger together, resolve in order: \textbf{(1)} exhaust
 			any Glyph/Item used and pay wound costs, \textbf{(2)} move, dig, or slay the card(s), \textbf{(3)}
-			resolve triggered afflictions, then check for a Level Up. A Level Up reached by the blow spares the
-			Bandit's Mug, which is the one affliction that waits on it.
+			resolve triggered hazards, then check for a Level Up. A Level Up reached by the blow spares the
+			Bandit's Mug, which is the one hazard that waits on it.
 		\end{itemize}
 		
 	\end{multicols}
