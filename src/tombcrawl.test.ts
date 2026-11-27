@@ -506,10 +506,19 @@ describe('conversion order', () => {
 
 	test('a plain card in a free cell goes home by drag as well as by double click', () => {
 		const state = makeTomb({ columns: [['2H']], cells: ['AD', 'KC'] });
-		const next = tombMove(state, cell(0), { fixture: 'foundation', data: [0] });
+		// diamonds keep the second grave, so that is the pile the ace's own pip names
+		const next = tombMove(state, cell(0), { fixture: 'foundation', data: [1] });
 
 		expect(next).not.toBeNull();
 		expect(next!.game.cards.find((card) => shorthandCard(card) === 'AD')!.location.fixture).toBe('foundation');
+	});
+
+	test('a grave only takes the suit its pip names', () => {
+		const state = makeTomb({ columns: [['2C']], cells: ['AD'] });
+
+		// the diamond ace aimed at the clubs grave is a miss, not a home on a pile that never held it
+		expect(tombMove(state, cell(0), { fixture: 'foundation', data: [0] })).toBeNull();
+		expect(tombMove(state, cell(0), { fixture: 'foundation', data: [1] })).not.toBeNull();
 	});
 });
 
@@ -652,8 +661,8 @@ describe('mana burn and mug', () => {
 	});
 
 	test('sending a boss-suit minion home from the tableau sets its power off', () => {
-		const state = board({ columns: [['3D']], foundations: ['2D'] });
-		const next = tombMove(state, cascade(0, 0), { fixture: 'foundation', data: [0] })!;
+		const state = board({ columns: [['3D']], foundations: [null, '2D'] });
+		const next = tombMove(state, cascade(0, 0), { fixture: 'foundation', data: [1] })!;
 
 		expect(next.exhausted[1]).toBe(true);
 		expect(next.wounded[1]).toBe(1);
@@ -1914,15 +1923,16 @@ describe('tombcrawl progression rules', () => {
 				columns: [['4H', '9C', '8D', 'JS', 'KC']],
 				cells: ['2S', '5D', '6C', '7D'],
 				draft: glyph,
-				foundations: ['3H'],
+				// the three sits on the hearts grave, the pile the four's own pip names
+				foundations: [null, null, '3H'],
 			});
 			const primed = useAbility(state, 0)!;
 			// the grabbed card is the buried one, and the drop lands on a pile
-			const home = armedDrop(primed, cascade(0, 0), { fixture: 'foundation', data: [0] })!;
+			const home = armedDrop(primed, cascade(0, 0), { fixture: 'foundation', data: [2] })!;
 
 			expect(home.armed).toBe(null);
 			const burned = home.game.cards.find((card) => shorthandCard(card) === '4H')!;
-			expect(burned.location).toEqual({ fixture: 'foundation', data: [0] });
+			expect(burned.location).toEqual({ fixture: 'foundation', data: [2] });
 			// the column it came from closes up behind it
 			expect(home.game.tableau[0].every(Boolean)).toBe(true);
 			expect(home.game.tableau[0].length).toBe(4);
@@ -3205,14 +3215,15 @@ describe('an item coming back without a level up', () => {
 		makeTomb({
 			columns: [['2C']],
 			cells: ['KC', '5H'],
-			foundations: ['2S', '2H', '2D', 'AC'],
+			// the suits sit on the graves their pips name: clubs first, then diamonds, hearts, spades
+			foundations: ['AC', '2D', '2H', '2S'],
 			draft: [
 				{ cell: 0, role: 'kin', id: 'KC', suit: 'clubs', name: 'Orc', text: '' },
 				{ cell: 1, role: 'consumable', id: '5H', suit: 'hearts', name: 'Potion', text: '' },
 			],
 			exhausted: [1],
 		});
-	const clubsHome = { fixture: 'foundation' as const, data: [3] };
+	const clubsHome = { fixture: 'foundation' as const, data: [0] };
 
 	test('a spent item stays spent through a level up: only the glyph comes back', () => {
 		const state = levelling();
@@ -3235,7 +3246,7 @@ describe('the wizard’s dualcast', () => {
 			columns: [['2C']],
 			cells: ['KC', '3S', '5H'],
 			// clubs is the pile holding the level back, so its two levels the run up
-			foundations: ['2S', '2H', '2D', 'AC'],
+			foundations: ['AC', '2D', '2H', '2S'],
 			draft,
 			exhausted: [1, 2],
 		});
@@ -3243,7 +3254,7 @@ describe('the wizard’s dualcast', () => {
 		expect(hasGlyph(state, 'CYDSTEPP')).toBe(true);
 		expect(hasGlyph(state, 'BYSSEPS')).toBe(true);
 
-		const next = tombMove(state, cascade(0), { fixture: 'foundation', data: [3] })!;
+		const next = tombMove(state, cascade(0), { fixture: 'foundation', data: [0] })!;
 		expect(currentLevel(next)).toBe(3);
 		expect(next.exhausted[1]).toBe(false);
 		expect(next.exhausted[2]).toBe(false);

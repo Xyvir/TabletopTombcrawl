@@ -7,6 +7,7 @@ import {
 	Rank,
 	shorthandCard,
 	Suit,
+	SuitList,
 } from './game/card/card';
 import { FreeCell } from './game/game';
 
@@ -919,10 +920,16 @@ export function immobileBoss(state: TombState, card: Card): boolean {
 	return !(TOMB_RULES.glyphMoveBoss && kind !== undefined && MOVING_GLYPHS.has(kind));
 }
 
-export function foundationIndexOf(game: FreeCell, suit: Suit): number {
-	const occupied = game.foundations.findIndex((card) => card?.suit === suit);
-	if (occupied !== -1) return occupied;
-	return game.foundations.findIndex((card) => !card);
+/**
+ * The grave a suit owns. Each grave is engraved with its suit, so the card has to come home to the pile its
+ * pip names rather than to whichever grave happens to be empty: a heart ace landing on the clubs grave left
+ * the pip naming a suit the pile would never hold, and the skip chevrons over an empty grave then read as a
+ * climb with nothing to say which suit was climbing. Foundations are kept in suit order everywhere the board
+ * is read (`boardstate` seeds an already-home deck the same way), so this is the index they were always drawn
+ * in — the piles simply hold the suit they advertise.
+ */
+export function foundationIndexOf(suit: Suit): number {
+	return SuitList.indexOf(suit);
 }	export function foundationTopRank(state: TombState, suit: Suit): number {
 		// A pile can hold more than one card (any delver slides low cards underneath): the top is the highest.
 		return state.game.cards
@@ -2083,6 +2090,7 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 	if (source >= 0 && to.fixture === 'foundation') {
 		// Home is always an option, wounded or not: the chip's conversion order only governs leaving
 		// the cell for the board, and canSendHome enforces it there.
+		if (to.data[0] !== foundationIndexOf(cards[0].suit)) return null;
 		return attackWith(state, from);
 	}
 
@@ -2094,7 +2102,10 @@ export function tombMove(state: TombState, from: CardLocation, to: CardLocation)
 		}
 	}
 
-	if (to.fixture === 'foundation') return attackWith(state, from);
+	// The grave a card names is the grave it goes home to, in either direction: a drop on another suit's
+	// pile is a miss rather than a shot that lands in the pile the pip was always promising.
+	if (to.fixture === 'foundation')
+		return to.data[0] === foundationIndexOf(cards[0].suit) ? attackWith(state, from) : null;
 	if (!bury && !canBuildOn(state, cards, to)) return null;
 	// A run longer than the free cells can hold only moves with the sack open.
 	if (overfull && !sack) return null;
@@ -2202,7 +2213,7 @@ export function attackWith(
 
 	let next = state;
 
-	const foundation = foundationIndexOf(next.game, card.suit);
+	const foundation = foundationIndexOf(card.suit);
 	next = cloneWith(next, {
 		game: relocate(next, [{ id: cardId(card), to: { fixture: 'foundation', data: [foundation] } }]),
 	});
@@ -2424,8 +2435,13 @@ export function armedDrop(state: TombState, from: CardLocation, to: CardLocation
 		return null;
 	}
 	if (state.armed.kind === 'burndayraz') {
-		// A drop onto a foundation spends the spell on the card in hand, however deeply it lay.
-		if (to.fixture === 'foundation') return attackWith(cloneWith(state, { armed: null }), from, true);
+		// A drop onto a foundation spends the spell on the card in hand, however deeply it lay — on its own
+		// grave, because that is the pile its pip names.
+		if (to.fixture === 'foundation') {
+			const aimed = cardAt(state.game, from);
+			if (!aimed || to.data[0] !== foundationIndexOf(aimed.suit)) return null;
+			return attackWith(cloneWith(state, { armed: null }), from, true);
+		}
 		return armedClick(state, to);
 	}
 	return armedClick(state, to);
