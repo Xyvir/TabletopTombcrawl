@@ -6392,9 +6392,9 @@
 		},
 		{
 			"loadout": "sscs",
-			"boss": "clubs",
-			"seed": 4000058,
-			"moves": 113,
+			"boss": "hearts",
+			"seed": 1000999,
+			"moves": 140,
 			"difficulty": "med",
 			"goal": "boss",
 			"party": [
@@ -6419,7 +6419,7 @@
 					"suit": "spades"
 				}
 			],
-			"at": "2026-11-27T04:29:12.482Z"
+			"at": "2026-11-27"
 		},
 		{
 			"loadout": "ssdc",
@@ -8878,6 +8878,14 @@
 		{
 			"loadout": "sscs",
 			"difficulty": "med",
+			"seed": 1000999,
+			"moves": 140,
+			"goal": "boss",
+			"at": "2026-11-27"
+		},
+		{
+			"loadout": "sscs",
+			"difficulty": "med",
 			"seed": 4000058,
 			"moves": 113,
 			"goal": "boss",
@@ -9274,6 +9282,14 @@
 				"boss": {
 					"seed": 1000982,
 					"moves": 116
+				}
+			}
+		},
+		"sscs": {
+			"med": {
+				"boss": {
+					"seed": 4000058,
+					"moves": 113
 				}
 			}
 		},
@@ -10510,14 +10526,6 @@
 				"boss": {
 					"seed": 4000181,
 					"moves": 132
-				}
-			}
-		},
-		"sscs": {
-			"med": {
-				"boss": {
-					"seed": 4000058,
-					"moves": 113
 				}
 			}
 		},
