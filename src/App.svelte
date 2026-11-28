@@ -797,8 +797,8 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	/** The card an aim would slay outright: it wears crossed swords until the pointer leaves. */
 	const slayAt = $derived(!drag && preview?.legal ? aim : null);
 	/** Touch sheets have no hover to ask with, so the tomb names its own kills: every legally
-	 * slayable hallway card wears its mark without being aimed at. Pockets keep the tap-to-see flow,
-	 * so the track stays a control panel rather than a second tomb. */
+	 * slayable card wears its mark without being aimed at — in a hallway or in a pocket, since a
+	 * parked monster is a legal kill too and touch has no hover to say so. */
 	let coarsePointer = $state(false);
 	const slayableIds = $derived.by(() => {
 		if (!tomb || drag || !coarsePointer) return new Set<string>();
@@ -806,6 +806,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		for (const card of tomb.game.cards) {
 			if (card.location.fixture !== 'cascade') continue;
 			if (attackPreview(tomb, card.location).legal) ids.add(key(card.location));
+		}
+		// A pocket's mark hangs on the slot rather than on a card in it, so it keys the bare cell the way
+		// an aim at a pocket does; `cardAt` reads the top card, which is the one a blow can reach.
+		for (const [i, card] of tomb.game.cells.entries()) {
+			if (!card) continue;
+			const at = { fixture: 'cell' as const, data: [i] };
+			if (attackPreview(tomb, at).legal) ids.add(key(at));
 		}
 		return ids;
 	});
@@ -2962,6 +2969,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				{@const down = tomb ? Math.min(stack.length, tomb.wounded[i]) : 0}
 				{@const wounded = down > 0 ? stack[down - 1] : null}
 										{@const slaying = !!slayAt && key(slayAt) === key(location)}
+						{@const passiveSlay = slayableIds.has(key(location))}
 						<!-- Every face-up pocket goes down when the track cannot pay, so each one wears the skull. -->
 						{@const doomed = fatalAim && !wounded && stack.length > 0}
 				<button
@@ -3093,7 +3101,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 					>
 					<span
 						class="slay"
-						class:on={slaying}
+						class:on={slaying || passiveSlay}
 						class:ranged={slaying && shotAt(tomb, location)}
 						aria-hidden="true"
 					>
