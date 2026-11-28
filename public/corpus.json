@@ -749,6 +749,37 @@
 			"at": "2026-11-26T14:55:04.815Z"
 		},
 		{
+			"loadout": "chcc",
+			"boss": "hearts",
+			"seed": 2165,
+			"moves": 141,
+			"difficulty": "med",
+			"goal": "boss",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Orc",
+					"suit": "clubs"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "PISORF",
+					"suit": "clubs"
+				},
+				{
+					"role": "consumable",
+					"name": "Elixir",
+					"suit": "clubs"
+				}
+			],
+			"at": "2026-11-28"
+		},
+		{
 			"loadout": "chcd",
 			"boss": null,
 			"seed": 151139,
@@ -6864,6 +6895,14 @@
 			"at": "2026-11-26T14:55:04.815Z"
 		},
 		{
+			"loadout": "chcc",
+			"difficulty": "med",
+			"seed": 2165,
+			"moves": 141,
+			"goal": "boss",
+			"at": "2026-11-28"
+		},
+		{
 			"loadout": "chcd",
 			"difficulty": "med",
 			"seed": 151139,
@@ -10049,6 +10088,14 @@
 				}
 			}
 		},
+		"chcc": {
+			"med": {
+				"boss": {
+					"seed": 2165,
+					"moves": 141
+				}
+			}
+		},
 		"hdch": {
 			"med": {
 				"boss": {
@@ -10698,13 +10745,6 @@
 				"at": "2026-11-15"
 			}
 		},
-		"chcc": {
-			"med": {
-				"seed": 2165,
-				"score": null,
-				"at": "2026-11-23"
-			}
-		},
 		"dcsh": {
 			"med": {
 				"seed": 1139,
@@ -10757,7 +10797,6 @@
 	},
 	"missing": [
 		"hhsd",
-		"chcc",
 		"cchh",
 		"cchs",
 		"cccc",
