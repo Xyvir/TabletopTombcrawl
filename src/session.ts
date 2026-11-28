@@ -60,6 +60,12 @@ export interface SavedSession {
 	/** When the write happened, so the caller can tell a fresh record from a stale one. */
 	at: number;
 	difficulty: Difficulty;
+	/**
+	 * The party as it was dealt, letter for letter. A conversion empties a draft slot for good, so the
+	 * board cannot say what the crawl was keyed by once the endgame's chip work is done, and a result is
+	 * a claim about the deal the player was handed. Absent on records written before the key was kept.
+	 */
+	party?: string;
 	/** The move recorder: every position the crawl has stood on, oldest first, before the current one. */
 	history: StateSnapshot[];
 	current: StateSnapshot;

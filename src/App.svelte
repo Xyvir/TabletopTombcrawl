@@ -416,11 +416,17 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	});
 	let progress = $state<Map<string, LayoutRecord>>(new Map());
 	/**
-	 * The party the deal was dealt, kept for the whole run. It cannot be read off `tomb` when it is
-	 * needed: a cleared tomb has sent every drafted card home, and a converted card leaves the draft
-	 * for good, so a 100% clear would record itself under an empty loadout and never reach the trellis.
+	 * The trellis square this deal belongs to, when the sheet holds its seed: a random deal of the same
+	 * party is not the corpus deal, so a rolled or typed seed the corpus does not hold names no square.
 	 */
 	let dealLayout = $state('');
+	/**
+	 * The party the deal was dealt, keyed letter for letter as the trellis is. It cannot be read off
+	 * `tomb` when a result lands: a cleared tomb has sent every drafted card home, and a converted card
+	 * leaves the draft for good, so the endgame's own chip work would shorten the key — seed 2165's
+	 * `chcc` reads `ch` once two converts have gone, and the mark lands on no square at all.
+	 */
+	let dealParty = $state(loadoutOf(opening));
 	/** The sheet reads the med corpus: one track means one claim per party, and no tier to tab through. */
 	const layoutDifficulty: Difficulty = TRACK;
 	const difficultyOfEntry = (entry: CorpusEntry) => (entry.difficulty as Difficulty) ?? 'med';
@@ -560,6 +566,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombLast = null;
 					tomb = createTombState(filler.seed, FREE_CELL_COUNT[layoutDifficulty]);
 		dealLayout = loadoutOf(tomb);
+		dealParty = loadoutOf(tomb);
 		game = tomb.game;
 		void tick().then(() => startDeal());
 	}
@@ -575,6 +582,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombLast = null;
 		tomb = createTombState(entry.seed, FREE_CELL_COUNT[layoutDifficulty]);
 		dealLayout = loadoutOf(tomb);
+		dealParty = loadoutOf(tomb);
 		game = tomb.game;
 		void tick().then(() => startDeal());
 	}
@@ -585,7 +593,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 	 * nothing.
 	 */
 	async function recordRun(state: TombState) {
-		const key = dealLayout || loadoutOf(state);
+		const key = dealParty || loadoutOf(state);
 		const status: LayoutRecord['status'] | null = tombPar(state) === 0 ? 'clear' : bossSlain(state) ? 'boss' : null;
 		if (!status) return;
 		// The crawl only deals one track, so the mark is keyed by it directly: reading the track off the
@@ -618,6 +626,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			version: 1,
 			at: Date.now(),
 			difficulty,
+			party: dealParty,
 			history: tombHistory.map(snapshotState),
 			current: snapshotState(tomb),
 		});
@@ -651,6 +660,9 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		tombSelected = null;
 		tombLast = null;
 		dealLayout = layoutForSeed(held.seed);
+		// The party is not on the board once a conversion has emptied a slot, so a saved crawl carries it;
+		// an older record without it still names the deal off the opening board at the front of its log.
+		dealParty = saved.party ?? (saved.history[0] ? loadoutOf(restoreState(saved.history[0])) : loadoutOf(held));
 		endDeal();
 	}
 
@@ -1984,11 +1996,13 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 		variant = next;
 		if (next === 'tomb') {
 			tomb = createTombState(undefined, FREE_CELL_COUNT[difficulty]);
-		dealLayout = layoutForSeed(tomb.seed);
+			dealLayout = layoutForSeed(tomb.seed);
+			dealParty = loadoutOf(tomb);
 			game = tomb.game;
 		} else {
 			tomb = null;
 			dealLayout = '';
+			dealParty = '';
 			game = deal();
 		}
 	}
@@ -2601,13 +2615,16 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 				// Nobody dealt this board, so no square on the sheet is its own.
 				tomb = pasted;
 				dealLayout = '';
+				dealParty = '';
 				game = pasted.game;
 				return;
 			}
 			tomb = createTombState(valid ? requested : undefined, FREE_CELL_COUNT[difficulty]);
 			// A new deal leaves the sheet alone: a random seed is nobody's corpus square, and a typed one is
-			// only a square if the corpus actually holds that deal.
+			// only a square if the corpus actually holds that deal. The party is the deal's own either way,
+			// so a win is keyed by the cards it was dealt rather than the ones left after the converts.
 			dealLayout = layoutForSeed(tomb.seed);
+			dealParty = loadoutOf(tomb);
 			game = tomb.game;
 			void tick().then(() => startDeal());
 			return;
@@ -2658,6 +2675,7 @@ import { PREVIOUS_ACTION_TYPE_IS_START_OF_GAME } from './game/move/history';
 			tombSelected = null;
 			// The same deal again, so the square it belongs to is unchanged.
 			tomb = createTombState(tomb.seed, FREE_CELL_COUNT[difficulty]);
+			dealParty = loadoutOf(tomb);
 			game = tomb.game;
 			const redealt = game;
 			refogOnRestart(tomb, wasHidden);
