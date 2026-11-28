@@ -4531,6 +4531,38 @@
 			"at": "2026-11-25T21:13:44.595Z"
 		},
 		{
+			"loadout": "hhsd",
+			"boss": "spades",
+			"seed": 2000872,
+			"moves": 148,
+			"difficulty": "med",
+			"goal": "clear",
+			"party": [
+				{
+					"role": "kin",
+					"name": "Human",
+					"suit": "hearts"
+				},
+				{
+					"role": "class",
+					"name": "Priest",
+					"suit": "hearts"
+				},
+				{
+					"role": "glyph",
+					"name": "BYSSEPS",
+					"suit": "spades"
+				},
+				{
+					"role": "consumable",
+					"name": "Remedy",
+					"suit": "diamonds"
+				}
+			],
+			"at": "2026-11-28",
+			"source": "human"
+		},
+		{
 			"loadout": "hhsh",
 			"boss": "diamonds",
 			"seed": 600546,
@@ -7052,7 +7084,7 @@
 			"seed": 1005092,
 			"moves": 83,
 			"goal": "boss",
-			"at": "2026-11-25T21:22:55.079Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cscs",
@@ -7065,10 +7097,18 @@
 		{
 			"loadout": "csdc",
 			"difficulty": "med",
+			"seed": 42188,
+			"moves": 86,
+			"goal": "boss",
+			"at": "2026-11-23"
+		},
+		{
+			"loadout": "csdc",
+			"difficulty": "med",
 			"seed": 1021151,
 			"moves": 99,
 			"goal": "boss",
-			"at": "2026-11-26T14:20:12.257Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "csdc",
@@ -7108,7 +7148,7 @@
 			"seed": 1005270,
 			"moves": 102,
 			"goal": "boss",
-			"at": "2026-11-25T21:37:03.297Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cshc",
@@ -7124,7 +7164,7 @@
 			"seed": 1000033,
 			"moves": 94,
 			"goal": "boss",
-			"at": "2026-11-25T21:17:43.976Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cshd",
@@ -7148,7 +7188,7 @@
 			"seed": 1000034,
 			"moves": 97,
 			"goal": "boss",
-			"at": "2026-11-25T21:17:48.013Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cshs",
@@ -7156,7 +7196,7 @@
 			"seed": 1006402,
 			"moves": 110,
 			"goal": "boss",
-			"at": "2026-11-25T23:13:12.117Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cshs",
@@ -7172,7 +7212,7 @@
 			"seed": 1001107,
 			"moves": 86,
 			"goal": "boss",
-			"at": "2026-11-25T22:51:03.554Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cssc",
@@ -7180,7 +7220,7 @@
 			"seed": 1005812,
 			"moves": 85,
 			"goal": "boss",
-			"at": "2026-11-25T22:26:49.448Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "cssc",
@@ -7212,7 +7252,7 @@
 			"seed": 1000164,
 			"moves": 109,
 			"goal": "boss",
-			"at": "2026-11-25T21:30:31.400Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "csss",
@@ -7396,7 +7436,7 @@
 			"seed": 1021570,
 			"moves": 114,
 			"goal": "boss",
-			"at": "2026-11-26T14:34:14.825Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "dhdh",
@@ -7428,7 +7468,7 @@
 			"seed": 1005443,
 			"moves": 109,
 			"goal": "boss",
-			"at": "2026-11-25T21:50:12.453Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "dhhh",
@@ -7452,7 +7492,7 @@
 			"seed": 1006554,
 			"moves": 92,
 			"goal": "boss",
-			"at": "2026-11-25T23:20:49.826Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "dhsd",
@@ -7460,7 +7500,7 @@
 			"seed": 1002578,
 			"moves": 105,
 			"goal": "boss",
-			"at": "2026-11-26T00:13:19.291Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "dhsd",
@@ -7500,7 +7540,7 @@
 			"seed": 1006011,
 			"moves": 61,
 			"goal": "boss",
-			"at": "2026-11-25T22:41:44.181Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "dscd",
@@ -7516,7 +7556,7 @@
 			"seed": 1023994,
 			"moves": 92,
 			"goal": "boss",
-			"at": "2026-11-26T14:36:59.193Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "dsch",
@@ -7604,7 +7644,7 @@
 			"seed": 1005273,
 			"moves": 66,
 			"goal": "boss",
-			"at": "2026-11-25T21:37:07.934Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "dssc",
@@ -7636,7 +7676,7 @@
 			"seed": 1004590,
 			"moves": 62,
 			"goal": "boss",
-			"at": "2026-11-26T01:36:57.690Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "dsss",
@@ -7652,7 +7692,7 @@
 			"seed": 1023261,
 			"moves": 110,
 			"goal": "boss",
-			"at": "2026-11-26T14:09:52.308Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "hccc",
@@ -7780,7 +7820,7 @@
 			"seed": 1002236,
 			"moves": 105,
 			"goal": "boss",
-			"at": "2026-11-25T23:56:49.073Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hcss",
@@ -7836,7 +7876,7 @@
 			"seed": 1000449,
 			"moves": 111,
 			"goal": "boss",
-			"at": "2026-11-25T21:50:56.893Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hddd",
@@ -7877,6 +7917,14 @@
 			"moves": 115,
 			"goal": "boss",
 			"at": "2026-11-25T21:50:43.864Z"
+		},
+		{
+			"loadout": "hdhh",
+			"difficulty": "med",
+			"seed": 3096,
+			"moves": 122,
+			"goal": "boss",
+			"at": "2026-11-23"
 		},
 		{
 			"loadout": "hdhh",
@@ -7956,7 +8004,7 @@
 			"seed": 1006891,
 			"moves": 99,
 			"goal": "boss",
-			"at": "2026-11-25T23:43:53.686Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hhcs",
@@ -7964,7 +8012,7 @@
 			"seed": 1003876,
 			"moves": 106,
 			"goal": "boss",
-			"at": "2026-11-26T01:07:43.249Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "hhcs",
@@ -8012,7 +8060,7 @@
 			"seed": 1006397,
 			"moves": 129,
 			"goal": "boss",
-			"at": "2026-11-25T23:12:49.499Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hhhc",
@@ -8055,6 +8103,14 @@
 			"at": "2026-11-25T21:13:44.595Z"
 		},
 		{
+			"loadout": "hhsd",
+			"difficulty": "med",
+			"seed": 2000872,
+			"moves": 148,
+			"goal": "clear",
+			"at": "2026-11-28"
+		},
+		{
 			"loadout": "hhsh",
 			"difficulty": "med",
 			"seed": 600546,
@@ -8084,7 +8140,7 @@
 			"seed": 1000487,
 			"moves": 79,
 			"goal": "boss",
-			"at": "2026-11-25T21:55:19.441Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hscd",
@@ -8116,7 +8172,7 @@
 			"seed": 1000153,
 			"moves": 96,
 			"goal": "boss",
-			"at": "2026-11-25T21:29:29.702Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsdc",
@@ -8132,7 +8188,7 @@
 			"seed": 1015580,
 			"moves": 104,
 			"goal": "clear",
-			"at": "2026-11-25T22:09:09.270Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsdd",
@@ -8140,7 +8196,7 @@
 			"seed": 1000499,
 			"moves": 90,
 			"goal": "boss",
-			"at": "2026-11-25T21:56:47.405Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsdd",
@@ -8148,7 +8204,7 @@
 			"seed": 1005358,
 			"moves": 99,
 			"goal": "boss",
-			"at": "2026-11-25T21:44:23.681Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsdd",
@@ -8156,7 +8212,7 @@
 			"seed": 1010272,
 			"moves": 101,
 			"goal": "clear",
-			"at": "2026-11-25T21:39:44.983Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsdd",
@@ -8180,7 +8236,7 @@
 			"seed": 1005293,
 			"moves": 93,
 			"goal": "boss",
-			"at": "2026-11-25T21:39:03.871Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsds",
@@ -8188,7 +8244,7 @@
 			"seed": 1010943,
 			"moves": 103,
 			"goal": "clear",
-			"at": "2026-11-25T22:49:22.277Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hsds",
@@ -8244,7 +8300,7 @@
 			"seed": 1005620,
 			"moves": 97,
 			"goal": "boss",
-			"at": "2026-11-25T22:07:52.359Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "hssd",
@@ -8500,7 +8556,7 @@
 			"seed": 1007104,
 			"moves": 115,
 			"goal": "boss",
-			"at": "2026-11-25T23:52:21.779Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "shds",
@@ -8564,7 +8620,7 @@
 			"seed": 1003901,
 			"moves": 100,
 			"goal": "boss",
-			"at": "2026-11-26T01:08:39.534Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "shss",
@@ -8572,7 +8628,7 @@
 			"seed": 1009319,
 			"moves": 127,
 			"goal": "boss",
-			"at": "2026-11-26T01:30:14.805Z"
+			"at": "2026-11-26"
 		},
 		{
 			"loadout": "shss",
@@ -8620,7 +8676,7 @@
 			"seed": 4000058,
 			"moves": 113,
 			"goal": "boss",
-			"at": "2026-11-27T04:29:12.482Z"
+			"at": "2026-11-27"
 		},
 		{
 			"loadout": "ssdc",
@@ -8716,7 +8772,7 @@
 			"seed": 1006954,
 			"moves": 77,
 			"goal": "boss",
-			"at": "2026-11-25T23:46:38.301Z"
+			"at": "2026-11-25"
 		},
 		{
 			"loadout": "ssss",
@@ -8728,331 +8784,11 @@
 		}
 	],
 	"found": {
-		"hsss": {
+		"hhsd": {
 			"med": {
-				"boss": {
-					"seed": 80737,
-					"moves": 82
-				}
-			}
-		},
-		"cdsc": {
-			"med": {
-				"boss": {
-					"seed": 78473,
-					"moves": 117
-				}
-			}
-		},
-		"hhsc": {
-			"med": {
-				"boss": {
-					"seed": 1000001,
-					"moves": 105
-				}
-			}
-		},
-		"sshc": {
-			"med": {
-				"boss": {
-					"seed": 1000014,
-					"moves": 100
-				}
-			}
-		},
-		"cshd": {
-			"med": {
-				"boss": {
-					"seed": 1000033,
-					"moves": 94
-				},
 				"clear": {
-					"seed": 1010359,
-					"moves": 114
-				}
-			}
-		},
-		"cshs": {
-			"med": {
-				"boss": {
-					"seed": 1000034,
-					"moves": 97
-				},
-				"clear": {
-					"seed": 1016058,
-					"moves": 125
-				}
-			}
-		},
-		"dshs": {
-			"med": {
-				"boss": {
-					"seed": 1005273,
-					"moves": 66
-				}
-			}
-		},
-		"hsdc": {
-			"med": {
-				"boss": {
-					"seed": 1000153,
-					"moves": 96
-				},
-				"clear": {
-					"seed": 1015580,
-					"moves": 104
-				}
-			}
-		},
-		"cdsh": {
-			"med": {
-				"boss": {
-					"seed": 1000155,
-					"moves": 119
-				}
-			}
-		},
-		"csss": {
-			"med": {
-				"boss": {
-					"seed": 1000164,
-					"moves": 109
-				},
-				"clear": {
-					"seed": 1011389,
-					"moves": 101
-				}
-			}
-		},
-		"chsh": {
-			"med": {
-				"boss": {
-					"seed": 1000185,
-					"moves": 118
-				}
-			}
-		},
-		"cdhc": {
-			"med": {
-				"boss": {
-					"seed": 1000249,
-					"moves": 132
-				}
-			}
-		},
-		"hdcs": {
-			"med": {
-				"boss": {
-					"seed": 1000353,
-					"moves": 127
-				}
-			}
-		},
-		"sdhd": {
-			"med": {
-				"boss": {
-					"seed": 1000390,
-					"moves": 121
-				}
-			}
-		},
-		"hdhh": {
-			"med": {
-				"boss": {
-					"seed": 1000392,
-					"moves": 128
-				}
-			}
-		},
-		"hdhd": {
-			"med": {
-				"boss": {
-					"seed": 1000437,
-					"moves": 115
-				}
-			}
-		},
-		"hddd": {
-			"med": {
-				"boss": {
-					"seed": 1000449,
-					"moves": 111
-				}
-			}
-		},
-		"hdhc": {
-			"med": {
-				"boss": {
-					"seed": 1000460,
-					"moves": 140
-				}
-			}
-		},
-		"hshc": {
-			"med": {
-				"boss": {
-					"seed": 1000483,
-					"moves": 87
-				}
-			}
-		},
-		"hscd": {
-			"med": {
-				"boss": {
-					"seed": 1000487,
-					"moves": 79
-				}
-			}
-		},
-		"hsdd": {
-			"med": {
-				"boss": {
-					"seed": 1000499,
-					"moves": 90
-				},
-				"clear": {
-					"seed": 1010272,
-					"moves": 101
-				}
-			}
-		},
-		"hcdh": {
-			"med": {
-				"boss": {
-					"seed": 1000527,
-					"moves": 117
-				}
-			}
-		},
-		"cddh": {
-			"med": {
-				"boss": {
-					"seed": 1000673,
-					"moves": 118
-				}
-			}
-		},
-		"hcch": {
-			"med": {
-				"boss": {
-					"seed": 1000740,
-					"moves": 111
-				}
-			}
-		},
-		"hhds": {
-			"med": {
-				"boss": {
-					"seed": 1006397,
-					"moves": 129
-				}
-			}
-		},
-		"ccds": {
-			"med": {
-				"boss": {
-					"seed": 1000925,
-					"moves": 118
-				}
-			}
-		},
-		"dssh": {
-			"med": {
-				"boss": {
-					"seed": 1000976,
-					"moves": 83
-				}
-			}
-		},
-		"cdsd": {
-			"med": {
-				"boss": {
-					"seed": 1000982,
-					"moves": 107
-				}
-			}
-		},
-		"sscs": {
-			"med": {
-				"boss": {
-					"seed": 4000058,
-					"moves": 113
-				}
-			}
-		},
-		"hchh": {
-			"med": {
-				"boss": {
-					"seed": 1001026,
-					"moves": 128
-				}
-			}
-		},
-		"dssd": {
-			"med": {
-				"boss": {
-					"seed": 1001066,
-					"moves": 86
-				}
-			}
-		},
-		"cssc": {
-			"med": {
-				"boss": {
-					"seed": 1005812,
-					"moves": 85
-				},
-				"clear": {
-					"seed": 1015240,
-					"moves": 110
-				}
-			}
-		},
-		"hdss": {
-			"med": {
-				"boss": {
-					"seed": 1001189,
-					"moves": 118
-				}
-			}
-		},
-		"chdh": {
-			"med": {
-				"boss": {
-					"seed": 1001323,
-					"moves": 110
-				}
-			}
-		},
-		"hhdd": {
-			"med": {
-				"boss": {
-					"seed": 1001392,
-					"moves": 124
-				}
-			}
-		},
-		"dsdd": {
-			"med": {
-				"boss": {
-					"seed": 1001471,
-					"moves": 84
-				}
-			}
-		},
-		"shdd": {
-			"med": {
-				"boss": {
-					"seed": 1001553,
-					"moves": 139
-				}
-			}
-		},
-		"shhd": {
-			"med": {
-				"boss": {
-					"seed": 1001569,
-					"moves": 116
+					"seed": 2000872,
+					"moves": 148
 				}
 			}
 		},
@@ -9064,571 +8800,11 @@
 				}
 			}
 		},
-		"dhsc": {
-			"med": {
-				"boss": {
-					"seed": 1006554,
-					"moves": 92
-				}
-			}
-		},
-		"dhhd": {
-			"med": {
-				"boss": {
-					"seed": 1005443,
-					"moves": 109
-				}
-			}
-		},
-		"hccs": {
-			"med": {
-				"boss": {
-					"seed": 1001679,
-					"moves": 121
-				}
-			}
-		},
 		"ccdc": {
 			"med": {
 				"boss": {
 					"seed": 1001731,
 					"moves": 125
-				}
-			}
-		},
-		"shsh": {
-			"med": {
-				"boss": {
-					"seed": 1002070,
-					"moves": 118
-				}
-			}
-		},
-		"ddhs": {
-			"med": {
-				"boss": {
-					"seed": 1002074,
-					"moves": 89
-				}
-			}
-		},
-		"sssh": {
-			"med": {
-				"boss": {
-					"seed": 1006954,
-					"moves": 77
-				}
-			}
-		},
-		"hcss": {
-			"med": {
-				"boss": {
-					"seed": 1002236,
-					"moves": 105
-				}
-			}
-		},
-		"chsd": {
-			"med": {
-				"boss": {
-					"seed": 1002298,
-					"moves": 112
-				}
-			}
-		},
-		"sdsh": {
-			"med": {
-				"boss": {
-					"seed": 1002411,
-					"moves": 130
-				}
-			}
-		},
-		"ccsd": {
-			"med": {
-				"boss": {
-					"seed": 1002412,
-					"moves": 117
-				}
-			}
-		},
-		"dhsd": {
-			"med": {
-				"boss": {
-					"seed": 1002578,
-					"moves": 105
-				}
-			}
-		},
-		"dsdc": {
-			"med": {
-				"boss": {
-					"seed": 1002600,
-					"moves": 87
-				}
-			}
-		},
-		"hhch": {
-			"med": {
-				"boss": {
-					"seed": 1006891,
-					"moves": 99
-				}
-			}
-		},
-		"chss": {
-			"med": {
-				"boss": {
-					"seed": 1002929,
-					"moves": 129
-				}
-			}
-		},
-		"shdh": {
-			"med": {
-				"boss": {
-					"seed": 1007104,
-					"moves": 115
-				}
-			}
-		},
-		"ddhd": {
-			"med": {
-				"boss": {
-					"seed": 1003252,
-					"moves": 98
-				}
-			}
-		},
-		"scsc": {
-			"med": {
-				"boss": {
-					"seed": 1003456,
-					"moves": 122
-				}
-			}
-		},
-		"hdcc": {
-			"med": {
-				"boss": {
-					"seed": 1003494,
-					"moves": 125
-				}
-			}
-		},
-		"dhss": {
-			"med": {
-				"boss": {
-					"seed": 1003554,
-					"moves": 104
-				}
-			}
-		},
-		"hhcs": {
-			"med": {
-				"boss": {
-					"seed": 1003876,
-					"moves": 106
-				}
-			}
-		},
-		"shss": {
-			"med": {
-				"boss": {
-					"seed": 1003901,
-					"moves": 100
-				},
-				"clear": {
-					"seed": 1012529,
-					"moves": 106
-				}
-			}
-		},
-		"sddh": {
-			"med": {
-				"boss": {
-					"seed": 1004195,
-					"moves": 109
-				}
-			}
-		},
-		"scdc": {
-			"med": {
-				"boss": {
-					"seed": 1004347,
-					"moves": 101
-				}
-			}
-		},
-		"dsss": {
-			"med": {
-				"boss": {
-					"seed": 1004590,
-					"moves": 62
-				}
-			}
-		},
-		"dscs": {
-			"med": {
-				"boss": {
-					"seed": 1005076,
-					"moves": 70
-				}
-			}
-		},
-		"cscs": {
-			"med": {
-				"boss": {
-					"seed": 1005092,
-					"moves": 83
-				},
-				"clear": {
-					"seed": 1010490,
-					"moves": 107
-				}
-			}
-		},
-		"hcsh": {
-			"med": {
-				"boss": {
-					"seed": 1005093,
-					"moves": 121
-				}
-			}
-		},
-		"chhh": {
-			"med": {
-				"boss": {
-					"seed": 1005109,
-					"moves": 138
-				}
-			}
-		},
-		"cshc": {
-			"med": {
-				"boss": {
-					"seed": 1005270,
-					"moves": 102
-				},
-				"clear": {
-					"seed": 1016085,
-					"moves": 105
-				}
-			}
-		},
-		"hsds": {
-			"med": {
-				"boss": {
-					"seed": 1005293,
-					"moves": 93
-				},
-				"clear": {
-					"seed": 1010943,
-					"moves": 103
-				}
-			}
-		},
-		"shdc": {
-			"med": {
-				"boss": {
-					"seed": 1005337,
-					"moves": 133
-				}
-			}
-		},
-		"sssd": {
-			"med": {
-				"boss": {
-					"seed": 1005468,
-					"moves": 85
-				}
-			}
-		},
-		"sscd": {
-			"med": {
-				"boss": {
-					"seed": 1005541,
-					"moves": 109
-				}
-			}
-		},
-		"hssd": {
-			"med": {
-				"boss": {
-					"seed": 1005620,
-					"moves": 97
-				},
-				"clear": {
-					"seed": 1015355,
-					"moves": 125
-				}
-			}
-		},
-		"hssh": {
-			"med": {
-				"boss": {
-					"seed": 1005626,
-					"moves": 99
-				}
-			}
-		},
-		"sshs": {
-			"med": {
-				"boss": {
-					"seed": 1005638,
-					"moves": 120
-				}
-			}
-		},
-		"dddc": {
-			"med": {
-				"boss": {
-					"seed": 1005740,
-					"moves": 107
-				}
-			}
-		},
-		"ccsc": {
-			"med": {
-				"boss": {
-					"seed": 1005920,
-					"moves": 124
-				}
-			}
-		},
-		"ssds": {
-			"med": {
-				"boss": {
-					"seed": 1005956,
-					"moves": 80
-				}
-			}
-		},
-		"dscd": {
-			"med": {
-				"boss": {
-					"seed": 1006011,
-					"moves": 61
-				},
-				"clear": {
-					"seed": 1016381,
-					"moves": 90
-				}
-			}
-		},
-		"shcd": {
-			"med": {
-				"boss": {
-					"seed": 1006111,
-					"moves": 118
-				}
-			}
-		},
-		"ssdh": {
-			"med": {
-				"boss": {
-					"seed": 1006146,
-					"moves": 107
-				}
-			}
-		},
-		"hsch": {
-			"med": {
-				"boss": {
-					"seed": 1006169,
-					"moves": 96
-				}
-			}
-		},
-		"dsds": {
-			"med": {
-				"boss": {
-					"seed": 1006287,
-					"moves": 75
-				}
-			}
-		},
-		"shch": {
-			"med": {
-				"boss": {
-					"seed": 1006300,
-					"moves": 116
-				}
-			}
-		},
-		"hhhs": {
-			"med": {
-				"boss": {
-					"seed": 1006327,
-					"moves": 109
-				}
-			}
-		},
-		"hhhc": {
-			"med": {
-				"boss": {
-					"seed": 1006587,
-					"moves": 118
-				}
-			}
-		},
-		"dhdc": {
-			"med": {
-				"boss": {
-					"seed": 1007095,
-					"moves": 109
-				}
-			}
-		},
-		"ccdh": {
-			"med": {
-				"boss": {
-					"seed": 1007167,
-					"moves": 116
-				}
-			}
-		},
-		"cdch": {
-			"med": {
-				"boss": {
-					"seed": 1007661,
-					"moves": 123
-				}
-			}
-		},
-		"dcds": {
-			"med": {
-				"boss": {
-					"seed": 1007770,
-					"moves": 93
-				}
-			}
-		},
-		"hccd": {
-			"med": {
-				"boss": {
-					"seed": 1008270,
-					"moves": 112
-				}
-			}
-		},
-		"cdcc": {
-			"med": {
-				"boss": {
-					"seed": 1008476,
-					"moves": 123
-				}
-			}
-		},
-		"sdss": {
-			"med": {
-				"boss": {
-					"seed": 1008827,
-					"moves": 132
-				}
-			}
-		},
-		"sddc": {
-			"med": {
-				"boss": {
-					"seed": 1009324,
-					"moves": 122
-				}
-			}
-		},
-		"hhcc": {
-			"med": {
-				"boss": {
-					"seed": 1009651,
-					"moves": 120
-				}
-			}
-		},
-		"scss": {
-			"med": {
-				"boss": {
-					"seed": 1009723,
-					"moves": 114
-				}
-			}
-		},
-		"shsd": {
-			"med": {
-				"clear": {
-					"seed": 1013673,
-					"moves": 100
-				}
-			}
-		},
-		"sdcc": {
-			"med": {
-				"boss": {
-					"seed": 1020195,
-					"moves": 102
-				}
-			}
-		},
-		"dcdd": {
-			"med": {
-				"boss": {
-					"seed": 1020250,
-					"moves": 110
-				}
-			}
-		},
-		"chcs": {
-			"med": {
-				"boss": {
-					"seed": 1021021,
-					"moves": 111
-				}
-			}
-		},
-		"csdc": {
-			"med": {
-				"boss": {
-					"seed": 1021151,
-					"moves": 99
-				}
-			}
-		},
-		"cdcd": {
-			"med": {
-				"boss": {
-					"seed": 1021403,
-					"moves": 105
-				}
-			}
-		},
-		"cddd": {
-			"med": {
-				"boss": {
-					"seed": 1021488,
-					"moves": 110
-				}
-			}
-		},
-		"dhdh": {
-			"med": {
-				"boss": {
-					"seed": 1021570,
-					"moves": 114
-				}
-			}
-		},
-		"scdh": {
-			"med": {
-				"boss": {
-					"seed": 1022131,
-					"moves": 137
-				}
-			}
-		},
-		"shhh": {
-			"med": {
-				"boss": {
-					"seed": 1022398,
-					"moves": 101
 				}
 			}
 		},
@@ -9640,23 +8816,51 @@
 				}
 			}
 		},
-		"hccc": {
+		"ccdh": {
 			"med": {
 				"boss": {
-					"seed": 1023261,
-					"moves": 110
-				},
-				"clear": {
-					"seed": 1028007,
-					"moves": 115
+					"seed": 1007167,
+					"moves": 116
 				}
 			}
 		},
-		"schs": {
+		"ccds": {
 			"med": {
 				"boss": {
-					"seed": 1023668,
-					"moves": 119
+					"seed": 1000925,
+					"moves": 118
+				}
+			}
+		},
+		"cchc": {
+			"med": {
+				"boss": {
+					"seed": 205510,
+					"moves": 123
+				}
+			}
+		},
+		"cchd": {
+			"med": {
+				"boss": {
+					"seed": 3000121,
+					"moves": 147
+				}
+			}
+		},
+		"ccsc": {
+			"med": {
+				"boss": {
+					"seed": 1005920,
+					"moves": 124
+				}
+			}
+		},
+		"ccsd": {
+			"med": {
+				"boss": {
+					"seed": 1002412,
+					"moves": 117
 				}
 			}
 		},
@@ -9668,55 +8872,107 @@
 				}
 			}
 		},
-		"dsch": {
+		"cdcc": {
 			"med": {
 				"boss": {
-					"seed": 1023994,
-					"moves": 92
-				},
-				"clear": {
-					"seed": 1026478,
-					"moves": 112
+					"seed": 1008476,
+					"moves": 123
 				}
 			}
 		},
-		"schc": {
+		"cdcd": {
 			"med": {
 				"boss": {
-					"seed": 1024054,
-					"moves": 104
+					"seed": 1021403,
+					"moves": 105
 				}
 			}
 		},
-		"ddsh": {
+		"cdch": {
 			"med": {
 				"boss": {
-					"seed": 1024103,
-					"moves": 91
+					"seed": 1007661,
+					"moves": 123
 				}
 			}
 		},
-		"sccc": {
+		"cddc": {
 			"med": {
 				"boss": {
-					"seed": 1024190,
-					"moves": 117
+					"seed": 30490,
+					"moves": 108
 				}
 			}
 		},
-		"dhhh": {
+		"cddd": {
 			"med": {
 				"boss": {
-					"seed": 1024331,
+					"seed": 1021488,
+					"moves": 110
+				}
+			}
+		},
+		"cddh": {
+			"med": {
+				"boss": {
+					"seed": 1000673,
+					"moves": 118
+				}
+			}
+		},
+		"cdds": {
+			"med": {
+				"boss": {
+					"seed": 4000440,
+					"moves": 133
+				}
+			}
+		},
+		"cdhc": {
+			"med": {
+				"boss": {
+					"seed": 1000249,
+					"moves": 132
+				}
+			}
+		},
+		"cdhd": {
+			"med": {
+				"boss": {
+					"seed": 32086,
 					"moves": 101
 				}
 			}
 		},
-		"dscc": {
+		"cdhs": {
 			"med": {
 				"boss": {
-					"seed": 1024530,
-					"moves": 66
+					"seed": 205723,
+					"moves": 108
+				}
+			}
+		},
+		"cdsc": {
+			"med": {
+				"boss": {
+					"seed": 78473,
+					"moves": 117
+				}
+			}
+		},
+		"cdsd": {
+			"med": {
+				"boss": {
+					"seed": 1000982,
+					"moves": 107
+				}
+			}
+		},
+		"cdsh": {
+			"med": {
+				"boss": {
+					"seed": 1000155,
+					"moves": 119
 				}
 			}
 		},
@@ -9728,123 +8984,11 @@
 				}
 			}
 		},
-		"shcs": {
+		"chcc": {
 			"med": {
 				"boss": {
-					"seed": 1024698,
-					"moves": 151
-				}
-			}
-		},
-		"dssc": {
-			"med": {
-				"boss": {
-					"seed": 150246,
-					"moves": 70
-				}
-			}
-		},
-		"chhc": {
-			"med": {
-				"boss": {
-					"seed": 152160,
-					"moves": 139
-				}
-			}
-		},
-		"dhds": {
-			"med": {
-				"boss": {
-					"seed": 152244,
-					"moves": 89
-				}
-			}
-		},
-		"cssh": {
-			"med": {
-				"boss": {
-					"seed": 152426,
-					"moves": 93
-				}
-			}
-		},
-		"dhcc": {
-			"med": {
-				"boss": {
-					"seed": 154307,
-					"moves": 81
-				}
-			}
-		},
-		"hshh": {
-			"med": {
-				"boss": {
-					"seed": 150533,
-					"moves": 88
-				}
-			}
-		},
-		"ddcc": {
-			"med": {
-				"boss": {
-					"seed": 150662,
-					"moves": 118
-				}
-			}
-		},
-		"hcsc": {
-			"med": {
-				"boss": {
-					"seed": 150677,
-					"moves": 124
-				}
-			}
-		},
-		"dccs": {
-			"med": {
-				"boss": {
-					"seed": 150782,
-					"moves": 112
-				}
-			}
-		},
-		"chsc": {
-			"med": {
-				"boss": {
-					"seed": 150917,
-					"moves": 106
-				}
-			}
-		},
-		"dcss": {
-			"med": {
-				"boss": {
-					"seed": 158582,
-					"moves": 84
-				}
-			}
-		},
-		"dhch": {
-			"med": {
-				"boss": {
-					"seed": 158865,
-					"moves": 80
-				}
-			}
-		},
-		"dhdd": {
-			"med": {
-				"boss": {
-					"seed": 151020,
-					"moves": 138
-				}
-			}
-		},
-		"shhc": {
-			"med": {
-				"boss": {
-					"seed": 151067,
-					"moves": 94
+					"seed": 2165,
+					"moves": 141
 				}
 			}
 		},
@@ -9856,26 +9000,42 @@
 				}
 			}
 		},
-		"hshd": {
+		"chch": {
 			"med": {
 				"boss": {
-					"seed": 153210,
-					"moves": 117
+					"seed": 3000351,
+					"moves": 125
 				}
 			}
 		},
-		"csch": {
+		"chcs": {
 			"med": {
 				"boss": {
-					"seed": 155187,
-					"moves": 70
+					"seed": 1021021,
+					"moves": 111
 				}
 			}
 		},
-		"scsd": {
+		"chdc": {
 			"med": {
 				"boss": {
-					"seed": 151502,
+					"seed": 3000479,
+					"moves": 118
+				}
+			}
+		},
+		"chdd": {
+			"med": {
+				"boss": {
+					"seed": 800079,
+					"moves": 112
+				}
+			}
+		},
+		"chdh": {
+			"med": {
+				"boss": {
+					"seed": 1001323,
 					"moves": 110
 				}
 			}
@@ -9888,379 +9048,11 @@
 				}
 			}
 		},
-		"dcsd": {
+		"chhc": {
 			"med": {
 				"boss": {
-					"seed": 179554,
-					"moves": 76
-				}
-			}
-		},
-		"hcdd": {
-			"med": {
-				"boss": {
-					"seed": 42012,
-					"moves": 136
-				}
-			}
-		},
-		"dsdh": {
-			"med": {
-				"boss": {
-					"seed": 44793,
-					"moves": 76
-				}
-			}
-		},
-		"chhs": {
-			"med": {
-				"boss": {
-					"seed": 46256,
-					"moves": 120
-				}
-			}
-		},
-		"hdsh": {
-			"med": {
-				"boss": {
-					"seed": 243,
-					"moves": 140
-				}
-			}
-		},
-		"hhhh": {
-			"med": {
-				"boss": {
-					"seed": 2769,
-					"moves": 132
-				}
-			}
-		},
-		"hsdh": {
-			"med": {
-				"boss": {
-					"seed": 90,
-					"moves": 88
-				}
-			}
-		},
-		"hchd": {
-			"med": {
-				"boss": {
-					"seed": 2261,
-					"moves": 97
-				}
-			}
-		},
-		"hcdc": {
-			"med": {
-				"boss": {
-					"seed": 1616,
-					"moves": 137
-				}
-			}
-		},
-		"hchs": {
-			"med": {
-				"boss": {
-					"seed": 663,
-					"moves": 113
-				}
-			}
-		},
-		"hdds": {
-			"med": {
-				"boss": {
-					"seed": 327,
-					"moves": 101
-				}
-			}
-		},
-		"hhss": {
-			"med": {
-				"boss": {
-					"seed": 3027,
-					"moves": 113
-				}
-			}
-		},
-		"hshs": {
-			"med": {
-				"boss": {
-					"seed": 137,
-					"moves": 106
-				}
-			}
-		},
-		"dshd": {
-			"med": {
-				"boss": {
-					"seed": 34426,
-					"moves": 63
-				}
-			}
-		},
-		"cddc": {
-			"med": {
-				"boss": {
-					"seed": 30490,
-					"moves": 108
-				}
-			}
-		},
-		"sdhh": {
-			"med": {
-				"clear": {
-					"seed": 32809,
-					"moves": 149
-				}
-			}
-		},
-		"cdhd": {
-			"med": {
-				"boss": {
-					"seed": 32086,
-					"moves": 101
-				}
-			}
-		},
-		"hscc": {
-			"med": {
-				"boss": {
-					"seed": 3500015,
-					"moves": 79
-				}
-			}
-		},
-		"hchc": {
-			"med": {
-				"boss": {
-					"seed": 975,
-					"moves": 115
-				}
-			}
-		},
-		"dcdh": {
-			"med": {
-				"boss": {
-					"seed": 400071,
-					"moves": 128
-				}
-			}
-		},
-		"hscs": {
-			"med": {
-				"boss": {
-					"seed": 2000432,
-					"moves": 66
-				}
-			}
-		},
-		"hssc": {
-			"med": {
-				"boss": {
-					"seed": 2000395,
-					"moves": 107
-				}
-			}
-		},
-		"hcsd": {
-			"med": {
-				"boss": {
-					"seed": 2000147,
-					"moves": 114
-				}
-			}
-		},
-		"hddc": {
-			"med": {
-				"boss": {
-					"seed": 324,
-					"moves": 121
-				}
-			}
-		},
-		"cscc": {
-			"med": {
-				"boss": {
-					"seed": 1351,
-					"moves": 76
-				}
-			}
-		},
-		"chcc": {
-			"med": {
-				"boss": {
-					"seed": 2165,
-					"moves": 141
-				}
-			}
-		},
-		"hdch": {
-			"med": {
-				"boss": {
-					"seed": 1789,
-					"moves": 131
-				}
-			}
-		},
-		"sshd": {
-			"med": {
-				"boss": {
-					"seed": 1446,
-					"moves": 115
-				}
-			}
-		},
-		"cshh": {
-			"med": {
-				"boss": {
-					"seed": 205255,
-					"moves": 64
-				}
-			}
-		},
-		"cchc": {
-			"med": {
-				"boss": {
-					"seed": 205510,
-					"moves": 123
-				}
-			}
-		},
-		"cdhs": {
-			"med": {
-				"boss": {
-					"seed": 205723,
-					"moves": 108
-				}
-			}
-		},
-		"cscd": {
-			"med": {
-				"boss": {
-					"seed": 206043,
-					"moves": 84
-				}
-			}
-		},
-		"cssd": {
-			"med": {
-				"boss": {
-					"seed": 205438,
-					"moves": 99
-				}
-			}
-		},
-		"dshc": {
-			"med": {
-				"boss": {
-					"seed": 205243,
-					"moves": 99
-				}
-			}
-		},
-		"ddsd": {
-			"med": {
-				"boss": {
-					"seed": 4000237,
-					"moves": 104
-				}
-			}
-		},
-		"cdds": {
-			"med": {
-				"boss": {
-					"seed": 4000440,
-					"moves": 133
-				}
-			}
-		},
-		"sdsd": {
-			"med": {
-				"boss": {
-					"seed": 4000181,
-					"moves": 132
-				}
-			}
-		},
-		"ddcs": {
-			"med": {
-				"boss": {
-					"seed": 12000018,
-					"moves": 119
-				}
-			}
-		},
-		"sccd": {
-			"med": {
-				"boss": {
-					"seed": 12000794,
-					"moves": 130
-				}
-			}
-		},
-		"sssc": {
-			"med": {
-				"boss": {
-					"seed": 5000405,
-					"moves": 69
-				}
-			}
-		},
-		"ddcd": {
-			"med": {
-				"boss": {
-					"seed": 4000286,
-					"moves": 95
-				}
-			}
-		},
-		"sdds": {
-			"med": {
-				"boss": {
-					"seed": 4000811,
-					"moves": 108
-				}
-			}
-		},
-		"csdh": {
-			"med": {
-				"boss": {
-					"seed": 600226,
-					"moves": 115
-				}
-			}
-		},
-		"sscc": {
-			"med": {
-				"boss": {
-					"seed": 23,
-					"moves": 105
-				}
-			}
-		},
-		"ssch": {
-			"med": {
-				"boss": {
-					"seed": 1274,
-					"moves": 80
-				}
-			}
-		},
-		"csds": {
-			"med": {
-				"boss": {
-					"seed": 3902,
-					"moves": 60
-				}
-			}
-		},
-		"dcsc": {
-			"med": {
-				"boss": {
-					"seed": 702,
-					"moves": 120
+					"seed": 152160,
+					"moves": 139
 				}
 			}
 		},
@@ -10272,187 +9064,95 @@
 				}
 			}
 		},
-		"hdsd": {
+		"chhh": {
 			"med": {
 				"boss": {
-					"seed": 3000522,
-					"moves": 126
+					"seed": 1005109,
+					"moves": 138
 				}
 			}
 		},
-		"chch": {
+		"chhs": {
 			"med": {
 				"boss": {
-					"seed": 3000351,
-					"moves": 125
+					"seed": 46256,
+					"moves": 120
 				}
 			}
 		},
-		"hddh": {
+		"chsc": {
 			"med": {
 				"boss": {
-					"seed": 3000140,
-					"moves": 109
-				}
-			}
-		},
-		"sddd": {
-			"med": {
-				"boss": {
-					"seed": 3001346,
-					"moves": 127
-				}
-			}
-		},
-		"shsc": {
-			"med": {
-				"boss": {
-					"seed": 3001321,
-					"moves": 97
-				}
-			}
-		},
-		"sshh": {
-			"med": {
-				"boss": {
-					"seed": 3000131,
-					"moves": 104
-				}
-			}
-		},
-		"dhsh": {
-			"med": {
-				"boss": {
-					"seed": 3000273,
-					"moves": 105
-				}
-			}
-		},
-		"hhdh": {
-			"med": {
-				"boss": {
-					"seed": 3000124,
-					"moves": 111
-				}
-			}
-		},
-		"scdd": {
-			"med": {
-				"boss": {
-					"seed": 3000716,
-					"moves": 124
-				}
-			}
-		},
-		"ssdc": {
-			"med": {
-				"boss": {
-					"seed": 3000127,
-					"moves": 102
-				}
-			}
-		},
-		"cchd": {
-			"med": {
-				"boss": {
-					"seed": 3000121,
-					"moves": 147
-				}
-			}
-		},
-		"chdc": {
-			"med": {
-				"boss": {
-					"seed": 3000479,
-					"moves": 118
-				}
-			}
-		},
-		"sdhc": {
-			"med": {
-				"boss": {
-					"seed": 3000332,
-					"moves": 119
-				}
-			}
-		},
-		"shcc": {
-			"med": {
-				"boss": {
-					"seed": 3000263,
-					"moves": 112
-				}
-			}
-		},
-		"hdhs": {
-			"med": {
-				"boss": {
-					"seed": 400126,
-					"moves": 113
-				}
-			}
-		},
-		"dshh": {
-			"med": {
-				"boss": {
-					"seed": 400309,
-					"moves": 64
-				}
-			}
-		},
-		"shds": {
-			"med": {
-				"boss": {
-					"seed": 600651,
-					"moves": 102
-				}
-			}
-		},
-		"hdsc": {
-			"med": {
-				"boss": {
-					"seed": 600545,
-					"moves": 116
-				}
-			}
-		},
-		"hhsh": {
-			"med": {
-				"boss": {
-					"seed": 600546,
+					"seed": 150917,
 					"moves": 106
 				}
 			}
 		},
-		"hhcd": {
+		"chsd": {
 			"med": {
 				"boss": {
-					"seed": 600368,
-					"moves": 105
-				}
-			}
-		},
-		"ssss": {
-			"med": {
-				"boss": {
-					"seed": 600906,
-					"moves": 90
-				}
-			}
-		},
-		"chdd": {
-			"med": {
-				"boss": {
-					"seed": 800079,
+					"seed": 1002298,
 					"moves": 112
 				}
 			}
 		},
-		"hcds": {
+		"chsh": {
 			"med": {
 				"boss": {
-					"seed": 1200155,
-					"moves": 123
+					"seed": 1000185,
+					"moves": 118
+				}
+			}
+		},
+		"chss": {
+			"med": {
+				"boss": {
+					"seed": 1002929,
+					"moves": 129
+				}
+			}
+		},
+		"cscc": {
+			"med": {
+				"boss": {
+					"seed": 1351,
+					"moves": 76
+				}
+			}
+		},
+		"cscd": {
+			"med": {
+				"boss": {
+					"seed": 206043,
+					"moves": 84
+				}
+			}
+		},
+		"csch": {
+			"med": {
+				"boss": {
+					"seed": 155187,
+					"moves": 70
+				}
+			}
+		},
+		"cscs": {
+			"med": {
+				"clear": {
+					"seed": 1010490,
+					"moves": 107
+				},
+				"boss": {
+					"seed": 1005092,
+					"moves": 83
+				}
+			}
+		},
+		"csdc": {
+			"med": {
+				"boss": {
+					"seed": 42188,
+					"moves": 86
 				}
 			}
 		},
@@ -10464,6 +9164,194 @@
 				}
 			}
 		},
+		"csdh": {
+			"med": {
+				"boss": {
+					"seed": 600226,
+					"moves": 115
+				}
+			}
+		},
+		"csds": {
+			"med": {
+				"boss": {
+					"seed": 3902,
+					"moves": 60
+				}
+			}
+		},
+		"cshc": {
+			"med": {
+				"clear": {
+					"seed": 1016085,
+					"moves": 105
+				},
+				"boss": {
+					"seed": 1005270,
+					"moves": 102
+				}
+			}
+		},
+		"cshd": {
+			"med": {
+				"clear": {
+					"seed": 1010359,
+					"moves": 114
+				},
+				"boss": {
+					"seed": 1000033,
+					"moves": 94
+				}
+			}
+		},
+		"cshh": {
+			"med": {
+				"boss": {
+					"seed": 205255,
+					"moves": 64
+				}
+			}
+		},
+		"cshs": {
+			"med": {
+				"clear": {
+					"seed": 1016058,
+					"moves": 125
+				},
+				"boss": {
+					"seed": 1000034,
+					"moves": 97
+				}
+			}
+		},
+		"cssc": {
+			"med": {
+				"clear": {
+					"seed": 1015240,
+					"moves": 110
+				},
+				"boss": {
+					"seed": 1005812,
+					"moves": 85
+				}
+			}
+		},
+		"cssd": {
+			"med": {
+				"boss": {
+					"seed": 205438,
+					"moves": 99
+				}
+			}
+		},
+		"cssh": {
+			"med": {
+				"boss": {
+					"seed": 152426,
+					"moves": 93
+				}
+			}
+		},
+		"csss": {
+			"med": {
+				"clear": {
+					"seed": 1011389,
+					"moves": 101
+				},
+				"boss": {
+					"seed": 1000164,
+					"moves": 109
+				}
+			}
+		},
+		"dccs": {
+			"med": {
+				"boss": {
+					"seed": 150782,
+					"moves": 112
+				}
+			}
+		},
+		"dcdd": {
+			"med": {
+				"boss": {
+					"seed": 1020250,
+					"moves": 110
+				}
+			}
+		},
+		"dcdh": {
+			"med": {
+				"boss": {
+					"seed": 400071,
+					"moves": 128
+				}
+			}
+		},
+		"dcds": {
+			"med": {
+				"boss": {
+					"seed": 1007770,
+					"moves": 93
+				}
+			}
+		},
+		"dcsc": {
+			"med": {
+				"boss": {
+					"seed": 702,
+					"moves": 120
+				}
+			}
+		},
+		"dcsd": {
+			"med": {
+				"boss": {
+					"seed": 179554,
+					"moves": 76
+				}
+			}
+		},
+		"dcss": {
+			"med": {
+				"boss": {
+					"seed": 158582,
+					"moves": 84
+				}
+			}
+		},
+		"ddcc": {
+			"med": {
+				"boss": {
+					"seed": 150662,
+					"moves": 118
+				}
+			}
+		},
+		"ddcd": {
+			"med": {
+				"boss": {
+					"seed": 4000286,
+					"moves": 95
+				}
+			}
+		},
+		"ddcs": {
+			"med": {
+				"boss": {
+					"seed": 12000018,
+					"moves": 119
+				}
+			}
+		},
+		"dddc": {
+			"med": {
+				"boss": {
+					"seed": 1005740,
+					"moves": 107
+				}
+			}
+		},
 		"dddh": {
 			"med": {
 				"boss": {
@@ -10472,11 +9360,415 @@
 				}
 			}
 		},
-		"ssdd": {
+		"ddhd": {
 			"med": {
 				"boss": {
-					"seed": 1107,
+					"seed": 1003252,
+					"moves": 98
+				}
+			}
+		},
+		"ddhs": {
+			"med": {
+				"boss": {
+					"seed": 1002074,
+					"moves": 89
+				}
+			}
+		},
+		"ddsd": {
+			"med": {
+				"boss": {
+					"seed": 4000237,
+					"moves": 104
+				}
+			}
+		},
+		"ddsh": {
+			"med": {
+				"boss": {
+					"seed": 1024103,
+					"moves": 91
+				}
+			}
+		},
+		"dhcc": {
+			"med": {
+				"boss": {
+					"seed": 154307,
+					"moves": 81
+				}
+			}
+		},
+		"dhch": {
+			"med": {
+				"boss": {
+					"seed": 158865,
+					"moves": 80
+				}
+			}
+		},
+		"dhcs": {
+			"med": {
+				"boss": {
+					"seed": 1200553,
+					"moves": 85
+				}
+			}
+		},
+		"dhdc": {
+			"med": {
+				"boss": {
+					"seed": 1007095,
+					"moves": 109
+				}
+			}
+		},
+		"dhdd": {
+			"med": {
+				"boss": {
+					"seed": 151020,
+					"moves": 138
+				}
+			}
+		},
+		"dhdh": {
+			"med": {
+				"boss": {
+					"seed": 1021570,
+					"moves": 114
+				}
+			}
+		},
+		"dhds": {
+			"med": {
+				"boss": {
+					"seed": 152244,
+					"moves": 89
+				}
+			}
+		},
+		"dhhd": {
+			"med": {
+				"boss": {
+					"seed": 1005443,
+					"moves": 109
+				}
+			}
+		},
+		"dhhh": {
+			"med": {
+				"boss": {
+					"seed": 1024331,
+					"moves": 101
+				}
+			}
+		},
+		"dhsc": {
+			"med": {
+				"boss": {
+					"seed": 1006554,
+					"moves": 92
+				}
+			}
+		},
+		"dhsd": {
+			"med": {
+				"boss": {
+					"seed": 1002578,
+					"moves": 105
+				}
+			}
+		},
+		"dhsh": {
+			"med": {
+				"boss": {
+					"seed": 3000273,
+					"moves": 105
+				}
+			}
+		},
+		"dhss": {
+			"med": {
+				"boss": {
+					"seed": 1003554,
+					"moves": 104
+				}
+			}
+		},
+		"dscc": {
+			"med": {
+				"boss": {
+					"seed": 1024530,
+					"moves": 66
+				}
+			}
+		},
+		"dscd": {
+			"med": {
+				"clear": {
+					"seed": 1016381,
 					"moves": 90
+				},
+				"boss": {
+					"seed": 1006011,
+					"moves": 61
+				}
+			}
+		},
+		"dsch": {
+			"med": {
+				"clear": {
+					"seed": 1026478,
+					"moves": 112
+				},
+				"boss": {
+					"seed": 1023994,
+					"moves": 92
+				}
+			}
+		},
+		"dscs": {
+			"med": {
+				"boss": {
+					"seed": 1005076,
+					"moves": 70
+				}
+			}
+		},
+		"dsdc": {
+			"med": {
+				"boss": {
+					"seed": 1002600,
+					"moves": 87
+				}
+			}
+		},
+		"dsdd": {
+			"med": {
+				"boss": {
+					"seed": 1001471,
+					"moves": 84
+				}
+			}
+		},
+		"dsdh": {
+			"med": {
+				"boss": {
+					"seed": 44793,
+					"moves": 76
+				}
+			}
+		},
+		"dsds": {
+			"med": {
+				"boss": {
+					"seed": 1006287,
+					"moves": 75
+				}
+			}
+		},
+		"dshc": {
+			"med": {
+				"boss": {
+					"seed": 205243,
+					"moves": 99
+				}
+			}
+		},
+		"dshd": {
+			"med": {
+				"boss": {
+					"seed": 34426,
+					"moves": 63
+				}
+			}
+		},
+		"dshh": {
+			"med": {
+				"boss": {
+					"seed": 400309,
+					"moves": 64
+				}
+			}
+		},
+		"dshs": {
+			"med": {
+				"boss": {
+					"seed": 1005273,
+					"moves": 66
+				}
+			}
+		},
+		"dssc": {
+			"med": {
+				"boss": {
+					"seed": 150246,
+					"moves": 70
+				}
+			}
+		},
+		"dssd": {
+			"med": {
+				"boss": {
+					"seed": 1001066,
+					"moves": 86
+				}
+			}
+		},
+		"dssh": {
+			"med": {
+				"boss": {
+					"seed": 1000976,
+					"moves": 83
+				}
+			}
+		},
+		"dsss": {
+			"med": {
+				"boss": {
+					"seed": 1004590,
+					"moves": 62
+				}
+			}
+		},
+		"hccc": {
+			"med": {
+				"clear": {
+					"seed": 1028007,
+					"moves": 115
+				},
+				"boss": {
+					"seed": 1023261,
+					"moves": 110
+				}
+			}
+		},
+		"hccd": {
+			"med": {
+				"boss": {
+					"seed": 1008270,
+					"moves": 112
+				}
+			}
+		},
+		"hcch": {
+			"med": {
+				"boss": {
+					"seed": 1000740,
+					"moves": 111
+				}
+			}
+		},
+		"hccs": {
+			"med": {
+				"boss": {
+					"seed": 1001679,
+					"moves": 121
+				}
+			}
+		},
+		"hcdc": {
+			"med": {
+				"boss": {
+					"seed": 1616,
+					"moves": 137
+				}
+			}
+		},
+		"hcdd": {
+			"med": {
+				"boss": {
+					"seed": 42012,
+					"moves": 136
+				}
+			}
+		},
+		"hcdh": {
+			"med": {
+				"boss": {
+					"seed": 1000527,
+					"moves": 117
+				}
+			}
+		},
+		"hcds": {
+			"med": {
+				"boss": {
+					"seed": 1200155,
+					"moves": 123
+				}
+			}
+		},
+		"hchc": {
+			"med": {
+				"boss": {
+					"seed": 975,
+					"moves": 115
+				}
+			}
+		},
+		"hchd": {
+			"med": {
+				"boss": {
+					"seed": 2261,
+					"moves": 97
+				}
+			}
+		},
+		"hchh": {
+			"med": {
+				"boss": {
+					"seed": 1001026,
+					"moves": 128
+				}
+			}
+		},
+		"hchs": {
+			"med": {
+				"boss": {
+					"seed": 663,
+					"moves": 113
+				}
+			}
+		},
+		"hcsc": {
+			"med": {
+				"boss": {
+					"seed": 150677,
+					"moves": 124
+				}
+			}
+		},
+		"hcsd": {
+			"med": {
+				"boss": {
+					"seed": 2000147,
+					"moves": 114
+				}
+			}
+		},
+		"hcsh": {
+			"med": {
+				"boss": {
+					"seed": 1005093,
+					"moves": 121
+				}
+			}
+		},
+		"hcss": {
+			"med": {
+				"boss": {
+					"seed": 1002236,
+					"moves": 105
+				}
+			}
+		},
+		"hdcc": {
+			"med": {
+				"boss": {
+					"seed": 1003494,
+					"moves": 125
 				}
 			}
 		},
@@ -10488,11 +9780,187 @@
 				}
 			}
 		},
+		"hdch": {
+			"med": {
+				"boss": {
+					"seed": 1789,
+					"moves": 131
+				}
+			}
+		},
+		"hdcs": {
+			"med": {
+				"boss": {
+					"seed": 1000353,
+					"moves": 127
+				}
+			}
+		},
+		"hddc": {
+			"med": {
+				"boss": {
+					"seed": 324,
+					"moves": 121
+				}
+			}
+		},
+		"hddd": {
+			"med": {
+				"boss": {
+					"seed": 1000449,
+					"moves": 111
+				}
+			}
+		},
+		"hddh": {
+			"med": {
+				"boss": {
+					"seed": 3000140,
+					"moves": 109
+				}
+			}
+		},
+		"hdds": {
+			"med": {
+				"boss": {
+					"seed": 327,
+					"moves": 101
+				}
+			}
+		},
+		"hdhc": {
+			"med": {
+				"boss": {
+					"seed": 1000460,
+					"moves": 140
+				}
+			}
+		},
+		"hdhd": {
+			"med": {
+				"boss": {
+					"seed": 1000437,
+					"moves": 115
+				}
+			}
+		},
+		"hdhh": {
+			"med": {
+				"boss": {
+					"seed": 3096,
+					"moves": 122
+				}
+			}
+		},
+		"hdhs": {
+			"med": {
+				"boss": {
+					"seed": 400126,
+					"moves": 113
+				}
+			}
+		},
+		"hdsc": {
+			"med": {
+				"boss": {
+					"seed": 600545,
+					"moves": 116
+				}
+			}
+		},
+		"hdsd": {
+			"med": {
+				"boss": {
+					"seed": 3000522,
+					"moves": 126
+				}
+			}
+		},
+		"hdsh": {
+			"med": {
+				"boss": {
+					"seed": 243,
+					"moves": 140
+				}
+			}
+		},
+		"hdss": {
+			"med": {
+				"boss": {
+					"seed": 1001189,
+					"moves": 118
+				}
+			}
+		},
+		"hhcc": {
+			"med": {
+				"boss": {
+					"seed": 1009651,
+					"moves": 120
+				}
+			}
+		},
+		"hhcd": {
+			"med": {
+				"boss": {
+					"seed": 600368,
+					"moves": 105
+				}
+			}
+		},
+		"hhch": {
+			"med": {
+				"boss": {
+					"seed": 1006891,
+					"moves": 99
+				}
+			}
+		},
+		"hhcs": {
+			"med": {
+				"boss": {
+					"seed": 1003876,
+					"moves": 106
+				}
+			}
+		},
 		"hhdc": {
 			"med": {
 				"boss": {
 					"seed": 960,
 					"moves": 88
+				}
+			}
+		},
+		"hhdd": {
+			"med": {
+				"boss": {
+					"seed": 1001392,
+					"moves": 124
+				}
+			}
+		},
+		"hhdh": {
+			"med": {
+				"boss": {
+					"seed": 3000124,
+					"moves": 111
+				}
+			}
+		},
+		"hhds": {
+			"med": {
+				"boss": {
+					"seed": 1006397,
+					"moves": 129
+				}
+			}
+		},
+		"hhhc": {
+			"med": {
+				"boss": {
+					"seed": 1006587,
+					"moves": 118
 				}
 			}
 		},
@@ -10504,11 +9972,607 @@
 				}
 			}
 		},
-		"dhcs": {
+		"hhhh": {
 			"med": {
 				"boss": {
-					"seed": 1200553,
+					"seed": 2769,
+					"moves": 132
+				}
+			}
+		},
+		"hhhs": {
+			"med": {
+				"boss": {
+					"seed": 1006327,
+					"moves": 109
+				}
+			}
+		},
+		"hhsc": {
+			"med": {
+				"boss": {
+					"seed": 1000001,
+					"moves": 105
+				}
+			}
+		},
+		"hhsh": {
+			"med": {
+				"boss": {
+					"seed": 600546,
+					"moves": 106
+				}
+			}
+		},
+		"hhss": {
+			"med": {
+				"boss": {
+					"seed": 3027,
+					"moves": 113
+				}
+			}
+		},
+		"hscc": {
+			"med": {
+				"boss": {
+					"seed": 3500015,
+					"moves": 79
+				}
+			}
+		},
+		"hscd": {
+			"med": {
+				"boss": {
+					"seed": 1000487,
+					"moves": 79
+				}
+			}
+		},
+		"hsch": {
+			"med": {
+				"boss": {
+					"seed": 1006169,
+					"moves": 96
+				}
+			}
+		},
+		"hscs": {
+			"med": {
+				"boss": {
+					"seed": 2000432,
+					"moves": 66
+				}
+			}
+		},
+		"hsdc": {
+			"med": {
+				"clear": {
+					"seed": 1015580,
+					"moves": 104
+				},
+				"boss": {
+					"seed": 1000153,
+					"moves": 96
+				}
+			}
+		},
+		"hsdd": {
+			"med": {
+				"clear": {
+					"seed": 1010272,
+					"moves": 101
+				},
+				"boss": {
+					"seed": 1000499,
+					"moves": 90
+				}
+			}
+		},
+		"hsdh": {
+			"med": {
+				"boss": {
+					"seed": 90,
+					"moves": 88
+				}
+			}
+		},
+		"hsds": {
+			"med": {
+				"clear": {
+					"seed": 1010943,
+					"moves": 103
+				},
+				"boss": {
+					"seed": 1005293,
+					"moves": 93
+				}
+			}
+		},
+		"hshc": {
+			"med": {
+				"boss": {
+					"seed": 1000483,
+					"moves": 87
+				}
+			}
+		},
+		"hshd": {
+			"med": {
+				"boss": {
+					"seed": 153210,
+					"moves": 117
+				}
+			}
+		},
+		"hshh": {
+			"med": {
+				"boss": {
+					"seed": 150533,
+					"moves": 88
+				}
+			}
+		},
+		"hshs": {
+			"med": {
+				"boss": {
+					"seed": 137,
+					"moves": 106
+				}
+			}
+		},
+		"hssc": {
+			"med": {
+				"boss": {
+					"seed": 2000395,
+					"moves": 107
+				}
+			}
+		},
+		"hssd": {
+			"med": {
+				"clear": {
+					"seed": 1015355,
+					"moves": 125
+				},
+				"boss": {
+					"seed": 1005620,
+					"moves": 97
+				}
+			}
+		},
+		"hssh": {
+			"med": {
+				"boss": {
+					"seed": 1005626,
+					"moves": 99
+				}
+			}
+		},
+		"hsss": {
+			"med": {
+				"boss": {
+					"seed": 80737,
+					"moves": 82
+				}
+			}
+		},
+		"sccc": {
+			"med": {
+				"boss": {
+					"seed": 1024190,
+					"moves": 117
+				}
+			}
+		},
+		"sccd": {
+			"med": {
+				"boss": {
+					"seed": 12000794,
+					"moves": 130
+				}
+			}
+		},
+		"scdc": {
+			"med": {
+				"boss": {
+					"seed": 1004347,
+					"moves": 101
+				}
+			}
+		},
+		"scdd": {
+			"med": {
+				"boss": {
+					"seed": 3000716,
+					"moves": 124
+				}
+			}
+		},
+		"scdh": {
+			"med": {
+				"boss": {
+					"seed": 1022131,
+					"moves": 137
+				}
+			}
+		},
+		"schc": {
+			"med": {
+				"boss": {
+					"seed": 1024054,
+					"moves": 104
+				}
+			}
+		},
+		"schs": {
+			"med": {
+				"boss": {
+					"seed": 1023668,
+					"moves": 119
+				}
+			}
+		},
+		"scsc": {
+			"med": {
+				"boss": {
+					"seed": 1003456,
+					"moves": 122
+				}
+			}
+		},
+		"scsd": {
+			"med": {
+				"boss": {
+					"seed": 151502,
+					"moves": 110
+				}
+			}
+		},
+		"scss": {
+			"med": {
+				"boss": {
+					"seed": 1009723,
+					"moves": 114
+				}
+			}
+		},
+		"sdcc": {
+			"med": {
+				"boss": {
+					"seed": 1020195,
+					"moves": 102
+				}
+			}
+		},
+		"sddc": {
+			"med": {
+				"boss": {
+					"seed": 1009324,
+					"moves": 122
+				}
+			}
+		},
+		"sddd": {
+			"med": {
+				"boss": {
+					"seed": 3001346,
+					"moves": 127
+				}
+			}
+		},
+		"sddh": {
+			"med": {
+				"boss": {
+					"seed": 1004195,
+					"moves": 109
+				}
+			}
+		},
+		"sdds": {
+			"med": {
+				"boss": {
+					"seed": 4000811,
+					"moves": 108
+				}
+			}
+		},
+		"sdhc": {
+			"med": {
+				"boss": {
+					"seed": 3000332,
+					"moves": 119
+				}
+			}
+		},
+		"sdhd": {
+			"med": {
+				"boss": {
+					"seed": 1000390,
+					"moves": 121
+				}
+			}
+		},
+		"sdhh": {
+			"med": {
+				"clear": {
+					"seed": 32809,
+					"moves": 149
+				}
+			}
+		},
+		"sdsd": {
+			"med": {
+				"boss": {
+					"seed": 4000181,
+					"moves": 132
+				}
+			}
+		},
+		"sdsh": {
+			"med": {
+				"boss": {
+					"seed": 1002411,
+					"moves": 130
+				}
+			}
+		},
+		"sdss": {
+			"med": {
+				"boss": {
+					"seed": 1008827,
+					"moves": 132
+				}
+			}
+		},
+		"shcc": {
+			"med": {
+				"boss": {
+					"seed": 3000263,
+					"moves": 112
+				}
+			}
+		},
+		"shcd": {
+			"med": {
+				"boss": {
+					"seed": 1006111,
+					"moves": 118
+				}
+			}
+		},
+		"shch": {
+			"med": {
+				"boss": {
+					"seed": 1006300,
+					"moves": 116
+				}
+			}
+		},
+		"shcs": {
+			"med": {
+				"boss": {
+					"seed": 1024698,
+					"moves": 151
+				}
+			}
+		},
+		"shdc": {
+			"med": {
+				"boss": {
+					"seed": 1005337,
+					"moves": 133
+				}
+			}
+		},
+		"shdd": {
+			"med": {
+				"boss": {
+					"seed": 1001553,
+					"moves": 139
+				}
+			}
+		},
+		"shdh": {
+			"med": {
+				"boss": {
+					"seed": 1007104,
+					"moves": 115
+				}
+			}
+		},
+		"shds": {
+			"med": {
+				"boss": {
+					"seed": 600651,
+					"moves": 102
+				}
+			}
+		},
+		"shhc": {
+			"med": {
+				"boss": {
+					"seed": 151067,
+					"moves": 94
+				}
+			}
+		},
+		"shhd": {
+			"med": {
+				"boss": {
+					"seed": 1001569,
+					"moves": 116
+				}
+			}
+		},
+		"shhh": {
+			"med": {
+				"boss": {
+					"seed": 1022398,
+					"moves": 101
+				}
+			}
+		},
+		"shsc": {
+			"med": {
+				"boss": {
+					"seed": 3001321,
+					"moves": 97
+				}
+			}
+		},
+		"shsd": {
+			"med": {
+				"clear": {
+					"seed": 1013673,
+					"moves": 100
+				}
+			}
+		},
+		"shsh": {
+			"med": {
+				"boss": {
+					"seed": 1002070,
+					"moves": 118
+				}
+			}
+		},
+		"shss": {
+			"med": {
+				"clear": {
+					"seed": 1012529,
+					"moves": 106
+				},
+				"boss": {
+					"seed": 1003901,
+					"moves": 100
+				}
+			}
+		},
+		"sscc": {
+			"med": {
+				"boss": {
+					"seed": 23,
+					"moves": 105
+				}
+			}
+		},
+		"sscd": {
+			"med": {
+				"boss": {
+					"seed": 1005541,
+					"moves": 109
+				}
+			}
+		},
+		"ssch": {
+			"med": {
+				"boss": {
+					"seed": 1274,
+					"moves": 80
+				}
+			}
+		},
+		"sscs": {
+			"med": {
+				"boss": {
+					"seed": 4000058,
+					"moves": 113
+				}
+			}
+		},
+		"ssdc": {
+			"med": {
+				"boss": {
+					"seed": 3000127,
+					"moves": 102
+				}
+			}
+		},
+		"ssdd": {
+			"med": {
+				"boss": {
+					"seed": 1107,
+					"moves": 90
+				}
+			}
+		},
+		"ssdh": {
+			"med": {
+				"boss": {
+					"seed": 1006146,
+					"moves": 107
+				}
+			}
+		},
+		"ssds": {
+			"med": {
+				"boss": {
+					"seed": 1005956,
+					"moves": 80
+				}
+			}
+		},
+		"sshc": {
+			"med": {
+				"boss": {
+					"seed": 1000014,
+					"moves": 100
+				}
+			}
+		},
+		"sshd": {
+			"med": {
+				"boss": {
+					"seed": 1446,
+					"moves": 115
+				}
+			}
+		},
+		"sshh": {
+			"med": {
+				"boss": {
+					"seed": 3000131,
+					"moves": 104
+				}
+			}
+		},
+		"sshs": {
+			"med": {
+				"boss": {
+					"seed": 1005638,
+					"moves": 120
+				}
+			}
+		},
+		"sssc": {
+			"med": {
+				"boss": {
+					"seed": 5000405,
+					"moves": 69
+				}
+			}
+		},
+		"sssd": {
+			"med": {
+				"boss": {
+					"seed": 1005468,
 					"moves": 85
+				}
+			}
+		},
+		"sssh": {
+			"med": {
+				"boss": {
+					"seed": 1006954,
+					"moves": 77
+				}
+			}
+		},
+		"ssss": {
+			"med": {
+				"boss": {
+					"seed": 600906,
+					"moves": 90
 				}
 			}
 		}
@@ -10786,17 +10850,9 @@
 				"score": null,
 				"at": "2026-11-24"
 			}
-		},
-		"hhsd": {
-			"med": {
-				"seed": 2000872,
-				"score": null,
-				"at": "2026-11-24T01:18:21.818Z"
-			}
 		}
 	},
 	"missing": [
-		"hhsd",
 		"cchh",
 		"cchs",
 		"cccc",
